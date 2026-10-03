@@ -1,0 +1,19 @@
+{
+  "base": "0d08f2b8ef0c9c26890bdefc7e4fa1dc044767b6",
+  "outcomes": [
+    {
+      "name": "native-preparation-types",
+      "status": 0
+    },
+    {
+      "name": "native-preparation-collection",
+      "status": 0
+    }
+  ],
+  "browserExecuted": false,
+  "serverStarted": false,
+  "nativeProducerNegativeVerified": false,
+  "productionChanged": false,
+  "routingOwner": "root",
+  "collectedCases": 2
+}

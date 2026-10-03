@@ -1,0 +1,111 @@
+# Kitchen hardware, construction input and session integration
+
+## Integrated source checkpoint
+
+This isolated branch follows the Bookshelf/renderer-hover integration and keeps
+the published Chair/Rack/Shower native proof. It integrates the actual Blender
+Fridge and Stove sources, all 72 canonical frames for each, #2001 primary-button
+release ownership, and #2002 abandoned room-template preflight ownership.
+
+The Fridge retains all 73 original parts and six complete stored material graphs,
+adding 24 attached fixings. The Stove retains all 80 original parts and six
+complete graphs, adding 16 mounting shoes; the source audit checks 32 actual
+triangle-interior contacts rather than treating a ring's bounds as a solid.
+The source records retain original bounds, targets, palette and footprints:
+[Fridge](../2026-10-03-kitchen-fridge-physical-fixings/README.md) and
+[Stove](../2026-10-03-kitchen-stove-physical-joints/README.md).
+
+The native Kitchen route now checks both models in the same real worker-built
+Kitchen. It keeps the existing disjoint pixel regions, colours and minimum
+counts for both models. Independently authored object indices identify all
+three completed construction owners; the entire paused worker data must remain
+equal after genuine Save/Load. This avoids building the identical Kitchen twice
+solely to inspect its two fixtures. The separate Fridge spec remains registered;
+running the combined route does not claim that separate spec was run.
+
+The World middle-release fixture is routed exactly once through the production
+artifact suite. It checks Wall, Bed and Yard while the physical left mouse button
+remains down. Yard still requires its explicit confirmation; a report is not a
+ZoneRoom command. The session correction changes only ephemeral ownership of a
+pending operation, with no new save field, player message or worker protocol.
+
+## Evidence boundary
+
+Actual built-client acceptance and producer-negative controls for this combined
+subject are pending at this checkpoint. Source-only model/contact tests do not
+prove that a player sees the models. Hosted full CI, serial main and production
+release also remain required; this record does not claim a deployment.
+
+Owner-only CI sharding #1983 and the optional V9 persistence proposal remain
+pending. Existing ordinary push/PR authorisation does not approve either.
+
+Root integrated source run: 61 tests across five suites GREEN in 5.48 seconds.
+The three prepared native fixture modules pass strict TypeScript (exit0).
+These are source/fixture checks; actual native acceptance remains pending.
+
+## Integrated guard and documentation checks
+
+#2004 construction-only synchronous cancellation is now integrated: six original
+source failures and fifteen controls become21 GREEN; Build/Rooms guard omissions
+produce4/2 RED and exact restoration21 GREEN. It preserves camera and hover.
+
+First broader integration run retains102 GREEN/4 documentation failures. Two
+Blender build identifiers had been written as Git citations; the actual metadata
+is now explicitly `build_hash=9e2066aef7ef`. Named published Fridge/Stove refs
+were fetched explicitly to verify original commits. Two retired Stove pose paths
+now link to their verified historical source commit rather than implying that
+old render hashes remain current files. Both missing collection rows are added
+in the existing table shape. Corrected documentation23/23 GREEN in14.25s;
+the guards and their budgets are unchanged. Original failure output remains.
+
+Actual native acceptance for the combined subject is still pending. This section
+does not replace a successful built-client run or exact full hosted CI.
+
+First frozen04ba4 native result: 4GREEN/1observerRED/1serialnotrun in119.90s.
+Kitchenq0 already passes both original palette gates, all three completed owners,
+and whole pausedSaveLoad equality, then times out on the incorrectly named new
+observer camera button. Actual button is Rotate camera left, as used by the
+existing Bookshelf route; corrected only this name. All three physical World
+Wall/Bed/Yard chord cases GREEN. Raw report/captures remain in native/initial.
+Neither Kitchenq1 nor corrected/native negative controls are claimed passed yet.
+
+## Expanded session source checkpoint
+
+#1949 now cancels an ordinary World construction gesture at the actual worker
+session availability boundary. The #2004 HUD-only cancellation remains distinct.
+The real New/Load room-template preflight and held-primary Wall native fixtures
+are registered exactly once in the artifact suite and excluded from the source
+suite. Six bounded source suites pass112/112 in3.74s; all four native fixture
+modules pass strict TypeScript exit0. The upcoming combined native subject has
+10cases: Kitchen capacity/q0/q1, three Wall/Bed/Yard mouse-chord cases, two
+room-template New/Load cases and two ordinary Wall New/Load cases. Native verdicts
+and producer omissions remain pending; source results do not imply deployment.
+
+Expanded frozen6fb2 subject:8GREEN/2observerRED in3.1min. Both Kitchenq0/q1, three physical chord cases and two World New/Load cases pass. Both template New/Load fresh placements create exactly18 correct actual orders before the observer expects a nonexistent sequence property; actual BuildOrder/save-schema field is placementSequence. Corrected only these three expected order field labels; pending-template sequence expectation stays unchanged. Original report and data remain native/expanded-initial. Corrected10case run and actual producer controls are pending.
+
+## Terminal built-client acceptance and actual producer controls
+
+Corrected actual built-client route10/10 GREEN in3.1min. Source/fixture subject29e0fba12d; the positive production client6fb2 differs only in test/docs commits. Actual Kitchenq0/q1 original Stove/Fridge palette thresholds, exact allthree completed sourceOrderIds, and whole paused SaveLoad data pass. Both template New/Load pending operations re-arm before the original15sdeadline, create exactly18 independently enumerated new orders, ignore replay of the exact old reply and persist the wholeV8 bundle. Both ordinary World New/Load and allthree physical mouse-chord controls pass. Both actual low-angle Kitchen images opened; original observer errors remain archived.
+
+Actual frozen29e0 controls remove both default model mappings, primary-release ownership, abandoned busy reset, and the availability-boundary construction cancellation. Nativeq0 subject8RED/1legal in170.88s; separately observedq1 model omission1RED/1legal in88.11s. Every source file is restored byte-for-byte in finally; actual baseline/restored worker hash agrees. Restored10/10 GREEN. Original raw reports, snapshots, screenshots, exact mutation, scripts and hashes are in native; terminal-summary.json records precise durations and counts. These local results do not imply full hosted green, mergeability or deployment.
+
+## Predecessor merge and documentation gate
+
+PR2005 had three exact documentation/byte-attribute conflicts with published
+Bookshelf base3c0e528d76, so GitHub could not start pull-request CI. The ancestry
+merge preserves the complete current tree: every incoming index row exists,
+Book material audit differs only in upstream-ID wording and native byte rules
+remain a superset including Kitchen. No src or native-fixture diff.
+First post-merge documentation run21GREEN/2RED retained: the newly integrated
+ordinary session row sat beyond the single index table, and the historical
+0d08 source ref had not been explicitly fetched. Move only that row into the
+existing table and fetch its actual published fc30 branch; guards/budgets stay
+unchanged. The following exact publication remains subject to full hosted CI.
+
+After exact scoped row move and published-ref fetch, the same three documentation suites23/23 GREEN in14.34s. Merge repair changes no verified production source or native fixture.
+
+## Exact hosted532577eb6f verify failure and inherited observer correction
+
+Terminal hosted CI37100711713/job111139526171 stops on6tests in ui-room-plan-renderer-placement-receipt, with7983GREEN/8SKIP/657otherfilesGREEN. A local exact532577eb6f reproduction is6RED/8legalcontrols. The actual current RoomTemplateTool owns an optional unique placement symbol and clears it to undefined; the inherited test expected the superseded booleanfalse. Only three busy-clear observations are corrected to undefined. All actual main lifecycle callbacks, arm/revision/submission/refusal guards remain. Original fixture, full hosted logs and local failure are retained. Corrected behavior/real producer omission and exact restoration remain to be recorded.
+
+Corrected fixture14GREEN; actual unique placement-token clearance omission2RED/12legalcontrols, then finally byte-exact producer restoration14GREEN. The existing refused-receipt cases detect uncleared busy tokens; no lifecycle assertions or runtime behavior were removed. Full hosted new-head CI is separate.

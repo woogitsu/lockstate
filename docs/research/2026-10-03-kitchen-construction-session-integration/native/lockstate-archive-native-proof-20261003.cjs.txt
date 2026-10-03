@@ -1,0 +1,47 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const crypto = require('node:crypto');
+const root = path.resolve(process.argv[2]);
+const record = process.argv[3];
+const destination = path.resolve(root, record, 'native');
+const temp = path.resolve(process.env.TEMP);
+if (!destination.startsWith(root + path.sep) || !record.startsWith('docs/research/')) throw Error('invalid proof destination');
+const sha = b => crypto.createHash('sha256').update(b).digest('hex');
+const aliasPath = path.join(destination, 'capture-aliases.json');
+const aliases = fs.existsSync(aliasPath) ? JSON.parse(fs.readFileSync(aliasPath, 'utf8')) : [];
+function copyFile(source, target, consoleText = false) {
+  const original = fs.readFileSync(source);
+  const bytes = consoleText && original[0] === 255 && original[1] === 254
+    ? Buffer.from(original.subarray(2).toString('utf16le'), 'utf8') : original;
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, bytes);
+  if (sha(fs.readFileSync(target)) !== sha(bytes)) throw Error('archive byte mismatch');
+  const archived = path.relative(destination, target).replaceAll('\\', '/');
+  const existingIndex = aliases.findIndex(x => x.archived === archived);
+  if (existingIndex >= 0) aliases.splice(existingIndex, 1);
+  aliases.push({ source, archived: path.relative(destination, target).replaceAll('\\', '/'),
+    sourceBytes: original.length, sourceSha256: sha(original), archivedBytes: bytes.length, archivedSha256: sha(bytes),
+    ...(consoleText && original.length !== bytes.length ? { conversion: 'UTF16LE console to UTF8' } : {}) });
+}
+function walk(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]).sort();
+}
+for (const specification of process.argv.slice(4)) {
+  const [label, prefix] = specification.split('=');
+  if (!label || !prefix || prefix.includes('/') || prefix.includes('\\')) throw Error('invalid native prefix');
+  const runDir = path.join(temp, prefix);
+  const outDir = path.join(destination, label);
+  for (const ext of ['json', 'txt']) {
+    const input = path.join(temp, `${prefix}.${ext}`);
+    if (fs.existsSync(input)) copyFile(input, path.join(outDir, ext === 'json' ? 'report.json' : 'console.txt'), ext === 'txt');
+  }
+  if (fs.existsSync(runDir)) {
+    let index = 0;
+    for (const input of walk(runDir)) {
+      const name = `${String(++index).padStart(3, '0')}-${path.basename(input).slice(0, 80)}`;
+      copyFile(input, path.join(outDir, name));
+    }
+  }
+}
+fs.writeFileSync(path.join(destination, 'capture-aliases.json'), JSON.stringify(aliases, null, 2) + '\n');
+console.log(JSON.stringify({ files: aliases.length, bytes: aliases.reduce((n, f) => n + f.archivedBytes, 0), destination }));

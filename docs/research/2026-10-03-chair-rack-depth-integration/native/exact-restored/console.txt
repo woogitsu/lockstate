@@ -1,0 +1,42 @@
+node : [2m[WebServer] [22m(node:62704) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:59 char:2
++  node --experimental-transform-types --disable-warning=ExperimentalWa ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 11 tests using 1 worker
+
+(node:60928) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:60928) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\browser\generic-wooden-rack-player-build.spec.ts:218:1 › player creates storage and delivery capacity before generic rack (44.1s)
+  ok  2 tests\browser\generic-wooden-rack-player-build.spec.ts:281:3 › player reaches default generic racks at quarterTurns0 and retains both authored rack palettes and native anchors after Save/Load (52.4s)
+  ok  3 tests\browser\generic-wooden-rack-player-build.spec.ts:281:3 › player reaches default generic racks at quarterTurns1 and retains both authored rack palettes and native anchors after Save/Load (41.2s)
+  ok  4 tests\browser\oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw0 (20.5s)
+  ok  5 tests\browser\oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw180 (23.3s)
+  ok  6 tests\browser\shower-head-player-build.spec.ts:163:1 › player creates storage and delivery capacity before Shower Room (43.5s)
+  ok  7 tests\browser\shower-head-player-build.spec.ts:226:3 › player builds Shower Room at quarterTurns0 and retains authored nozzle palette after Save/Load (39.8s)
+  ok  8 tests\browser\shower-head-player-build.spec.ts:226:3 › player builds Shower Room at quarterTurns1 and retains authored nozzle palette after Save/Load (36.1s)
+  ok  9 tests\browser\wooden-chair-player-build.spec.ts:166:1 › player creates storage and delivery capacity before Staff Room (42.7s)
+  ok 10 tests\browser\wooden-chair-player-build.spec.ts:229:3 › player builds Staff Room at quarterTurns0 and retains both authored chair palettes and anchors after Save/Load (40.3s)
+  ok 11 tests\browser\wooden-chair-player-build.spec.ts:229:3 › player builds Staff Room at quarterTurns1 and retains both authored chair palettes and anchors after Save/Load (40.6s)
+
+  11 passed (7.1m)

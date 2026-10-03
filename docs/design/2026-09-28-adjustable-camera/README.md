@@ -1468,3 +1468,60 @@ are pushed. Next isolated integration includes detailed physical Chair/Rack,
 Art is modeling an actual connected ShowerHead, gameplay audits the remaining
 accepted/refused history class, HUD prepares a real native pending-wall test.
 One root browser at a time; full hosted CI and serial release still required.
+
+## Physical fixtures and construction integration - 2026-10-03
+
+Chair, Rack and Shower have completed real capacity/Build/SaveLoad acceptance:
+11 cases GREEN after the original observer failures were retained and corrected.
+Actual mapping and pending-wall depth omissions fail; exact source/worker
+restoration passes. The rear guard stays occluded while an independent front
+guard remains visible, including the pending texture state.
+[Published native proof](../../research/2026-10-03-chair-rack-depth-integration/README.md)
+is on the integration branch.
+
+Bookshelf and stationary renderer handoff now have 11 genuine FullHD cases GREEN,
+including UI scale 100/200 and both directions with rotated/mirrored templates.
+Completed owners and whole paused SaveLoad state are checked. The separate actual
+consumer controls are being completed; a setup needle guard aborted before any
+source mutation and its positive restoration was retained, not counted as a
+negative test.
+
+The following isolated source integration includes physical Fridge/Stove models,
+World primary-release ownership #2001, and abandoned preflight/session ownership
+#2002. Root will run one combined genuine Kitchen route for both fixtures and
+all three completed owners, plus actual Wall/Bed/Yard mouse-chord cases.
+[Current integration record](../../research/2026-10-03-kitchen-construction-session-integration/README.md)
+distinguishes pending native and hosted gates from completed source work.
+
+Three disjoint agents continue: actual Canteen rail-to-post modeling, immediate
+construction cancellation/re-arm #2004, and native New/Load session acceptance.
+Only root runs the browser, with one worker. Push every coherent checkpoint.
+Full hosted CI and serial release remain required; protected sharding #1983 and
+optional V9 proposals stay pending until the owner's answer.
+
+## Current delivery checkpoint - 2026-10-03
+
+Bookshelf/stationary renderer handoff consumer omissions are complete: actual
+q0/model+hover omissions9RED/1legal, explicitq1 omission1RED/1legal, exact
+source/worker restoration11GREEN. Published raw proof remains linked above.
+Kitchen integration now includes #2004 HUD cancellation and #1949 ordinary
+World New/Load cancellation in addition to #2001/#2002.112bounded source tests
+pass; combined10case native player route is next, one browser/worker at a time.
+Three independent agents currently refine the actual CellCot north headboard
+connections, prepare genuine Canteen native hardware capture, and audit camera
+changes during held template construction. Canteen/Washer source72poses and
+contacts are published; native integration follows Kitchen. This is ongoing
+local integration, not exact hosted green or a production release.
+
+## Kitchen player integration accepted locally - 2026-10-03
+
+[Actual player proof](../../research/2026-10-03-kitchen-construction-session-integration/README.md)
+is published in PR2005:10GREEN, actual producer omissions8RED+explicitq1
+1RED and exact source/worker restoration10GREEN. Initial observer failures
+are preserved. Fridge/Stove Build and whole pausedSaveLoad work in both
+orientations; New/Load rejects old held construction and pending requests.
+Root now integrates actual connected Canteen, Washer and CellCot sources with
+existing owners/palette gates and genuine decoded-loader evidence. Three
+agents model the visibly missing rear Guard belt, correct an actual terminal
+predecessor CI contract failure, and audit held-plan rotation/mirror ownership.
+Do not mistake local acceptance for full exact-head hosted green/deployment.

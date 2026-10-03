@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-cancel-rearm-gesture-audit-20261003
+
+
+ Test Files  5 passed (5)
+      Tests  113 passed (113)
+   Start at  06:15:52
+   Duration  1.32s (transform 574ms, setup 0ms, import 1.68s, tests 42ms, environment 0ms)
+

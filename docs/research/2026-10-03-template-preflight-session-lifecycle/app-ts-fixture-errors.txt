@@ -1,0 +1,4 @@
+tests/unit/ui-room-template-session-preflight.test.ts(63,10): error TS18048: 'saved.simulation' is possibly 'undefined'.
+tests/unit/ui-room-template-session-preflight.test.ts(97,12): error TS18048: 'after.simulation' is possibly 'undefined'.
+tests/unit/ui-room-template-session-preflight.test.ts(97,66): error TS18048: 'before.simulation' is possibly 'undefined'.
+tests/unit/ui-room-template-session-preflight.test.ts(126,10): error TS18048: 'after.simulation' is possibly 'undefined'.

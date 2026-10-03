@@ -1,0 +1,40 @@
+﻿{
+    "subject":  "29e0fba12d505486a6d2bf5b41803095e263efa5",
+    "branch":  "codex/integrate-fridge-world-chord-20261003",
+    "sourceSha256":  {
+                         "src/ui/room-template-tool.ts":  "34D63C43892C698005FE93ABDE19CCA2B7F8CD33ACE93E283373DFDE152D8317",
+                         "src/rendering/assets/oblique-object-mapping.ts":  "A9EADA806FF523BC9933DA9B7A2E8A731C5A896286E33B0551119D8E389DD2D4",
+                         "src/main.ts":  "7D9E502D26BC5F6E7873027785D99D1132F6D47DE61D28DDAC0A2AED281B9821",
+                         "src/rendering/scene/world-scene.ts":  "31780B1C1DEE2594078289607632608B6FC919A2F04E48BE4DE0B75D17A2D374"
+                     },
+    "mutationPaths":  [
+                          "src/ui/room-template-tool.ts",
+                          "src/rendering/assets/oblique-object-mapping.ts",
+                          "src/main.ts",
+                          "src/rendering/scene/world-scene.ts"
+                      ],
+    "baselineWorker":  {
+                           "sha256":  "28754CF6317EA0BF5AD91393DC27AFFB5AFC786056F925B63BF80FE010FF4469",
+                           "file":  "worker-DzGOBW-Q.js",
+                           "bytes":  441796
+                       },
+    "negativeWorker":  {
+                           "sha256":  "28754CF6317EA0BF5AD91393DC27AFFB5AFC786056F925B63BF80FE010FF4469",
+                           "file":  "worker-DzGOBW-Q.js",
+                           "bytes":  441796
+                       },
+    "q0NegativeExit":  1,
+    "q1NegativeExit":  1,
+    "restoredSourceSha256":  {
+                                 "src/rendering/scene/world-scene.ts":  "31780B1C1DEE2594078289607632608B6FC919A2F04E48BE4DE0B75D17A2D374",
+                                 "src/rendering/assets/oblique-object-mapping.ts":  "A9EADA806FF523BC9933DA9B7A2E8A731C5A896286E33B0551119D8E389DD2D4",
+                                 "src/main.ts":  "7D9E502D26BC5F6E7873027785D99D1132F6D47DE61D28DDAC0A2AED281B9821",
+                                 "src/ui/room-template-tool.ts":  "34D63C43892C698005FE93ABDE19CCA2B7F8CD33ACE93E283373DFDE152D8317"
+                             },
+    "restoredWorker":  {
+                           "sha256":  "28754CF6317EA0BF5AD91393DC27AFFB5AFC786056F925B63BF80FE010FF4469",
+                           "file":  "worker-DzGOBW-Q.js",
+                           "bytes":  441796
+                       },
+    "restoredExit":  0
+}

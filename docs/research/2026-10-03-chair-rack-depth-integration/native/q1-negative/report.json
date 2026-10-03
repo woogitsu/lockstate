@@ -1,0 +1,480 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-chair-rack-depth-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-crs-depth-control-q1-negative-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-chair-rack-depth-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build|dedicated-security-console-player-build|dedicated-medical-bed-player-build|dedicated-loading-dock-door-player-build|dedicated-camera-pan-player|oblique-pending-wall-player)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5184 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5184/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "generic-wooden-rack-player-build.spec.ts",
+      "file": "generic-wooden-rack-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before generic rack",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43906,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T03:33:32.688Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8db663fc1957556b28b4-139e1ce72f2291b0d74b",
+          "file": "generic-wooden-rack-player-build.spec.ts",
+          "line": 218,
+          "column": 1
+        },
+        {
+          "title": "player reaches default generic racks at quarterTurns1 and retains both authored rack palettes and native anchors after Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 43039,
+                  "error": {
+                    "message": "Error: rack1 authored timber after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m70\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: rack1 authored timber after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m70\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\generic-wooden-rack-player-build.spec.ts:251:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\generic-wooden-rack-player-build.spec.ts:250:16",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\generic-wooden-rack-player-build.spec.ts",
+                      "column": 6,
+                      "line": 251
+                    },
+                    "snippet": "  249 |   }, null, 2));\n  250 |   beforePixels.forEach((count, index) => expect.soft(count, `rack${index + 1} authored timber after construction`)\n> 251 |     .toBeGreaterThan(quarterTurns === 0 ? 200 : 70));\n      |      ^\n  252 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  253 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  254 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\generic-wooden-rack-player-build.spec.ts",
+                        "column": 6,
+                        "line": 251
+                      },
+                      "message": "Error: rack1 authored timber after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m70\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  249 |   }, null, 2));\n  250 |   beforePixels.forEach((count, index) => expect.soft(count, `rack${index + 1} authored timber after construction`)\n> 251 |     .toBeGreaterThan(quarterTurns === 0 ? 200 : 70));\n      |      ^\n  252 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  253 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  254 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\generic-wooden-rack-player-build.spec.ts:251:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\generic-wooden-rack-player-build.spec.ts:250:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\generic-wooden-rack-player-build.spec.ts",
+                        "column": 6,
+                        "line": 251
+                      },
+                      "message": "Error: rack2 authored timber after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m70\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  249 |   }, null, 2));\n  250 |   beforePixels.forEach((count, index) => expect.soft(count, `rack${index + 1} authored timber after construction`)\n> 251 |     .toBeGreaterThan(quarterTurns === 0 ? 200 : 70));\n      |      ^\n  252 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  253 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  254 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\generic-wooden-rack-player-build.spec.ts:251:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\generic-wooden-rack-player-build.spec.ts:250:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\generic-wooden-rack-player-build.spec.ts",
+                        "column": 6,
+                        "line": 268
+                      },
+                      "message": "Error: rack1 authored timber after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m70\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  266 |   const afterPixels = await rackPixels(page, loaded, quarterTurns);\n  267 |   afterPixels.forEach((count, index) => expect.soft(count, `rack${index + 1} authored timber after Load`)\n> 268 |     .toBeGreaterThan(quarterTurns === 0 ? 200 : 70));\n      |      ^\n  269 |   expect(afterPixels).toEqual(beforePixels);\n  270 |   const evidencePath = info.outputPath('generic-wooden-rack-worker-and-save-evidence.json');\n  271 |   await writeFile(evidencePath, JSON.stringify({\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\generic-wooden-rack-player-build.spec.ts:268:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\generic-wooden-rack-player-build.spec.ts:267:15"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\generic-wooden-rack-player-build.spec.ts",
+                        "column": 6,
+                        "line": 268
+                      },
+                      "message": "Error: rack2 authored timber after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m70\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  266 |   const afterPixels = await rackPixels(page, loaded, quarterTurns);\n  267 |   afterPixels.forEach((count, index) => expect.soft(count, `rack${index + 1} authored timber after Load`)\n> 268 |     .toBeGreaterThan(quarterTurns === 0 ? 200 : 70));\n      |      ^\n  269 |   expect(afterPixels).toEqual(beforePixels);\n  270 |   const evidencePath = info.outputPath('generic-wooden-rack-worker-and-save-evidence.json');\n  271 |   await writeFile(evidencePath, JSON.stringify({\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\generic-wooden-rack-player-build.spec.ts:268:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\generic-wooden-rack-player-build.spec.ts:267:15"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T03:34:16.666Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "generic-wooden-rack-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-crs-depth-control-q1-negative-20261003\\generic-wooden-rack-player-33bf6-ive-anchors-after-Save-Load\\attachments\\generic-wooden-rack-worker-and-save-evidence-a842af788dc17a2d8b19645f1496e762fd1fb2d1.json"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-crs-depth-control-q1-negative-20261003\\generic-wooden-rack-player-33bf6-ive-anchors-after-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\generic-wooden-rack-player-build.spec.ts",
+                    "column": 6,
+                    "line": 251
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "8db663fc1957556b28b4-18841381df24c2646c13",
+          "file": "generic-wooden-rack-player-build.spec.ts",
+          "line": 281,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "shower-head-player-build.spec.ts",
+      "file": "shower-head-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Shower Room",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 42493,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T03:35:00.359Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fdf440cc1da0397a08c1-a1d542cc5e48ebc46c1a",
+          "file": "shower-head-player-build.spec.ts",
+          "line": 163,
+          "column": 1
+        },
+        {
+          "title": "player builds Shower Room at quarterTurns1 and retains authored nozzle palette after Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 38636,
+                  "error": {
+                    "message": "Error: fixture1 authored nozzle assembly after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m50\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: fixture1 authored nozzle assembly after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m50\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\shower-head-player-build.spec.ts:187:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\shower-head-player-build.spec.ts:186:16",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\shower-head-player-build.spec.ts",
+                      "column": 6,
+                      "line": 187
+                    },
+                    "snippet": "  185 |   // authored fragment has28 pixels; every other measured region has86 or93.\n  186 |   beforePixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored nozzle assembly after construction`)\n> 187 |     .toBeGreaterThan(quarterTurns === 1 && index === 1 ? 20 : 50));\n      |      ^\n  188 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  189 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  190 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\shower-head-player-build.spec.ts",
+                        "column": 6,
+                        "line": 187
+                      },
+                      "message": "Error: fixture1 authored nozzle assembly after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m50\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  185 |   // authored fragment has28 pixels; every other measured region has86 or93.\n  186 |   beforePixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored nozzle assembly after construction`)\n> 187 |     .toBeGreaterThan(quarterTurns === 1 && index === 1 ? 20 : 50));\n      |      ^\n  188 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  189 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  190 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\shower-head-player-build.spec.ts:187:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\shower-head-player-build.spec.ts:186:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\shower-head-player-build.spec.ts",
+                        "column": 6,
+                        "line": 187
+                      },
+                      "message": "Error: fixture2 authored nozzle assembly after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m20\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  185 |   // authored fragment has28 pixels; every other measured region has86 or93.\n  186 |   beforePixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored nozzle assembly after construction`)\n> 187 |     .toBeGreaterThan(quarterTurns === 1 && index === 1 ? 20 : 50));\n      |      ^\n  188 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  189 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  190 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\shower-head-player-build.spec.ts:187:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\shower-head-player-build.spec.ts:186:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\shower-head-player-build.spec.ts",
+                        "column": 6,
+                        "line": 203
+                      },
+                      "message": "Error: fixture1 authored nozzle assembly after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m50\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  201 |   const afterPixels = await nozzlePixels(page, loaded, quarterTurns);\n  202 |   afterPixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored nozzle assembly after Load`)\n> 203 |     .toBeGreaterThan(quarterTurns === 1 && index === 1 ? 20 : 50));\n      |      ^\n  204 |   expect(afterPixels).toEqual(beforePixels);\n  205 |   const evidencePath = info.outputPath('shower-worker-and-pixel-evidence.json');\n  206 |   await writeFile(evidencePath, JSON.stringify({\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\shower-head-player-build.spec.ts:203:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\shower-head-player-build.spec.ts:202:15"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\shower-head-player-build.spec.ts",
+                        "column": 6,
+                        "line": 203
+                      },
+                      "message": "Error: fixture2 authored nozzle assembly after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m20\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  201 |   const afterPixels = await nozzlePixels(page, loaded, quarterTurns);\n  202 |   afterPixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored nozzle assembly after Load`)\n> 203 |     .toBeGreaterThan(quarterTurns === 1 && index === 1 ? 20 : 50));\n      |      ^\n  204 |   expect(afterPixels).toEqual(beforePixels);\n  205 |   const evidencePath = info.outputPath('shower-worker-and-pixel-evidence.json');\n  206 |   await writeFile(evidencePath, JSON.stringify({\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\shower-head-player-build.spec.ts:203:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\shower-head-player-build.spec.ts:202:15"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T03:35:42.919Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "shower-worker-and-pixel-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-crs-depth-control-q1-negative-20261003\\shower-head-player-build-p-0437b-zle-palette-after-Save-Load\\attachments\\shower-worker-and-pixel-evidence-2c2cab95e079e6621454805cfe84ae66afde7ecb.json"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-crs-depth-control-q1-negative-20261003\\shower-head-player-build-p-0437b-zle-palette-after-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\shower-head-player-build.spec.ts",
+                    "column": 6,
+                    "line": 187
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "fdf440cc1da0397a08c1-f088e5da41a138f07ebf",
+          "file": "shower-head-player-build.spec.ts",
+          "line": 226,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "wooden-chair-player-build.spec.ts",
+      "file": "wooden-chair-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Staff Room",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43633,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T03:36:22.141Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d91448fac17bfa5d1c5c-499ea5e2821597cd20bf",
+          "file": "wooden-chair-player-build.spec.ts",
+          "line": 166,
+          "column": 1
+        },
+        {
+          "title": "player builds Staff Room at quarterTurns1 and retains both authored chair palettes and anchors after Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 41064,
+                  "error": {
+                    "message": "Error: chair1 authored timber after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m40\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: chair1 authored timber after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m40\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\wooden-chair-player-build.spec.ts:191:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\wooden-chair-player-build.spec.ts:190:16",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\wooden-chair-player-build.spec.ts",
+                      "column": 6,
+                      "line": 191
+                    },
+                    "snippet": "  189 |   }, null, 2));\n  190 |   beforePixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored timber after construction`)\n> 191 |     .toBeGreaterThan(40));\n      |      ^\n  192 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  193 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  194 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\wooden-chair-player-build.spec.ts",
+                        "column": 6,
+                        "line": 191
+                      },
+                      "message": "Error: chair1 authored timber after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m40\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  189 |   }, null, 2));\n  190 |   beforePixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored timber after construction`)\n> 191 |     .toBeGreaterThan(40));\n      |      ^\n  192 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  193 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  194 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\wooden-chair-player-build.spec.ts:191:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\wooden-chair-player-build.spec.ts:190:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\wooden-chair-player-build.spec.ts",
+                        "column": 6,
+                        "line": 191
+                      },
+                      "message": "Error: chair2 authored timber after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m40\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  189 |   }, null, 2));\n  190 |   beforePixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored timber after construction`)\n> 191 |     .toBeGreaterThan(40));\n      |      ^\n  192 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  193 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  194 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\wooden-chair-player-build.spec.ts:191:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\wooden-chair-player-build.spec.ts:190:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\wooden-chair-player-build.spec.ts",
+                        "column": 6,
+                        "line": 207
+                      },
+                      "message": "Error: chair1 authored timber after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m40\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  205 |   const afterPixels = await timberPixels(page, loaded, quarterTurns);\n  206 |   afterPixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored timber after Load`)\n> 207 |     .toBeGreaterThan(40));\n      |      ^\n  208 |   expect(afterPixels).toEqual(beforePixels);\n  209 |   const evidencePath = info.outputPath('wooden-chair-worker-and-save-evidence.json');\n  210 |   await writeFile(evidencePath, JSON.stringify({\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\wooden-chair-player-build.spec.ts:207:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\wooden-chair-player-build.spec.ts:206:15"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\wooden-chair-player-build.spec.ts",
+                        "column": 6,
+                        "line": 207
+                      },
+                      "message": "Error: chair2 authored timber after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m40\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  205 |   const afterPixels = await timberPixels(page, loaded, quarterTurns);\n  206 |   afterPixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored timber after Load`)\n> 207 |     .toBeGreaterThan(40));\n      |      ^\n  208 |   expect(afterPixels).toEqual(beforePixels);\n  209 |   const evidencePath = info.outputPath('wooden-chair-worker-and-save-evidence.json');\n  210 |   await writeFile(evidencePath, JSON.stringify({\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\wooden-chair-player-build.spec.ts:207:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\wooden-chair-player-build.spec.ts:206:15"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T03:37:05.845Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "wooden-chair-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-crs-depth-control-q1-negative-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\attachments\\wooden-chair-worker-and-save-evidence-13fa29637380006bbc06053b77f580a3efa35421.json"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-crs-depth-control-q1-negative-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-chair-rack-depth-integration-20261003\\tests\\browser\\wooden-chair-player-build.spec.ts",
+                    "column": 6,
+                    "line": 191
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "d91448fac17bfa5d1c5c-808f143fa66aa2b7ec97",
+          "file": "wooden-chair-player-build.spec.ts",
+          "line": 229,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T03:33:30.219Z",
+    "duration": 257336.608,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "results": [
+    {
+      "name": "original-expanded6red15controls",
+      "exitCode": 1
+    },
+    {
+      "name": "fixed21green",
+      "exitCode": 0
+    },
+    {
+      "name": "build-disarm-adapter-negative",
+      "exitCode": 1
+    },
+    {
+      "name": "build-disarm-adapter-negative-exact-restored21green",
+      "exitCode": 0
+    },
+    {
+      "name": "room-disarm-adapter-negative",
+      "exitCode": 1
+    },
+    {
+      "name": "room-disarm-adapter-negative-exact-restored21green",
+      "exitCode": 0
+    }
+  ],
+  "exactRestored": true,
+  "sources": {
+    "src\\main.ts": "e8d7f6e7b1bf8425b55e401417c25f2fa8ad2370c70cf5d86c2db718d7517998",
+    "src\\rendering\\scene\\world-scene.ts": "a2e98b10ab6509f42052c7752713380f3e53eb1c8e5be07066514f20ce52ba48",
+    "src\\rendering\\scene\\oblique-world-scene.ts": "f9afdf39b373093b04a70f47d51f032d47bccc130ab6e2fc535cd02479c25dc6"
+  }
+}

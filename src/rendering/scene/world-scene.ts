@@ -417,6 +417,9 @@ export class WorldScene extends Phaser.Scene {
   /** A native HUD selector takes keyboard ownership without cancelling tools. */
   public releaseKeyboardInput(): void { this.keyboard.releaseAll(); }
 
+  /** Explicit HUD disarming invalidates its unfinished press immediately. */
+  public cancelConstructionGesture(): void { this.cancelAllGestures(); }
+
   public create(): void {
     this.cameras.main.setBackgroundColor(VOID_COLOR);
     this.tiles = new TileLayer(this);
@@ -747,11 +750,16 @@ export class WorldScene extends Phaser.Scene {
     });
     const finishPointer = (pointer: Phaser.Input.Pointer): void => {
       if (pointer.wasTouch) this.touchGestures.end(pointer.id);
-      if (this.commitBuild(pointer)) return;
-      if (this.commitObject(pointer)) return;
-      if (this.commitArea(pointer)) return;
+      // Mouse buttons share one Phaser pointer ID. Releasing the camera's
+      // middle button cannot complete a still-held primary construction press.
+      const releasedPrimary = pointer.wasTouch || (pointer.button === 0 && (pointer.buttons & 1) === 0);
+      if (releasedPrimary) {
+        if (this.commitBuild(pointer)) return;
+        if (this.commitObject(pointer)) return;
+        if (this.commitArea(pointer)) return;
+      }
       if (pointer.wasTouch) return;
-      if (this.panPointerId !== pointer.id) return;
+      if (pointer.button !== 1 || (pointer.buttons & 4) !== 0 || this.panPointerId !== pointer.id) return;
       this.panPointerId = undefined;
       this.lastPanScreenPoint = undefined;
     };

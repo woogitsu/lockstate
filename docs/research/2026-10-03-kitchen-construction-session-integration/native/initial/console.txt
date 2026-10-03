@@ -1,0 +1,79 @@
+node : [2m[WebServer] [22m(node:63828) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:11 char:1
++ node --experimental-transform-types --disable-warning=ExperimentalWar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 6 tests using 1 worker
+
+(node:26364) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:26364) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\dedicated-kitchen-stove-player-build.spec.ts:216:1 › player creates storage and delivery capacity before Kitchen (43.5s)
+  x  2 tests\browser\dedicated-kitchen-stove-player-build.spec.ts:279:3 › player builds Kitchen at quarterTurns0 and retains stove and fridge detail palettes and all completed owners after Save/Load (1.0m)
+  -  3 tests\browser\dedicated-kitchen-stove-player-build.spec.ts:279:3 › player builds Kitchen at quarterTurns1 and retains stove and fridge detail palettes and all completed owners after Save/Load
+(node:61768) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61768) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+WORLD_CONSTRUCTION_CHORD {"tool":"wall","from":{"x":592,"y":172},"to":{"x":720,"y":172},"a":{"x":10,"y":10},"b":{"x":12,"y":10},"reference":{"canvas":{"width":1920,"height":1080,"left":0,"top":0,"widthCss":1920,"heightCss":1080},"map":{"width":32,"height":32},"percent":{"left":3.125,"top":23.6328125,"width":93.75,"height":52.734375}},"held":[{"type":"mousedown","button":0,"buttons":1,"trusted":true,"canvas":true},{"type":"mousedown","button":1,"buttons":5,"trusted":true,"canvas":true},{"type":"mouseup","button":1,"buttons":1,"trusted":true,"canvas":true}],"final":{"type":"mouseup","button":0,"buttons":0,"trusted":true,"canvas":true},"commands":[{"type":"PlaceBuildOrder","orderId":"order-e8df9822-fbb6-4557-a994-518823e97019","definitionId":"wall-brick","x":10,"y":10,"footprint":"square","transactionId":"build-96499a30-05c8-4336-ac31-e17c5d509136"},{"type":"PlaceBuildOrder","orderId":"order-5cbb6532-1179-4c06-80d0-182c4facc872","definitionId":"wall-brick","x":11,"y":10,"footprint":"square","transactionId":"build-96499a30-05c8-4336-ac31-e17c5d509136"},{"type":"PlaceBuildOrder","orderId":"order-7d29a74b-5098-45b6-9a6f-5238a1c7f5c7","definitionId":"wall-brick","x":12,"y":10,"footprint":"square","transactionId":"build-96499a30-05c8-4336-ac31-e17c5d509136"}]}
+  ok 4 tests\browser\world-construction-chord-release.spec.ts:41:45 › World FullHD wall: native middle release does not complete a held left build gesture (3.8s)
+WORLD_CONSTRUCTION_CHORD {"tool":"bed","from":{"x":592,"y":172},"to":{"x":720,"y":172},"a":{"x":10,"y":10},"b":{"x":12,"y":10},"reference":{"canvas":{"width":1920,"height":1080,"left":0,"top":0,"widthCss":1920,"heightCss":1080},"map":{"width":32,"height":32},"percent":{"left":3.125,"top":23.6328125,"width":93.75,"height":52.734375}},"held":[{"type":"mousedown","button":0,"buttons":1,"trusted":true,"canvas":true},{"type":"mousedown","button":1,"buttons":5,"trusted":true,"canvas":true},{"type":"mouseup","button":1,"buttons":1,"trusted":true,"canvas":true}],"final":{"type":"mouseup","button":0,"buttons":0,"trusted":true,"canvas":true},"commands":[{"type":"PlaceObject","orderId":"object-14d9109e-2e48-4306-a75b-4d177659ef8b","definitionId":"bed-wooden","x":12,"y":10}]}
+  ok 5 tests\browser\world-construction-chord-release.spec.ts:41:45 › World FullHD bed: native middle release does not complete a held left build gesture (3.7s)
+WORLD_CONSTRUCTION_CHORD {"tool":"yard","from":{"x":592,"y":172},"to":{"x":1040,"y":620},"a":{"x":10,"y":10},"b":{"x":17,"y":17},"reference":{"canvas":{"width":1920,"height":1080,"left":0,"top":0,"widthCss":1920,"heightCss":1080},"map":{"width":32,"height":32},"percent":{"left":3.125,"top":23.6328125,"width":93.75,"height":52.734375}},"held":[{"type":"mousedown","button":0,"buttons":1,"trusted":true,"canvas":true},{"type":"mousedown","button":1,"buttons":5,"trusted":true,"canvas":true},{"type":"mouseup","button":1,"buttons":1,"trusted":true,"canvas":true}],"final":{"type":"mouseup","button":0,"buttons":0,"trusted":true,"canvas":true},"commands":[{"type":"ZoneRoom","roomId":"room.yard","x":10,"y":10,"width":8,"height":8}]}
+  ok 6 tests\browser\world-construction-chord-release.spec.ts:41:45 › World FullHD yard: native middle release does not complete a held left build gesture (4.2s)
+
+
+  1) tests\browser\dedicated-kitchen-stove-player-build.spec.ts:279:3 › player builds Kitchen at quarterTurns0 and retains stove and fridge detail palettes and all completed owners after Save/Load 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('button', { name: 'Rotate view left', exact: true })[22m
+
+
+      230 |   }, null, 2));
+      231 |   await info.attach('dedicated-kitchen-stove-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
+    > 232 |   await page.getByRole('button', { name: 'Rotate view left', exact: true }).click();
+          |                                                                             ^
+      233 |   await page.getByRole('button', { name: 'Rotate view left', exact: true }).click();
+      234 |   await page.screenshot({ path: info.outputPath('kitchen-loaded-physical-fixings-fullhd.png') });
+      235 |
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\dedicated-kitchen-stove-player-build.spec.ts:232:77
+
+    attachment #1: dedicated-kitchen-stove-worker-and-save-evidence (application/json) ─────────────
+    ..\..\..\AppData\Local\Temp\lockstate-kitchen-world-chord-native-20261003\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\attachments\dedicated-kitchen-stove-worker-and-save-evidence-55df3bd042fb5fe55c846436bcee3c6325b4b2a0.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-kitchen-world-chord-native-20261003\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\error-context.md
+
+  1 failed
+    tests\browser\dedicated-kitchen-stove-player-build.spec.ts:279:3 › player builds Kitchen at quarterTurns0 and retains stove and fridge detail palettes and all completed owners after Save/Load 
+  1 did not run
+  4 passed (2.0m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+

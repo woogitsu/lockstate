@@ -1,0 +1,40 @@
+{
+  "yaw": 180,
+  "target": {
+    "x": 20.571428571428573,
+    "y": 20.727272727272727
+  },
+  "pending": {
+    "bodies": [
+      {
+        "y": 19,
+        "foot": {
+          "x": 965.7142857142859,
+          "y": 609.4250294255883
+        },
+        "orange": 56,
+        "blue": 0,
+        "body": 56
+      },
+      {
+        "y": 21,
+        "foot": {
+          "x": 965.7142857142858,
+          "y": 496.28794443574066
+        },
+        "orange": 0,
+        "blue": 0,
+        "body": 0
+      }
+    ],
+    "masonry": 0
+  },
+  "frame": {
+    "yawDegrees": -180,
+    "elevationDegrees": 45,
+    "image": "/assets/environment/oblique/square-brick-full-wall-yaw-180-elev45.ca97f1eb73f3.png",
+    "sha256": "ca97f1eb73f36d204dc2141dc2f25766922356b05241e4b2da8ffd788fdec3ec"
+  },
+  "held": true,
+  "completed": false
+}

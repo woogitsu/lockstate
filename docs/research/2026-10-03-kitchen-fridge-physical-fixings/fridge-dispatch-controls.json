@@ -1,0 +1,21 @@
+{
+  "controls": [
+    {
+      "control": "original-fridge-source-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Kitchen fridge retained/authored mesh set changed"
+    },
+    {
+      "control": "wrong-fridge-Y-fit-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Kitchen fridge declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-fridge-target-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Kitchen fridge declared occupied rectangle/source fit/accepted target changed"
+    }
+  ],
+  "wrapperBytesExactlyRestored": true,
+  "exactRestoredNativeVerifyExitCode": 0
+}

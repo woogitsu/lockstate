@@ -1,0 +1,539 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-fridge-world-chord-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-kitchen-session-expanded-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-fridge-world-chord-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build|dedicated-security-console-player-build|dedicated-medical-bed-player-build|dedicated-loading-dock-door-player-build|dedicated-camera-pan-player|oblique-pending-wall-player|room-template-renderer-stationary-hover|world-construction-chord-release|room-template-session-preflight|world-build-session-ownership)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5184 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5184/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "dedicated-kitchen-stove-player-build.spec.ts",
+      "file": "dedicated-kitchen-stove-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Kitchen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43322,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:53:39.192Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3b02ef91fdd82912db31-9c4343400423743c56c9",
+          "file": "dedicated-kitchen-stove-player-build.spec.ts",
+          "line": 216,
+          "column": 1
+        },
+        {
+          "title": "player builds Kitchen at quarterTurns0 and retains stove and fridge detail palettes and all completed owners after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 42230,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:54:22.585Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-kitchen-stove-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\attachments\\dedicated-kitchen-stove-worker-and-save-evidence-de72848a50a76b4e4229d7e197c979b4530986ab.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3b02ef91fdd82912db31-612a2c2ca602b9d6b7de",
+          "file": "dedicated-kitchen-stove-player-build.spec.ts",
+          "line": 279,
+          "column": 3
+        },
+        {
+          "title": "player builds Kitchen at quarterTurns1 and retains stove and fridge detail palettes and all completed owners after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 45295,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:55:04.827Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-kitchen-stove-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\attachments\\dedicated-kitchen-stove-worker-and-save-evidence-06b2ed1bf277f903e55eb4a18703776df5a10046.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3b02ef91fdd82912db31-aec8fb08711b2ac61587",
+          "file": "dedicated-kitchen-stove-player-build.spec.ts",
+          "line": 279,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "room-template-session-preflight.spec.ts",
+      "file": "room-template-session-preflight.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Full HD: public New replaces a pending preflight and keeps 18 new orders through V8 Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 13517,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContainEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected value: \u001b[32mObjectContaining {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-000\", \"location\": {\"x\": 20, \"y\": 10}, \"sequence\": 0}\u001b[39m\nReceived array: \u001b[31m[{\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-000\", \"location\": {\"x\": 20, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-001\", \"location\": {\"x\": 21, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-002\", \"location\": {\"x\": 22, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-003\", \"location\": {\"x\": 23, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-004\", \"location\": {\"x\": 20, \"y\": 11}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-005\", \"location\": {\"x\": 23, \"y\": 11}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-006\", \"location\": {\"x\": 20, \"y\": 12}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-007\", \"location\": {\"x\": 23, \"y\": 12}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-008\", \"location\": {\"x\": 20, \"y\": 13}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-009\", \"location\": {\"x\": 23, \"y\": 13}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, …]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContainEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected value: \u001b[32mObjectContaining {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-000\", \"location\": {\"x\": 20, \"y\": 10}, \"sequence\": 0}\u001b[39m\nReceived array: \u001b[31m[{\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-000\", \"location\": {\"x\": 20, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-001\", \"location\": {\"x\": 21, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-002\", \"location\": {\"x\": 22, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-003\", \"location\": {\"x\": 23, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-004\", \"location\": {\"x\": 20, \"y\": 11}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-005\", \"location\": {\"x\": 23, \"y\": 11}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-006\", \"location\": {\"x\": 20, \"y\": 12}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-007\", \"location\": {\"x\": 23, \"y\": 12}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-008\", \"location\": {\"x\": 20, \"y\": 13}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-009\", \"location\": {\"x\": 23, \"y\": 13}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, …]\u001b[39m\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts:226:49",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts",
+                      "column": 49,
+                      "line": 226
+                    },
+                    "snippet": "  224 |     const added = accepted.bundle.construction.orders.filter(order => !ids.has(order.id));\n  225 |     expect(added).toHaveLength(18);\n> 226 |     for (const order of expected) expect(added).toContainEqual(expect.objectContaining(order));\n      |                                                 ^\n  227 |     for (const order of before.bundle.construction.orders) expect(accepted.bundle.construction.orders).toContainEqual(order);\n  228 |     expect(accepted.bundle.simulation?.roomTemplates?.pending).toContainEqual({ templateId: 'cell-basic', origin, mirrorX: false, sequence: before.bundle.kernel.expectedSequence });\n  229 |     expect(accepted.bundle.construction.currentTransaction).toEqual(expected.map(order => order.id));"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts",
+                        "column": 49,
+                        "line": 226
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContainEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected value: \u001b[32mObjectContaining {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-000\", \"location\": {\"x\": 20, \"y\": 10}, \"sequence\": 0}\u001b[39m\nReceived array: \u001b[31m[{\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-000\", \"location\": {\"x\": 20, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-001\", \"location\": {\"x\": 21, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-002\", \"location\": {\"x\": 22, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-003\", \"location\": {\"x\": 23, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-004\", \"location\": {\"x\": 20, \"y\": 11}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-005\", \"location\": {\"x\": 23, \"y\": 11}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-006\", \"location\": {\"x\": 20, \"y\": 12}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-007\", \"location\": {\"x\": 23, \"y\": 12}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-008\", \"location\": {\"x\": 20, \"y\": 13}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000000-0-wall-009\", \"location\": {\"x\": 23, \"y\": 13}, \"materialsAllocated\": [], \"placementSequence\": 0, \"progress\": 0, \"state\": \"approved\"}, …]\u001b[39m\n\n  224 |     const added = accepted.bundle.construction.orders.filter(order => !ids.has(order.id));\n  225 |     expect(added).toHaveLength(18);\n> 226 |     for (const order of expected) expect(added).toContainEqual(expect.objectContaining(order));\n      |                                                 ^\n  227 |     for (const order of before.bundle.construction.orders) expect(accepted.bundle.construction.orders).toContainEqual(order);\n  228 |     expect(accepted.bundle.simulation?.roomTemplates?.pending).toContainEqual({ templateId: 'cell-basic', origin, mirrorX: false, sequence: before.bundle.kernel.expectedSequence });\n  229 |     expect(accepted.bundle.construction.currentTransaction).toEqual(expected.map(order => order.id));\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts:226:49"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:55:51.035Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\room-template-session-pref-379f4-orders-through-V8-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts",
+                    "column": 49,
+                    "line": 226
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "ca83f1f08ec0708ad9f2-213e568e6b0a22de6eb2",
+          "file": "room-template-session-preflight.spec.ts",
+          "line": 270,
+          "column": 3
+        },
+        {
+          "title": "Full HD: public Load replaces a pending preflight and keeps 18 new orders through V8 Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 13534,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContainEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected value: \u001b[32mObjectContaining {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-000\", \"location\": {\"x\": 20, \"y\": 10}, \"sequence\": 1}\u001b[39m\nReceived array: \u001b[31m[{\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-000\", \"location\": {\"x\": 20, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-001\", \"location\": {\"x\": 21, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-002\", \"location\": {\"x\": 22, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-003\", \"location\": {\"x\": 23, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-004\", \"location\": {\"x\": 20, \"y\": 11}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-005\", \"location\": {\"x\": 23, \"y\": 11}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-006\", \"location\": {\"x\": 20, \"y\": 12}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-007\", \"location\": {\"x\": 23, \"y\": 12}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-008\", \"location\": {\"x\": 20, \"y\": 13}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-009\", \"location\": {\"x\": 23, \"y\": 13}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, …]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContainEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected value: \u001b[32mObjectContaining {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-000\", \"location\": {\"x\": 20, \"y\": 10}, \"sequence\": 1}\u001b[39m\nReceived array: \u001b[31m[{\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-000\", \"location\": {\"x\": 20, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-001\", \"location\": {\"x\": 21, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-002\", \"location\": {\"x\": 22, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-003\", \"location\": {\"x\": 23, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-004\", \"location\": {\"x\": 20, \"y\": 11}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-005\", \"location\": {\"x\": 23, \"y\": 11}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-006\", \"location\": {\"x\": 20, \"y\": 12}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-007\", \"location\": {\"x\": 23, \"y\": 12}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-008\", \"location\": {\"x\": 20, \"y\": 13}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-009\", \"location\": {\"x\": 23, \"y\": 13}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, …]\u001b[39m\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts:226:49",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts",
+                      "column": 49,
+                      "line": 226
+                    },
+                    "snippet": "  224 |     const added = accepted.bundle.construction.orders.filter(order => !ids.has(order.id));\n  225 |     expect(added).toHaveLength(18);\n> 226 |     for (const order of expected) expect(added).toContainEqual(expect.objectContaining(order));\n      |                                                 ^\n  227 |     for (const order of before.bundle.construction.orders) expect(accepted.bundle.construction.orders).toContainEqual(order);\n  228 |     expect(accepted.bundle.simulation?.roomTemplates?.pending).toContainEqual({ templateId: 'cell-basic', origin, mirrorX: false, sequence: before.bundle.kernel.expectedSequence });\n  229 |     expect(accepted.bundle.construction.currentTransaction).toEqual(expected.map(order => order.id));"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts",
+                        "column": 49,
+                        "line": 226
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContainEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected value: \u001b[32mObjectContaining {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-000\", \"location\": {\"x\": 20, \"y\": 10}, \"sequence\": 1}\u001b[39m\nReceived array: \u001b[31m[{\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-000\", \"location\": {\"x\": 20, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-001\", \"location\": {\"x\": 21, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-002\", \"location\": {\"x\": 22, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-003\", \"location\": {\"x\": 23, \"y\": 10}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-004\", \"location\": {\"x\": 20, \"y\": 11}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-005\", \"location\": {\"x\": 23, \"y\": 11}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-006\", \"location\": {\"x\": 20, \"y\": 12}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-007\", \"location\": {\"x\": 23, \"y\": 12}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-008\", \"location\": {\"x\": 20, \"y\": 13}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"id\": \"room-template-000000000001-0-wall-009\", \"location\": {\"x\": 23, \"y\": 13}, \"materialsAllocated\": [], \"placementSequence\": 1, \"progress\": 0, \"state\": \"approved\"}, …]\u001b[39m\n\n  224 |     const added = accepted.bundle.construction.orders.filter(order => !ids.has(order.id));\n  225 |     expect(added).toHaveLength(18);\n> 226 |     for (const order of expected) expect(added).toContainEqual(expect.objectContaining(order));\n      |                                                 ^\n  227 |     for (const order of before.bundle.construction.orders) expect(accepted.bundle.construction.orders).toContainEqual(order);\n  228 |     expect(accepted.bundle.simulation?.roomTemplates?.pending).toContainEqual({ templateId: 'cell-basic', origin, mirrorX: false, sequence: before.bundle.kernel.expectedSequence });\n  229 |     expect(accepted.bundle.construction.currentTransaction).toEqual(expected.map(order => order.id));\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts:226:49"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:56:05.333Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\room-template-session-pref-0464a-orders-through-V8-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts",
+                    "column": 49,
+                    "line": 226
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "ca83f1f08ec0708ad9f2-ddb7b26e12a583329d0a",
+          "file": "room-template-session-preflight.spec.ts",
+          "line": 270,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "world-build-session-ownership.spec.ts",
+      "file": "world-build-session-ownership.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "World FullHD wall New: old held primary cannot build into replacement session",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6500,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "WORLD_SESSION_OWNERSHIP {\"operation\":\"New\",\"from\":{\"x\":592,\"y\":172},\"to\":{\"x\":720,\"y\":172},\"oldReference\":{\"canvas\":{\"width\":1920,\"height\":1080,\"left\":0,\"top\":0,\"widthCss\":1920,\"heightCss\":1080},\"map\":{\"width\":32,\"height\":32},\"percent\":{\"left\":3.125,\"top\":23.6328125,\"width\":93.75,\"height\":52.734375}},\"beforeInitializations\":1,\"input\":{\"mouse\":[{\"type\":\"mousedown\",\"button\":0,\"buttons\":1,\"trusted\":true,\"canvas\":true}],\"enter\":{\"key\":\"Enter\",\"trusted\":true,\"button\":true}},\"released\":{\"type\":\"mouseup\",\"button\":0,\"buttons\":0,\"trusted\":true,\"canvas\":true},\"beforeRelease\":{\"orders\":[]},\"afterRelease\":{\"orders\":[]},\"fresh\":{\"x\":592,\"y\":172},\"tile\":{\"x\":10,\"y\":10},\"freshReference\":{\"canvas\":{\"width\":1920,\"height\":1080,\"left\":0,\"top\":0,\"widthCss\":1920,\"heightCss\":1080},\"map\":{\"width\":32,\"height\":32},\"percent\":{\"left\":3.125,\"top\":23.6328125,\"width\":93.75,\"height\":52.734375}},\"commands\":[{\"type\":\"PlaceBuildOrder\",\"orderId\":\"order-10735018-d258-402f-a5ff-98e369d9c60e\",\"definitionId\":\"wall-brick\",\"x\":10,\"y\":10,\"footprint\":\"square\",\"transactionId\":\"build-36f6d0be-c8e8-45bd-975f-597f5eff89ae\"}],\"final\":{\"orders\":[{\"id\":\"order-10735018-d258-402f-a5ff-98e369d9c60e\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":10,\"y\":10},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]}]}}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:56:19.515Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9050eacd1ed3ff57ac00-b101737d18aeaa731cf9",
+          "file": "world-build-session-ownership.spec.ts",
+          "line": 112,
+          "column": 42
+        },
+        {
+          "title": "World FullHD wall Load: old held primary cannot build into replacement session",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5899,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "WORLD_SESSION_OWNERSHIP {\"operation\":\"Load\",\"from\":{\"x\":592,\"y\":172},\"to\":{\"x\":720,\"y\":172},\"oldReference\":{\"canvas\":{\"width\":1920,\"height\":1080,\"left\":0,\"top\":0,\"widthCss\":1920,\"heightCss\":1080},\"map\":{\"width\":32,\"height\":32},\"percent\":{\"left\":3.125,\"top\":23.6328125,\"width\":93.75,\"height\":52.734375}},\"beforeInitializations\":1,\"input\":{\"mouse\":[{\"type\":\"mousedown\",\"button\":0,\"buttons\":1,\"trusted\":true,\"canvas\":true}],\"enter\":{\"key\":\"Enter\",\"trusted\":true,\"button\":true}},\"released\":{\"type\":\"mouseup\",\"button\":0,\"buttons\":0,\"trusted\":true,\"canvas\":true},\"beforeRelease\":{\"orders\":[]},\"afterRelease\":{\"orders\":[]},\"fresh\":{\"x\":592,\"y\":172},\"tile\":{\"x\":10,\"y\":10},\"freshReference\":{\"canvas\":{\"width\":1920,\"height\":1080,\"left\":0,\"top\":0,\"widthCss\":1920,\"heightCss\":1080},\"map\":{\"width\":32,\"height\":32},\"percent\":{\"left\":3.125,\"top\":23.6328125,\"width\":93.75,\"height\":52.734375}},\"commands\":[{\"type\":\"PlaceBuildOrder\",\"orderId\":\"order-97ef365d-61a1-4e66-b6c0-ac574a17416d\",\"definitionId\":\"wall-brick\",\"x\":10,\"y\":10,\"footprint\":\"square\",\"transactionId\":\"build-a9609f83-bf48-4b87-907d-1025212b2a4c\"}],\"final\":{\"orders\":[{\"id\":\"order-97ef365d-61a1-4e66-b6c0-ac574a17416d\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":10,\"y\":10},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]}]}}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:56:26.085Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9050eacd1ed3ff57ac00-25abe1d1b78904cf2650",
+          "file": "world-build-session-ownership.spec.ts",
+          "line": 112,
+          "column": 42
+        }
+      ]
+    },
+    {
+      "title": "world-construction-chord-release.spec.ts",
+      "file": "world-construction-chord-release.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "World FullHD wall: native middle release does not complete a held left build gesture",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3834,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "WORLD_CONSTRUCTION_CHORD {\"tool\":\"wall\",\"from\":{\"x\":592,\"y\":172},\"to\":{\"x\":720,\"y\":172},\"a\":{\"x\":10,\"y\":10},\"b\":{\"x\":12,\"y\":10},\"reference\":{\"canvas\":{\"width\":1920,\"height\":1080,\"left\":0,\"top\":0,\"widthCss\":1920,\"heightCss\":1080},\"map\":{\"width\":32,\"height\":32},\"percent\":{\"left\":3.125,\"top\":23.6328125,\"width\":93.75,\"height\":52.734375}},\"held\":[{\"type\":\"mousedown\",\"button\":0,\"buttons\":1,\"trusted\":true,\"canvas\":true},{\"type\":\"mousedown\",\"button\":1,\"buttons\":5,\"trusted\":true,\"canvas\":true},{\"type\":\"mouseup\",\"button\":1,\"buttons\":1,\"trusted\":true,\"canvas\":true}],\"final\":{\"type\":\"mouseup\",\"button\":0,\"buttons\":0,\"trusted\":true,\"canvas\":true},\"commands\":[{\"type\":\"PlaceBuildOrder\",\"orderId\":\"order-ce2bce68-fce5-4d7f-8bd6-9a3f76219da9\",\"definitionId\":\"wall-brick\",\"x\":10,\"y\":10,\"footprint\":\"square\",\"transactionId\":\"build-41ec329e-5c55-4c75-a795-54d2f4284031\"},{\"type\":\"PlaceBuildOrder\",\"orderId\":\"order-fca079a8-5f1d-441e-8c5a-d0536dc24dca\",\"definitionId\":\"wall-brick\",\"x\":11,\"y\":10,\"footprint\":\"square\",\"transactionId\":\"build-41ec329e-5c55-4c75-a795-54d2f4284031\"},{\"type\":\"PlaceBuildOrder\",\"orderId\":\"order-bfb83fc5-46a9-46f4-8779-34f8b6cf4b10\",\"definitionId\":\"wall-brick\",\"x\":12,\"y\":10,\"footprint\":\"square\",\"transactionId\":\"build-41ec329e-5c55-4c75-a795-54d2f4284031\"}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:56:31.998Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "916ced42829d2772b845-d35ef61ed43a134c0c85",
+          "file": "world-construction-chord-release.spec.ts",
+          "line": 41,
+          "column": 45
+        },
+        {
+          "title": "World FullHD bed: native middle release does not complete a held left build gesture",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3821,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "WORLD_CONSTRUCTION_CHORD {\"tool\":\"bed\",\"from\":{\"x\":592,\"y\":172},\"to\":{\"x\":720,\"y\":172},\"a\":{\"x\":10,\"y\":10},\"b\":{\"x\":12,\"y\":10},\"reference\":{\"canvas\":{\"width\":1920,\"height\":1080,\"left\":0,\"top\":0,\"widthCss\":1920,\"heightCss\":1080},\"map\":{\"width\":32,\"height\":32},\"percent\":{\"left\":3.125,\"top\":23.6328125,\"width\":93.75,\"height\":52.734375}},\"held\":[{\"type\":\"mousedown\",\"button\":0,\"buttons\":1,\"trusted\":true,\"canvas\":true},{\"type\":\"mousedown\",\"button\":1,\"buttons\":5,\"trusted\":true,\"canvas\":true},{\"type\":\"mouseup\",\"button\":1,\"buttons\":1,\"trusted\":true,\"canvas\":true}],\"final\":{\"type\":\"mouseup\",\"button\":0,\"buttons\":0,\"trusted\":true,\"canvas\":true},\"commands\":[{\"type\":\"PlaceObject\",\"orderId\":\"object-3abe79c4-d317-42a3-a50d-207d807d8260\",\"definitionId\":\"bed-wooden\",\"x\":12,\"y\":10}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:56:35.839Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "916ced42829d2772b845-8a471d916ee4db275f0f",
+          "file": "world-construction-chord-release.spec.ts",
+          "line": 41,
+          "column": 45
+        },
+        {
+          "title": "World FullHD yard: native middle release does not complete a held left build gesture",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4614,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "WORLD_CONSTRUCTION_CHORD {\"tool\":\"yard\",\"from\":{\"x\":592,\"y\":172},\"to\":{\"x\":1040,\"y\":620},\"a\":{\"x\":10,\"y\":10},\"b\":{\"x\":17,\"y\":17},\"reference\":{\"canvas\":{\"width\":1920,\"height\":1080,\"left\":0,\"top\":0,\"widthCss\":1920,\"heightCss\":1080},\"map\":{\"width\":32,\"height\":32},\"percent\":{\"left\":3.125,\"top\":23.6328125,\"width\":93.75,\"height\":52.734375}},\"held\":[{\"type\":\"mousedown\",\"button\":0,\"buttons\":1,\"trusted\":true,\"canvas\":true},{\"type\":\"mousedown\",\"button\":1,\"buttons\":5,\"trusted\":true,\"canvas\":true},{\"type\":\"mouseup\",\"button\":1,\"buttons\":1,\"trusted\":true,\"canvas\":true}],\"final\":{\"type\":\"mouseup\",\"button\":0,\"buttons\":0,\"trusted\":true,\"canvas\":true},\"commands\":[{\"type\":\"ZoneRoom\",\"roomId\":\"room.yard\",\"x\":10,\"y\":10,\"width\":8,\"height\":8}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:56:39.673Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "916ced42829d2772b845-47335b455d33f97bcfc7",
+          "file": "world-construction-chord-release.spec.ts",
+          "line": 41,
+          "column": 45
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T04:53:36.002Z",
+    "duration": 188842.51,
+    "expected": 8,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

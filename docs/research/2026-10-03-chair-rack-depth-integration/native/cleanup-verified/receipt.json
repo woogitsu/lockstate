@@ -1,0 +1,25 @@
+﻿{
+    "subject":  "35102d2fd94c7106a14b6f9f6907d96968d325f9",
+    "branch":  "codex/integrate-chair-rack-depth-20261003",
+    "mappingSha":  "A9EADA806FF523BC9933DA9B7A2E8A731C5A896286E33B0551119D8E389DD2D4",
+    "sceneSha":  "B139C022545AC3C0B24AB9FC0954510EA932E2A77600C6B64401BB29B919BE5F",
+    "baselineWorker":  {
+                           "file":  "worker-o_xuZ_RW.js",
+                           "bytes":  441336,
+                           "sha":  "BF2C310CC3A7F540C4A94A628E4F866F21EF8EEEE091F36DF4A209BDC24C28B6"
+                       },
+    "negativeWorker":  {
+                           "file":  "worker-o_xuZ_RW.js",
+                           "bytes":  441336,
+                           "sha":  "BF2C310CC3A7F540C4A94A628E4F866F21EF8EEEE091F36DF4A209BDC24C28B6"
+                       },
+    "q0NegativeExit":  1,
+    "restoredMappingSha":  "A9EADA806FF523BC9933DA9B7A2E8A731C5A896286E33B0551119D8E389DD2D4",
+    "restoredSceneSha":  "B139C022545AC3C0B24AB9FC0954510EA932E2A77600C6B64401BB29B919BE5F",
+    "restoredWorker":  {
+                           "file":  "worker-o_xuZ_RW.js",
+                           "bytes":  441336,
+                           "sha":  "BF2C310CC3A7F540C4A94A628E4F866F21EF8EEEE091F36DF4A209BDC24C28B6"
+                       },
+    "restoredExit":  0
+}

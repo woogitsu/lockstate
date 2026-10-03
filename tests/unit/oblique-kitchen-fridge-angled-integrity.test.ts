@@ -45,8 +45,14 @@ it('retains the original fridge assembly/materials and registers dedicated physi
   expect(obliqueAssetIdForObject('object.fridge')).toBe('furniture.kitchen.fridge.variants');
   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL('public/game-content/oblique-furniture.kitchen-fridge.v1.json', root), 'utf8')));
   expect(catalog.assetId).toBe('furniture.kitchen.fridge.variants');
-  expect(catalog.source).toBe(provenance.source);
-  expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+  const physical = JSON.parse(readFileSync(new URL('assets/source/blender/furniture.kitchen.fridge.angled-detail.provenance.json', root), 'utf8')) as {
+    source: string; sourceSha256: string; originalSource: string; originalSourceSha256: string;
+  };
+  expect(physical.originalSource).toBe(provenance.source);
+  expect(physical.originalSourceSha256).toBe(provenance.sourceSha256);
+  expect(hash(readFileSync(new URL(physical.source, root)))).toBe(physical.sourceSha256);
+  expect(catalog.source).toBe(physical.source);
+  expect(catalog.sourceSha256).toBe(physical.sourceSha256);
   expect(catalog.cameraTargetTiles).toEqual(provenance.cameraTargetTiles);
   expect(catalog.resolutionPx).toEqual([256, 256]);
   expect(catalog.nominalPixelsPerTile).toBe(64);

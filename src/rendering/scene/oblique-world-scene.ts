@@ -160,6 +160,9 @@ export class ObliqueWorldScene extends Phaser.Scene {
   /** A native HUD selector takes keyboard ownership without cancelling tools. */
   public releaseKeyboardInput(): void { this.keyboard.releaseAll(); }
 
+  /** Explicit HUD disarming invalidates its unfinished press immediately. */
+  public cancelConstructionGesture(): void { this.cancelGesture(); }
+
   /** A replacement worker must never inherit a held input from its predecessor. */
   public releaseSessionInput(): void {
     this.touchPointers.clear();

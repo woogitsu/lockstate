@@ -1,0 +1,26 @@
+﻿{
+    "subject":  "b8fab14a10d72ceeed14d1c5a77f090d484a6c0f",
+    "branch":  "codex/integrate-chair-rack-depth-20261003",
+    "mappingSha":  "A9EADA806FF523BC9933DA9B7A2E8A731C5A896286E33B0551119D8E389DD2D4",
+    "sceneSha":  "B139C022545AC3C0B24AB9FC0954510EA932E2A77600C6B64401BB29B919BE5F",
+    "baselineWorker":  {
+                           "file":  "worker-B-ERJAIW.js",
+                           "bytes":  441336,
+                           "sha":  "CD2903CEF2F7EF1993582DCDBC773FD21E34EF7F3D574F64A2220DA1017B790B"
+                       },
+    "negativeWorker":  {
+                           "file":  "worker-B-ERJAIW.js",
+                           "bytes":  441336,
+                           "sha":  "CD2903CEF2F7EF1993582DCDBC773FD21E34EF7F3D574F64A2220DA1017B790B"
+                       },
+    "q0NegativeExit":  1,
+    "q1NegativeExit":  1,
+    "restoredMappingSha":  "A9EADA806FF523BC9933DA9B7A2E8A731C5A896286E33B0551119D8E389DD2D4",
+    "restoredSceneSha":  "B139C022545AC3C0B24AB9FC0954510EA932E2A77600C6B64401BB29B919BE5F",
+    "restoredWorker":  {
+                           "file":  "worker-B-ERJAIW.js",
+                           "bytes":  441336,
+                           "sha":  "CD2903CEF2F7EF1993582DCDBC773FD21E34EF7F3D574F64A2220DA1017B790B"
+                       },
+    "restoredExit":  0
+}

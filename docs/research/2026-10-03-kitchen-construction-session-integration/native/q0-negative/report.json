@@ -1,0 +1,714 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-fridge-world-chord-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-kitchen-session-q0-negative-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-fridge-world-chord-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build|dedicated-security-console-player-build|dedicated-medical-bed-player-build|dedicated-loading-dock-door-player-build|dedicated-camera-pan-player|oblique-pending-wall-player|room-template-renderer-stationary-hover|world-construction-chord-release|room-template-session-preflight|world-build-session-ownership)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5184 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5184/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "dedicated-kitchen-stove-player-build.spec.ts",
+      "file": "dedicated-kitchen-stove-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Kitchen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43586,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:04:12.860Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3b02ef91fdd82912db31-9c4343400423743c56c9",
+          "file": "dedicated-kitchen-stove-player-build.spec.ts",
+          "line": 216,
+          "column": 1
+        },
+        {
+          "title": "player builds Kitchen at quarterTurns0 and retains stove and fridge detail palettes and all completed owners after Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 42272,
+                  "error": {
+                    "message": "Error: stove enamel body after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m500\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: stove enamel body after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m500\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:202:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:201:16",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                      "column": 6,
+                      "line": 202
+                    },
+                    "snippet": "  200 |   }, null, 2));\n  201 |   beforePixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? \"enamel body\" : \"cast-iron support\"} after construction`)\n> 202 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));\n      |      ^\n  203 |   fridgeBefore.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after construction`)\n  204 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));\n  205 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                        "column": 6,
+                        "line": 202
+                      },
+                      "message": "Error: stove enamel body after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m500\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  200 |   }, null, 2));\n  201 |   beforePixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? \"enamel body\" : \"cast-iron support\"} after construction`)\n> 202 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));\n      |      ^\n  203 |   fridgeBefore.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after construction`)\n  204 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));\n  205 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:202:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:201:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                        "column": 6,
+                        "line": 202
+                      },
+                      "message": "Error: stove cast-iron support after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m25\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  200 |   }, null, 2));\n  201 |   beforePixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? \"enamel body\" : \"cast-iron support\"} after construction`)\n> 202 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));\n      |      ^\n  203 |   fridgeBefore.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after construction`)\n  204 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));\n  205 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:202:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:201:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                        "column": 6,
+                        "line": 204
+                      },
+                      "message": "Error: fridge freezer panel after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m350\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  202 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));\n  203 |   fridgeBefore.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after construction`)\n> 204 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));\n      |      ^\n  205 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  206 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  207 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:204:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:203:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                        "column": 6,
+                        "line": 204
+                      },
+                      "message": "Error: fridge side louvres after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m350\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  202 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));\n  203 |   fridgeBefore.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after construction`)\n> 204 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));\n      |      ^\n  205 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  206 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  207 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:204:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:203:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                        "column": 6,
+                        "line": 221
+                      },
+                      "message": "Error: stove enamel body after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m500\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  219 |   const fridgeAfter = await fridgePalettePixels(page, loaded, quarterTurns);\n  220 |   afterPixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? \"enamel body\" : \"cast-iron support\"} after Load`)\n> 221 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));\n      |      ^\n  222 |   expect(afterPixels).toEqual(beforePixels);\n  223 |   fridgeAfter.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after Load`)\n  224 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:221:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:220:15"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                        "column": 6,
+                        "line": 221
+                      },
+                      "message": "Error: stove cast-iron support after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m25\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  219 |   const fridgeAfter = await fridgePalettePixels(page, loaded, quarterTurns);\n  220 |   afterPixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? \"enamel body\" : \"cast-iron support\"} after Load`)\n> 221 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));\n      |      ^\n  222 |   expect(afterPixels).toEqual(beforePixels);\n  223 |   fridgeAfter.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after Load`)\n  224 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:221:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:220:15"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                        "column": 6,
+                        "line": 224
+                      },
+                      "message": "Error: fridge freezer panel after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m350\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  222 |   expect(afterPixels).toEqual(beforePixels);\n  223 |   fridgeAfter.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after Load`)\n> 224 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));\n      |      ^\n  225 |   expect(fridgeAfter).toEqual(fridgeBefore);\n  226 |   const evidencePath = info.outputPath('dedicated-kitchen-stove-worker-and-save-evidence.json');\n  227 |   await writeFile(evidencePath, JSON.stringify({\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:224:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:223:15"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                        "column": 6,
+                        "line": 224
+                      },
+                      "message": "Error: fridge side louvres after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m350\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  222 |   expect(afterPixels).toEqual(beforePixels);\n  223 |   fridgeAfter.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after Load`)\n> 224 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));\n      |      ^\n  225 |   expect(fridgeAfter).toEqual(fridgeBefore);\n  226 |   const evidencePath = info.outputPath('dedicated-kitchen-stove-worker-and-save-evidence.json');\n  227 |   await writeFile(evidencePath, JSON.stringify({\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:224:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:223:15"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:04:56.515Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-kitchen-stove-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-q0-negative-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\attachments\\dedicated-kitchen-stove-worker-and-save-evidence-7bdeeb48cf2cfec401690aacee48b38e18a1e993.json"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-q0-negative-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                    "column": 6,
+                    "line": 202
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "3b02ef91fdd82912db31-612a2c2ca602b9d6b7de",
+          "file": "dedicated-kitchen-stove-player-build.spec.ts",
+          "line": 279,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "room-template-session-preflight.spec.ts",
+      "file": "room-template-session-preflight.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Full HD: public New replaces a pending preflight and keeps 18 new orders through V8 Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 22815,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('dialog', { name: 'Room plans', exact: true }).getByRole('status')\nExpected: \u001b[32m\"\u001b[7mRoom plan submitted\u001b[27m.\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mThis footprint is blocked. Choose another position\u001b[27m.\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Room plans', exact: true }).getByRole('status')\u001b[22m\n\u001b[2m    13 × locator resolved to <p role=\"status\" aria-busy=\"false\" class=\"hud-template__status\">This footprint is blocked. Choose another positio…</p>\u001b[22m\n\u001b[2m       - unexpected value \"This footprint is blocked. Choose another position.\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('dialog', { name: 'Room plans', exact: true }).getByRole('status')\nExpected: \u001b[32m\"\u001b[7mRoom plan submitted\u001b[27m.\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mThis footprint is blocked. Choose another position\u001b[27m.\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Room plans', exact: true }).getByRole('status')\u001b[22m\n\u001b[2m    13 × locator resolved to <p role=\"status\" aria-busy=\"false\" class=\"hud-template__status\">This footprint is blocked. Choose another positio…</p>\u001b[22m\n\u001b[2m       - unexpected value \"This footprint is blocked. Choose another position.\"\u001b[22m\n\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts:219:52",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts",
+                      "column": 52,
+                      "line": 219
+                    },
+                    "snippet": "  217 |     expect(elapsedBeforeFreshClick).toBeLessThan(15_000);\n  218 |     await fresh.place.click();\n> 219 |     await expect(fresh.dialog.getByRole('status')).toHaveText('Room plan submitted.');\n      |                                                    ^\n  220 |     const accepted = await snapshot(page);\n  221 |     const expected = shell(origin, before.bundle.kernel.expectedSequence);\n  222 |     expect(expected).toHaveLength(18);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts",
+                        "column": 52,
+                        "line": 219
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('dialog', { name: 'Room plans', exact: true }).getByRole('status')\nExpected: \u001b[32m\"\u001b[7mRoom plan submitted\u001b[27m.\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mThis footprint is blocked. Choose another position\u001b[27m.\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Room plans', exact: true }).getByRole('status')\u001b[22m\n\u001b[2m    13 × locator resolved to <p role=\"status\" aria-busy=\"false\" class=\"hud-template__status\">This footprint is blocked. Choose another positio…</p>\u001b[22m\n\u001b[2m       - unexpected value \"This footprint is blocked. Choose another position.\"\u001b[22m\n\n\n  217 |     expect(elapsedBeforeFreshClick).toBeLessThan(15_000);\n  218 |     await fresh.place.click();\n> 219 |     await expect(fresh.dialog.getByRole('status')).toHaveText('Room plan submitted.');\n      |                                                    ^\n  220 |     const accepted = await snapshot(page);\n  221 |     const expected = shell(origin, before.bundle.kernel.expectedSequence);\n  222 |     expect(expected).toHaveLength(18);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts:219:52"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:05:39.499Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-q0-negative-20261003\\room-template-session-pref-379f4-orders-through-V8-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts",
+                    "column": 52,
+                    "line": 219
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "ca83f1f08ec0708ad9f2-213e568e6b0a22de6eb2",
+          "file": "room-template-session-preflight.spec.ts",
+          "line": 270,
+          "column": 3
+        },
+        {
+          "title": "Full HD: public Load replaces a pending preflight and keeps 18 new orders through V8 Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 21752,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('dialog', { name: 'Room plans', exact: true }).getByRole('status')\nExpected: \u001b[32m\"\u001b[7mRoom plan submitted\u001b[27m.\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mThis footprint is blocked. Choose another position\u001b[27m.\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Room plans', exact: true }).getByRole('status')\u001b[22m\n\u001b[2m    13 × locator resolved to <p role=\"status\" aria-busy=\"false\" class=\"hud-template__status\">This footprint is blocked. Choose another positio…</p>\u001b[22m\n\u001b[2m       - unexpected value \"This footprint is blocked. Choose another position.\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('dialog', { name: 'Room plans', exact: true }).getByRole('status')\nExpected: \u001b[32m\"\u001b[7mRoom plan submitted\u001b[27m.\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mThis footprint is blocked. Choose another position\u001b[27m.\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Room plans', exact: true }).getByRole('status')\u001b[22m\n\u001b[2m    13 × locator resolved to <p role=\"status\" aria-busy=\"false\" class=\"hud-template__status\">This footprint is blocked. Choose another positio…</p>\u001b[22m\n\u001b[2m       - unexpected value \"This footprint is blocked. Choose another position.\"\u001b[22m\n\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts:219:52",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts",
+                      "column": 52,
+                      "line": 219
+                    },
+                    "snippet": "  217 |     expect(elapsedBeforeFreshClick).toBeLessThan(15_000);\n  218 |     await fresh.place.click();\n> 219 |     await expect(fresh.dialog.getByRole('status')).toHaveText('Room plan submitted.');\n      |                                                    ^\n  220 |     const accepted = await snapshot(page);\n  221 |     const expected = shell(origin, before.bundle.kernel.expectedSequence);\n  222 |     expect(expected).toHaveLength(18);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts",
+                        "column": 52,
+                        "line": 219
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('dialog', { name: 'Room plans', exact: true }).getByRole('status')\nExpected: \u001b[32m\"\u001b[7mRoom plan submitted\u001b[27m.\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mThis footprint is blocked. Choose another position\u001b[27m.\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Room plans', exact: true }).getByRole('status')\u001b[22m\n\u001b[2m    13 × locator resolved to <p role=\"status\" aria-busy=\"false\" class=\"hud-template__status\">This footprint is blocked. Choose another positio…</p>\u001b[22m\n\u001b[2m       - unexpected value \"This footprint is blocked. Choose another position.\"\u001b[22m\n\n\n  217 |     expect(elapsedBeforeFreshClick).toBeLessThan(15_000);\n  218 |     await fresh.place.click();\n> 219 |     await expect(fresh.dialog.getByRole('status')).toHaveText('Room plan submitted.');\n      |                                                    ^\n  220 |     const accepted = await snapshot(page);\n  221 |     const expected = shell(origin, before.bundle.kernel.expectedSequence);\n  222 |     expect(expected).toHaveLength(18);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts:219:52"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:06:03.026Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-q0-negative-20261003\\room-template-session-pref-0464a-orders-through-V8-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\room-template-session-preflight.spec.ts",
+                    "column": 52,
+                    "line": 219
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "ca83f1f08ec0708ad9f2-ddb7b26e12a583329d0a",
+          "file": "room-template-session-preflight.spec.ts",
+          "line": 270,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "world-build-session-ownership.spec.ts",
+      "file": "world-build-session-ownership.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "World FullHD wall New: old held primary cannot build into replacement session",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 6068,
+                  "error": {
+                    "message": "Error: old press must not transmit a construction command\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m3\u001b[39m\nReceived array:  \u001b[31m[{\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-9fb12249-8a05-427e-a444-052fc406d5f9\", \"transactionId\": \"build-a6dd9908-8e13-474c-ab81-4f3117de1fe6\", \"type\": \"PlaceBuildOrder\", \"x\": 10, \"y\": 10}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-9b41c945-2dd8-4f3b-bcd0-7289ef44bdcc\", \"transactionId\": \"build-a6dd9908-8e13-474c-ab81-4f3117de1fe6\", \"type\": \"PlaceBuildOrder\", \"x\": 11, \"y\": 10}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-4e898544-c442-43e5-a523-2da91650d4fd\", \"transactionId\": \"build-a6dd9908-8e13-474c-ab81-4f3117de1fe6\", \"type\": \"PlaceBuildOrder\", \"x\": 12, \"y\": 10}]\u001b[39m",
+                    "stack": "Error: old press must not transmit a construction command\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m3\u001b[39m\nReceived array:  \u001b[31m[{\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-9fb12249-8a05-427e-a444-052fc406d5f9\", \"transactionId\": \"build-a6dd9908-8e13-474c-ab81-4f3117de1fe6\", \"type\": \"PlaceBuildOrder\", \"x\": 10, \"y\": 10}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-9b41c945-2dd8-4f3b-bcd0-7289ef44bdcc\", \"transactionId\": \"build-a6dd9908-8e13-474c-ab81-4f3117de1fe6\", \"type\": \"PlaceBuildOrder\", \"x\": 11, \"y\": 10}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-4e898544-c442-43e5-a523-2da91650d4fd\", \"transactionId\": \"build-a6dd9908-8e13-474c-ab81-4f3117de1fe6\", \"type\": \"PlaceBuildOrder\", \"x\": 12, \"y\": 10}]\u001b[39m\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-build-session-ownership.spec.ts:116:92",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-build-session-ownership.spec.ts",
+                      "column": 92,
+                      "line": 116
+                    },
+                    "snippet": "  114 |     await page.mouse.up({ button: 'left' }); held = false;\n  115 |     await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));\n> 116 |     expect(await construction(page), 'old press must not transmit a construction command').toHaveLength(0);\n      |                                                                                            ^\n  117 |     const afterRelease = await snapshot(page);\n  118 |     expect(afterRelease.orders, 'old release must not create an actual replacement order').toEqual(beforeRelease.orders);\n  119 |     const released = await page.evaluate(() => (window as NativeProbeWindow).ordinarySessionMouse!.filter(e => e.canvas).at(-1));"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-build-session-ownership.spec.ts",
+                        "column": 92,
+                        "line": 116
+                      },
+                      "message": "Error: old press must not transmit a construction command\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m3\u001b[39m\nReceived array:  \u001b[31m[{\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-9fb12249-8a05-427e-a444-052fc406d5f9\", \"transactionId\": \"build-a6dd9908-8e13-474c-ab81-4f3117de1fe6\", \"type\": \"PlaceBuildOrder\", \"x\": 10, \"y\": 10}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-9b41c945-2dd8-4f3b-bcd0-7289ef44bdcc\", \"transactionId\": \"build-a6dd9908-8e13-474c-ab81-4f3117de1fe6\", \"type\": \"PlaceBuildOrder\", \"x\": 11, \"y\": 10}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-4e898544-c442-43e5-a523-2da91650d4fd\", \"transactionId\": \"build-a6dd9908-8e13-474c-ab81-4f3117de1fe6\", \"type\": \"PlaceBuildOrder\", \"x\": 12, \"y\": 10}]\u001b[39m\n\n  114 |     await page.mouse.up({ button: 'left' }); held = false;\n  115 |     await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));\n> 116 |     expect(await construction(page), 'old press must not transmit a construction command').toHaveLength(0);\n      |                                                                                            ^\n  117 |     const afterRelease = await snapshot(page);\n  118 |     expect(afterRelease.orders, 'old release must not create an actual replacement order').toEqual(beforeRelease.orders);\n  119 |     const released = await page.evaluate(() => (window as NativeProbeWindow).ordinarySessionMouse!.filter(e => e.canvas).at(-1));\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-build-session-ownership.spec.ts:116:92"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:06:25.424Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-q0-negative-20261003\\world-build-session-owners-8c624-ld-into-replacement-session\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-build-session-ownership.spec.ts",
+                    "column": 92,
+                    "line": 116
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "9050eacd1ed3ff57ac00-b101737d18aeaa731cf9",
+          "file": "world-build-session-ownership.spec.ts",
+          "line": 112,
+          "column": 42
+        },
+        {
+          "title": "World FullHD wall Load: old held primary cannot build into replacement session",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 4740,
+                  "error": {
+                    "message": "Error: old press must not transmit a construction command\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m3\u001b[39m\nReceived array:  \u001b[31m[{\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-9fbfb736-d4a0-4b74-ae2b-e9c944d028ea\", \"transactionId\": \"build-c02827bf-3b85-42f3-875c-f27dd3a25bcf\", \"type\": \"PlaceBuildOrder\", \"x\": 10, \"y\": 10}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-331898d1-48ba-4e60-a5ed-a2f7ad3d52d3\", \"transactionId\": \"build-c02827bf-3b85-42f3-875c-f27dd3a25bcf\", \"type\": \"PlaceBuildOrder\", \"x\": 11, \"y\": 10}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-f9812d1b-dc91-4cea-8aa5-13111cbb7427\", \"transactionId\": \"build-c02827bf-3b85-42f3-875c-f27dd3a25bcf\", \"type\": \"PlaceBuildOrder\", \"x\": 12, \"y\": 10}]\u001b[39m",
+                    "stack": "Error: old press must not transmit a construction command\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m3\u001b[39m\nReceived array:  \u001b[31m[{\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-9fbfb736-d4a0-4b74-ae2b-e9c944d028ea\", \"transactionId\": \"build-c02827bf-3b85-42f3-875c-f27dd3a25bcf\", \"type\": \"PlaceBuildOrder\", \"x\": 10, \"y\": 10}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-331898d1-48ba-4e60-a5ed-a2f7ad3d52d3\", \"transactionId\": \"build-c02827bf-3b85-42f3-875c-f27dd3a25bcf\", \"type\": \"PlaceBuildOrder\", \"x\": 11, \"y\": 10}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-f9812d1b-dc91-4cea-8aa5-13111cbb7427\", \"transactionId\": \"build-c02827bf-3b85-42f3-875c-f27dd3a25bcf\", \"type\": \"PlaceBuildOrder\", \"x\": 12, \"y\": 10}]\u001b[39m\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-build-session-ownership.spec.ts:116:92",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-build-session-ownership.spec.ts",
+                      "column": 92,
+                      "line": 116
+                    },
+                    "snippet": "  114 |     await page.mouse.up({ button: 'left' }); held = false;\n  115 |     await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));\n> 116 |     expect(await construction(page), 'old press must not transmit a construction command').toHaveLength(0);\n      |                                                                                            ^\n  117 |     const afterRelease = await snapshot(page);\n  118 |     expect(afterRelease.orders, 'old release must not create an actual replacement order').toEqual(beforeRelease.orders);\n  119 |     const released = await page.evaluate(() => (window as NativeProbeWindow).ordinarySessionMouse!.filter(e => e.canvas).at(-1));"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-build-session-ownership.spec.ts",
+                        "column": 92,
+                        "line": 116
+                      },
+                      "message": "Error: old press must not transmit a construction command\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m3\u001b[39m\nReceived array:  \u001b[31m[{\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-9fbfb736-d4a0-4b74-ae2b-e9c944d028ea\", \"transactionId\": \"build-c02827bf-3b85-42f3-875c-f27dd3a25bcf\", \"type\": \"PlaceBuildOrder\", \"x\": 10, \"y\": 10}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-331898d1-48ba-4e60-a5ed-a2f7ad3d52d3\", \"transactionId\": \"build-c02827bf-3b85-42f3-875c-f27dd3a25bcf\", \"type\": \"PlaceBuildOrder\", \"x\": 11, \"y\": 10}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-f9812d1b-dc91-4cea-8aa5-13111cbb7427\", \"transactionId\": \"build-c02827bf-3b85-42f3-875c-f27dd3a25bcf\", \"type\": \"PlaceBuildOrder\", \"x\": 12, \"y\": 10}]\u001b[39m\n\n  114 |     await page.mouse.up({ button: 'left' }); held = false;\n  115 |     await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));\n> 116 |     expect(await construction(page), 'old press must not transmit a construction command').toHaveLength(0);\n      |                                                                                            ^\n  117 |     const afterRelease = await snapshot(page);\n  118 |     expect(afterRelease.orders, 'old release must not create an actual replacement order').toEqual(beforeRelease.orders);\n  119 |     const released = await page.evaluate(() => (window as NativeProbeWindow).ordinarySessionMouse!.filter(e => e.canvas).at(-1));\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-build-session-ownership.spec.ts:116:92"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:06:32.094Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-q0-negative-20261003\\world-build-session-owners-f0bda-ld-into-replacement-session\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-build-session-ownership.spec.ts",
+                    "column": 92,
+                    "line": 116
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "9050eacd1ed3ff57ac00-25abe1d1b78904cf2650",
+          "file": "world-build-session-ownership.spec.ts",
+          "line": 112,
+          "column": 42
+        }
+      ]
+    },
+    {
+      "title": "world-construction-chord-release.spec.ts",
+      "file": "world-construction-chord-release.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "World FullHD wall: native middle release does not complete a held left build gesture",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3726,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m3\u001b[39m\nReceived array:  \u001b[31m[{\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-1d192ad1-1ade-4555-8c0d-7527751d50ea\", \"transactionId\": \"build-dcfcef83-9421-4259-911c-300afc1fc46d\", \"type\": \"PlaceBuildOrder\", \"x\": 10, \"y\": 10}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-bed33740-2baa-4291-8cad-dff14db61397\", \"transactionId\": \"build-dcfcef83-9421-4259-911c-300afc1fc46d\", \"type\": \"PlaceBuildOrder\", \"x\": 11, \"y\": 10}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-6ea5f352-2cf0-4bb2-8db0-3a21dcfcbe6f\", \"transactionId\": \"build-dcfcef83-9421-4259-911c-300afc1fc46d\", \"type\": \"PlaceBuildOrder\", \"x\": 12, \"y\": 10}]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m3\u001b[39m\nReceived array:  \u001b[31m[{\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-1d192ad1-1ade-4555-8c0d-7527751d50ea\", \"transactionId\": \"build-dcfcef83-9421-4259-911c-300afc1fc46d\", \"type\": \"PlaceBuildOrder\", \"x\": 10, \"y\": 10}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-bed33740-2baa-4291-8cad-dff14db61397\", \"transactionId\": \"build-dcfcef83-9421-4259-911c-300afc1fc46d\", \"type\": \"PlaceBuildOrder\", \"x\": 11, \"y\": 10}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-6ea5f352-2cf0-4bb2-8db0-3a21dcfcbe6f\", \"transactionId\": \"build-dcfcef83-9421-4259-911c-300afc1fc46d\", \"type\": \"PlaceBuildOrder\", \"x\": 12, \"y\": 10}]\u001b[39m\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-construction-chord-release.spec.ts:67:36",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-construction-chord-release.spec.ts",
+                      "column": 36,
+                      "line": 67
+                    },
+                    "snippet": "  65 |   ]);\n  66 |   await page.screenshot({ path: info.outputPath('middle-released-primary-still-held.png') });\n> 67 |   expect(await construction(page)).toHaveLength(0);\n     |                                    ^\n  68 |   // Rooms completion stages an explicit confirmation. It must remain hidden\n  69 |   // while left is still held; no automatic ZoneRoom is expected even on old code.\n  70 |   if (tool === 'yard') await expect(page.locator('.hud-rooms__confirm')).toBeHidden();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-construction-chord-release.spec.ts",
+                        "column": 36,
+                        "line": 67
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m3\u001b[39m\nReceived array:  \u001b[31m[{\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-1d192ad1-1ade-4555-8c0d-7527751d50ea\", \"transactionId\": \"build-dcfcef83-9421-4259-911c-300afc1fc46d\", \"type\": \"PlaceBuildOrder\", \"x\": 10, \"y\": 10}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-bed33740-2baa-4291-8cad-dff14db61397\", \"transactionId\": \"build-dcfcef83-9421-4259-911c-300afc1fc46d\", \"type\": \"PlaceBuildOrder\", \"x\": 11, \"y\": 10}, {\"definitionId\": \"wall-brick\", \"footprint\": \"square\", \"orderId\": \"order-6ea5f352-2cf0-4bb2-8db0-3a21dcfcbe6f\", \"transactionId\": \"build-dcfcef83-9421-4259-911c-300afc1fc46d\", \"type\": \"PlaceBuildOrder\", \"x\": 12, \"y\": 10}]\u001b[39m\n\n  65 |   ]);\n  66 |   await page.screenshot({ path: info.outputPath('middle-released-primary-still-held.png') });\n> 67 |   expect(await construction(page)).toHaveLength(0);\n     |                                    ^\n  68 |   // Rooms completion stages an explicit confirmation. It must remain hidden\n  69 |   // while left is still held; no automatic ZoneRoom is expected even on old code.\n  70 |   if (tool === 'yard') await expect(page.locator('.hud-rooms__confirm')).toBeHidden();\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-construction-chord-release.spec.ts:67:36"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:06:37.530Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-q0-negative-20261003\\world-construction-chord-r-aaeab-e-a-held-left-build-gesture\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-construction-chord-release.spec.ts",
+                    "column": 36,
+                    "line": 67
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "916ced42829d2772b845-d35ef61ed43a134c0c85",
+          "file": "world-construction-chord-release.spec.ts",
+          "line": 41,
+          "column": 45
+        },
+        {
+          "title": "World FullHD bed: native middle release does not complete a held left build gesture",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 4011,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"definitionId\": \"bed-wooden\", \"orderId\": \"object-8018923c-8d1e-4b68-9f0f-948f46f9d922\", \"type\": \"PlaceObject\", \"x\": 12, \"y\": 10}]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"definitionId\": \"bed-wooden\", \"orderId\": \"object-8018923c-8d1e-4b68-9f0f-948f46f9d922\", \"type\": \"PlaceObject\", \"x\": 12, \"y\": 10}]\u001b[39m\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-construction-chord-release.spec.ts:67:36",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-construction-chord-release.spec.ts",
+                      "column": 36,
+                      "line": 67
+                    },
+                    "snippet": "  65 |   ]);\n  66 |   await page.screenshot({ path: info.outputPath('middle-released-primary-still-held.png') });\n> 67 |   expect(await construction(page)).toHaveLength(0);\n     |                                    ^\n  68 |   // Rooms completion stages an explicit confirmation. It must remain hidden\n  69 |   // while left is still held; no automatic ZoneRoom is expected even on old code.\n  70 |   if (tool === 'yard') await expect(page.locator('.hud-rooms__confirm')).toBeHidden();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-construction-chord-release.spec.ts",
+                        "column": 36,
+                        "line": 67
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m0\u001b[39m\nReceived length: \u001b[31m1\u001b[39m\nReceived array:  \u001b[31m[{\"definitionId\": \"bed-wooden\", \"orderId\": \"object-8018923c-8d1e-4b68-9f0f-948f46f9d922\", \"type\": \"PlaceObject\", \"x\": 12, \"y\": 10}]\u001b[39m\n\n  65 |   ]);\n  66 |   await page.screenshot({ path: info.outputPath('middle-released-primary-still-held.png') });\n> 67 |   expect(await construction(page)).toHaveLength(0);\n     |                                    ^\n  68 |   // Rooms completion stages an explicit confirmation. It must remain hidden\n  69 |   // while left is still held; no automatic ZoneRoom is expected even on old code.\n  70 |   if (tool === 'yard') await expect(page.locator('.hud-rooms__confirm')).toBeHidden();\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-construction-chord-release.spec.ts:67:36"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:06:41.893Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-q0-negative-20261003\\world-construction-chord-r-aa2c4-e-a-held-left-build-gesture\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-construction-chord-release.spec.ts",
+                    "column": 36,
+                    "line": 67
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "916ced42829d2772b845-8a471d916ee4db275f0f",
+          "file": "world-construction-chord-release.spec.ts",
+          "line": 41,
+          "column": 45
+        },
+        {
+          "title": "World FullHD yard: native middle release does not complete a held left build gesture",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 13951,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeHidden\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.hud-rooms__confirm')\nExpected: hidden\nReceived: visible\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeHidden\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.hud-rooms__confirm')\u001b[22m\n\u001b[2m    13 × locator resolved to <button type=\"button\" aria-busy=\"false\" data-tone=\"primary\" class=\"ui-action hud-rooms__confirm\" aria-describedby=\"hud-rooms-note-21\">…</button>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeHidden\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.hud-rooms__confirm')\nExpected: hidden\nReceived: visible\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeHidden\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.hud-rooms__confirm')\u001b[22m\n\u001b[2m    13 × locator resolved to <button type=\"button\" aria-busy=\"false\" data-tone=\"primary\" class=\"ui-action hud-rooms__confirm\" aria-describedby=\"hud-rooms-note-21\">…</button>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-construction-chord-release.spec.ts:70:74",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-construction-chord-release.spec.ts",
+                      "column": 74,
+                      "line": 70
+                    },
+                    "snippet": "  68 |   // Rooms completion stages an explicit confirmation. It must remain hidden\n  69 |   // while left is still held; no automatic ZoneRoom is expected even on old code.\n> 70 |   if (tool === 'yard') await expect(page.locator('.hud-rooms__confirm')).toBeHidden();\n     |                                                                          ^\n  71 |   await page.mouse.up({ button: 'left' });\n  72 |   if (tool === 'yard') {\n  73 |     const confirm = page.locator('.hud-rooms__confirm'); await expect(confirm).toBeVisible(); await expect(confirm).toBeEnabled();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-construction-chord-release.spec.ts",
+                        "column": 74,
+                        "line": 70
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeHidden\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.hud-rooms__confirm')\nExpected: hidden\nReceived: visible\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeHidden\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.hud-rooms__confirm')\u001b[22m\n\u001b[2m    13 × locator resolved to <button type=\"button\" aria-busy=\"false\" data-tone=\"primary\" class=\"ui-action hud-rooms__confirm\" aria-describedby=\"hud-rooms-note-21\">…</button>\u001b[22m\n\u001b[2m       - unexpected value \"visible\"\u001b[22m\n\n\n  68 |   // Rooms completion stages an explicit confirmation. It must remain hidden\n  69 |   // while left is still held; no automatic ZoneRoom is expected even on old code.\n> 70 |   if (tool === 'yard') await expect(page.locator('.hud-rooms__confirm')).toBeHidden();\n     |                                                                          ^\n  71 |   await page.mouse.up({ button: 'left' });\n  72 |   if (tool === 'yard') {\n  73 |     const confirm = page.locator('.hud-rooms__confirm'); await expect(confirm).toBeVisible(); await expect(confirm).toBeEnabled();\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-construction-chord-release.spec.ts:70:74"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:06:46.565Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-q0-negative-20261003\\world-construction-chord-r-cc441-e-a-held-left-build-gesture\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\world-construction-chord-release.spec.ts",
+                    "column": 74,
+                    "line": 70
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "916ced42829d2772b845-47335b455d33f97bcfc7",
+          "file": "world-construction-chord-release.spec.ts",
+          "line": 41,
+          "column": 45
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T05:04:10.248Z",
+    "duration": 170878.705,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 8,
+    "flaky": 0
+  }
+}

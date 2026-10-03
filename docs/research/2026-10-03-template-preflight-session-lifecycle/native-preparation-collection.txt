@@ -1,0 +1,4 @@
+Listing tests:
+  room-template-session-preflight.spec.ts:270:3 › Full HD: public New replaces a pending preflight and keeps 18 new orders through V8 Save/Load
+  room-template-session-preflight.spec.ts:270:3 › Full HD: public Load replaces a pending preflight and keeps 18 new orders through V8 Save/Load
+Total: 2 tests in 1 file

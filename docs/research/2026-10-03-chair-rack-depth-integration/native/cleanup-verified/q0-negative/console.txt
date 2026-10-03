@@ -1,0 +1,87 @@
+node : [2m[WebServer] [22m(node:41356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:36 char:2
++  node --experimental-transform-types --disable-warning=ExperimentalWa ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 2 tests using 1 worker
+
+(node:55204) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55204) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw0 (18.7s)
+(node:59864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 tests\browser\oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw180 (20.8s)
+
+
+  1) tests\browser\oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw0 
+
+    Error: actual foreground fallback wall must cover rear guard lower torso
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m0[39m
+    Received: [31m56[39m
+
+      185 |     await info.attach('pending-wall-canvas', { body: pendingPng, contentType: 'image/png' });
+      186 |     await info.attach('pending-depth-before-assertions', { body: Buffer.from(JSON.stringify({ yaw, target, pending, frame, held, completed })), contentType: 'application/json' });
+    > 187 |     expect(pending.bodies[rear]!.body, 'actual foreground fallback wall must cover rear guard lower torso').toBe(0);
+          |                                                                                                             ^
+      188 |     expect(pending.bodies[front]!.body, 'front guard must remain visible in same pending frame').toBeGreaterThan(10);
+      189 |     expect(pending.masonry, 'held frame must still use brown fallback, not cached loaded masonry').toBe(0);
+      190 |     release();
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\oblique-pending-wall-player.spec.ts:187:109
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-wall-depth-cleanup-control-q0-negative-20261003\oblique-pending-wall-playe-d9d22-g-whole-square-wall-at-yaw0\error-context.md
+
+  2) tests\browser\oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw180 
+
+    Error: actual foreground fallback wall must cover rear guard lower torso
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m0[39m
+    Received: [31m56[39m
+
+      185 |     await info.attach('pending-wall-canvas', { body: pendingPng, contentType: 'image/png' });
+      186 |     await info.attach('pending-depth-before-assertions', { body: Buffer.from(JSON.stringify({ yaw, target, pending, frame, held, completed })), contentType: 'application/json' });
+    > 187 |     expect(pending.bodies[rear]!.body, 'actual foreground fallback wall must cover rear guard lower torso').toBe(0);
+          |                                                                                                             ^
+      188 |     expect(pending.bodies[front]!.body, 'front guard must remain visible in same pending frame').toBeGreaterThan(10);
+      189 |     expect(pending.masonry, 'held frame must still use brown fallback, not cached loaded masonry').toBe(0);
+      190 |     release();
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\oblique-pending-wall-player.spec.ts:187:109
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-wall-depth-cleanup-control-q0-negative-20261003\oblique-pending-wall-playe-c21f3-whole-square-wall-at-yaw180\error-context.md
+
+  2 failed
+    tests\browser\oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw0 
+    tests\browser\oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw180 
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+

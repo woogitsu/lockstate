@@ -1,0 +1,206 @@
+[
+  {
+    "original": ".last-run.json",
+    "saved": "capture-001.json",
+    "bytes": 194,
+    "sha256": "23f16e20ffaa3be6be8d882333bec65a81eff81359e32502a37d18f89ab5990d"
+  },
+  {
+    "original": "generic-wooden-rack-player-33bf6-ive-anchors-after-Save-Load\\attachments\\generic-wooden-rack-worker-and-save-evidence-a842af788dc17a2d8b19645f1496e762fd1fb2d1.json",
+    "saved": "capture-002.json",
+    "bytes": 628,
+    "sha256": "4fd058b5f031d975c534187c1ed96a80546ebb88391ad121b077dd850d2d89af"
+  },
+  {
+    "original": "generic-wooden-rack-player-33bf6-ive-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "saved": "capture-003.json",
+    "bytes": 71384,
+    "sha256": "8df0d8311329ddee9f9ef32dd4297d349af18c85204d9b521bc1d9cafb190471"
+  },
+  {
+    "original": "generic-wooden-rack-player-33bf6-ive-anchors-after-Save-Load\\error-context.md",
+    "saved": "capture-004.md",
+    "bytes": 9910,
+    "sha256": "68ef49b2785f06b4d6f04f8b1d645ddab26ad2cf6e1470dcb42a4d5d561985ca"
+  },
+  {
+    "original": "generic-wooden-rack-player-33bf6-ive-anchors-after-Save-Load\\failed-player-fullhd.png",
+    "saved": "capture-005.png",
+    "bytes": 294745,
+    "sha256": "e0959b762927c9f54bc3188a9a7af77e697b47c85c362c1cc2265e5100fdda64"
+  },
+  {
+    "original": "generic-wooden-rack-player-33bf6-ive-anchors-after-Save-Load\\failed-player-worker-snapshot.json",
+    "saved": "capture-006.json",
+    "bytes": 71384,
+    "sha256": "eea933101cd3fa529d3968ab154cc051ad1a79df67c1a0ae98a1f949b0746184"
+  },
+  {
+    "original": "generic-wooden-rack-player-33bf6-ive-anchors-after-Save-Load\\generic-wooden-rack-loaded-fullhd.png",
+    "saved": "capture-007.png",
+    "bytes": 1480495,
+    "sha256": "e59cbbe6dcdb76fa7942a156bf99f05f48b40b2b94d3b3dbce569d781ffda308"
+  },
+  {
+    "original": "generic-wooden-rack-player-33bf6-ive-anchors-after-Save-Load\\generic-wooden-rack-worker-and-save-evidence.json",
+    "saved": "capture-008.json",
+    "bytes": 628,
+    "sha256": "4fd058b5f031d975c534187c1ed96a80546ebb88391ad121b077dd850d2d89af"
+  },
+  {
+    "original": "generic-wooden-rack-player-33bf6-ive-anchors-after-Save-Load\\generic-wooden-rack-worker-completed-fullhd.png",
+    "saved": "capture-009.png",
+    "bytes": 1502124,
+    "sha256": "9e018f46a266e77ca878510899e63a8b0c5376b1686407607abf4cb625c6552e"
+  },
+  {
+    "original": "generic-wooden-rack-player-33bf6-ive-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "saved": "capture-010.json",
+    "bytes": 71384,
+    "sha256": "437f0190b269d8b64765272ad7edd9924a0e9321bb70a57ecb6df708bc48e850"
+  },
+  {
+    "original": "generic-wooden-rack-player-33bf6-ive-anchors-after-Save-Load\\physical-hardware-loaded-fullhd.png",
+    "saved": "capture-011.png",
+    "bytes": 294745,
+    "sha256": "e0959b762927c9f54bc3188a9a7af77e697b47c85c362c1cc2265e5100fdda64"
+  },
+  {
+    "original": "generic-wooden-rack-player-33bf6-ive-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "saved": "capture-012.json",
+    "bytes": 476,
+    "sha256": "283beaf0ea767f771bb2c9c2dc173f3d4b3818f2775e82e43c1a4452d015caa5"
+  },
+  {
+    "original": "shower-head-player-build-p-0437b-zle-palette-after-Save-Load\\attachments\\shower-worker-and-pixel-evidence-2c2cab95e079e6621454805cfe84ae66afde7ecb.json",
+    "saved": "capture-013.json",
+    "bytes": 511,
+    "sha256": "c8a7cf21c4529fba3dcd1991e51605a15d0bbd776817e3248badf03418b5e070"
+  },
+  {
+    "original": "shower-head-player-build-p-0437b-zle-palette-after-Save-Load\\completed-worker-snapshot.json",
+    "saved": "capture-014.json",
+    "bytes": 72023,
+    "sha256": "02d37bfb5d3bb77c69967c49e182bb903efc7bacfc50f3a122c23c1ad9ecd8e6"
+  },
+  {
+    "original": "shower-head-player-build-p-0437b-zle-palette-after-Save-Load\\error-context.md",
+    "saved": "capture-015.md",
+    "bytes": 9519,
+    "sha256": "593c1c336c5db0801c840a5e1d3644cf70333942cd337c612cb71865cf34bd82"
+  },
+  {
+    "original": "shower-head-player-build-p-0437b-zle-palette-after-Save-Load\\failed-construction-fullhd.png",
+    "saved": "capture-016.png",
+    "bytes": 293128,
+    "sha256": "0f59c39327c63913d2d8414445b095754e2f1c6db31ae94c5387c51ca51b7327"
+  },
+  {
+    "original": "shower-head-player-build-p-0437b-zle-palette-after-Save-Load\\failed-construction-worker-snapshot.json",
+    "saved": "capture-017.json",
+    "bytes": 72023,
+    "sha256": "5d08409321d78083b760390194fd819c4bbac26d387249271624427ab3e397a8"
+  },
+  {
+    "original": "shower-head-player-build-p-0437b-zle-palette-after-Save-Load\\loaded-worker-snapshot.json",
+    "saved": "capture-018.json",
+    "bytes": 72023,
+    "sha256": "44bc0ba7e5762dcde66e998dde5b81e48c5bbf2697af30be1eb6227bd640b53a"
+  },
+  {
+    "original": "shower-head-player-build-p-0437b-zle-palette-after-Save-Load\\physical-hardware-loaded-fullhd.png",
+    "saved": "capture-019.png",
+    "bytes": 293128,
+    "sha256": "0f59c39327c63913d2d8414445b095754e2f1c6db31ae94c5387c51ca51b7327"
+  },
+  {
+    "original": "shower-head-player-build-p-0437b-zle-palette-after-Save-Load\\shower-loaded-fullhd.png",
+    "saved": "capture-020.png",
+    "bytes": 1416686,
+    "sha256": "6ceff84aa91ab2c6ccf25a4a9561507d58a5af08ad4456f843c382e01154c496"
+  },
+  {
+    "original": "shower-head-player-build-p-0437b-zle-palette-after-Save-Load\\shower-worker-and-pixel-evidence.json",
+    "saved": "capture-021.json",
+    "bytes": 511,
+    "sha256": "c8a7cf21c4529fba3dcd1991e51605a15d0bbd776817e3248badf03418b5e070"
+  },
+  {
+    "original": "shower-head-player-build-p-0437b-zle-palette-after-Save-Load\\shower-worker-completed-fullhd.png",
+    "saved": "capture-022.png",
+    "bytes": 1447620,
+    "sha256": "e0933870636397de88dc03c772416f2463da70e451e4772a3b86796033f76bee"
+  },
+  {
+    "original": "shower-head-player-build-p-0437b-zle-palette-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "saved": "capture-023.json",
+    "bytes": 361,
+    "sha256": "1218248a2d22ed37bf7c3bdea8cd5dcb5be5925a4714632d04a0f4f1e6de69ab"
+  },
+  {
+    "original": "wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\attachments\\wooden-chair-worker-and-save-evidence-13fa29637380006bbc06053b77f580a3efa35421.json",
+    "saved": "capture-024.json",
+    "bytes": 492,
+    "sha256": "626e29885a0464cc324240d317cb715660ba71c453f95146281ff2e4e236d6f4"
+  },
+  {
+    "original": "wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "saved": "capture-025.json",
+    "bytes": 76772,
+    "sha256": "7b610286b7d07e83fd58bb03f687b4e6411260fc4a1e4d88fb56371cdbe712d6"
+  },
+  {
+    "original": "wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\error-context.md",
+    "saved": "capture-026.md",
+    "bytes": 9519,
+    "sha256": "1a0c0ab06a6b4bbb91c0e57398d101f0e2bb472120b9de0e82a261de709c7e8d"
+  },
+  {
+    "original": "wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\failed-player-fullhd.png",
+    "saved": "capture-027.png",
+    "bytes": 329092,
+    "sha256": "acf0b3d45ab034674b28a5357053dcb007a93c0256308d2927a08b46937a95d8"
+  },
+  {
+    "original": "wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\failed-player-worker-snapshot.json",
+    "saved": "capture-028.json",
+    "bytes": 76772,
+    "sha256": "852afa1c115374b6ad0085fef6f0809286bd9504f3b7cbfbb2e21c5e795be1a5"
+  },
+  {
+    "original": "wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "saved": "capture-029.json",
+    "bytes": 76772,
+    "sha256": "8d6779c5c163e03b71885ea8b8d006c4dbc8fe913658b88a567ccf9e3e6c2a02"
+  },
+  {
+    "original": "wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\physical-hardware-loaded-fullhd.png",
+    "saved": "capture-030.png",
+    "bytes": 329092,
+    "sha256": "acf0b3d45ab034674b28a5357053dcb007a93c0256308d2927a08b46937a95d8"
+  },
+  {
+    "original": "wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\wooden-chair-loaded-fullhd.png",
+    "saved": "capture-031.png",
+    "bytes": 1509280,
+    "sha256": "c4da21c178cbaec144265e71be658dc0c13977ef3c55d98d3118375a9943ad86"
+  },
+  {
+    "original": "wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\wooden-chair-worker-and-save-evidence.json",
+    "saved": "capture-032.json",
+    "bytes": 492,
+    "sha256": "626e29885a0464cc324240d317cb715660ba71c453f95146281ff2e4e236d6f4"
+  },
+  {
+    "original": "wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\wooden-chair-worker-completed-fullhd.png",
+    "saved": "capture-033.png",
+    "bytes": 1541436,
+    "sha256": "d2100f6bf9e2a5ff9d4079b55fa1388723e1c5528574d08d053d55f6243a6224"
+  },
+  {
+    "original": "wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "saved": "capture-034.json",
+    "bytes": 354,
+    "sha256": "bb4bc771356cdd06183cb12802092bd35dfbe43dc7e75b2ab5004747a34a5f06"
+  }
+]

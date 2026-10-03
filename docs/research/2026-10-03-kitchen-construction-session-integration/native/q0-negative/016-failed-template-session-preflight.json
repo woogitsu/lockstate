@@ -1,0 +1,1051 @@
+{
+  "state": {
+    "current": 2,
+    "ready": [
+      {
+        "generation": 1,
+        "sessionId": "session-493f3e2a-74d5-4602-822f-b4ef0c82102e",
+        "mode": "paused"
+      },
+      {
+        "generation": 2,
+        "sessionId": "session-43478fc5-0bb8-46c1-8e1c-b4982f197b1f",
+        "mode": "paused"
+      }
+    ],
+    "commands": [
+      {
+        "generation": 1,
+        "command": {
+          "type": "PlaceRoomTemplate",
+          "templateId": "cell-basic",
+          "origin": {
+            "x": 10,
+            "y": 10
+          }
+        }
+      }
+    ],
+    "receipts": [
+      {
+        "generation": 1,
+        "sessionId": "session-493f3e2a-74d5-4602-822f-b4ef0c82102e",
+        "target": {
+          "kind": "room-template",
+          "templateId": "cell-basic",
+          "origin": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        "requestAtMs": 3359.219999998808,
+        "ok": true,
+        "reply": {
+          "protocolVersion": 1,
+          "messageId": "9df99dcb-2f02-4da9-89e9-870d1fd4a090",
+          "replyTo": "a9109a87-e6be-4c24-9ce3-6f2ec7047400",
+          "kind": "simulation/projection",
+          "payload": {
+            "projectionId": "world/room-template-preflight",
+            "tick": 0,
+            "view": {
+              "transport": "structured-clone",
+              "schemaId": "room-template-placement",
+              "schemaVersion": 1,
+              "data": {
+                "ok": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "generation": 1,
+        "sessionId": "session-493f3e2a-74d5-4602-822f-b4ef0c82102e",
+        "target": {
+          "kind": "room-template",
+          "templateId": "cell-basic",
+          "origin": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        "requestAtMs": 3713.530000001192,
+        "ok": true,
+        "reply": {
+          "protocolVersion": 1,
+          "messageId": "eff18768-7361-47e6-8677-3a9044451662",
+          "replyTo": "a67de8fc-c361-4e9f-880f-82cfc7764e78",
+          "kind": "simulation/projection",
+          "payload": {
+            "projectionId": "world/room-template-preflight",
+            "tick": 0,
+            "view": {
+              "transport": "structured-clone",
+              "schemaId": "room-template-placement",
+              "schemaVersion": 1,
+              "data": {
+                "ok": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "generation": 1,
+        "sessionId": "session-493f3e2a-74d5-4602-822f-b4ef0c82102e",
+        "target": {
+          "kind": "room-template",
+          "templateId": "cell-basic",
+          "origin": {
+            "x": 10,
+            "y": 0
+          }
+        },
+        "requestAtMs": 4335.67999997735,
+        "ok": true,
+        "reply": {
+          "protocolVersion": 1,
+          "messageId": "b275f164-e30a-42bb-a3d8-bf709cb63442",
+          "replyTo": "72a5a4e8-88da-4135-8273-cbf0939937ef",
+          "kind": "simulation/projection",
+          "payload": {
+            "projectionId": "world/room-template-preflight",
+            "tick": 0,
+            "view": {
+              "transport": "structured-clone",
+              "schemaId": "room-template-placement",
+              "schemaVersion": 1,
+              "data": {
+                "ok": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "generation": 1,
+        "sessionId": "session-493f3e2a-74d5-4602-822f-b4ef0c82102e",
+        "target": {
+          "kind": "room-template",
+          "templateId": "cell-basic",
+          "origin": {
+            "x": 10,
+            "y": 10
+          }
+        },
+        "requestAtMs": 4501.579999983311,
+        "ok": true,
+        "reply": {
+          "protocolVersion": 1,
+          "messageId": "9c34c121-14f7-461d-ad11-bfd687458f5e",
+          "replyTo": "e92a000c-4658-45b5-8378-1ccccc3b650f",
+          "kind": "simulation/projection",
+          "payload": {
+            "projectionId": "world/room-template-preflight",
+            "tick": 0,
+            "view": {
+              "transport": "structured-clone",
+              "schemaId": "room-template-placement",
+              "schemaVersion": 1,
+              "data": {
+                "ok": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "generation": 1,
+        "sessionId": "session-493f3e2a-74d5-4602-822f-b4ef0c82102e",
+        "target": {
+          "kind": "room-template",
+          "templateId": "cell-basic",
+          "origin": {
+            "x": 10,
+            "y": 10
+          }
+        },
+        "requestAtMs": 4938.0999999940395,
+        "ok": true,
+        "reply": {
+          "protocolVersion": 1,
+          "messageId": "a252371d-bdf2-4370-8ebe-0b5cb535855e",
+          "replyTo": "2c5435c0-315d-480b-a82e-fc0ec064c9df",
+          "kind": "simulation/projection",
+          "payload": {
+            "projectionId": "world/room-template-preflight",
+            "tick": 0,
+            "view": {
+              "transport": "structured-clone",
+              "schemaId": "room-template-placement",
+              "schemaVersion": 1,
+              "data": {
+                "ok": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "generation": 1,
+        "sessionId": "session-493f3e2a-74d5-4602-822f-b4ef0c82102e",
+        "target": {
+          "kind": "room-template",
+          "templateId": "cell-basic",
+          "origin": {
+            "x": 10,
+            "y": 10
+          }
+        },
+        "requestAtMs": 7182.185000002384,
+        "ok": false,
+        "reply": {
+          "protocolVersion": 1,
+          "messageId": "3a3a8926-68d8-4f19-8bb1-d18af4e1103f",
+          "replyTo": "2c81aafe-6cb4-41eb-92c7-856e46d9d683",
+          "kind": "simulation/projection",
+          "payload": {
+            "projectionId": "world/room-template-preflight",
+            "tick": 0,
+            "view": {
+              "transport": "structured-clone",
+              "schemaId": "room-template-placement",
+              "schemaVersion": 1,
+              "data": {
+                "ok": false,
+                "reason": "structure-occupied",
+                "tile": {
+                  "x": 10,
+                  "y": 10
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "generation": 1,
+        "sessionId": "session-493f3e2a-74d5-4602-822f-b4ef0c82102e",
+        "target": {
+          "kind": "room-template",
+          "templateId": "cell-basic",
+          "origin": {
+            "x": 10,
+            "y": 10
+          }
+        },
+        "requestAtMs": 7556.319999992847,
+        "ok": false,
+        "reply": {
+          "protocolVersion": 1,
+          "messageId": "33815e77-a44c-4b83-8b15-3d6cab1bf445",
+          "replyTo": "9ab4f80f-270d-492f-bd9e-7fb828cfc071",
+          "kind": "simulation/projection",
+          "payload": {
+            "projectionId": "world/room-template-preflight",
+            "tick": 0,
+            "view": {
+              "transport": "structured-clone",
+              "schemaId": "room-template-placement",
+              "schemaVersion": 1,
+              "data": {
+                "ok": false,
+                "reason": "structure-occupied",
+                "tile": {
+                  "x": 10,
+                  "y": 10
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "generation": 1,
+        "sessionId": "session-493f3e2a-74d5-4602-822f-b4ef0c82102e",
+        "target": {
+          "kind": "room-template",
+          "templateId": "cell-basic",
+          "origin": {
+            "x": 20,
+            "y": 10
+          }
+        },
+        "requestAtMs": 7846.245000004768,
+        "ok": true,
+        "reply": {
+          "protocolVersion": 1,
+          "messageId": "314b551d-a754-4e45-8f6c-91b8c76abb4c",
+          "replyTo": "9040b54b-f12c-44e3-b2d1-d1707fe43d79",
+          "kind": "simulation/projection",
+          "payload": {
+            "projectionId": "world/room-template-preflight",
+            "tick": 0,
+            "view": {
+              "transport": "structured-clone",
+              "schemaId": "room-template-placement",
+              "schemaVersion": 1,
+              "data": {
+                "ok": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "generation": 1,
+        "sessionId": "session-493f3e2a-74d5-4602-822f-b4ef0c82102e",
+        "target": {
+          "kind": "room-template",
+          "templateId": "cell-basic",
+          "origin": {
+            "x": 20,
+            "y": 10
+          }
+        },
+        "requestAtMs": 8024.919999986887,
+        "ok": true,
+        "reply": {
+          "protocolVersion": 1,
+          "messageId": "d45e8eb5-53b1-4bb2-9533-ce9bd882ca20",
+          "replyTo": "b9e375d9-7a9c-4774-ac4b-cfa0364a3e06",
+          "kind": "simulation/projection",
+          "payload": {
+            "projectionId": "world/room-template-preflight",
+            "tick": 0,
+            "view": {
+              "transport": "structured-clone",
+              "schemaId": "room-template-placement",
+              "schemaVersion": 1,
+              "data": {
+                "ok": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "generation": 2,
+        "sessionId": "session-43478fc5-0bb8-46c1-8e1c-b4982f197b1f",
+        "target": {
+          "kind": "room-template",
+          "templateId": "cell-basic",
+          "origin": {
+            "x": 20,
+            "y": 10
+          }
+        },
+        "requestAtMs": 11054.449999988079,
+        "ok": true,
+        "reply": {
+          "protocolVersion": 1,
+          "messageId": "b5fbacbe-fee4-4e14-bbbf-e27e4229ff90",
+          "replyTo": "a7b3957f-eefe-4c6e-a3cf-c69a744c7570",
+          "kind": "simulation/projection",
+          "payload": {
+            "projectionId": "world/room-template-preflight",
+            "tick": 0,
+            "view": {
+              "transport": "structured-clone",
+              "schemaId": "room-template-placement",
+              "schemaVersion": 1,
+              "data": {
+                "ok": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "generation": 2,
+        "sessionId": "session-43478fc5-0bb8-46c1-8e1c-b4982f197b1f",
+        "target": {
+          "kind": "room-template",
+          "templateId": "cell-basic",
+          "origin": {
+            "x": 20,
+            "y": 10
+          }
+        },
+        "requestAtMs": 11418.364999979734,
+        "ok": true,
+        "reply": {
+          "protocolVersion": 1,
+          "messageId": "266d189b-5e00-4aad-a413-c9f50f19cf28",
+          "replyTo": "f987d409-734e-4c55-800a-2d81a48f2a6e",
+          "kind": "simulation/projection",
+          "payload": {
+            "projectionId": "world/room-template-preflight",
+            "tick": 0,
+            "view": {
+              "transport": "structured-clone",
+              "schemaId": "room-template-placement",
+              "schemaVersion": 1,
+              "data": {
+                "ok": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "generation": 2,
+        "sessionId": "session-43478fc5-0bb8-46c1-8e1c-b4982f197b1f",
+        "target": {
+          "kind": "room-template",
+          "templateId": "cell-basic",
+          "origin": {
+            "x": 20,
+            "y": 10
+          }
+        },
+        "requestAtMs": 11692.799999982119,
+        "ok": true,
+        "reply": {
+          "protocolVersion": 1,
+          "messageId": "f9f38e94-f147-431d-9ae6-18d30fe18aae",
+          "replyTo": "69674c04-dd0c-44c1-b59f-fe0cd63e40a8",
+          "kind": "simulation/projection",
+          "payload": {
+            "projectionId": "world/room-template-preflight",
+            "tick": 0,
+            "view": {
+              "transport": "structured-clone",
+              "schemaId": "room-template-placement",
+              "schemaVersion": 1,
+              "data": {
+                "ok": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "generation": 2,
+        "sessionId": "session-43478fc5-0bb8-46c1-8e1c-b4982f197b1f",
+        "target": {
+          "kind": "room-template",
+          "templateId": "cell-basic",
+          "origin": {
+            "x": 20,
+            "y": 10
+          }
+        },
+        "requestAtMs": 11859.715000003576,
+        "ok": true,
+        "reply": {
+          "protocolVersion": 1,
+          "messageId": "716ef617-36be-4af5-a324-1c17a0e37c18",
+          "replyTo": "ce2ef9a4-0f28-458f-9336-302f2fea3e8d",
+          "kind": "simulation/projection",
+          "payload": {
+            "projectionId": "world/room-template-preflight",
+            "tick": 0,
+            "view": {
+              "transport": "structured-clone",
+              "schemaId": "room-template-placement",
+              "schemaVersion": 1,
+              "data": {
+                "ok": true
+              }
+            }
+          }
+        }
+      }
+    ],
+    "held": [
+      {
+        "generation": 1,
+        "sessionId": "session-493f3e2a-74d5-4602-822f-b4ef0c82102e",
+        "target": {
+          "kind": "room-template",
+          "templateId": "cell-basic",
+          "origin": {
+            "x": 20,
+            "y": 10
+          }
+        },
+        "requestAtMs": 8509.289999991655,
+        "ok": true,
+        "reply": {
+          "protocolVersion": 1,
+          "messageId": "56d156a5-1a5c-4b61-ba30-4d40b10f0a3d",
+          "replyTo": "02a41248-1400-4301-88cb-09f44074bb51",
+          "kind": "simulation/projection",
+          "payload": {
+            "projectionId": "world/room-template-preflight",
+            "tick": 0,
+            "view": {
+              "transport": "structured-clone",
+              "schemaId": "room-template-placement",
+              "schemaVersion": 1,
+              "data": {
+                "ok": true
+              }
+            }
+          }
+        }
+      }
+    ],
+    "released": 0
+  },
+  "worker": {
+    "generation": 2,
+    "sessionId": "session-43478fc5-0bb8-46c1-8e1c-b4982f197b1f",
+    "bundle": {
+      "masterSeed": 3876057659,
+      "kernel": {
+        "tick": 0,
+        "expectedSequence": 0,
+        "rngStates": [
+          {
+            "name": "contraband.detection",
+            "state": {
+              "algorithm": "xoshiro128**",
+              "version": 1,
+              "words": [
+                3259176919,
+                3829540962,
+                66315386,
+                210841353
+              ]
+            }
+          },
+          {
+            "name": "contraband.intelligence",
+            "state": {
+              "algorithm": "xoshiro128**",
+              "version": 1,
+              "words": [
+                884808528,
+                2547190301,
+                2407406927,
+                2262480789
+              ]
+            }
+          },
+          {
+            "name": "contraband.introduction",
+            "state": {
+              "algorithm": "xoshiro128**",
+              "version": 1,
+              "words": [
+                1558196630,
+                1846722390,
+                734406484,
+                89877400
+              ]
+            }
+          },
+          {
+            "name": "identity.actor-name",
+            "state": {
+              "algorithm": "xoshiro128**",
+              "version": 1,
+              "words": [
+                4098645268,
+                3679515085,
+                426176379,
+                1352574289
+              ]
+            }
+          },
+          {
+            "name": "prisoners.classification",
+            "state": {
+              "algorithm": "xoshiro128**",
+              "version": 1,
+              "words": [
+                1233912077,
+                3148205998,
+                4182369810,
+                2827369191
+              ]
+            }
+          },
+          {
+            "name": "prisoners.sentence",
+            "state": {
+              "algorithm": "xoshiro128**",
+              "version": 1,
+              "words": [
+                2005479178,
+                906191347,
+                732640956,
+                2621735971
+              ]
+            }
+          }
+        ],
+        "commands": []
+      },
+      "world": {
+        "version": 1,
+        "chunkSize": 32,
+        "ownedChunks": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "chunks": [
+          {
+            "x": 0,
+            "y": 0,
+            "lifecycle": "loaded",
+            "geometryRevision": 0,
+            "contentRevision": 0,
+            "dirty": false,
+            "terrain": [
+              [
+                0,
+                1024
+              ]
+            ],
+            "topEdge": [
+              [
+                0,
+                1024
+              ]
+            ],
+            "leftEdge": [
+              [
+                0,
+                1024
+              ]
+            ],
+            "zoning": [
+              [
+                0,
+                1024
+              ]
+            ]
+          }
+        ]
+      },
+      "construction": {
+        "orders": [],
+        "undoStack": [],
+        "redoStack": []
+      },
+      "entities": {
+        "capacity": 5000,
+        "nextAvailableIndex": 0,
+        "maxActiveIndex": -1,
+        "generations": [
+          [
+            0,
+            5000
+          ]
+        ],
+        "freeIndices": [],
+        "alive": [
+          [
+            0,
+            5000
+          ]
+        ]
+      },
+      "simulation": {
+        "regimeSchedules": [
+          {
+            "classificationGroupId": "general-population",
+            "blocks": [
+              {
+                "startTickOfDay": 0,
+                "endTickOfDay": 400,
+                "allowedCategories": [
+                  "sleep"
+                ]
+              },
+              {
+                "startTickOfDay": 400,
+                "endTickOfDay": 500,
+                "allowedCategories": [
+                  "meal",
+                  "hygiene"
+                ]
+              },
+              {
+                "startTickOfDay": 500,
+                "endTickOfDay": 1000,
+                "allowedCategories": [
+                  "work",
+                  "education",
+                  "free-association"
+                ]
+              },
+              {
+                "startTickOfDay": 1000,
+                "endTickOfDay": 1200,
+                "allowedCategories": [
+                  "recreation",
+                  "free-association"
+                ]
+              },
+              {
+                "startTickOfDay": 1200,
+                "endTickOfDay": 1300,
+                "allowedCategories": [
+                  "meal"
+                ]
+              },
+              {
+                "startTickOfDay": 1300,
+                "endTickOfDay": 1800,
+                "allowedCategories": [
+                  "work",
+                  "education",
+                  "free-association"
+                ]
+              },
+              {
+                "startTickOfDay": 1800,
+                "endTickOfDay": 2000,
+                "allowedCategories": [
+                  "recreation",
+                  "hygiene",
+                  "free-association"
+                ]
+              },
+              {
+                "startTickOfDay": 2000,
+                "endTickOfDay": 2100,
+                "allowedCategories": [
+                  "meal"
+                ]
+              },
+              {
+                "startTickOfDay": 2100,
+                "endTickOfDay": 2300,
+                "allowedCategories": [
+                  "recreation",
+                  "hygiene",
+                  "free-association"
+                ]
+              },
+              {
+                "startTickOfDay": 2300,
+                "endTickOfDay": 2400,
+                "allowedCategories": [
+                  "sleep"
+                ]
+              }
+            ]
+          },
+          {
+            "classificationGroupId": "high-risk",
+            "blocks": [
+              {
+                "startTickOfDay": 0,
+                "endTickOfDay": 2000,
+                "allowedCategories": [
+                  "sleep",
+                  "meal",
+                  "hygiene"
+                ]
+              },
+              {
+                "startTickOfDay": 2000,
+                "endTickOfDay": 2200,
+                "allowedCategories": [
+                  "recreation",
+                  "free-association"
+                ]
+              },
+              {
+                "startTickOfDay": 2200,
+                "endTickOfDay": 2400,
+                "allowedCategories": [
+                  "sleep",
+                  "meal",
+                  "hygiene"
+                ]
+              }
+            ]
+          }
+        ],
+        "prisoners": {
+          "components": {
+            "activeLength": 0,
+            "sentenceLengthTicks": [],
+            "priorIncidentsAtIntake": [],
+            "sentenceEndTick": [],
+            "riskTier": [],
+            "classificationGroupIndex": [],
+            "intakeStage": [],
+            "solitarySanctionEndTick": [],
+            "injured": [],
+            "needs": {
+              "hunger": [],
+              "sleep": [],
+              "hygiene": [],
+              "bladder": [],
+              "safety": [],
+              "recreation": []
+            },
+            "actionIndex": [],
+            "actionPhase": [],
+            "phaseStartedAtTick": [],
+            "needFulfilledLastTick": [],
+            "tileX": [],
+            "tileY": []
+          },
+          "coldState": {
+            "accommodationInstanceId": [],
+            "currentActionTargetInstanceId": []
+          },
+          "roomInstanceDefinitions": [],
+          "roomInstanceOccupancy": []
+        },
+        "operations": {
+          "containers": [
+            [
+              "construction-materials",
+              []
+            ]
+          ],
+          "jobs": [],
+          "jobWorkers": {
+            "workers": [],
+            "busy": []
+          },
+          "electricity": {
+            "type": "electricity",
+            "nodes": [],
+            "connections": [],
+            "failedNodeIds": []
+          },
+          "water": {
+            "type": "water",
+            "nodes": [],
+            "connections": [],
+            "failedNodeIds": []
+          }
+        },
+        "navigation": {
+          "doors": []
+        },
+        "security": {
+          "sectorDefinitions": [
+            {
+              "id": "security-sector.prison",
+              "gradeId": "grade.general",
+              "doorIds": [],
+              "postTile": {
+                "x": 16,
+                "y": 16
+              }
+            }
+          ],
+          "sectorControlStates": [
+            [
+              "security-sector.prison",
+              "normal"
+            ]
+          ],
+          "guards": {
+            "entityStore": {
+              "capacity": 500,
+              "nextAvailableIndex": 0,
+              "maxActiveIndex": -1,
+              "generations": [
+                [
+                  0,
+                  500
+                ]
+              ],
+              "freeIndices": [],
+              "alive": [
+                [
+                  0,
+                  500
+                ]
+              ]
+            },
+            "records": []
+          },
+          "schedules": [
+            {
+              "sectorId": "security-sector.prison",
+              "blocks": [
+                {
+                  "startTickOfDay": 0,
+                  "endTickOfDay": 2400,
+                  "requiredGuardCount": 1
+                }
+              ]
+            }
+          ],
+          "deployment": {
+            "metrics": {
+              "deploymentFailures": 0
+            }
+          },
+          "patrol": {
+            "metrics": {
+              "loopsCompletedOnTime": 0,
+              "loopsCompletedLate": 0,
+              "loopsMissed": 0
+            }
+          }
+        },
+        "contraband": {
+          "items": [],
+          "intelligence": [],
+          "intelligenceSequence": 0,
+          "informants": [],
+          "confiscations": [],
+          "searchPolicies": [
+            {
+              "scope": "cell",
+              "requiredGuardCount": 1,
+              "dwellTicksPerTarget": 40,
+              "baseDetectionProbability": 0.7,
+              "concealmentPenaltyPerPoint": 0.05,
+              "intelligenceConfidenceBonus": 0.2
+            },
+            {
+              "scope": "delivery",
+              "requiredGuardCount": 1,
+              "dwellTicksPerTarget": 25,
+              "baseDetectionProbability": 0.6,
+              "concealmentPenaltyPerPoint": 0.05,
+              "intelligenceConfidenceBonus": 0.15
+            },
+            {
+              "scope": "person",
+              "requiredGuardCount": 1,
+              "dwellTicksPerTarget": 20,
+              "baseDetectionProbability": 0.75,
+              "concealmentPenaltyPerPoint": 0.06,
+              "intelligenceConfidenceBonus": 0.2
+            },
+            {
+              "scope": "sector",
+              "requiredGuardCount": 1,
+              "dwellTicksPerTarget": 15,
+              "baseDetectionProbability": 0.5,
+              "concealmentPenaltyPerPoint": 0.05,
+              "intelligenceConfidenceBonus": 0.25
+            }
+          ],
+          "searchContainerLocations": [],
+          "search": {
+            "queue": [],
+            "active": [],
+            "metrics": {
+              "itemsDiscovered": 0,
+              "itemsMissed": 0,
+              "searchesCompleted": 0,
+              "searchesCancelled": 0
+            }
+          }
+        },
+        "economy": {
+          "treasury": {
+            "balanceMinorUnits": 25000
+          },
+          "procurement": {
+            "pending": []
+          },
+          "payroll": {
+            "unpaidWagesMinorUnits": 0
+          }
+        },
+        "objects": {
+          "placedObjects": []
+        },
+        "alerts": {
+          "sequence": 0,
+          "records": [],
+          "dismissed": []
+        },
+        "inFlight": {
+          "navigation": {
+            "pending": [],
+            "results": []
+          },
+          "prisoners": {
+            "locomotion": {
+              "walks": [],
+              "headings": []
+            },
+            "pathRequestIds": [],
+            "requestSequence": 0
+          },
+          "guards": {
+            "locomotion": {
+              "walks": [],
+              "headings": []
+            },
+            "deploymentRequestSequence": 0,
+            "patrolRequestSequence": 0
+          },
+          "search": {
+            "requestSequence": 0,
+            "jobs": []
+          }
+        },
+        "incidents": {
+          "log": [],
+          "sectorRisk": [],
+          "gangs": {
+            "definitions": [
+              {
+                "id": "gang.alpha",
+                "territorySectorIds": [
+                  "security-sector.prison"
+                ]
+              },
+              {
+                "id": "gang.beta",
+                "territorySectorIds": [
+                  "security-sector.prison"
+                ]
+              }
+            ],
+            "members": [],
+            "reputation": [
+              [
+                "gang.alpha",
+                0.5
+              ],
+              [
+                "gang.beta",
+                0.5
+              ]
+            ],
+            "grudges": []
+          },
+          "tunnels": [],
+          "watchedSectorIds": [
+            "security-sector.prison"
+          ],
+          "trigger": {
+            "metrics": {
+              "incidentsTriggered": 0,
+              "riotsTriggered": 0,
+              "retaliationsTriggered": 0
+            },
+            "sequence": 0
+          },
+          "response": {
+            "metrics": {
+              "incidentsResolved": 0,
+              "incidentsLapsed": 0,
+              "respondersDispatched": 0,
+              "routeFailures": 0
+            }
+          }
+        }
+      },
+      "identity": {
+        "version": 1,
+        "poolId": "placeholder.v1",
+        "entries": []
+      }
+    }
+  }
+}

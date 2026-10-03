@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-preflight-session-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  05:59:02
+   Duration  3.06s (transform 1.07s, setup 0ms, import 2.82s, tests 103ms, environment 0ms)
+
