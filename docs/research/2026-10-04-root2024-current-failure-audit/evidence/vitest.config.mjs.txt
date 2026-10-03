@@ -1,0 +1,1 @@
+﻿export default {test:{environment:'node',include:['C:/Users/matma/AppData/Local/Temp/lockstate-current-root2024-audit-20261004/yard-probe.test.ts'],testTimeout:5000,maxWorkers:1}};

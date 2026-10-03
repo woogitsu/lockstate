@@ -1,0 +1,42 @@
+﻿[
+    {
+        "file":  "historical-v8-inventory.json",
+        "bytes":  172822,
+        "sha256":  "604801f32ce1460f78a304c9ef71f2013ace1a1712be6858f6bf965666843cc3"
+    },
+    {
+        "file":  "index-gate.log",
+        "bytes":  526,
+        "sha256":  "128157f6de0672a57705ebc628377be9d0953f327e79813a165374772d57e6a7"
+    },
+    {
+        "file":  "main-exact-checks.json",
+        "bytes":  2146,
+        "sha256":  "892dda729d086b76f2298e9d11724c043853a81f55d18c88b17005f1d6d395ca"
+    },
+    {
+        "file":  "pr-2024.json",
+        "bytes":  19654,
+        "sha256":  "fdceb49e960b67378b867d12db442b880b52b71416af98d89912fbbd55f83915"
+    },
+    {
+        "file":  "pr-head-checks.json",
+        "bytes":  33254,
+        "sha256":  "a7a94567c60ae4d2ee80deceefba1ac455ef4ab38ce44bc817220194f7099443"
+    },
+    {
+        "file":  "vitest.config.mjs.txt",
+        "bytes":  185,
+        "sha256":  "2cc9840bd41df65199bf555f704959644deaca893db636a89afbfdae569f18ad"
+    },
+    {
+        "file":  "yard-probe.log",
+        "bytes":  3716,
+        "sha256":  "2d478754d3f3bccdeda0a5b17bbb7ddfeb7c5050166b914c7494178d4851cd63"
+    },
+    {
+        "file":  "yard-probe.test.ts.txt",
+        "bytes":  1943,
+        "sha256":  "cdfb7fdc660b96e7f5df451d479f2f4d3c3385802ef47e7e16ead50a5d7f610c"
+    }
+]
