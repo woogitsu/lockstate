@@ -1,0 +1,430 @@
+{
+  "subject": "3d454c2872fb6b777cd9afc2cc13c286bf8346ef",
+  "nativeResult": "2 passed / 1 failed; no retry",
+  "summaries": [
+    {
+      "stage": "empty-public-New",
+      "complete": true,
+      "rawRequestResourceTypes": {
+        "xhr": 17,
+        "image": 40
+      },
+      "terminalPNGBodyResourceTypes": {
+        "xhr": 17,
+        "image": 20
+      },
+      "actualPNGBlobDecodes": 17,
+      "distinctDecodedHashes": 17,
+      "errors": [],
+      "publicActionElapsedMs": [
+        {
+          "action": "goto actual Angled compiled client",
+          "elapsedMs": 170.49799999999993
+        },
+        {
+          "action": "public New prison",
+          "elapsedMs": 192.40670000000023
+        },
+        {
+          "action": "public Pause",
+          "elapsedMs": 412.2581
+        },
+        {
+          "action": "public Save now empty prison",
+          "elapsedMs": 861.4604000000036
+        }
+      ],
+      "actualServedScripts": [
+        {
+          "url": "http://127.0.0.1:5365/assets/catalog-DwDh8vBS.js",
+          "path": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-oblique-demand-native-execution-20261003\\dist\\client\\assets\\catalog-DwDh8vBS.js",
+          "sha256": "c2561fbc63fb3c411b80a7ff7a122f8684ef76cd73d4d3b32d2651046260f4c1",
+          "bytes": 86212
+        },
+        {
+          "url": "http://127.0.0.1:5365/assets/index-vjgBnSFJ.js",
+          "path": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-oblique-demand-native-execution-20261003\\dist\\client\\assets\\index-vjgBnSFJ.js",
+          "sha256": "5f4a543039b56ba0be89d1176ff22d7d4294acff2774de0bfc06cc48605085e1",
+          "bytes": 1933623
+        },
+        {
+          "url": "http://127.0.0.1:5365/assets/worker-80vzclKC.js",
+          "path": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-oblique-demand-native-execution-20261003\\dist\\client\\assets\\worker-80vzclKC.js",
+          "sha256": "8ec0d3b3aa48fdb6e0fc16e7440499df0cc43c9d866e932a021391bba3ea0954",
+          "bytes": 442752
+        }
+      ],
+      "profile": {
+        "browser": {
+          "protocolVersion": "1.3",
+          "product": "HeadlessChrome/141.0.7390.37",
+          "revision": "@9f043f63b0e5b728c8d09f3e3ddfc1681a4bd58e",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.37 Safari/537.36",
+          "jsVersion": "14.1.146.11"
+        },
+        "gpu": {
+          "devices": [
+            {
+              "vendorId": 65535,
+              "deviceId": 65535,
+              "subSysId": 0,
+              "revision": 0,
+              "vendorString": "Google Inc. (Google)",
+              "deviceString": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver-5.0.0)",
+              "driverVendor": "SwANGLE",
+              "driverVersion": "5.0.0"
+            }
+          ],
+          "auxAttributes": {
+            "amdSwitchable": false,
+            "bgra8OverlaySupport": "NONE",
+            "canSupportThreadedTextureMailbox": false,
+            "directComposition": false,
+            "directMLFeatureLevel": "Not supported",
+            "directRenderingVersion": "",
+            "displayType": "ANGLE_SWIFTSHADER",
+            "dx12FeatureLevel": "Not supported",
+            "glExtensions": "GL_AMD_performance_monitor GL_ANGLE_base_vertex_base_instance_shader_builtin GL_ANGLE_blob_cache GL_ANGLE_client_arrays GL_ANGLE_compressed_texture_etc GL_ANGLE_depth_texture GL_ANGLE_framebuffer_blit GL_ANGLE_framebuffer_multisample GL_ANGLE_get_image GL_ANGLE_get_serialized_context_string GL_ANGLE_get_tex_level_parameter GL_ANGLE_instanced_arrays GL_ANGLE_memory_object_flags GL_ANGLE_memory_size GL_ANGLE_multi_draw GL_ANGLE_pack_reverse_row_order GL_ANGLE_polygon_mode GL_ANGLE_program_binary_readiness_query GL_ANGLE_program_cache_control GL_ANGLE_read_only_depth_stencil_feedback_loops GL_ANGLE_relaxed_vertex_attribute_type GL_ANGLE_request_extension GL_ANGLE_rgbx_internal_format GL_ANGLE_robust_client_memory GL_ANGLE_robust_fragment_shader_output GL_ANGLE_robust_resource_initialization GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_ANGLE_texture_usage GL_ANGLE_translated_shader_source GL_ANGLE_vulkan_image GL_APPLE_clip_distance GL_ARM_rgba8 GL_ARM_shader_framebuffer_fetch GL_ARM_shader_framebuffer_fetch_depth_stencil GL_CHROMIUM_bind_generates_resource GL_CHROMIUM_bind_uniform_location GL_CHROMIUM_color_buffer_float_rgb GL_CHROMIUM_color_buffer_float_rgba GL_CHROMIUM_copy_compressed_texture GL_CHROMIUM_copy_texture GL_CHROMIUM_lose_context GL_EXT_EGL_image_external_wrap_modes GL_EXT_base_instance GL_EXT_blend_minmax GL_EXT_buffer_storage GL_EXT_clear_texture GL_EXT_clip_control GL_EXT_color_buffer_half_float GL_EXT_compressed_ETC1_RGB8_sub_texture GL_EXT_copy_image GL_EXT_debug_label GL_EXT_debug_marker GL_EXT_depth_clamp GL_EXT_discard_framebuffer GL_EXT_disjoint_timer_query GL_EXT_draw_buffers GL_EXT_draw_elements_base_vertex GL_EXT_float_blend GL_EXT_frag_depth GL_EXT_instanced_arrays GL_EXT_map_buffer_range GL_EXT_memory_object GL_EXT_occlusion_query_boolean GL_EXT_polygon_offset_clamp GL_EXT_read_format_bgra GL_EXT_robustness GL_EXT_sRGB GL_EXT_sRGB_write_control GL_EXT_semaphore GL_EXT_separate_shader_objects GL_EXT_shader_framebuffer_fetch GL_EXT_shader_framebuffer_fetch_non_coherent GL_EXT_shader_non_constant_global_initializers GL_EXT_shader_texture_lod GL_EXT_shadow_samplers GL_EXT_texture_border_clamp GL_EXT_texture_compression_bptc GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc_srgb GL_EXT_texture_filter_anisotropic GL_EXT_texture_format_BGRA8888 GL_EXT_texture_mirror_clamp_to_edge GL_EXT_texture_rg GL_EXT_texture_sRGB_decode GL_EXT_texture_storage GL_EXT_texture_type_2_10_10_10_REV GL_EXT_unpack_subimage GL_KHR_blend_equation_advanced GL_KHR_debug GL_KHR_robust_buffer_access_behavior GL_KHR_robustness GL_KHR_texture_compression_astc_ldr GL_NV_depth_buffer_float2 GL_NV_fence GL_NV_framebuffer_blit GL_NV_pack_subimage GL_NV_pixel_buffer_object GL_NV_polygon_mode GL_NV_read_depth GL_NV_read_depth_stencil GL_NV_read_stencil GL_OES_EGL_image GL_OES_EGL_image_external GL_OES_EGL_sync GL_OES_compressed_EAC_R11_signed_texture GL_OES_compressed_EAC_R11_unsigned_texture GL_OES_compressed_EAC_RG11_signed_texture GL_OES_compressed_EAC_RG11_unsigned_texture GL_OES_compressed_ETC1_RGB8_texture GL_OES_compressed_ETC2_RGB8_texture GL_OES_compressed_ETC2_RGBA8_texture GL_OES_compressed_ETC2_punchthroughA_RGBA8_texture GL_OES_compressed_ETC2_punchthroughA_sRGB8_alpha_texture GL_OES_compressed_ETC2_sRGB8_alpha8_texture GL_OES_compressed_ETC2_sRGB8_texture GL_OES_copy_image GL_OES_depth24 GL_OES_depth32 GL_OES_depth_texture GL_OES_depth_texture_cube_map GL_OES_draw_elements_base_vertex GL_OES_element_index_uint GL_OES_fbo_render_mipmap GL_OES_get_program_binary GL_OES_mapbuffer GL_OES_packed_depth_stencil GL_OES_required_internalformat GL_OES_rgb8_rgba8 GL_OES_sample_shading GL_OES_standard_derivatives GL_OES_surfaceless_context GL_OES_texture_3D GL_OES_texture_border_clamp GL_OES_texture_float GL_OES_texture_float_linear GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_texture_npot GL_OES_vertex_array_object GL_OES_vertex_half_float ",
+            "glImplementationParts": "(gl=egl-angle,angle=swiftshader)",
+            "glRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver-5.0.0)",
+            "glResetNotificationStrategy": 33362,
+            "glVendor": "Google Inc. (Google)",
+            "glVersion": "OpenGL ES 2.0.0 (ANGLE 2.1.1 git hash: bb55ea10fcef)",
+            "glWsExtensions": "EGL_EXT_create_context_robustness EGL_ANGLE_surface_orientation EGL_KHR_create_context EGL_KHR_image EGL_KHR_image_base EGL_EXT_image_gl_colorspace EGL_KHR_gl_colorspace EGL_KHR_gl_texture_2D_image EGL_KHR_gl_texture_cubemap_image EGL_KHR_gl_renderbuffer_image EGL_KHR_get_all_proc_addresses EGL_KHR_fence_sync EGL_KHR_wait_sync EGL_ANGLE_create_context_webgl_compatibility EGL_CHROMIUM_create_context_bind_generates_resource EGL_KHR_swap_buffers_with_damage EGL_EXT_pixel_format_float EGL_KHR_surfaceless_context EGL_ANGLE_display_texture_share_group EGL_ANGLE_display_semaphore_share_group EGL_ANGLE_create_context_client_arrays EGL_ANGLE_program_cache_control EGL_ANGLE_robust_resource_initialization EGL_ANGLE_create_context_extensions_enabled EGL_ANDROID_blob_cache EGL_ANDROID_recordable EGL_ANGLE_create_context_backwards_compatible EGL_KHR_no_config_context EGL_IMG_context_priority EGL_KHR_create_context_no_error EGL_KHR_reusable_sync EGL_EXT_buffer_age EGL_ANGLE_create_surface_swap_interval EGL_ANGLE_vulkan_image EGL_KHR_partial_update EGL_ANGLE_global_fence_sync EGL_ANGLE_memory_usage_report ",
+            "glWsVendor": "Google Inc. (Google)",
+            "glWsVersion": "1.5 (ANGLE 2.1.1 git hash: bb55ea10fcef)",
+            "hardwareSupportsVulkan": false,
+            "inProcessGpu": false,
+            "initializationTime": 0.083528,
+            "isAsan": false,
+            "isClangCoverage": false,
+            "jpegDecodeAcceleratorSupported": false,
+            "maxMsaaSamples": "4",
+            "nv12OverlaySupport": "NONE",
+            "optimus": false,
+            "p010OverlaySupport": "NONE",
+            "passthroughCmdDecoder": true,
+            "pixelShaderVersion": "1.00",
+            "processCrashCount": 0,
+            "rgb10a2OverlaySupport": "NONE",
+            "sandboxed": false,
+            "skiaBackendType": "GaneshGL",
+            "subpixelFontRendering": true,
+            "supportsD3dSharedImages": false,
+            "supportsDirectML": false,
+            "supportsDx12": false,
+            "supportsOverlays": false,
+            "supportsVulkan": false,
+            "targetCpuBits": 64,
+            "vertexShaderVersion": "1.00",
+            "visibilityCallbackCallCount": 0,
+            "vulkanVersion": "Not supported",
+            "yuy2OverlaySupport": "NONE"
+          },
+          "featureStatus": {
+            "2d_canvas": "unavailable_software",
+            "direct_rendering_display_compositor": "disabled_off_ok",
+            "gpu_compositing": "disabled_software",
+            "multiple_raster_threads": "enabled_on",
+            "opengl": "disabled_off",
+            "rasterization": "disabled_software",
+            "raw_draw": "disabled_off_ok",
+            "skia_graphite": "disabled_off",
+            "trees_in_viz": "disabled_off",
+            "video_decode": "disabled_software",
+            "video_encode": "disabled_software",
+            "vulkan": "disabled_off",
+            "webgl": "unavailable_software",
+            "webgl2": "unavailable_software",
+            "webgpu": "unavailable_software",
+            "webnn": "unavailable_software"
+          },
+          "driverBugWorkarounds": [],
+          "videoDecoding": [],
+          "videoEncoding": [],
+          "imageDecoding": []
+        },
+        "stableWindowMs": 30000,
+        "metrics": [
+          {
+            "name": "LayoutCount",
+            "before": 2,
+            "after": 1003,
+            "delta": 1001
+          },
+          {
+            "name": "RecalcStyleCount",
+            "before": 2,
+            "after": 1004,
+            "delta": 1002
+          },
+          {
+            "name": "LayoutDuration",
+            "before": 0.000221,
+            "after": 0.112158,
+            "delta": 0.111937
+          },
+          {
+            "name": "RecalcStyleDuration",
+            "before": 0.000468,
+            "after": 0.219091,
+            "delta": 0.218623
+          },
+          {
+            "name": "ScriptDuration",
+            "before": 0.003955,
+            "after": 1.477771,
+            "delta": 1.473816
+          },
+          {
+            "name": "TaskDuration",
+            "before": 0.06349,
+            "after": 30.195055,
+            "delta": 30.131565
+          },
+          {
+            "name": "JSHeapUsedSize",
+            "before": 22967172,
+            "after": 24520192,
+            "delta": 1553020
+          }
+        ],
+        "samples": 19639,
+        "sampledDurationUs": 30108006,
+        "topSelfSampledNodes": [
+          {
+            "sampledSelfUs": 28635009,
+            "callFrame": {
+              "functionName": "(program)",
+              "scriptId": "0",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          },
+          {
+            "sampledSelfUs": 329049,
+            "callFrame": {
+              "functionName": "e.exports",
+              "scriptId": "6",
+              "url": "http://127.0.0.1:5365/assets/index-vjgBnSFJ.js",
+              "lineNumber": 6,
+              "columnNumber": 73955
+            }
+          },
+          {
+            "sampledSelfUs": 219654,
+            "callFrame": {
+              "functionName": "batch",
+              "scriptId": "6",
+              "url": "http://127.0.0.1:5365/assets/index-vjgBnSFJ.js",
+              "lineNumber": 29,
+              "columnNumber": 44543
+            }
+          },
+          {
+            "sampledSelfUs": 185115,
+            "callFrame": {
+              "functionName": "querySelector",
+              "scriptId": "0",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          },
+          {
+            "sampledSelfUs": 129289,
+            "callFrame": {
+              "functionName": "run",
+              "scriptId": "6",
+              "url": "http://127.0.0.1:5365/assets/index-vjgBnSFJ.js",
+              "lineNumber": 30,
+              "columnNumber": 3242
+            }
+          },
+          {
+            "sampledSelfUs": 62242,
+            "callFrame": {
+              "functionName": "run",
+              "scriptId": "6",
+              "url": "http://127.0.0.1:5365/assets/index-vjgBnSFJ.js",
+              "lineNumber": 29,
+              "columnNumber": 48477
+            }
+          },
+          {
+            "sampledSelfUs": 52891,
+            "callFrame": {
+              "functionName": "(garbage collector)",
+              "scriptId": "0",
+              "url": "",
+              "lineNumber": -1,
+              "columnNumber": -1
+            }
+          },
+          {
+            "sampledSelfUs": 50667,
+            "callFrame": {
+              "functionName": "_submitQuad",
+              "scriptId": "6",
+              "url": "http://127.0.0.1:5365/assets/index-vjgBnSFJ.js",
+              "lineNumber": 36,
+              "columnNumber": 5930
+            }
+          },
+          {
+            "sampledSelfUs": 43994,
+            "callFrame": {
+              "functionName": "run",
+              "scriptId": "6",
+              "url": "http://127.0.0.1:5365/assets/index-vjgBnSFJ.js",
+              "lineNumber": 29,
+              "columnNumber": 51908
+            }
+          },
+          {
+            "sampledSelfUs": 42753,
+            "callFrame": {
+              "functionName": "batch",
+              "scriptId": "6",
+              "url": "http://127.0.0.1:5365/assets/index-vjgBnSFJ.js",
+              "lineNumber": 29,
+              "columnNumber": 44543
+            }
+          },
+          {
+            "sampledSelfUs": 36994,
+            "callFrame": {
+              "functionName": "renderWebGLStep",
+              "scriptId": "6",
+              "url": "http://127.0.0.1:5365/assets/index-vjgBnSFJ.js",
+              "lineNumber": 6,
+              "columnNumber": 30991
+            }
+          },
+          {
+            "sampledSelfUs": 27150,
+            "callFrame": {
+              "functionName": "U",
+              "scriptId": "6",
+              "url": "http://127.0.0.1:5365/assets/index-vjgBnSFJ.js",
+              "lineNumber": 103,
+              "columnNumber": 420026
+            }
+          },
+          {
+            "sampledSelfUs": 22670,
+            "callFrame": {
+              "functionName": "i",
+              "scriptId": "6",
+              "url": "http://127.0.0.1:5365/assets/index-vjgBnSFJ.js",
+              "lineNumber": 23,
+              "columnNumber": 53100
+            }
+          },
+          {
+            "sampledSelfUs": 19368,
+            "callFrame": {
+              "functionName": "batchWithUV",
+              "scriptId": "6",
+              "url": "http://127.0.0.1:5365/assets/index-vjgBnSFJ.js",
+              "lineNumber": 29,
+              "columnNumber": 33807
+            }
+          },
+          {
+            "sampledSelfUs": 15164,
+            "callFrame": {
+              "functionName": "n",
+              "scriptId": "6",
+              "url": "http://127.0.0.1:5365/assets/index-vjgBnSFJ.js",
+              "lineNumber": 23,
+              "columnNumber": 52736
+            }
+          }
+        ],
+        "stableNetworkEvents": 0
+      }
+    },
+    {
+      "stage": "public-cot-camera-SaveLoad",
+      "complete": false,
+      "rawRequestResourceTypes": {
+        "xhr": 35,
+        "image": 40
+      },
+      "terminalPNGBodyResourceTypes": {
+        "xhr": 29,
+        "image": 20
+      },
+      "actualPNGBlobDecodes": 29,
+      "distinctDecodedHashes": 29,
+      "errors": [],
+      "publicActionElapsedMs": [
+        {
+          "action": "goto actual Angled compiled client",
+          "elapsedMs": 139.63420000000042
+        },
+        {
+          "action": "real Cell queue completion",
+          "elapsedMs": 17480.668399999995
+        },
+        {
+          "action": "public one-step camera right",
+          "elapsedMs": 743.681899999996
+        }
+      ],
+      "originalBlanketPixels": 1214,
+      "restoredBlanketPixels": 1214
+    },
+    {
+      "stage": "public-capacity",
+      "complete": true,
+      "rawRequestResourceTypes": {
+        "xhr": 26,
+        "image": 40
+      },
+      "terminalPNGBodyResourceTypes": {
+        "xhr": 23,
+        "image": 20
+      },
+      "actualPNGBlobDecodes": 23,
+      "distinctDecodedHashes": 23,
+      "errors": [],
+      "publicActionElapsedMs": [
+        {
+          "action": "goto actual Angled compiled client",
+          "elapsedMs": 137.15920000000187
+        },
+        {
+          "action": "public Load empty save",
+          "elapsedMs": 344.51460000000225
+        },
+        {
+          "action": "real capacity queue completion",
+          "elapsedMs": 31603.780900000005
+        }
+      ],
+      "actualServedScripts": [
+        {
+          "url": "http://127.0.0.1:5365/assets/catalog-DwDh8vBS.js",
+          "path": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-oblique-demand-native-execution-20261003\\dist\\client\\assets\\catalog-DwDh8vBS.js",
+          "sha256": "c2561fbc63fb3c411b80a7ff7a122f8684ef76cd73d4d3b32d2651046260f4c1",
+          "bytes": 86212
+        },
+        {
+          "url": "http://127.0.0.1:5365/assets/index-vjgBnSFJ.js",
+          "path": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-oblique-demand-native-execution-20261003\\dist\\client\\assets\\index-vjgBnSFJ.js",
+          "sha256": "5f4a543039b56ba0be89d1176ff22d7d4294acff2774de0bfc06cc48605085e1",
+          "bytes": 1933623
+        },
+        {
+          "url": "http://127.0.0.1:5365/assets/worker-80vzclKC.js",
+          "path": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-oblique-demand-native-execution-20261003\\dist\\client\\assets\\worker-80vzclKC.js",
+          "sha256": "8ec0d3b3aa48fdb6e0fc16e7440499df0cc43c9d866e932a021391bba3ea0954",
+          "bytes": 442752
+        }
+      ]
+    }
+  ]
+}

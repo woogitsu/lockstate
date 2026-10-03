@@ -1,0 +1,17 @@
+﻿{
+    "launcherPid":  12976,
+    "port":  5365,
+    "source":  "3d454c2872fb6b777cd9afc2cc13c286bf8346ef",
+    "harness":  "2ee81027e7843f2968143be74a2b2f4c145d0919",
+    "buildRoot":  "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-oblique-demand-native-execution-20261003\\dist\\client",
+    "started":  "2026-10-03T12:41:01.9540295Z",
+    "command":  "node node_modules/@playwright/test/cli.js test --config tests/browser/oblique-demand-loading.profile.config.ts --output own-TEMP/test-results",
+    "headed":  false,
+    "executableOverride":  false,
+    "budgets":  {
+                    "testMs":  60000,
+                    "expectMs":  10000,
+                    "workers":  1,
+                    "retries":  0
+                }
+}

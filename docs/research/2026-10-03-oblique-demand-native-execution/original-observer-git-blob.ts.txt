@@ -15,20 +15,12 @@ export async function observeDemandRoute(page: Page, buildRoot: string) {
   const redirects: Array<{ url: string; status: number; location: string | undefined }> = [];
   const errors: string[] = [];
   const pending: Promise<void>[] = [];
-  const scripts: Array<ReturnType<typeof requireFrozenBytes> & { status: number; resourceType: string }> = [];
+  const scripts: Array<Awaited<ReturnType<Page['waitForResponse']>>> = [];
   const catalogBytes: ReturnType<typeof requireFrozenBytes>[] = [];
   page.on('request', request => { if (/\.png$/u.test(new URL(request.url()).pathname)) requests.push({ url: request.url(), resourceType: request.resourceType() }); });
   page.on('response', response => {
     const path = new URL(response.url()).pathname;
-    if (path.endsWith('.js') && response.status() === 200) {
-      // Load terminates the outgoing worker. Capture its genuine delivered body
-      // while the response's execution context still exists, rather than keeping
-      // a Response handle and asking that closed context for bytes after Load.
-      pending.push((async () => {
-        const frozen = requireFrozenBytes(buildRoot, response.url(), await response.body());
-        scripts.push({ ...frozen, status: response.status(), resourceType: response.request().resourceType() });
-      })().catch(error => { errors.push(`Actual script body capture failed for ${response.url()}: ${String(error)}`); }));
-    }
+    if (path.endsWith('.js') && response.status() === 200) scripts.push(response);
     if (response.status() >= 300 && response.status() < 400 && path.endsWith('.png')) {
       redirects.push({ url: response.url(), status: response.status(), location: response.headers().location }); return;
     }
@@ -101,8 +93,9 @@ export async function observeDemandRoute(page: Page, buildRoot: string) {
         images: await page.evaluate(() => (window as ProbeWindow).demandReadImages!()) };
     },
     async scripts() {
-      await Promise.all(pending);
-      expect(scripts.length).toBeGreaterThan(0); return [...scripts];
+      const actual = [];
+      for (const response of scripts) actual.push(requireFrozenBytes(buildRoot, response.url(), await response.body()));
+      expect(actual.length).toBeGreaterThan(0); return actual;
     },
   };
 }
