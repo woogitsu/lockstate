@@ -531,7 +531,7 @@ grep -rn "introduce(\|submitOrder(\|applyRiotRegimeOverride\|resolveEscapeOpport
 > - **Step 3** *(one recurring debit)* — taken. `src/simulation/economy/payroll.ts`
 >   exists, `insolvencyRungs` is registered on the kernel
 >   (`src/simulation/runtime/new-session.ts:1632`, `kernel.registerSystem(payroll)`; previously `:1605`), and the save carries
->   `unpaidWagesMinorUnits` (`src/persistence/save-schema.ts:1220`,
+>   `unpaidWagesMinorUnits` (`src/persistence/save-schema.ts:1361` (V10 live coordinate; historical `:1220`),
 >   `.object({ unpaidWagesMinorUnits: z.number().int().nonnegative().safe() })`;
 >   this branch wrote `:1209` on 2026-09-15 and it was ten lines high by
 >   2026-09-16, when the branch merged `origin/main`).
@@ -664,7 +664,7 @@ dead by 2026-09-16**, when this branch merged `origin/main`: they read `:1146`
 and `:1092-1094`, ten lines high in a 1,923-line schema file, and `:1146` had
 landed inside a comment about loans. `Treasury` no longer validates non-negative anywhere —
 `grep -n "nonnegative" src/simulation/economy/treasury.ts` returns nothing. And
-`SAVE_SCHEMA_VERSION` is `6` (`src/persistence/save-schema.ts:39`). So the sign
+`SAVE_SCHEMA_VERSION` is `6` (`src/persistence/save-schema.ts:44` (V10 live coordinate; historical `:39`)). So the sign
 change this paragraph priced as a version bump is exactly what was paid.) *Determinism:* a day-boundary integer
 debit, the same shape `StateIncomeSystem` already has; no RNG.
 

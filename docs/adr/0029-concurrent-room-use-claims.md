@@ -406,7 +406,7 @@ save-schema key is added, and `SAVE_ENVELOPE_VERSION` does not move.
 
 (**`SAVE_ENVELOPE_VERSION` never existed, on this date or any other.** The
 constant this decision means is `SAVE_SCHEMA_VERSION`,
-`src/persistence/save-schema.ts:39` (read 2026-09-15; the anchor this
+`src/persistence/save-schema.ts:44` (V10 live coordinate; historical `:39`) (read 2026-09-15; the anchor this
 parenthetical carried when it was written on 2026-09-08 was `:36`, and the
 constant reads `6` today), which was already declared and already
 `5` in the tree this document was written against — so the sentence above is
@@ -710,7 +710,7 @@ Two clauses, and they have come apart.
   `src/simulation/presentation/prisoner-projection.ts:311` builds `lowestNeed`
   (set on the row at `:366`) and `projectPrisonerDetail` (`:692`) carries all
   six need levels;
-  `src/simulation/worker/projection-catalog.ts:316` serves them on the
+  `src/simulation/worker/projection-catalog.ts:326` (V10 live coordinate; historical `:316`) serves them on the
   `hud/prisoner-detail` channel. **Nothing under `src/ui/` asks for that
   channel** — the only prisoner projection the HUD consumes is
   `projectPrisonerPopulationCounts`, through

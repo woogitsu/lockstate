@@ -1,0 +1,20 @@
+﻿const fs=require('node:fs'),cp=require('node:child_process'),crypto=require('node:crypto');
+const cwd=process.cwd(),root='C:/Users/matma/AppData/Local/Temp/lockstate-v10-production-controls-20261003';fs.mkdirSync(root,{recursive:true});
+const node='C:/Users/matma/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe';
+const actual='tests/integration/construction-exact-counter-v10.test.ts',wire='tests/unit/construction-exact-counter-protocol.test.ts',rich='tests/migrations/save-v9-to-v10-exact-counter.test.ts';
+const mutations=[
+{name:'increment-number-coercion',file:'src/simulation/construction/order-revision.ts',old:'return (BigInt(value) + 1n).toString(10);',replacement:'return (Number(value) + 1).toString(10);',tests:[actual,wire]},
+{name:'state-token-write-omission',file:'src/simulation/construction/system.ts',old:'this.orderRevisions.set(order.id, incrementOrderRevision(this.revisionOf(order.id)));',replacement:'// intentional producer omission: no token advance',tests:[actual]},
+{name:'queued-token-conversion-omission',file:'src/persistence/save-migrations.ts',old:'expectedRevision: String(data.expectedRevision)',replacement:'expectedRevision: data.expectedRevision',tests:[actual,rich]},
+{name:'live-v1-cancel-guard-omission',file:'src/simulation/protocol/commands.ts',old:"if (result.success && result.data.type === 'CancelBuildOrder' && payload.schemaVersion !== 2) return null;",replacement:'// intentional producer omission: V1 string cancel reaches V2 decoder',tests:[wire]},
+];
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex'),rows=[];
+function run(tests,filename){const result=cp.spawnSync(node,['node_modules/vitest/vitest.mjs','run',...tests,'--maxWorkers=4'],{cwd,encoding:'utf8',maxBuffer:5e6});fs.writeFileSync(root+'/'+filename,(result.stdout??'')+(result.stderr??''));return {status:result.status,summary:(result.stdout??'').split('\n').filter(l=>/Tests\s+/.test(l)).join(' ').trim()};}
+try{
+for(const m of mutations){const before=fs.readFileSync(m.file),hash=sha(before);let negative,restored;
+try{const text=before.toString();if(!text.includes(m.old))throw Error('missing mutation target '+m.name);fs.writeFileSync(m.file,text.replace(m.old,m.replacement));negative=run(m.tests,m.name+'-negative.txt');if(negative.status===0)throw Error('negative failed to detect '+m.name);}
+finally{fs.writeFileSync(m.file,before);if(sha(fs.readFileSync(m.file))!==hash)throw Error('byte restore failed');}
+restored=run(m.tests,m.name+'-restored.txt');if(restored.status!==0)throw Error('restored not green '+m.name);cp.execFileSync('git',['diff','--exit-code','--',m.file]);rows.push({name:m.name,source:m.file,sha256Before:hash,sha256Restored:sha(fs.readFileSync(m.file)),negative,restored,tests:m.tests});console.log(m.name,negative.summary,'→',restored.summary);
+}
+fs.writeFileSync(root+'/controls.json',JSON.stringify({source:cp.execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),rows,productionDiffZero:true,browser:false,build:false},null,2));
+}finally{cp.execFileSync('git',['switch','codex/construction-exact-counter-v10-20261003']);}

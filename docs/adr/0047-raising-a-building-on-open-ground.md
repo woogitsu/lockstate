@@ -229,7 +229,7 @@ chunk — `chunkTerrain`, `chunkTopEdge`, `chunkLeftEdge`, `chunkZoning`
 `ensureStorageMap`, `:585`). All four serialize as optional RLE fields on
 `SerializedChunkState` (`:45`), and `decodeChunk`'s `allowedKeys` lists exactly
 those four as optional (`:191`). The save boundary mirrors it
-(`src/persistence/save-schema.ts:126`–`:129`, `terrain` / `topEdge` / `leftEdge`
+(`src/persistence/save-schema.ts:130-133` (V10 live span; historical `:126-129`), `terrain` / `topEdge` / `leftEdge`
 / `zoning`, each `terrainRleSchema.optional()`; this branch wrote `:115`–`:118`
 on 2026-09-15 and by 2026-09-16, when it merged `origin/main`, that span was a
 blank line and the first three lines of `serializedChunkStateSchema`'s
@@ -261,7 +261,7 @@ feature with a reader and no producer.
 ### Walls, doors and the build queue
 
 - A wall is an edge value. `finalizeConstruction`
-  (`src/simulation/construction/system.ts:2182`, `finalizeConstruction`) writes it through `writeEdge`
+  (`src/simulation/construction/system.ts:2186` (V10 live coordinate; historical `:2182`), `finalizeConstruction`) writes it through `writeEdge`
   (`:2031`, called at `:1934`), which calls `setTopEdge`/`setLeftEdge` and
   therefore bumps `geometryRevision`.
 - `BuildableCategory` is `'wall' | 'object' | 'utility'`
@@ -317,7 +317,7 @@ feature with a reader and no producer.
   and `:1966` coordinates are historical indications, retained here rather than
   erased. The current cancellation call is `revertConstruction` above; its
   implementation is `private revertConstruction` at
-  `src/simulation/construction/system.ts:2235`. The earlier numbered span had
+  `src/simulation/construction/system.ts:2239` (V10 live coordinate; historical `:2235`). The earlier numbered span had
   already drifted into a comment, so the amended anchor names the actual call.
   **Occupied-template source amendment at checkpoint 322cb5e5a4:** the previous
   `system.ts:1120` and `:2092` coordinates remain historical indications before
@@ -578,7 +578,7 @@ cannot be built.
 `terrain`, `topEdge`, `leftEdge` and `zoning` in `SerializedChunkState`
 (`src/simulation/world/sparse-world.ts:45`), in `decodeChunk`'s optional list
 (`:191`) and in `serializedChunkStateSchema`
-(`src/persistence/save-schema.ts:126`–`:129`; the anchor read `:115`–`:118`
+(`src/persistence/save-schema.ts:130-133` (V10 live span; historical `:126-129`); the anchor read `:115`–`:118`
 until 2026-09-16, as above).
 
 `AGENTS.md` boundary 7 **is** engaged here — unlike ADR 0045 decision 4, this

@@ -1,0 +1,64 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/ls-v10-20261003
+
+ ❯ tests/integration/construction-exact-counter-v10.test.ts (6 tests | 3 failed) 103ms
+   × matching active MAX cancellation refunds exactly and Save/Load retains the exact next token 32ms
+   × genuine completion at tick171 advances beyond MAX and remains whole-saveable 18ms
+   × queued historical MAX token migrates, survives another V10 Save/Load and dispatches once 12ms
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 3 passed (6)
+   Start at  23:14:17
+   Duration  2.54s (transform 880ms, setup 0ms, import 2.32s, tests 103ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/construction-exact-counter-v10.test.ts > matching active MAX cancellation refunds exactly and Save/Load retains the exact next token
+AssertionError: expected '9007199254740991' to be '9007199254740992' // Object.is equality
+
+Expected: "9007199254740992"
+Received: "9007199254740991"
+
+ ❯ tests/integration/construction-exact-counter-v10.test.ts:69:58
+     67|   send(runtime, { type: 'CancelBuildOrder', orderId: 'actual-wall', ex…
+     68|   expect(runtime.construction.getOrder('actual-wall')?.state).toBe('ca…
+     69|   expect(runtime.construction.revisionOf('actual-wall')).toBe(NEXT);
+       |                                                          ^
+     70|   expect(runtime.treasury.balanceMinorUnits).toBe(funds + 80);
+     71|   load(runtime);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/integration/construction-exact-counter-v10.test.ts > genuine completion at tick171 advances beyond MAX and remains whole-saveable
+AssertionError: expected '9007199254740991' to be '9007199254740994' // Object.is equality
+
+Expected: "9007199254740994"
+Received: "9007199254740991"
+
+ ❯ tests/integration/construction-exact-counter-v10.test.ts:79:58
+     77|   expect(runtime.construction.getOrder('actual-wall')?.state).toBe('co…
+     78|   expect(runtime.kernel.tick).toBe(171);
+     79|   expect(runtime.construction.revisionOf('actual-wall')).toBe('9007199…
+       |                                                          ^
+     80|   expect(runtime.treasury.balanceMinorUnits).toBe(24920);
+     81|   load(runtime);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/integration/construction-exact-counter-v10.test.ts > queued historical MAX token migrates, survives another V10 Save/Load and dispatches once
+AssertionError: expected '9007199254740991' to be '9007199254740992' // Object.is equality
+
+Expected: "9007199254740992"
+Received: "9007199254740991"
+
+ ❯ tests/integration/construction-exact-counter-v10.test.ts:89:58
+     87|   expect(runtime.kernel.dispatchDueCommands()).toBe(1);
+     88|   expect(runtime.construction.getOrder('actual-wall')?.state).toBe('ca…
+     89|   expect(runtime.construction.revisionOf('actual-wall')).toBe(NEXT);
+       |                                                          ^
+     90|   expect(runtime.treasury.balanceMinorUnits).toBe(25000);
+     91|   expect(runtime.kernel.dispatchDueCommands()).toBe(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+

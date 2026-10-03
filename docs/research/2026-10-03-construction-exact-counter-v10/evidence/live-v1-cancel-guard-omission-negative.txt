@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/ls-v10-20261003
+
+ ❯ tests/unit/construction-exact-counter-protocol.test.ts (20 tests | 1 failed) 8ms
+   × V1 cancellation is migration-only, unchanged V1 commands remain live and unknown versions fail closed 3ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 passed (20)
+   Start at  23:14:29
+   Duration  2.46s (transform 864ms, setup 0ms, import 2.32s, tests 8ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/construction-exact-counter-protocol.test.ts > V1 cancellation is migration-only, unchanged V1 commands remain live and unknown versions fail closed
+AssertionError: expected { type: 'CancelBuildOrder', …(2) } to be null
+
+- Expected:
+null
+
++ Received:
+{
+  "expectedRevision": "0",
+  "orderId": "x",
+  "type": "CancelBuildOrder",
+}
+
+ ❯ tests/unit/construction-exact-counter-protocol.test.ts:26:125
+     24| it('V1 cancellation is migration-only, unchanged V1 commands remain li…
+     25|   for (const expectedRevision of [0, '0']) expect(unpackCommand({ sche…
+     26|     schemaVersion: 1, transport: 'structured-clone', data: { type: 'Ca…
+       |                                                                                                                             ^
+     27|   const ordinary = packCommand({ type: 'Undo' });
+     28|   expect(ordinary.schemaVersion).toBe(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

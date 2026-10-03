@@ -21,5 +21,84 @@ errors. Those are original V9 measurements, not V10 results.
 
 Implementation subject starts at published
 `c28d4815844af9081c4d16925bbf498eb3df2ff1`. This independent branch has no browser,
-server, build or native claim. Verification receipts will be appended after
-actual execution; approval does not itself establish a GREEN implementation.
+server, build or native claim.
+
+## Implemented contract
+
+Source checkpoints are `0b59108fe58bc351d53ca9054f601b7cf7bf1992`,
+`5fd15db526e2e394e2a1f45f844f70f84eefee5e`, and
+`d38f5ec3670467ad274c2c4fb54abe349a1d3d93` on
+`codex/construction-exact-counter-v10-20261003`.
+
+`orderRevisions` and cancellation `expectedRevision` are canonical decimal
+strings. State transitions use exact integer addition and serialize back to
+text; no numeric coercion, saturation, wrap or narrower decoder bound is used.
+Current raw restore validates each entry before mutation. Missing tokens read
+as `0`. Existing marker/history/refund/ownership rules are unchanged.
+
+V1–V9 save validators remain frozen. V9→V10 clones validated raw data and
+converts explicit numeric revisions losslessly, including own prototype-like
+keys. It upgrades recognized historical V1 cancellation wrappers and their
+numeric tokens to V2/text while preserving every other queue field. Other
+commands and all unrelated data remain unchanged. Earlier absence still
+defaults to false/{}; this does not infer missing historical protection.
+
+ADR0003 Decision5 versions changed domain shapes independently. Live
+CancelBuildOrder requires command V2; live V1 cancellation is rejected even
+if its token is text. Unchanged V1 commands remain accepted. The protocol
+envelope stays1, session snapshot is4 and only build-queue projection is2;
+other HUD projections stay1. Historical cancellation upgrading occurs through
+save migration rather than the live worker decoder.
+
+## Actual bounded verification
+
+- 345 GREEN in16 named source/session/migration/queue/history/refund files,
+  5.91s; exact file list and raw output are retained in evidence.
+- Standard application and tools TypeScript checks exit0.
+- Real wall purchase, checksum-valid V9 import and packed command: active MAX
+  cancellation yields `9007199254740992`, refund80 and funds25000. Genuine
+  completion at tick171 yields `9007199254740994` and funds24920. Both survive
+  whole current snapshot Save/Load equality.
+- Real queued historical MAX cancellation migrates and dispatches once;
+  distinct stale tokens refuse without world/construction/treasury mutation.
+  Unused and untouched terminal MAX records remain legal.
+- Rich real90° completed Cell, mirrored pending Cell and mirrored270° undone
+  Cell retain exact owners/history/inflight data, actual newer-action marker,
+  queued Cancel/Undo fields and own `__proto__`/`constructor` ledger keys.
+  V1–V8 full-data preservation and frozen V9 numeric validation are exercised.
+
+Four actual production controls ran detached at exact `d38f5ec`, with finally
+byte-exact restoration and production diff0:
+
+| Changed producer | Actual negative | Exact restored |
+| --- | --- | --- |
+| Exact increment replaced by Number addition | 2 RED /24 GREEN | 26 GREEN |
+| Actual transition revision write omitted | 3 RED /3 GREEN | 6 GREEN |
+| Historical queued token conversion omitted | 2 RED /9 GREEN | 11 GREEN |
+| Live V1 cancellation guard omitted | 1 RED /19 GREEN | 20 GREEN |
+
+The initial rich fixture omitted mandatory PurchaseMaterials.orderId and
+produced1 RED/54 GREEN; corrected55 GREEN. Initial application type errors
+included an edit typo and JSON narrowing, fixed before final checks. Their raw
+outputs remain separate from product faults and final receipts.
+
+The original docs gate produced2 RED/33 GREEN. A read-only comparison against
+exact c28 source blobs identified18 newly lost quoted anchors and a separate
+inherited ADR0031 failure (before1/after1,budget0). Only measured V10 live
+coordinates/values and the positive live declaration control were updated;
+historical coordinates remain explicit, budgets/tolerance unchanged. Final
+gate is1 inherited RED/34 GREEN; root owns that ADR0031 correction separately.
+
+## Limits
+
+No browser, server, build, native latency or full-suite claim is made here.
+Root's frozen V9 native model photographs are unchanged. This source checkpoint
+requires coordinated integration of current domain versions and separately
+updated native fixture expectations; historical data is not reinterpreted as
+newly recorded ownership or protection.
+
+Raw executed producer script is inert `.cjs.txt`; SHA manifest and source
+restoration receipts identify the actual bytes. Citation-probe setup errors
+(the installed TypeScript7 package has no legacy transpileModule entry) are
+recorded as environment/tooling errors, followed by the successful Node
+type-stripping read-only probe, without repository/source mutation.

@@ -1,0 +1,4 @@
+The initial read-only TEMP probe attempted the historical TypeScript transpileModule API.
+Installed typescript7.0.2 does not expose lib/typescript.js. Two MODULE_NOT_FOUND attempts and one quoting SyntaxError did not modify repository source.
+The successful retained executed-citation-delta.cjs.txt uses node:module stripTypeScriptTypes and the actual quotation contract, compares cited source bodies with exact c28 Git blobs, and emits the retained citation-delta JSON.
+This is citation tooling evidence, not a game defect or successful initial probe.
