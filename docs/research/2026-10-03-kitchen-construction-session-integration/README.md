@@ -103,3 +103,7 @@ existing table and fetch its actual published fc30 branch; guards/budgets stay
 unchanged. The following exact publication remains subject to full hosted CI.
 
 After exact scoped row move and published-ref fetch, the same three documentation suites23/23 GREEN in14.34s. Merge repair changes no verified production source or native fixture.
+
+## Exact hosted532577eb6f verify failure and inherited observer correction
+
+Terminal hosted CI37100711713/job111139526171 stops on6tests in ui-room-plan-renderer-placement-receipt, with7983GREEN/8SKIP/657otherfilesGREEN. A local exact532577eb6f reproduction is6RED/8legalcontrols. The actual current RoomTemplateTool owns an optional unique placement symbol and clears it to undefined; the inherited test expected the superseded booleanfalse. Only three busy-clear observations are corrected to undefined. All actual main lifecycle callbacks, arm/revision/submission/refusal guards remain. Original fixture, full hosted logs and local failure are retained. Corrected behavior/real producer omission and exact restoration remain to be recorded.
