@@ -2951,9 +2951,9 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     children: [strip.element, unavailable, refusal, eventNotice, corner, rail, tabBar],
   });
 
-  // UNAPPROVED owner choice A. B uses the same source nodes with variant 'always'.
+  // UNAPPROVED owner choice B. A uses the same source nodes with variant 'disclosure'.
   const cameraPresentation = createCameraControlsPresentation({
-    variant: 'disclosure', viewLabel: t(HUD_MESSAGE_KEY.cameraView), hud, zoom: zoomControl,
+    variant: 'always', viewLabel: t(HUD_MESSAGE_KEY.cameraView), hud, zoom: zoomControl,
     ...(rendererControl === undefined ? {} : { select: rendererControl.element }),
     controls: [...(panControl === undefined ? [] : [panControl]), ...(poseControl === undefined ? [] : [poseControl])],
     ...(options.rendererSelection?.focus === undefined ? {} : { onFocus: options.rendererSelection.focus }),
