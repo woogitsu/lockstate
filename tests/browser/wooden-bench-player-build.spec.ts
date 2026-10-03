@@ -1,5 +1,6 @@
 // Pending native acceptance of the complete floor-mounted Bench source; historical crops/colour/minima retained.
 import { writeFile } from 'node:fs/promises';
+import { openCameraControls } from './public-camera-controls';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands, currentClock } from './playtest-harness';
 import { assertBenchProducer, observeBenchNetwork, type BenchSnapshotData } from './wooden-bench-crossrails-evidence';
@@ -228,6 +229,7 @@ test(`player builds Holding Cell at quarterTurns${quarterTurns} and retains auth
   // q0: -45 +7*15 =60; q1: -45 +1*15 +90*objectOrientation =60 local.
   // Native right-button drag17px lowers45deg by17*.005 radians to40.129859deg,
   // safely selecting elevation40 rather than relying on a35/45deg tie.
+  await openCameraControls(page);
   for (let step=0; step < (quarterTurns === 0 ? 7 : 1); step++) {
     await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
   }

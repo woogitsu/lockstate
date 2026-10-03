@@ -1,5 +1,6 @@
 // Real worker-built Staff Room, calibrated independent chair pixels and Save/Load.
 import { writeFile } from 'node:fs/promises';
+import { openCameraControls } from './public-camera-controls';
 import { assertOwnedObjectOrders, recordOwnedObjectSnapshot, type ExpectedOwnedObject } from './owned-object-worker-evidence';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
@@ -225,6 +226,7 @@ test(`player builds Staff Room at quarterTurns${quarterTurns} and retains both a
   await info.attach('wooden-chair-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
 
   // Real native pose changes expose the authored support hardware after Load.
+  await openCameraControls(page);
   for (let step = 0; step < 3; step++) await page.getByRole('button', { name: quarterTurns === 0 ? 'Rotate camera right' : 'Rotate camera left', exact: true }).click();
   await page.mouse.move(1300, 700);
   await page.screenshot({ path: info.outputPath('physical-hardware-loaded-fullhd.png') });
