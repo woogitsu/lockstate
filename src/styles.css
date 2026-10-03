@@ -120,7 +120,7 @@ canvas {
    */
   overflow-y: auto;
   padding: var(--space-3);
-  background: var(--surface-raised);
+  background: var(--surface-panel);
   border: var(--hairline) solid var(--border);
   border-radius: var(--radius-md);
   font-size: var(--text-size-body);
@@ -253,7 +253,7 @@ canvas {
 /* The UI harness mounts the HUD without persistence. An empty slot must not
    take height from Staff or push its payroll header below the panel fold. */
 .hud__manage-saves:empty { display: none; }
-.manage-saves { padding: var(--space-2); background: var(--surface-raised); border: var(--hairline) solid var(--border); border-radius: var(--radius-md); font-size: var(--text-size-body); touch-action: auto; }
+.manage-saves { padding: var(--space-2); background: var(--surface-panel); border: var(--hairline) solid var(--border); border-radius: var(--radius-md); font-size: var(--text-size-body); touch-action: auto; }
 .manage-saves > summary { min-height: var(--tap-target); display: flex; align-items: center; cursor: pointer; font-weight: 600; }
 .manage-saves:not([open]) > :not(summary) { display: none; }
 .manage-saves > h3 { margin: var(--space-2) 0; font-size: var(--text-size-label); }
@@ -415,7 +415,7 @@ canvas {
   max-width: 100%;
   box-sizing: border-box;
   margin-bottom: var(--space-2);
-  background: var(--surface-raised);
+  background: var(--surface-panel);
   border: var(--hairline) solid var(--border);
   border-radius: var(--radius-md);
 }
@@ -535,7 +535,7 @@ canvas {
   box-sizing: border-box;
   margin-bottom: var(--space-2);
   padding: 0 var(--space-1) 0 var(--space-3);
-  background: var(--surface-raised);
+  background: var(--surface-panel);
   border: var(--hairline) solid var(--border);
   border-radius: var(--radius-md);
   color: var(--text-subtle);

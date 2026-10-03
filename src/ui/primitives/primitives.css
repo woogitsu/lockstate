@@ -394,7 +394,7 @@
   min-width: var(--tap-target);
   min-height: var(--tap-target);
   padding: 0;
-  background: transparent;
+  background: var(--surface-control);
   border: var(--hairline) solid transparent;
   border-radius: var(--radius-sm);
   color: var(--text-subtle);
@@ -403,7 +403,7 @@
 
 .ui-icon-button--bordered {
   border-color: var(--border);
-  background: var(--surface-raised);
+  background: var(--surface-control);
 }
 
 .ui-icon-button:hover { color: var(--text-heading); background: var(--surface-overlay); }
@@ -443,7 +443,7 @@
   min-width: calc(72px * var(--ui-scale));
   min-height: var(--tap-target);
   padding: var(--space-2) var(--space-3);
-  background: transparent;
+  background: var(--surface-control);
   border: 0;
   /* The active rule lives on the top edge; a transparent one at rest keeps
      the label from shifting by a pixel when a tab is selected. */
@@ -508,8 +508,8 @@
 .ui-panel {
   display: flex;
   flex-direction: column;
-  background: var(--surface-raised);
-  border: var(--hairline) solid var(--border);
+  background: var(--surface-panel);
+  border: var(--hairline) solid var(--border-panel);
   border-radius: var(--radius-md);
   /* Separation is the hairline and the background step. No shadow. */
   overflow: hidden;
@@ -524,7 +524,7 @@
      a 24px chevron is not hittable on a touch screen. */
   min-height: var(--tap-target);
   border-bottom: var(--hairline) solid var(--border);
-  background: var(--surface-overlay);
+  background: var(--surface-panel-header);
   color: var(--text-heading);
 }
 
@@ -561,14 +561,14 @@
   min-height: var(--tap-target);
   padding: 0 var(--space-2);
   box-sizing: border-box;
-  background: transparent;
+  background: var(--surface-panel-header);
   border: 0;
   color: var(--text-subtle);
   text-align: left;
   cursor: pointer;
 }
 
-.ui-section__header:hover { color: var(--text-heading); }
+.ui-section__header:hover { color: var(--text-heading); background: var(--surface-active); }
 
 /*
  * A header that shares its row with a control (`headerAction`).

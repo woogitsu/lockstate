@@ -1001,6 +1001,16 @@
   --surface-overlay: var(--paper-100);
   --surface-active: var(--paper-200);
 
+  /* Modern HUD skin, 2026-10-03: quiet panel wells, a distinct command
+     frame and filled controls. Existing light/dark palette and geometry
+     remain the contract; these roles select from its approved ramps. */
+  --surface-panel: var(--paper-050);
+  --surface-panel-header: var(--paper-100);
+  --surface-toolbar: var(--paper-100);
+  --surface-control: var(--paper-100);
+  --border-panel: var(--paper-300);
+  --border-toolbar: var(--straw-100);
+
   /* Text, strongest first -- all four are delivered day values. Measured on
      `--surface-base`: 13.35, 12.01, 9.51 and 4.70:1. */
   --text-heading: var(--slate-900);
@@ -1062,6 +1072,13 @@
   --surface-raised: var(--ink-700);
   --surface-overlay: var(--ink-600);
   --surface-active: var(--ink-500);
+
+  --surface-panel: var(--ink-800);
+  --surface-panel-header: var(--ink-900);
+  --surface-toolbar: var(--ink-900);
+  --surface-control: var(--ink-600);
+  --border-panel: var(--paper-alpha-07);
+  --border-toolbar: var(--amber-900);
 
   /* Measured on `--surface-base`: 14.34, 13.49, 8.74 and 5.87:1. */
   --text-heading: var(--paper-100);

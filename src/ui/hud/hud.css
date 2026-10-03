@@ -194,8 +194,8 @@
   padding: 0 var(--space-3);
   box-sizing: border-box;
   min-width: 0;
-  background: var(--surface-raised);
-  border-bottom: var(--hairline) solid var(--border);
+  background: var(--surface-toolbar);
+  border-bottom: var(--hairline) solid var(--border-toolbar);
 }
 
 /*
@@ -460,8 +460,8 @@
   width: calc(396px * var(--ui-scale));
   max-width: 100%;
   min-height: 0;
-  background: var(--surface-raised);
-  border: var(--hairline) solid var(--border);
+  background: var(--surface-panel);
+  border: var(--hairline) solid var(--border-panel);
   border-radius: var(--radius-md);
   box-sizing: border-box;
 }
@@ -508,7 +508,7 @@
   padding: 0 var(--space-2);
   border: var(--hairline) solid var(--border);
   border-radius: var(--radius-md);
-  background: var(--surface-raised);
+  background: var(--surface-panel);
 }
 
 /* The legend never shrinks and never wraps: it is one short word, and a
@@ -525,7 +525,7 @@
    corner and the row label both move with it. **The minimap square does
    not** -- see the cap on `.hud-minimap__surface` immediately below, and the
    measurement that made capping it necessary rather than a style choice. */
-.hud-minimap { width: calc(396px * var(--ui-scale)); background: var(--surface-raised); }
+.hud-minimap { width: calc(396px * var(--ui-scale)); background: var(--surface-panel); }
 
 .hud-minimap__surface {
   position: relative;
@@ -1465,7 +1465,7 @@
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
-  background: var(--surface-raised);
+  background: var(--surface-panel);
   /* Spends the denser step `tokens.css` pins for this panel (#1158). Load-
      bearing rather than tidy: nothing inside the panel declares a
      `font-size`, so without this the arm label and the queue rows would
@@ -1889,7 +1889,7 @@
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
-  background: var(--surface-raised);
+  background: var(--surface-panel);
 }
 
 /* The list of hireable roles is the region that grows with the catalogue, so
@@ -3073,7 +3073,7 @@
      `tests/browser/app-shell.spec.ts` asserts. */
   box-sizing: border-box;
   overflow-x: hidden;
-  background: var(--surface-raised);
+  background: var(--surface-panel);
   /*
    * **`flex: 0 0 auto` where this rule said `overflow-y: auto` until ADR 0115's
    * split, and the swap is the whole point of the split.**
@@ -3219,7 +3219,7 @@
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
-  background: var(--surface-raised);
+  background: var(--surface-panel);
 }
 
 /* Sentences, not labels: an eyebrow's uppercase single-line treatment is undone
@@ -3758,7 +3758,7 @@
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
-  background: var(--surface-raised);
+  background: var(--surface-panel);
 }
 
 /* Sentences, not labels: an eyebrow's uppercase single-line treatment is undone
@@ -4018,7 +4018,7 @@
   justify-content: center;
   gap: 0;
   max-width: 100%;
-  background: var(--surface-raised);
+  background: var(--surface-toolbar);
   border: var(--hairline) solid var(--border);
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -4519,7 +4519,7 @@
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: auto;
-  background: var(--surface-raised);
+  background: var(--surface-panel);
   /* Spends the denser step `tokens.css` pins for this panel (#1158). Load-
      bearing rather than tidy: nothing inside the panel declares a
      `font-size`, so without this its rows would inherit the 15px `body`
@@ -6212,7 +6212,7 @@
   min-width: calc(220px * var(--ui-scale));
   max-width: calc(100vw - 2 * var(--space-3));
   padding: var(--space-3);
-  background: var(--surface-raised);
+  background: var(--surface-panel);
   /*
    * A border and not a shadow, although this is the one HUD surface that
    * really does float over the map and `docs/VISUAL_IDENTITY.md` gives that
@@ -7017,7 +7017,7 @@
   min-height: var(--tap-target);
   gap: var(--space-1);
   padding-inline: var(--space-2);
-  background: var(--surface-raised);
+  background: var(--surface-panel);
   border: var(--hairline) solid var(--border-strong);
 }
 
@@ -7032,7 +7032,7 @@
   max-width: none;
   overflow-y: auto;
   border: var(--hairline) solid var(--border-strong);
-  background: var(--surface-raised);
+  background: var(--surface-toolbar);
 }
 
 .hud[data-layout-navigation-placement='drawer'] .hud-tabs__inner[hidden] { display: none; }
