@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-numeric-submit-20261003
+
+ ❯ tests/unit/ui-template-numeric-submit-ownership.test.ts (18 tests | 4 failed) 155ms
+   × world/new-selection/accepted-port-completion: a queued original command does not consume a newer arm 8ms
+   × world/new-rearm/accepted-port-completion: a queued original command does not consume a newer arm 10ms
+   × oblique/new-selection/accepted-port-completion: a queued original command does not consume a newer arm 5ms
+   × oblique/new-rearm/accepted-port-completion: a queued original command does not consume a newer arm 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-numeric-submit-ownership.test.ts > world/new-selection/accepted-port-completion: a queued original command does not consume a newer arm
+ FAIL  tests/unit/ui-template-numeric-submit-ownership.test.ts > world/new-rearm/accepted-port-completion: a queued original command does not consume a newer arm
+ FAIL  tests/unit/ui-template-numeric-submit-ownership.test.ts > oblique/new-selection/accepted-port-completion: a queued original command does not consume a newer arm
+ FAIL  tests/unit/ui-template-numeric-submit-ownership.test.ts > oblique/new-rearm/accepted-port-completion: a queued original command does not consume a newer arm
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/ui-template-numeric-submit-ownership.test.ts:279:28
+    277|   h.elements.find(e=>e.textContent==='Place on map')!.dispatchEvent(ne…
+    278|   h.completeAcceptedPlace();await settle(h);
+    279|   expect(h.tool.isArmed()).toBe(true);expect(h.tool.revision).toBe(cur…
+       |                            ^
+    280|   dispatch(h.canvas,'pointerup',h.point,0,0);await settle(h);expect(su…
+    281|   expect(h.actors.snapshot().simulation?.roomTemplates?.pending).toMat…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  4 failed | 22 passed (26)
+   Start at  09:40:20
+   Duration  2.62s (transform 1.70s, setup 0ms, import 4.74s, tests 263ms, environment 0ms)
+
