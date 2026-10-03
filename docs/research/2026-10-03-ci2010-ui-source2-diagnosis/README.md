@@ -23,3 +23,7 @@ App and fixture strict types exit0;26 bounded label-position/bridge/camera/index
 Minimap correction to the initial diagnosis: No active alerts is a row INSIDE alertList when rows=[]; hidden is only rowsundefined/No prison reporting. Current failure context has the empty row, so no list/sentinel expectation was changed. Parent was immediately notified before any edit. Zero geometry from the enlarged corner flex budget remains the causal candidate; native geometry required.
 
 Related quote bodies#1925/#1953 were read after expanded dedup. #1925 explicitly records fallback for geometry too narrow for its measured label; this prepared width adaptation is recorded against that existing repair context. No new Issue or accepted native pass claimed.
+
+## #1292 proposal, no layout edit
+
+[Clickable measured proposal](./1292-proposal.html) compares actual494px corner/−85.8125px clearance at781 with a clearly hypothetical model restoring398px by debiting new camera rows from the minimap surface. The current stylesheet already debits the zoom island from that surface to protect alerts. This could preserve781 and every control without raising the protected threshold; it still requires actual native geometry/hit tests and approval before CSS implementation. FullHD200 list shrink is a separate required measurement, not accepted from this arithmetic.
