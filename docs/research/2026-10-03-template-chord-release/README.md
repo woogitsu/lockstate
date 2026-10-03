@@ -68,3 +68,41 @@ keep their actual legal controls. Only this bridge guard changes production.
 These are source/real-worker outcomes. Actual browser trust, implicit touch
 capture and native touch ordering are pending ROOT acceptance. No native
 result is inferred from unit event injection or a successful build.
+
+## Prepared native acceptance: not run
+
+`tests/browser/room-template-second-touch-ownership.spec.ts` declares two real
+application cases, World/Angled at physical1920x1080 and accessibility UI100%.
+Page zoom is not substituted for UI scale. Both select Basic cell with clockwise
+quarterTurn1 through real controls and hold the actual simulation paused. Public
+worker preflight/snapshot messages, unchanged tee commands and window native
+pointer receipts are observed; input and worker state are never fabricated.
+
+The valid CDP stream starts primary finger id202, adds id101 by touchMove while
+202 remains active, then sends touchEnd with an EMPTY point list. The test must
+observe two trusted canvas pointerdowns, a trusted non-primary pointerup with
+the primary id still in the observed active set, then the primary pointerup.
+It fails closed if native ordering/capture differs or cancellation occurs. The
+whole CDP end command releases both fingers; no continued physical hold AFTER
+that command is claimed. This probes the per-event second-release ownership
+boundary without invalid touchEnd points or manual isTrusted events.
+
+Protocol preparation follows installed Playwright CDP types and the actual
+[Chromium touch dispatch implementation](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/content/browser/devtools/protocol/input_handler.cc):
+active ids absent from the valid touchEnd empty set are released individually.
+The lower secondary id is a fixture setup choice whose actual order must still
+be proven by native receipts, not assumed to pass.
+
+After that gesture, zero construction transmissions, identical actual orders/
+pending plan/balance snapshot, armed28-square ghost and unchanged actual cost
+are required. A fresh trusted primary press/release must then queue precisely
+one rotated Cell at the current real accepted preflight origin, produce18
+actual orders and one pending plan, preserve paused clock and treasury, and
+stand down the ghost. Immediate debit and completed construction are not claimed.
+
+Strict fixture types exit0 (`native-strict.log`); existing Playwright config
+--list collects exactly2 cases (`native-list-only.log`) without launching a
+browser/server. No matcher/config/production change accompanies preparation.
+Actual native baseline/guard-negative/exact restoration remains ROOT's queued
+acceptance. Source fix receipt was added to
+[Issue2006](https://github.com/woogitsu/lockstate/issues/2006#issuecomment-5965860535).
