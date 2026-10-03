@@ -40,7 +40,7 @@ if (start < 0 || end < 0) throw Error('Real worker availability callback missing
 const callback = stripTypeScriptTypes(source.slice(start, end + '\n      }'.length).replace(/^onWorkerAvailability: /, ''), { mode: 'strip' });
 function availability(tool: RoomTemplateTool) {
   return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldScene', 'hud', 'SIMULATION_UNAVAILABLE_NOTICE', 'crashReporter', `return (${callback});`)
-    (tool, {}, class {}, { setUnavailable() {} }, 'unavailable', undefined) as (available: boolean) => void;
+    (tool, { cancelConstructionGesture() {} }, class {}, { setUnavailable() {} }, 'unavailable', undefined) as (available: boolean) => void;
 }
 afterEach(() => vi.useRealTimers());
 

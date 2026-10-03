@@ -85,7 +85,7 @@ const hudSource = readFileSync(new URL('../../src/ui/hud/hud.ts', import.meta.ur
 const unavailable = hudSource.match(/function setUnavailable\(notice: HudUnavailableNotice \| undefined\): void (\{[\s\S]*?\r?\n  \})/);
 if (unavailable === null) throw Error('Actual HUD unavailable callback absent');
 const hud = { setUnavailable: new Function('unavailable', 'unavailableText', 't', `return notice => ${unavailable[1]};`)({ hidden: false }, { textContent: '' }, (key: string) => key) };
-async function worker() {
+function worker() {
   const clients: InProcessClient[] = [];
   const channel = new SimulationWorkerChannel(() => { const client = new InProcessClient(); clients.push(client); return client as unknown as SimulationClient; });
   channel.open(); const commands = new SimulationCommandSender(channel);
@@ -95,7 +95,6 @@ async function worker() {
       (undefined, activeScene, ObliqueWorldScene, hud, { labelKey: 'unavailable' }, undefined) as (available: boolean) => void;
     apply(available);
   } });
-  await host.startNew(73); await host.capture();
   return { commands, clients, host, setScene: (scene: WorldScene | ObliqueWorldScene) => { activeScene = scene; },
     submitted: () => clients.at(-1)!.sent.filter(message => message.kind === 'simulation/submit-command') };
 }
@@ -103,7 +102,7 @@ async function worker() {
 type Tool = 'wall' | 'object' | 'room';
 async function setup(mode: 'world' | 'oblique', selected: Tool) {
   vi.stubGlobal('window', new EventTarget()); vi.stubGlobal('document', { activeElement: null });
-  const actors = await worker(); const wall = new BuildTool(), object = new ObjectTool(), room = new RoomTool();
+  const actors = worker(); const wall = new BuildTool(), object = new ObjectTool(), room = new RoomTool();
   wall.setArmed(selected === 'wall', 'wall-brick', true);
   object.setArmed(selected === 'object', { definitionId: 'bed-wooden', footprint: { width: 1, height: 2 } });
   room.setArmed(selected === 'room', { roomId: 'room.yard' });
@@ -134,6 +133,7 @@ async function setup(mode: 'world' | 'oblique', selected: Tool) {
     if (actual instanceof WorldScene) actual.cameras.main.preRender(); return pointer;
   }
   actors.setScene(actual);
+  await actors.host.startNew(73); await actors.host.capture();
   return { actors, actual, mouse, pointer, roomReports, tools: { wall, object, room } };
 }
 

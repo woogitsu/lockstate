@@ -1,0 +1,37 @@
+$ pnpm typecheck && node scripts/cloudflare-task.mjs build production
+$ tsc -b --pretty false && tsc -b tsconfig.tools.json --pretty false
+vite v8.2.2 building lockstate_development environment for production...
+transforming...
+✓ 92 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/lockstate_development/.vite/manifest.json    0.15 kB │ gzip:  0.11 kB
+dist/lockstate_development/wrangler.json          1.60 kB │ gzip:  0.80 kB
+dist/lockstate_development/index.js             288.83 kB │ gzip: 76.61 kB
+
+✓ built in 72ms
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 496 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/.assetsignore                      0.02 kB
+dist/client/index.html                         1.71 kB │ gzip:   0.87 kB
+dist/client/assets/worker-CIcgxCeo.js        441.79 kB
+dist/client/assets/index-5ZA72Oh0.css         83.36 kB │ gzip:  12.75 kB
+dist/client/assets/pl-catalog-CiWtCsu8.js     51.26 kB │ gzip:  14.82 kB
+dist/client/assets/catalog-DwDh8vBS.js        86.21 kB │ gzip:  23.68 kB
+dist/client/assets/index-BNxylT5w.js       1,932.20 kB │ gzip: 511.65 kB
+
+✓ built in 5.96s
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[33m[PLUGIN_TIMINGS] [0mYour build spent 94% of 6.0s inside plugin hooks (5.6s).
+Measured inside the callback, so queue time is excluded and time the callback itself awaited is not:
+  - vite:prepare-out-dir renderStart (90%, 5.4s, 1 call)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+Verified Cloudflare production output: dist\lockstate_development\wrangler.json -> dist\client
