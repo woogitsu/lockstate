@@ -34,3 +34,19 @@ After preparing A, a bounded source review of actual main callback guards, rende
 The newly proposed camera panel originally followed only the strip, so a real visible refusal/event/unavailable band below it would share its map region. This is a defect in our unapproved source draft, not a claimed shipped305 bug. A deterministic producer test with supplied DOM band bounds was2RED before correction, then23G across4 focused files. The panel now follows the maximum actual visible band bottom and observes those existing band nodes; hidden bands spend no height. App/tools typecheck0. This routine overlap repair changes no text, action, notice floor or owner budget. Actual browser containment remains pending; a tall band can still make the total panel height infeasible and must be rejected rather than clipped.
 
 Notice read omission was actually executed on the corrected producer:2RED; exact restoration SHA256`fbc38d61e4940eb1aebfcaf7be74c8dfbcd6af99ac041a04333790d2c28cbcac` returned23G. Both variants share this correction. Source-only node/control proofs do not claim real pixels, public native pass or owner approval.
+
+## B source variant
+
+`codex/camera-controls-b-always-source-draft-20261003` mounts variant`always`; A published head`85cff605f5888ae930b80aeb56d1ec5774b4f985` mounts`disclosure`. Their source difference is the single variant plus its comment. The original control instances, bounds/notice correction, labels and CSS are identical. B23 focused testsG; app/tools types0. [Exact B source patch](./evidence/variant-b-source.patch). No new native/build ran for either variant, and no PR was created.
+
+## Focused public native preparation
+
+[Exact execution recipe and limits](./NATIVE_RECIPE.md): one actual built-client
+English UI100 case per variant,1920×1080,1worker/0retries/60s/expect10s.
+Public RemoveWall obtains a genuine simulation refusal/status and complete
+alert row; public View, all pan/pose/Zoom controls retain44px physical hits.
+Camera movements use independently published minimap geometry, and complete
+paused worker snapshots before/after must remain exactly equal. Concrete
+screenshots and the public DOM geometry reader are part of the test output.
+Both strict app/tools checks and collection are recorded. No browser, server
+or build was run; collection is not native acceptance or owner approval.

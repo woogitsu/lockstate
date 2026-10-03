@@ -78,3 +78,13 @@ that check, hashed, and removed with its two empty directories immediately
 afterward. That index is **not an A/B subject build**, and no missing assets,
 old UI, server or browser was accepted using it. The actual A/B native run
 must build its own frozen source before invoking this config normally.
+
+Final source preparation (including the separate Angled zoom precondition):
+A`1e6ad41dcb`, B`2f4a8a0d33`; each actual app/tools check exits0, and each
+actual`--list` reports exactly1test1file, retained under
+`evidence/{a,b}-final-{app-types,tools-types,collection}.txt`.
+No production UI source changed during native preparation. Comparing the
+two variants'`src` shows only the original A/B mounting line and adjacent
+comment. The temporary collection index was removed; this WT has no`dist`
+subject until the sole build/browser lease is transferred. Current public
+geometry/native/mutation outcomes remain pending, not GREEN by collection.
