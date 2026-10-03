@@ -1,0 +1,48 @@
+{
+  "base": "345a7d83de4909cd59d9cfb988f71baf471e5325",
+  "nativeExecution": false,
+  "cssLayoutSimulation": false,
+  "source": {
+    "tapTargetAt100": 44,
+    "space2At100": 8,
+    "space3At100": 12,
+    "hairline": 1,
+    "zoomBlockAt100": 54,
+    "originalSurfaceCapAt100": 170,
+    "surfaceVerticalPaddingAndBordersAt100": 26,
+    "worldExtraSelect": 44,
+    "worldExtraPanWithMargin": 52,
+    "worldExtraTotal": 96,
+    "obliqueAdditionalPoseWithMargin": 52,
+    "obliqueExtraTotal": 148,
+    "fullHd200CornerCap": 528,
+    "fullHd200SurfaceAuthoredHeight": 110
+  },
+  "actualCI": {
+    "1292Mode": "Top-down",
+    "oldPinnedCorner": 398,
+    "actualCorner": 494,
+    "actualDelta": 96,
+    "actual781Clearance": -85.8125,
+    "originalPinned781Clearance": 10.19,
+    "minimap200Overview": "actual empty-alert row present; original list-visible assertion failed",
+    "build200ExpandedPngSha256": "c29577e163dbeb1244e263bf3b73c99261693df27c2a1d770f988ee3aa3ca888"
+  },
+  "arithmeticOnlyCandidate": {
+    "worldSurfaceCap": 74,
+    "obliqueSurfaceCap": 22,
+    "obliqueSurfaceBelowExistingPaddingBorderFloor": true,
+    "fullHd200ExactListAncestorGeometry": null,
+    "nativeMeasurementsRequired": true
+  },
+  "sourceChanges": false,
+  "reasonNoCssEdit": "A uniform debit cannot preserve the Angled corner budget and the existing surface padding/borders. The real minimap now renders game content; the former placeholder rationale alone does not settle its new minimum usable height. FullHD200 also needs actual ancestor and control measurements before choosing a budget rule.",
+  "sourceHashes": {
+    "src/ui/hud/hud.ts": "be66fa52423d6aaf34638925562bfbe229e51b488a09aabd7c47a9a02c0ee3d4",
+    "src/ui/hud/hud.css": "3ff1a8a1d236ddadc439466c03933e33423b91db8c576a3d12e5ab56c4f060bc",
+    "src/ui/tokens.css": "1aa20fdd33340ecb4648b2302fa519b58b677d3163b8b8e7fe0e45da122ae5a4",
+    "src/ui/primitives/primitives.css": "20c7564bfcd1f6a7d5027b3293567610d31f38b26e93c0b3a204fce02412e288",
+    "src/ui/hud/renderer-selection-control.ts": "3c2d851e95332f1b429fffafa71dc9fee3cf075294b2396e8ffd6db5d6ffed75"
+  },
+  "proposalScriptSyntax": "valid, not executed"
+}
