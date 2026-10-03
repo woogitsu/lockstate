@@ -144,9 +144,9 @@ async function setup(mode: 'world' | 'oblique', templateId: RoomTemplateId, init
     : selector === '.hud__corner' ? box(0, 0, 350 * uiScale, 130 * uiScale) : selector === '.hud__rail' ? box(1920 - 250 * uiScale, 130 * uiScale, 250 * uiScale, 900)
     : selector === '.hud-strip' ? box(0, 0, 1920, 130 * uiScale) : undefined };
   const main = new Function('worldScene', 'roomTemplateTool', 'appRoot', 'WorldScene', 'ObliqueWorldScene', 'RoomTemplatePreviewFitController', 'installRoomTemplateWorldBridge',
-    'screenToGround', 'groundToScreen', 'computeObliqueFit', 'TILE_SIZE_PX', 'objectFootprintOf', 'localizer', 'formatRoomTemplateQuote',
+    'screenToGround', 'groundToScreen', 'computeObliqueFit', 'renderFeed', 'TILE_SIZE_PX', 'objectFootprintOf', 'localizer', 'formatRoomTemplateQuote',
     `let reinstallPlanGhost = () => {}; let withdrawPlanGhost = () => {}; ${installBody} return { withdraw: () => withdrawPlanGhost() };`)
-    (scene, tool, root, WorldScene, ObliqueWorldScene, RoomTemplatePreviewFitController, installRoomTemplateWorldBridge, screenToGround, groundToScreen, computeObliqueFit, 64, footprint,
+    (scene, tool, root, WorldScene, ObliqueWorldScene, RoomTemplatePreviewFitController, installRoomTemplateWorldBridge, screenToGround, groundToScreen, computeObliqueFit, { readFrame: () => EMPTY_RENDER_FRAME }, 64, footprint,
       localizer, formatRoomTemplateQuote) as { withdraw: () => void };
   const point = { x: 900, y: 460 };
   const initialOrigin = scene instanceof ObliqueWorldScene ? originAt(point, scene.cameraPose) : (() => {

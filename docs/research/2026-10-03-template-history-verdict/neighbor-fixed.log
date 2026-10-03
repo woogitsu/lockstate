@@ -1,0 +1,565 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-history-verdict-audit-20261003
+
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts (20 tests | 20 failed) 60ms
+   × world→replacement rotated plan retains physical map cursor despite old worker reply 17ms
+   × world→replacement rotated: physical movement restores current legal preflight and command 3ms
+   × world→replacement rotated/mirrored plan retains physical map cursor despite old worker reply 2ms
+   × world→replacement rotated/mirrored: physical movement restores current legal preflight and command 2ms
+   × oblique→replacement rotated plan retains physical map cursor despite old worker reply 3ms
+   × oblique→replacement rotated: physical movement restores current legal preflight and command 2ms
+   × oblique→replacement rotated/mirrored plan retains physical map cursor despite old worker reply 2ms
+   × oblique→replacement rotated/mirrored: physical movement restores current legal preflight and command 2ms
+   × world?replacement: old real refusal cannot hide or block the newly picked legal plan 2ms
+   × world?replacement: real UI movement while bridges are withdrawn invalidates physical hover 2ms
+   × world?replacement: current canvas bounds convert retained physical coordinates anew 2ms
+   × world?replacement/mirrored: old real refusal cannot hide or block the newly picked legal plan 2ms
+   × world?replacement/mirrored: real UI movement while bridges are withdrawn invalidates physical hover 1ms
+   × world?replacement/mirrored: current canvas bounds convert retained physical coordinates anew 2ms
+   × oblique?replacement: old real refusal cannot hide or block the newly picked legal plan 2ms
+   × oblique?replacement: real UI movement while bridges are withdrawn invalidates physical hover 2ms
+   × oblique?replacement: current canvas bounds convert retained physical coordinates anew 1ms
+   × oblique?replacement/mirrored: old real refusal cannot hide or block the newly picked legal plan 1ms
+   × oblique?replacement/mirrored: real UI movement while bridges are withdrawn invalidates physical hover 1ms
+   × oblique?replacement/mirrored: current canvas bounds convert retained physical coordinates anew 5ms
+
+ Test Files  1 failed | 6 passed (7)
+      Tests  20 failed | 92 passed (112)
+     Errors  20 errors
+   Start at  07:51:07
+   Duration  6.11s (transform 3.17s, setup 0ms, import 8.97s, tests 1.53s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 20 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world→replacement rotated plan retains physical map cursor despite old worker reply
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world→replacement rotated/mirrored plan retains physical map cursor despite old worker reply
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique→replacement rotated plan retains physical map cursor despite old worker reply
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique→replacement rotated/mirrored plan retains physical map cursor despite old worker reply
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ paint src/ui/room-template-world-bridge.ts:153:32
+ ❯ paint tests/unit/ui-renderer-template-stationary-hover.test.ts:143:69
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:41
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:159:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/20]⎯
+
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world→replacement rotated: physical movement restores current legal preflight and command
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world→replacement rotated/mirrored: physical movement restores current legal preflight and command
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique→replacement rotated: physical movement restores current legal preflight and command
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique→replacement rotated/mirrored: physical movement restores current legal preflight and command
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ paint src/ui/room-template-world-bridge.ts:153:32
+ ❯ paint tests/unit/ui-renderer-template-stationary-hover.test.ts:143:69
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:41
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:174:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/20]⎯
+
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world?replacement: old real refusal cannot hide or block the newly picked legal plan
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world?replacement/mirrored: old real refusal cannot hide or block the newly picked legal plan
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique?replacement: old real refusal cannot hide or block the newly picked legal plan
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique?replacement/mirrored: old real refusal cannot hide or block the newly picked legal plan
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ paint src/ui/room-template-world-bridge.ts:153:32
+ ❯ paint tests/unit/ui-renderer-template-stationary-hover.test.ts:143:69
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:41
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:191:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/20]⎯
+
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world?replacement: real UI movement while bridges are withdrawn invalidates physical hover
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world?replacement/mirrored: real UI movement while bridges are withdrawn invalidates physical hover
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique?replacement: real UI movement while bridges are withdrawn invalidates physical hover
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique?replacement/mirrored: real UI movement while bridges are withdrawn invalidates physical hover
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ paint src/ui/room-template-world-bridge.ts:153:32
+ ❯ paint tests/unit/ui-renderer-template-stationary-hover.test.ts:143:69
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:41
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:198:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/20]⎯
+
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world?replacement: current canvas bounds convert retained physical coordinates anew
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > world?replacement/mirrored: current canvas bounds convert retained physical coordinates anew
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique?replacement: current canvas bounds convert retained physical coordinates anew
+ FAIL  tests/unit/ui-renderer-template-stationary-hover.test.ts > oblique?replacement/mirrored: current canvas bounds convert retained physical coordinates anew
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ paint src/ui/room-template-world-bridge.ts:153:32
+ ❯ paint tests/unit/ui-renderer-template-stationary-hover.test.ts:143:69
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:41
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:206:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/20]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 20 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:159:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:174:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:159:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:174:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:159:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:174:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:159:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:174:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:191:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:198:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:206:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:191:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:198:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:206:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:191:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:198:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:206:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:191:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:198:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+ReferenceError: EMPTY_RENDER_FRAME is not defined
+ ❯ Object.readFrame tests/unit/ui-renderer-template-stationary-hover.test.ts:114:143
+    112|     return { changed, withdraw: () => withdrawPlanGhost() };`)
+    113|     (initialMode === 'world' ? world : angled, tool, { querySelector: …
+    114|       RoomTemplatePreviewFitController, installRoomTemplateWorldBridge…
+       |                                                                                                                                               ^
+    115|       { format: (key: string) => key }, (_localizer: unknown, quote: u…
+    116|   let expectedOrigin: { x: number; y: number } | undefined;
+ ❯ Object.worldRevision tests/unit/ui-renderer-template-stationary-hover.test.ts:107:16
+ ❯ move src/ui/room-template-world-bridge.ts:51:39
+ ❯ capture src/ui/room-template-world-bridge.ts:84:5
+ ❯ ElementStub.pointerMove src/ui/room-template-world-bridge.ts:95:5
+ ❯ ElementStub.[nodejs.internal.kHybridDispatch] node:internal/event_target:856:20
+ ❯ ElementStub.dispatchEvent node:internal/event_target:789:26
+ ❯ pointer tests/unit/ui-renderer-template-stationary-hover.test.ts:85:10
+ ❯ setup tests/unit/ui-renderer-template-stationary-hover.test.ts:144:3
+ ❯ tests/unit/ui-renderer-template-stationary-hover.test.ts:206:21
+
+This error originated in "tests/unit/ui-renderer-template-stationary-hover.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+

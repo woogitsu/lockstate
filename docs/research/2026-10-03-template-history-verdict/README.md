@@ -2,8 +2,8 @@
 
 2026-10-03; frozen subject6820098b36cbd4b24fd74d37849db2e1751b1323.
 [Issue2007](https://github.com/woogitsu/lockstate/issues/2007). Isolated branch
-codex/hud-template-history-verdict-audit-20261003. Production unchanged at this
-diagnostic checkpoint; no browser/server/CI run.
+codex/hud-template-history-verdict-audit-20261003. Original production unchanged at diagnostic4572d3efad38145e6d7a5f94d58a9303fec66327;
+follow-up scoped source correction below. No browser/server/CI run.
 
 ## Actual route and original evidence
 
@@ -62,5 +62,21 @@ Angled yaw35/elevation65/zoom1.4 are the actual source projections.
 Bridge/main named adapter may consume existing renderFeed.revision to invalidate
 only the stale preview query. Preserve selected/fitted origin, press/selection
 ownership, session logic, #2006 non-primary-touch reset and worker validation.
-No polling/protocol/persistence/Scene/copy/layout changes. Source fix, real
-producer omission, byte-exact restoration and ROOT native acceptance pending.
+No polling/protocol/persistence/Scene/copy/layout changes. Source correction reads that revision in the existing main ghost adapter and
+adds it to the bridge same-origin/selection dedup. Existing animation frame checks
+therefore requery unchanged physical hover after world edits. Fitted origin,
+selection/press/session ownership and non-primary-touch reset stay intact.
+
+`fixed8green.log`:8/8 GREEN. Four existing main-body source harnesses require the
+new free variable: `neighbor-missing-feed-port.log` retains84 missing-port
+failures/148 errors. Only their Function argument/call slots gained a static
+EMPTY_RENDER_FRAME for unchanged-world controls. `neighbor-fixed.log` retains
+my20 missing-value-import setup failures; narrow import correction yields
+`neighbor-restored112.log`:112/112 GREEN in7 files, maxWorkers2. No assertions,
+commands, verdicts or budgets changed.
+
+`strict-fixed.log`: five fixture types exit0; `production-build-fixed.log`: both
+application/tools typechecks and production client/worker build exit0. The first
+build had a Windows shim-path setup failure (`production-build-shim-path-error.log`);
+resolving its existing absolute path through the current directory fixed it.
+Producer omission/byte-exact restoration and ROOT native acceptance still pending.
