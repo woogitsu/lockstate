@@ -1,0 +1,15 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: /assets/environment/oblique/furniture.chair.wooden-yaw+00-elev40.a1259503682a.png cannot stand in for authored cast-iron burner hardware
+    at file:///C:/Users/matma/AppData/Local/Temp/lockstate-kitchen-material-source-calibration-20261004/source-proof.mjs:32:3 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0
