@@ -1,0 +1,19 @@
+{
+  "consumerCheckpoint": "878198d5628c4100d7f3941032b3359a19f8a1d8",
+  "reviewRecipeSource": "ec3b6971356a4c5b9d2d802363b2ef2b67595bc1",
+  "authorization": "Owner-selected #2019 Rotate object / Obróć obiekt, 0/90/180/270 only",
+  "locales": ["en", "pl"],
+  "viewport": { "width": 1920, "height": 1080 },
+  "publicUiScale": 100,
+  "expectedActualVisualViewportScale": 1,
+  "budgets": { "caseMs": 60000, "expectMs": 10000, "workers": 1, "retries": 0 },
+  "applicationAndToolsTypecheckExit": 0,
+  "distIndexPresent": false,
+  "distClientIndexPresent": false,
+  "collectionExecuted": false,
+  "buildExecuted": false,
+  "nativeExecuted": false,
+  "completedFurnitureClaimed": false,
+  "global200AllocationImported": false,
+  "status": "Source prepared; actual artifact collection and native acceptance pending"
+}
