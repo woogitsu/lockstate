@@ -134,15 +134,15 @@ async function plan(page: Page, origin: { x: number; y: number }) {
 // No production plan/coordinator helper is used to manufacture expected orders.
 function shell(origin: { x: number; y: number }, sequence: number) {
   const prefix = `room-template-${String(sequence).padStart(12, '0')}`;
-  const walls: { definitionId: string; location: { x: number; y: number }; footprint?: string; edge?: string; id: string; sequence: number }[] = [];
+  const walls: { definitionId: string; location: { x: number; y: number }; footprint?: string; edge?: string; id: string; placementSequence: number }[] = [];
   for (let y = 0; y < 7; y++) for (let x = 0; x < 4; x++) {
     if ((x === 0 || x === 3 || y === 0 || y === 6) && !(x === 1 && y === 6)) {
       walls.push({ id: `${prefix}-0-wall-${String(walls.length).padStart(3, '0')}`, definitionId: 'wall-brick',
-        location: { x: origin.x + x, y: origin.y + y }, sequence, footprint: 'square' });
+        location: { x: origin.x + x, y: origin.y + y }, placementSequence: sequence, footprint: 'square' });
     }
   }
   return [...walls, { id: `${prefix}-1-door-000`, definitionId: 'door-wooden',
-    location: { x: origin.x + 1, y: origin.y + 6 }, sequence, edge: 'north' }];
+    location: { x: origin.x + 1, y: origin.y + 6 }, placementSequence: sequence, edge: 'north' }];
 }
 async function exportSaved(page: Page) {
   const download = page.waitForEvent('download');

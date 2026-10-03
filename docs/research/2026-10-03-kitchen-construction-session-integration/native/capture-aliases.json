@@ -1,155 +1,267 @@
 [
   {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003.json",
-    "archived": "initial/report.json",
-    "sourceBytes": 16876,
-    "sourceSha256": "24440927059260fd55a5fd36f6a80a96df65ff8a5bb603778ee28ef4d953ee28",
-    "archivedBytes": 16876,
-    "archivedSha256": "24440927059260fd55a5fd36f6a80a96df65ff8a5bb603778ee28ef4d953ee28"
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003.json",
+    "archived": "expanded-initial/report.json",
+    "sourceBytes": 47703,
+    "sourceSha256": "b4face72cb2fce6c6df52850dc63e2240a4138153fbc70013fcb7f8f6b33e4bf",
+    "archivedBytes": 47703,
+    "archivedSha256": "b4face72cb2fce6c6df52850dc63e2240a4138153fbc70013fcb7f8f6b33e4bf"
   },
   {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003.txt",
-    "archived": "initial/console.txt",
-    "sourceBytes": 16464,
-    "sourceSha256": "c8a33aab44c9f6d33469789e0248650d461d7d4afc91cc00e190af318777f559",
-    "archivedBytes": 8468,
-    "archivedSha256": "c4c94bd63b8c37295d2c915035d11cab6c42249dbdd0159cd64a0462368df756",
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003.txt",
+    "archived": "expanded-initial/console.txt",
+    "sourceBytes": 35730,
+    "sourceSha256": "99cbb6e87ad981150d22eab31c0654c262c7524fcc02e5f8b90d3048d9e27f66",
+    "archivedBytes": 17900,
+    "archivedSha256": "11f570c69a28fda312aac7d005aea4d928d9c54b4440c4c77bab64cde0cfc1ad",
     "conversion": "UTF16LE console to UTF8"
   },
   {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\.last-run.json",
-    "archived": "initial/001-.last-run.json",
-    "sourceBytes": 96,
-    "sourceSha256": "8458c6f25cfbd17a57bf2671d8f8a9f2d5a87139a0d66f3ae0eb38bae16692a4",
-    "archivedBytes": 96,
-    "archivedSha256": "8458c6f25cfbd17a57bf2671d8f8a9f2d5a87139a0d66f3ae0eb38bae16692a4"
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\.last-run.json",
+    "archived": "expanded-initial/001-.last-run.json",
+    "sourceBytes": 145,
+    "sourceSha256": "308c2441ac050683258dc6953bccd15c5a38d3390c629859fb4e760e7ed46949",
+    "archivedBytes": 145,
+    "archivedSha256": "308c2441ac050683258dc6953bccd15c5a38d3390c629859fb4e760e7ed46949"
   },
   {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\attachments\\dedicated-kitchen-stove-worker-and-save-evidence-55df3bd042fb5fe55c846436bcee3c6325b4b2a0.json",
-    "archived": "initial/002-dedicated-kitchen-stove-worker-and-save-evidence-55df3bd042fb5fe55c846436bcee3c6",
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\attachments\\dedicated-kitchen-stove-worker-and-save-evidence-06b2ed1bf277f903e55eb4a18703776df5a10046.json",
+    "archived": "expanded-initial/002-dedicated-kitchen-stove-worker-and-save-evidence-06b2ed1bf277f903e55eb4a18703776",
+    "sourceBytes": 672,
+    "sourceSha256": "f157a8c45d8487ee09c6845a5a939a1e4ece9e791ef8f585817ab1c425021f16",
+    "archivedBytes": 672,
+    "archivedSha256": "f157a8c45d8487ee09c6845a5a939a1e4ece9e791ef8f585817ab1c425021f16"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\dedicated-kitchen-stove-loaded-fullhd.png",
+    "archived": "expanded-initial/003-dedicated-kitchen-stove-loaded-fullhd.png",
+    "sourceBytes": 1477648,
+    "sourceSha256": "a35840facefb17bceae27f49a8052b91eaab98a78873387a1be794f26523d5af",
+    "archivedBytes": 1477648,
+    "archivedSha256": "a35840facefb17bceae27f49a8052b91eaab98a78873387a1be794f26523d5af"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-and-save-evidence.json",
+    "archived": "expanded-initial/004-dedicated-kitchen-stove-worker-and-save-evidence.json",
+    "sourceBytes": 672,
+    "sourceSha256": "f157a8c45d8487ee09c6845a5a939a1e4ece9e791ef8f585817ab1c425021f16",
+    "archivedBytes": 672,
+    "archivedSha256": "f157a8c45d8487ee09c6845a5a939a1e4ece9e791ef8f585817ab1c425021f16"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-completed-fullhd.png",
+    "archived": "expanded-initial/005-dedicated-kitchen-stove-worker-completed-fullhd.png",
+    "sourceBytes": 1509981,
+    "sourceSha256": "1662e72fbfc541a076bd37573f56abe2c2ace59cf1f31ffb54096135c266c5e4",
+    "archivedBytes": 1509981,
+    "archivedSha256": "1662e72fbfc541a076bd37573f56abe2c2ace59cf1f31ffb54096135c266c5e4"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-loaded-physical-fixings-fullhd.png",
+    "archived": "expanded-initial/006-kitchen-loaded-physical-fixings-fullhd.png",
+    "sourceBytes": 1469163,
+    "sourceSha256": "4de121ed787f7b20f80c7103627afcc93a4f8c121d0f362ce0395f6fab9d20af",
+    "archivedBytes": 1469163,
+    "archivedSha256": "4de121ed787f7b20f80c7103627afcc93a4f8c121d0f362ce0395f6fab9d20af"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-paused-after-load.json",
+    "archived": "expanded-initial/007-kitchen-paused-after-load.json",
+    "sourceBytes": 76761,
+    "sourceSha256": "50db7d86715032a93cbe40fcc5eeebb96a467c37e9cdff3ee2a293d09ffea637",
+    "archivedBytes": 76761,
+    "archivedSha256": "50db7d86715032a93cbe40fcc5eeebb96a467c37e9cdff3ee2a293d09ffea637"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-paused-before-save.json",
+    "archived": "expanded-initial/008-kitchen-paused-before-save.json",
+    "sourceBytes": 76761,
+    "sourceSha256": "99cbc7af9c5206417e680c41277173f3ba75f0832ad29933b5ead59a60a48bfa",
+    "archivedBytes": 76761,
+    "archivedSha256": "99cbc7af9c5206417e680c41277173f3ba75f0832ad29933b5ead59a60a48bfa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "expanded-initial/009-worker-and-completed-save-evidence.json",
+    "sourceBytes": 443,
+    "sourceSha256": "7a3f9f64980e5382bd0e76c4eb3d144d55930b7ac06c24d0e3af114f073c0158",
+    "archivedBytes": 443,
+    "archivedSha256": "7a3f9f64980e5382bd0e76c4eb3d144d55930b7ac06c24d0e3af114f073c0158"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\attachments\\dedicated-kitchen-stove-worker-and-save-evidence-de72848a50a76b4e4229d7e197c979b4530986ab.json",
+    "archived": "expanded-initial/010-dedicated-kitchen-stove-worker-and-save-evidence-de72848a50a76b4e4229d7e197c979b",
     "sourceBytes": 647,
     "sourceSha256": "4ae30d050f224e3375f5f140d7ea200783295111f0c9e35802fe75a922f4e516",
     "archivedBytes": 647,
     "archivedSha256": "4ae30d050f224e3375f5f140d7ea200783295111f0c9e35802fe75a922f4e516"
   },
   {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-loaded-fullhd.png",
-    "archived": "initial/003-dedicated-kitchen-stove-loaded-fullhd.png",
-    "sourceBytes": 1486484,
-    "sourceSha256": "79741d2c49e66c2a4a9245108b6c86d1eece74ff51286d5cb81675a5b295d461",
-    "archivedBytes": 1486484,
-    "archivedSha256": "79741d2c49e66c2a4a9245108b6c86d1eece74ff51286d5cb81675a5b295d461"
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-loaded-fullhd.png",
+    "archived": "expanded-initial/011-dedicated-kitchen-stove-loaded-fullhd.png",
+    "sourceBytes": 1486477,
+    "sourceSha256": "68c376451d114bf7185d672422c4604024717cedd5e07a50a7b7c710351a31cf",
+    "archivedBytes": 1486477,
+    "archivedSha256": "68c376451d114bf7185d672422c4604024717cedd5e07a50a7b7c710351a31cf"
   },
   {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-and-save-evidence.json",
-    "archived": "initial/004-dedicated-kitchen-stove-worker-and-save-evidence.json",
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-and-save-evidence.json",
+    "archived": "expanded-initial/012-dedicated-kitchen-stove-worker-and-save-evidence.json",
     "sourceBytes": 647,
     "sourceSha256": "4ae30d050f224e3375f5f140d7ea200783295111f0c9e35802fe75a922f4e516",
     "archivedBytes": 647,
     "archivedSha256": "4ae30d050f224e3375f5f140d7ea200783295111f0c9e35802fe75a922f4e516"
   },
   {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-completed-fullhd.png",
-    "archived": "initial/005-dedicated-kitchen-stove-worker-completed-fullhd.png",
-    "sourceBytes": 1519690,
-    "sourceSha256": "28bcaca36a7d5c1e98bca46d6156d33e27fb6daf242f7956d17f7d9f739533e0",
-    "archivedBytes": 1519690,
-    "archivedSha256": "28bcaca36a7d5c1e98bca46d6156d33e27fb6daf242f7956d17f7d9f739533e0"
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-completed-fullhd.png",
+    "archived": "expanded-initial/013-dedicated-kitchen-stove-worker-completed-fullhd.png",
+    "sourceBytes": 1519692,
+    "sourceSha256": "de6447f61b6f20627e064b402b53e251f99346c6697b7e90098f3a00ebf80fd1",
+    "archivedBytes": 1519692,
+    "archivedSha256": "de6447f61b6f20627e064b402b53e251f99346c6697b7e90098f3a00ebf80fd1"
   },
   {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\error-context.md",
-    "archived": "initial/006-error-context.md",
-    "sourceBytes": 9519,
-    "sourceSha256": "09a0a9323f6a89be1e5aa19b878e41f6d82c6c6b13f044c789f9cf7b96af1073",
-    "archivedBytes": 9519,
-    "archivedSha256": "09a0a9323f6a89be1e5aa19b878e41f6d82c6c6b13f044c789f9cf7b96af1073"
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-loaded-physical-fixings-fullhd.png",
+    "archived": "expanded-initial/014-kitchen-loaded-physical-fixings-fullhd.png",
+    "sourceBytes": 1492111,
+    "sourceSha256": "5165de815af50396b7a6ed71fa48658412ed58af878d578754bf0c83f72037f7",
+    "archivedBytes": 1492111,
+    "archivedSha256": "5165de815af50396b7a6ed71fa48658412ed58af878d578754bf0c83f72037f7"
   },
   {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\failed-player-fullhd.png",
-    "archived": "initial/007-failed-player-fullhd.png",
-    "sourceBytes": 1486484,
-    "sourceSha256": "79741d2c49e66c2a4a9245108b6c86d1eece74ff51286d5cb81675a5b295d461",
-    "archivedBytes": 1486484,
-    "archivedSha256": "79741d2c49e66c2a4a9245108b6c86d1eece74ff51286d5cb81675a5b295d461"
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-paused-after-load.json",
+    "archived": "expanded-initial/015-kitchen-paused-after-load.json",
+    "sourceBytes": 76924,
+    "sourceSha256": "76592756d1aac3f260201e455168bb70d6b66ed30a4b34588bc8ccd33662b509",
+    "archivedBytes": 76924,
+    "archivedSha256": "76592756d1aac3f260201e455168bb70d6b66ed30a4b34588bc8ccd33662b509"
   },
   {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\failed-player-worker-snapshot.json",
-    "archived": "initial/008-failed-player-worker-snapshot.json",
-    "sourceBytes": 76919,
-    "sourceSha256": "29fdbe4ddbb6098c36e738e50218e2d5da8f08ca3625aa2f8507a376ade9ce41",
-    "archivedBytes": 76919,
-    "archivedSha256": "29fdbe4ddbb6098c36e738e50218e2d5da8f08ca3625aa2f8507a376ade9ce41"
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-paused-before-save.json",
+    "archived": "expanded-initial/016-kitchen-paused-before-save.json",
+    "sourceBytes": 76924,
+    "sourceSha256": "5f8b9c20165d86af3034c8c4f9cdd9592c117c15ded377d4d5acc7e61e08102a",
+    "archivedBytes": 76924,
+    "archivedSha256": "5f8b9c20165d86af3034c8c4f9cdd9592c117c15ded377d4d5acc7e61e08102a"
   },
   {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-paused-after-load.json",
-    "archived": "initial/009-kitchen-paused-after-load.json",
-    "sourceBytes": 76919,
-    "sourceSha256": "c6076d64a783bc6b475953c9ed90eb789078210df39ea5e3c6e5674cdb9f7b5d",
-    "archivedBytes": 76919,
-    "archivedSha256": "c6076d64a783bc6b475953c9ed90eb789078210df39ea5e3c6e5674cdb9f7b5d"
-  },
-  {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-paused-before-save.json",
-    "archived": "initial/010-kitchen-paused-before-save.json",
-    "sourceBytes": 76919,
-    "sourceSha256": "051abf17dc134733a3eba72c1512fe0686f7e01e7f523d1b770a7e12d129ff7e",
-    "archivedBytes": 76919,
-    "archivedSha256": "051abf17dc134733a3eba72c1512fe0686f7e01e7f523d1b770a7e12d129ff7e"
-  },
-  {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\worker-and-completed-save-evidence.json",
-    "archived": "initial/011-worker-and-completed-save-evidence.json",
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "expanded-initial/017-worker-and-completed-save-evidence.json",
     "sourceBytes": 418,
     "sourceSha256": "c21fe8169626258694702babb21abefe70cd79182577107fe60a8bc87fddb8f2",
     "archivedBytes": 418,
     "archivedSha256": "c21fe8169626258694702babb21abefe70cd79182577107fe60a8bc87fddb8f2"
   },
   {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\world-construction-chord-r-aa2c4-e-a-held-left-build-gesture\\actual-primary-release-completed-gesture.png",
-    "archived": "initial/012-actual-primary-release-completed-gesture.png",
-    "sourceBytes": 223319,
-    "sourceSha256": "febdb676dfacd1d19384bdb5784860c620959d6d69951b7f0e911488dfc35bb1",
-    "archivedBytes": 223319,
-    "archivedSha256": "febdb676dfacd1d19384bdb5784860c620959d6d69951b7f0e911488dfc35bb1"
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\room-template-session-pref-0464a-orders-through-V8-Save-Load\\error-context.md",
+    "archived": "expanded-initial/018-error-context.md",
+    "sourceBytes": 21064,
+    "sourceSha256": "340d1ff117f8b220d35bd3b1111954f5794dffd12ed1e7eb8a16ad8bfaa69992",
+    "archivedBytes": 21064,
+    "archivedSha256": "340d1ff117f8b220d35bd3b1111954f5794dffd12ed1e7eb8a16ad8bfaa69992"
   },
   {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\world-construction-chord-r-aa2c4-e-a-held-left-build-gesture\\middle-released-primary-still-held.png",
-    "archived": "initial/013-middle-released-primary-still-held.png",
-    "sourceBytes": 236082,
-    "sourceSha256": "8f896c6c617e3fd3968a683049dc8c4965d6437e9fd54d37478ed7f49f267ddd",
-    "archivedBytes": 236082,
-    "archivedSha256": "8f896c6c617e3fd3968a683049dc8c4965d6437e9fd54d37478ed7f49f267ddd"
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\room-template-session-pref-0464a-orders-through-V8-Save-Load\\failed-template-session-preflight.json",
+    "archived": "expanded-initial/019-failed-template-session-preflight.json",
+    "sourceBytes": 45635,
+    "sourceSha256": "7e4b37d6aa6d50338eea857a8b0be70d726ead67d682d90f1a35ad2639f6d57c",
+    "archivedBytes": 45635,
+    "archivedSha256": "7e4b37d6aa6d50338eea857a8b0be70d726ead67d682d90f1a35ad2639f6d57c"
   },
   {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\world-construction-chord-r-aaeab-e-a-held-left-build-gesture\\actual-primary-release-completed-gesture.png",
-    "archived": "initial/014-actual-primary-release-completed-gesture.png",
-    "sourceBytes": 242547,
-    "sourceSha256": "46cf3ee41273c6543be126acc1a08fbfcdd282b45fb7f9ce1c28770a1d97f740",
-    "archivedBytes": 242547,
-    "archivedSha256": "46cf3ee41273c6543be126acc1a08fbfcdd282b45fb7f9ce1c28770a1d97f740"
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\room-template-session-pref-379f4-orders-through-V8-Save-Load\\error-context.md",
+    "archived": "expanded-initial/020-error-context.md",
+    "sourceBytes": 20776,
+    "sourceSha256": "2162f6aa5e95a825ab1387dc4c5021b4b464d01fcff17c8e9ee1ce68893dc87d",
+    "archivedBytes": 20776,
+    "archivedSha256": "2162f6aa5e95a825ab1387dc4c5021b4b464d01fcff17c8e9ee1ce68893dc87d"
   },
   {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\world-construction-chord-r-aaeab-e-a-held-left-build-gesture\\middle-released-primary-still-held.png",
-    "archived": "initial/015-middle-released-primary-still-held.png",
-    "sourceBytes": 231514,
-    "sourceSha256": "c5b6835ac05e814976f3c47cb326d8e29ebd964d53e4e6eab30449c26eb3e757",
-    "archivedBytes": 231514,
-    "archivedSha256": "c5b6835ac05e814976f3c47cb326d8e29ebd964d53e4e6eab30449c26eb3e757"
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\room-template-session-pref-379f4-orders-through-V8-Save-Load\\failed-template-session-preflight.json",
+    "archived": "expanded-initial/021-failed-template-session-preflight.json",
+    "sourceBytes": 37582,
+    "sourceSha256": "37fb37a2c7bfe550c1fd0a5c79908bd8453bcef2a3292c4df6b5b05389990d7d",
+    "archivedBytes": 37582,
+    "archivedSha256": "37fb37a2c7bfe550c1fd0a5c79908bd8453bcef2a3292c4df6b5b05389990d7d"
   },
   {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\world-construction-chord-r-cc441-e-a-held-left-build-gesture\\actual-primary-release-completed-gesture.png",
-    "archived": "initial/016-actual-primary-release-completed-gesture.png",
-    "sourceBytes": 289586,
-    "sourceSha256": "1e9bdef64157f9bcad498c8f544899c3086a4c85d1e3e700e5b62a9ce085c22e",
-    "archivedBytes": 289586,
-    "archivedSha256": "1e9bdef64157f9bcad498c8f544899c3086a4c85d1e3e700e5b62a9ce085c22e"
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\world-build-session-owners-8c624-ld-into-replacement-session\\fresh-primary-one-exact-square-order.png",
+    "archived": "expanded-initial/022-fresh-primary-one-exact-square-order.png",
+    "sourceBytes": 241153,
+    "sourceSha256": "3d3bf0cb3c3e17f98da423e55c963fd66ece08975c7e081c9b5a0ad438af8500",
+    "archivedBytes": 241153,
+    "archivedSha256": "3d3bf0cb3c3e17f98da423e55c963fd66ece08975c7e081c9b5a0ad438af8500"
   },
   {
-    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\world-construction-chord-r-cc441-e-a-held-left-build-gesture\\middle-released-primary-still-held.png",
-    "archived": "initial/017-middle-released-primary-still-held.png",
-    "sourceBytes": 246042,
-    "sourceSha256": "994c7f87e5df410990e24c61a4386a6abc593d8687ea1b0d2ec104bbd1bfe8b4",
-    "archivedBytes": 246042,
-    "archivedSha256": "994c7f87e5df410990e24c61a4386a6abc593d8687ea1b0d2ec104bbd1bfe8b4"
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\world-build-session-owners-8c624-ld-into-replacement-session\\replacement-ready-old-primary-held.png",
+    "archived": "expanded-initial/023-replacement-ready-old-primary-held.png",
+    "sourceBytes": 222751,
+    "sourceSha256": "9b859926f6556ca0c7fab5bb31ead606ae75e41b83a4dec5b8c43bbd0a9e0e56",
+    "archivedBytes": 222751,
+    "archivedSha256": "9b859926f6556ca0c7fab5bb31ead606ae75e41b83a4dec5b8c43bbd0a9e0e56"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\world-build-session-owners-f0bda-ld-into-replacement-session\\fresh-primary-one-exact-square-order.png",
+    "archived": "expanded-initial/024-fresh-primary-one-exact-square-order.png",
+    "sourceBytes": 245704,
+    "sourceSha256": "b907c63f1aa46ebce6585b9aa5e13bac1fa015979a760bf2d39fb0659f577d7d",
+    "archivedBytes": 245704,
+    "archivedSha256": "b907c63f1aa46ebce6585b9aa5e13bac1fa015979a760bf2d39fb0659f577d7d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\world-build-session-owners-f0bda-ld-into-replacement-session\\replacement-ready-old-primary-held.png",
+    "archived": "expanded-initial/025-replacement-ready-old-primary-held.png",
+    "sourceBytes": 231636,
+    "sourceSha256": "c7ae916830725d764e4a96c2d5ef3ab4f501eb75c62b2690f065626e35fbfab1",
+    "archivedBytes": 231636,
+    "archivedSha256": "c7ae916830725d764e4a96c2d5ef3ab4f501eb75c62b2690f065626e35fbfab1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\world-construction-chord-r-aa2c4-e-a-held-left-build-gesture\\actual-primary-release-completed-gesture.png",
+    "archived": "expanded-initial/026-actual-primary-release-completed-gesture.png",
+    "sourceBytes": 223442,
+    "sourceSha256": "13f4fa11c9be2c7697c69ecf6c95dd5730a1529b18c8462ce52b2301772a2b1f",
+    "archivedBytes": 223442,
+    "archivedSha256": "13f4fa11c9be2c7697c69ecf6c95dd5730a1529b18c8462ce52b2301772a2b1f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\world-construction-chord-r-aa2c4-e-a-held-left-build-gesture\\middle-released-primary-still-held.png",
+    "archived": "expanded-initial/027-middle-released-primary-still-held.png",
+    "sourceBytes": 236217,
+    "sourceSha256": "022e94ab07138caf6dda8a88295064ff4f53c0fbaa8d03460b31a47f69a0f09a",
+    "archivedBytes": 236217,
+    "archivedSha256": "022e94ab07138caf6dda8a88295064ff4f53c0fbaa8d03460b31a47f69a0f09a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\world-construction-chord-r-aaeab-e-a-held-left-build-gesture\\actual-primary-release-completed-gesture.png",
+    "archived": "expanded-initial/028-actual-primary-release-completed-gesture.png",
+    "sourceBytes": 242602,
+    "sourceSha256": "0a57052e81d4f3c994d079cd293d3a4044b529aa46bde0f40aba2a834a1c4490",
+    "archivedBytes": 242602,
+    "archivedSha256": "0a57052e81d4f3c994d079cd293d3a4044b529aa46bde0f40aba2a834a1c4490"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\world-construction-chord-r-aaeab-e-a-held-left-build-gesture\\middle-released-primary-still-held.png",
+    "archived": "expanded-initial/029-middle-released-primary-still-held.png",
+    "sourceBytes": 231595,
+    "sourceSha256": "9b233a9d1a833723869a911bd04b64e9942432b5338c4a3a2a574a00bd033226",
+    "archivedBytes": 231595,
+    "archivedSha256": "9b233a9d1a833723869a911bd04b64e9942432b5338c4a3a2a574a00bd033226"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\world-construction-chord-r-cc441-e-a-held-left-build-gesture\\actual-primary-release-completed-gesture.png",
+    "archived": "expanded-initial/030-actual-primary-release-completed-gesture.png",
+    "sourceBytes": 289607,
+    "sourceSha256": "4b9c6dc6508711808ea4a11a7d156c42afe7061f2712015f606f2c4316bcc159",
+    "archivedBytes": 289607,
+    "archivedSha256": "4b9c6dc6508711808ea4a11a7d156c42afe7061f2712015f606f2c4316bcc159"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-session-expanded-20261003\\world-construction-chord-r-cc441-e-a-held-left-build-gesture\\middle-released-primary-still-held.png",
+    "archived": "expanded-initial/031-middle-released-primary-still-held.png",
+    "sourceBytes": 245959,
+    "sourceSha256": "665b515a8f1b9283ac3c8c1f17c9314f130f460da4833e718530a0787c7a8aa6",
+    "archivedBytes": 245959,
+    "archivedSha256": "665b515a8f1b9283ac3c8c1f17c9314f130f460da4833e718530a0787c7a8aa6"
   }
 ]

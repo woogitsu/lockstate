@@ -1,0 +1,101 @@
+node : [2m[WebServer] [22m(node:9280) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:19 char:1
++ node --experimental-transform-types --disable-warning=ExperimentalWar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 10 tests using 1 worker
+
+(node:60896) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:60896) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\browser\dedicated-kitchen-stove-player-build.spec.ts:216:1 › player creates storage and delivery capacity before Kitchen (43.3s)
+  ok  2 tests\browser\dedicated-kitchen-stove-player-build.spec.ts:279:3 › player builds Kitchen at quarterTurns0 and retains stove and fridge detail palettes and all completed owners after Save/Load (42.2s)
+  ok  3 tests\browser\dedicated-kitchen-stove-player-build.spec.ts:279:3 › player builds Kitchen at quarterTurns1 and retains stove and fridge detail palettes and all completed owners after Save/Load (45.3s)
+  x   4 tests\browser\room-template-session-preflight.spec.ts:270:3 › Full HD: public New replaces a pending preflight and keeps 18 new orders through V8 Save/Load (13.5s)
+(node:5908) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5908) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   5 tests\browser\room-template-session-preflight.spec.ts:270:3 › Full HD: public Load replaces a pending preflight and keeps 18 new orders through V8 Save/Load (13.5s)
+(node:30564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+WORLD_SESSION_OWNERSHIP {"operation":"New","from":{"x":592,"y":172},"to":{"x":720,"y":172},"oldReference":{"canvas":{"width":1920,"height":1080,"left":0,"top":0,"widthCss":1920,"heightCss":1080},"map":{"width":32,"height":32},"percent":{"left":3.125,"top":23.6328125,"width":93.75,"height":52.734375}},"beforeInitializations":1,"input":{"mouse":[{"type":"mousedown","button":0,"buttons":1,"trusted":true,"canvas":true}],"enter":{"key":"Enter","trusted":true,"button":true}},"released":{"type":"mouseup","button":0,"buttons":0,"trusted":true,"canvas":true},"beforeRelease":{"orders":[]},"afterRelease":{"orders":[]},"fresh":{"x":592,"y":172},"tile":{"x":10,"y":10},"freshReference":{"canvas":{"width":1920,"height":1080,"left":0,"top":0,"widthCss":1920,"heightCss":1080},"map":{"width":32,"height":32},"percent":{"left":3.125,"top":23.6328125,"width":93.75,"height":52.734375}},"commands":[{"type":"PlaceBuildOrder","orderId":"order-10735018-d258-402f-a5ff-98e369d9c60e","definitionId":"wall-brick","x":10,"y":10,"footprint":"square","transactionId":"build-36f6d0be-c8e8-45bd-975f-597f5eff89ae"}],"final":{"orders":[{"id":"order-10735018-d258-402f-a5ff-98e369d9c60e","definitionId":"wall-brick","location":{"x":10,"y":10},"footprint":"square","placementSequence":0,"state":"approved","progress":0,"materialsAllocated":[]}]}}
+  ok  6 tests\browser\world-build-session-ownership.spec.ts:112:42 › World FullHD wall New: old held primary cannot build into replacement session (6.5s)
+WORLD_SESSION_OWNERSHIP {"operation":"Load","from":{"x":592,"y":172},"to":{"x":720,"y":172},"oldReference":{"canvas":{"width":1920,"height":1080,"left":0,"top":0,"widthCss":1920,"heightCss":1080},"map":{"width":32,"height":32},"percent":{"left":3.125,"top":23.6328125,"width":93.75,"height":52.734375}},"beforeInitializations":1,"input":{"mouse":[{"type":"mousedown","button":0,"buttons":1,"trusted":true,"canvas":true}],"enter":{"key":"Enter","trusted":true,"button":true}},"released":{"type":"mouseup","button":0,"buttons":0,"trusted":true,"canvas":true},"beforeRelease":{"orders":[]},"afterRelease":{"orders":[]},"fresh":{"x":592,"y":172},"tile":{"x":10,"y":10},"freshReference":{"canvas":{"width":1920,"height":1080,"left":0,"top":0,"widthCss":1920,"heightCss":1080},"map":{"width":32,"height":32},"percent":{"left":3.125,"top":23.6328125,"width":93.75,"height":52.734375}},"commands":[{"type":"PlaceBuildOrder","orderId":"order-97ef365d-61a1-4e66-b6c0-ac574a17416d","definitionId":"wall-brick","x":10,"y":10,"footprint":"square","transactionId":"build-a9609f83-bf48-4b87-907d-1025212b2a4c"}],"final":{"orders":[{"id":"order-97ef365d-61a1-4e66-b6c0-ac574a17416d","definitionId":"wall-brick","location":{"x":10,"y":10},"footprint":"square","placementSequence":0,"state":"approved","progress":0,"materialsAllocated":[]}]}}
+  ok  7 tests\browser\world-build-session-ownership.spec.ts:112:42 › World FullHD wall Load: old held primary cannot build into replacement session (5.9s)
+WORLD_CONSTRUCTION_CHORD {"tool":"wall","from":{"x":592,"y":172},"to":{"x":720,"y":172},"a":{"x":10,"y":10},"b":{"x":12,"y":10},"reference":{"canvas":{"width":1920,"height":1080,"left":0,"top":0,"widthCss":1920,"heightCss":1080},"map":{"width":32,"height":32},"percent":{"left":3.125,"top":23.6328125,"width":93.75,"height":52.734375}},"held":[{"type":"mousedown","button":0,"buttons":1,"trusted":true,"canvas":true},{"type":"mousedown","button":1,"buttons":5,"trusted":true,"canvas":true},{"type":"mouseup","button":1,"buttons":1,"trusted":true,"canvas":true}],"final":{"type":"mouseup","button":0,"buttons":0,"trusted":true,"canvas":true},"commands":[{"type":"PlaceBuildOrder","orderId":"order-ce2bce68-fce5-4d7f-8bd6-9a3f76219da9","definitionId":"wall-brick","x":10,"y":10,"footprint":"square","transactionId":"build-41ec329e-5c55-4c75-a795-54d2f4284031"},{"type":"PlaceBuildOrder","orderId":"order-fca079a8-5f1d-441e-8c5a-d0536dc24dca","definitionId":"wall-brick","x":11,"y":10,"footprint":"square","transactionId":"build-41ec329e-5c55-4c75-a795-54d2f4284031"},{"type":"PlaceBuildOrder","orderId":"order-bfb83fc5-46a9-46f4-8779-34f8b6cf4b10","definitionId":"wall-brick","x":12,"y":10,"footprint":"square","transactionId":"build-41ec329e-5c55-4c75-a795-54d2f4284031"}]}
+  ok  8 tests\browser\world-construction-chord-release.spec.ts:41:45 › World FullHD wall: native middle release does not complete a held left build gesture (3.8s)
+WORLD_CONSTRUCTION_CHORD {"tool":"bed","from":{"x":592,"y":172},"to":{"x":720,"y":172},"a":{"x":10,"y":10},"b":{"x":12,"y":10},"reference":{"canvas":{"width":1920,"height":1080,"left":0,"top":0,"widthCss":1920,"heightCss":1080},"map":{"width":32,"height":32},"percent":{"left":3.125,"top":23.6328125,"width":93.75,"height":52.734375}},"held":[{"type":"mousedown","button":0,"buttons":1,"trusted":true,"canvas":true},{"type":"mousedown","button":1,"buttons":5,"trusted":true,"canvas":true},{"type":"mouseup","button":1,"buttons":1,"trusted":true,"canvas":true}],"final":{"type":"mouseup","button":0,"buttons":0,"trusted":true,"canvas":true},"commands":[{"type":"PlaceObject","orderId":"object-3abe79c4-d317-42a3-a50d-207d807d8260","definitionId":"bed-wooden","x":12,"y":10}]}
+  ok  9 tests\browser\world-construction-chord-release.spec.ts:41:45 › World FullHD bed: native middle release does not complete a held left build gesture (3.8s)
+WORLD_CONSTRUCTION_CHORD {"tool":"yard","from":{"x":592,"y":172},"to":{"x":1040,"y":620},"a":{"x":10,"y":10},"b":{"x":17,"y":17},"reference":{"canvas":{"width":1920,"height":1080,"left":0,"top":0,"widthCss":1920,"heightCss":1080},"map":{"width":32,"height":32},"percent":{"left":3.125,"top":23.6328125,"width":93.75,"height":52.734375}},"held":[{"type":"mousedown","button":0,"buttons":1,"trusted":true,"canvas":true},{"type":"mousedown","button":1,"buttons":5,"trusted":true,"canvas":true},{"type":"mouseup","button":1,"buttons":1,"trusted":true,"canvas":true}],"final":{"type":"mouseup","button":0,"buttons":0,"trusted":true,"canvas":true},"commands":[{"type":"ZoneRoom","roomId":"room.yard","x":10,"y":10,"width":8,"height":8}]}
+  ok 10 tests\browser\world-construction-chord-release.spec.ts:41:45 › World FullHD yard: native middle release does not complete a held left build gesture (4.6s)
+
+
+  1) tests\browser\room-template-session-preflight.spec.ts:270:3 › Full HD: public New replaces a pending preflight and keeps 18 new orders through V8 Save/Load 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoContainEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    Expected value: [32mObjectContaining {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000000-0-wall-000", "location": {"x": 20, "y": 10}, "sequence": 0}[39m
+    Received array: [31m[{"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000000-0-wall-000", "location": {"x": 20, "y": 10}, "materialsAllocated": [], "placementSequence": 0, "progress": 0, "state": "approved"}, {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000000-0-wall-001", "location": {"x": 21, "y": 10}, "materialsAllocated": [], "placementSequence": 0, "progress": 0, "state": "approved"}, {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000000-0-wall-002", "location": {"x": 22, "y": 10}, "materialsAllocated": [], "placementSequence": 0, "progress": 0, "state": "approved"}, {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000000-0-wall-003", "location": {"x": 23, "y": 10}, "materialsAllocated": [], "placementSequence": 0, "progress": 0, "state": "approved"}, {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000000-0-wall-004", "location": {"x": 20, "y": 11}, "materialsAllocated": [], "placementSequence": 0, "progress": 0, "state": "approved"}, {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000000-0-wall-005", "location": {"x": 23, "y": 11}, "materialsAllocated": [], "placementSequence": 0, "progress": 0, "state": "approved"}, {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000000-0-wall-006", "location": {"x": 20, "y": 12}, "materialsAllocated": [], "placementSequence": 0, "progress": 0, "state": "approved"}, {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000000-0-wall-007", "location": {"x": 23, "y": 12}, "materialsAllocated": [], "placementSequence": 0, "progress": 0, "state": "approved"}, {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000000-0-wall-008", "location": {"x": 20, "y": 13}, "materialsAllocated": [], "placementSequence": 0, "progress": 0, "state": "approved"}, {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000000-0-wall-009", "location": {"x": 23, "y": 13}, "materialsAllocated": [], "placementSequence": 0, "progress": 0, "state": "approved"}, …][39m
+
+      224 |     const added = accepted.bundle.construction.orders.filter(order => !ids.has(order.id));
+      225 |     expect(added).toHaveLength(18);
+    > 226 |     for (const order of expected) expect(added).toContainEqual(expect.objectContaining(order));
+          |                                                 ^
+      227 |     for (const order of before.bundle.construction.orders) expect(accepted.bundle.construction.orders).toContainEqual(order);
+      228 |     expect(accepted.bundle.simulation?.roomTemplates?.pending).toContainEqual({ templateId: 'cell-basic', origin, mirrorX: false, sequence: before.bundle.kernel.expectedSequence });
+      229 |     expect(accepted.bundle.construction.currentTransaction).toEqual(expected.map(order => order.id));
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\room-template-session-preflight.spec.ts:226:49
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-kitchen-session-expanded-20261003\room-template-session-pref-379f4-orders-through-V8-Save-Load\error-context.md
+
+  2) tests\browser\room-template-session-preflight.spec.ts:270:3 › Full HD: public Load replaces a pending preflight and keeps 18 new orders through V8 Save/Load 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoContainEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    Expected value: [32mObjectContaining {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000001-0-wall-000", "location": {"x": 20, "y": 10}, "sequence": 1}[39m
+    Received array: [31m[{"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000001-0-wall-000", "location": {"x": 20, "y": 10}, "materialsAllocated": [], "placementSequence": 1, "progress": 0, "state": "approved"}, {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000001-0-wall-001", "location": {"x": 21, "y": 10}, "materialsAllocated": [], "placementSequence": 1, "progress": 0, "state": "approved"}, {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000001-0-wall-002", "location": {"x": 22, "y": 10}, "materialsAllocated": [], "placementSequence": 1, "progress": 0, "state": "approved"}, {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000001-0-wall-003", "location": {"x": 23, "y": 10}, "materialsAllocated": [], "placementSequence": 1, "progress": 0, "state": "approved"}, {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000001-0-wall-004", "location": {"x": 20, "y": 11}, "materialsAllocated": [], "placementSequence": 1, "progress": 0, "state": "approved"}, {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000001-0-wall-005", "location": {"x": 23, "y": 11}, "materialsAllocated": [], "placementSequence": 1, "progress": 0, "state": "approved"}, {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000001-0-wall-006", "location": {"x": 20, "y": 12}, "materialsAllocated": [], "placementSequence": 1, "progress": 0, "state": "approved"}, {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000001-0-wall-007", "location": {"x": 23, "y": 12}, "materialsAllocated": [], "placementSequence": 1, "progress": 0, "state": "approved"}, {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000001-0-wall-008", "location": {"x": 20, "y": 13}, "materialsAllocated": [], "placementSequence": 1, "progress": 0, "state": "approved"}, {"definitionId": "wall-brick", "footprint": "square", "id": "room-template-000000000001-0-wall-009", "location": {"x": 23, "y": 13}, "materialsAllocated": [], "placementSequence": 1, "progress": 0, "state": "approved"}, …][39m
+
+      224 |     const added = accepted.bundle.construction.orders.filter(order => !ids.has(order.id));
+      225 |     expect(added).toHaveLength(18);
+    > 226 |     for (const order of expected) expect(added).toContainEqual(expect.objectContaining(order));
+          |                                                 ^
+      227 |     for (const order of before.bundle.construction.orders) expect(accepted.bundle.construction.orders).toContainEqual(order);
+      228 |     expect(accepted.bundle.simulation?.roomTemplates?.pending).toContainEqual({ templateId: 'cell-basic', origin, mirrorX: false, sequence: before.bundle.kernel.expectedSequence });
+      229 |     expect(accepted.bundle.construction.currentTransaction).toEqual(expected.map(order => order.id));
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\room-template-session-preflight.spec.ts:226:49
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-kitchen-session-expanded-20261003\room-template-session-pref-0464a-orders-through-V8-Save-Load\error-context.md
+
+  2 failed
+    tests\browser\room-template-session-preflight.spec.ts:270:3 › Full HD: public New replaces a pending preflight and keeps 18 new orders through V8 Save/Load 
+    tests\browser\room-template-session-preflight.spec.ts:270:3 › Full HD: public Load replaces a pending preflight and keeps 18 new orders through V8 Save/Load 
+  8 passed (3.1m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+

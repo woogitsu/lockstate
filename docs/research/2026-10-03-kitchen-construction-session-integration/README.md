@@ -80,3 +80,5 @@ modules pass strict TypeScript exit0. The upcoming combined native subject has
 10cases: Kitchen capacity/q0/q1, three Wall/Bed/Yard mouse-chord cases, two
 room-template New/Load cases and two ordinary Wall New/Load cases. Native verdicts
 and producer omissions remain pending; source results do not imply deployment.
+
+Expanded frozen6fb2 subject:8GREEN/2observerRED in3.1min. Both Kitchenq0/q1, three physical chord cases and two World New/Load cases pass. Both template New/Load fresh placements create exactly18 correct actual orders before the observer expects a nonexistent sequence property; actual BuildOrder/save-schema field is placementSequence. Corrected only these three expected order field labels; pending-template sequence expectation stays unchanged. Original report and data remain native/expanded-initial. Corrected10case run and actual producer controls are pending.
