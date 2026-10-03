@@ -3,6 +3,7 @@
 Own source/descriptor/72 PNGs only. Root owns optional registry/room mapping.
 """
 from pathlib import Path
+import hashlib
 import importlib.util
 import json
 import sys
@@ -73,5 +74,26 @@ if __name__ == '__main__':
             for elevation in exporter.ELEVATION:
                 point_camera(camera, target, yaw, elevation)
         print('GARBAGE_BIN_VERIFY_GREEN source/semantic contacts/72 cameras/four occupied turns', flush=True)
+    elif '--repeat-four' in sys.argv:
+        catalog = json.loads((ROOT / 'public/game-content' / MANIFEST_NAME).read_text(encoding='utf-8-sig'))
+        scene, camera, target = configure(MODEL)
+        output = ROOT / 'assets/intermediate/garbage-room-bin-proof'
+        output.mkdir(parents=True, exist_ok=True)
+        repeats = []
+        for yaw in (30, 120, 210, 300):
+            elevation = 40
+            point_camera(camera, target, yaw, elevation)
+            path = output / f'repeat-yaw{yaw}-elev40.png'
+            scene.render.filepath = str(path)
+            exporter.bpy.ops.render.render(write_still=True)
+            exporter.normalize_and_check_border(path)
+            frame = next(row for row in catalog['frames'] if (row['yawDegrees'], row['elevationDegrees']) == (yaw, elevation))
+            canonical = ROOT / 'public' / frame['image'].lstrip('/')
+            digest = hashlib.sha256(path.read_bytes()).hexdigest()
+            if digest != frame['sha256'] or path.read_bytes() != canonical.read_bytes():
+                raise ValueError('Garbage Room bin actual canonical repeat differs')
+            repeats.append({'yawDegrees': yaw, 'elevationDegrees': elevation, 'sha256': digest, 'byteExactCanonicalRepeat': True})
+        exporter.pipeline_common.write_text(output / 'four-real-producer-repeats.json', json.dumps(repeats, indent=2) + '\n')
+        print('GARBAGE_BIN_REPEAT4_BYTE_EXACT_GREEN no canonical files changed', flush=True)
     else:
         exporter.main()
