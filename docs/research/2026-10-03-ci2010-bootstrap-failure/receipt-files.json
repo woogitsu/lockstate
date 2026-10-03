@@ -1,0 +1,47 @@
+﻿[
+    {
+        "file":  "actual-failed-dock-worker-snapshot.json",
+        "sha256":  "7147da82d40201c9d67198d76b518262334554182fde9e1ec0689dadf59d0bbd",
+        "bytes":  48861
+    },
+    {
+        "file":  "actual-first-bookshelf-error-context.md",
+        "sha256":  "54b6fb6b16a666994965dc6e9ab2ef4291b4ba8a761e8748eb66adc3928527a5",
+        "bytes":  13951
+    },
+    {
+        "file":  "actual-worker-continuation-measurement.json",
+        "sha256":  "32b3fbd223462038ec0269481b138cce0378d0499fb1e5ea37d19517d4ec9c37",
+        "bytes":  11557
+    },
+    {
+        "file":  "actual-worker-continuation.test.ts.txt",
+        "sha256":  "f2cfd8c33d66d4f72478d38a3a68a412c2c77a22443126d22bc159802fae179d",
+        "bytes":  2826
+    },
+    {
+        "file":  "actual-worker-continuation.txt",
+        "sha256":  "9db1f00f4093a298db6758ac189189a2a275b87a4cdc1a0881b49b5b9dcb2693",
+        "bytes":  556
+    },
+    {
+        "file":  "artifact-hosted-log.txt",
+        "sha256":  "71bf7dbae248e912938731804a5f69e9b33acd433e4a508cefa4a4383766ee91",
+        "bytes":  539004
+    },
+    {
+        "file":  "hosted-trace-call-measurement.json",
+        "sha256":  "e56b3efa322b8e2395fd9ce8e0d32ac2a619c10446e75660b8b27d58832dc722",
+        "bytes":  48377
+    },
+    {
+        "file":  "probe-types.txt",
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes":  0
+    },
+    {
+        "file":  "source2-hosted-log.txt",
+        "sha256":  "2e1b7e536e70f3012b2e96f5b8ba0498b406cf5ba7693cfec2148250e5627352",
+        "bytes":  691180
+    }
+]

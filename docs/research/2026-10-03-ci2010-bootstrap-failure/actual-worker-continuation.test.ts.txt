@@ -1,0 +1,46 @@
+﻿import { readFileSync, writeFileSync } from 'node:fs';
+import { expect, it } from 'vitest';
+import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
+import { restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
+
+const record = 'docs/research/2026-10-03-ci2010-bootstrap-failure';
+
+// Read-only diagnosis of an actual hosted worker reply, not a synthetic world.
+it('continues the actual CI2010 unfinished Delivery Bay through the real V8 codec', () => {
+  const reply = JSON.parse(readFileSync(`${record}/actual-failed-dock-worker-snapshot.json`, 'utf8')) as {
+    payload: { snapshot: { data: SessionSnapshotBundle } };
+  };
+  const before = reply.payload.snapshot.data;
+  expect(before.kernel.tick).toBe(1790);
+  expect(before.construction.orders.filter(order => order.state === 'completed')).toHaveLength(28);
+  const envelope = createSaveEnvelope({ ...before, gameVersion: 'ci2010-actual-worker-replay',
+    prisonId: 'ci2010-actual-worker-replay', revision: 1,
+    createdAt: 1_700_000_000_000, updatedAt: 1_700_000_000_001 });
+  const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
+  expect(decoded.ok).toBe(true);
+  if (!decoded.ok) throw new Error(JSON.stringify(decoded.error));
+  const runtime = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
+  const samples: unknown[] = [];
+  const sample = () => ({ tick: runtime.kernel.tick,
+    completed: runtime.construction.allOrders().filter(order => order.state === 'completed').length,
+    unfinished: runtime.construction.allOrders().filter(order => order.state !== 'completed'),
+    pendingTemplates: runtime.roomTemplates.snapshot().pending, jobs: runtime.jobs.allSorted() });
+  samples.push(sample());
+  for (let step = 1; step <= 12_000; step++) {
+    runtime.kernel.step();
+    if (step % 200 === 0) samples.push(sample());
+    if (runtime.roomTemplates.snapshot().pending.length === 0 &&
+        runtime.construction.allOrders().every(order => order.state === 'completed')) break;
+  }
+  samples.push(sample());
+  writeFileSync(`${record}/actual-worker-continuation-measurement.json`, JSON.stringify({
+    importedTick: before.kernel.tick, finalTick: runtime.kernel.tick,
+    continuationTicks: runtime.kernel.tick - before.kernel.tick, samples,
+    importedDataEdited: false, productionEdited: false,
+  }, null, 2) + '\n');
+  expect(runtime.roomTemplates.snapshot().pending).toHaveLength(0);
+  expect(runtime.construction.allOrders().every(order => order.state === 'completed')).toBe(true);
+  expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.storage-room')).toHaveLength(1);
+  expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.delivery-bay')).toHaveLength(1);
+});
+

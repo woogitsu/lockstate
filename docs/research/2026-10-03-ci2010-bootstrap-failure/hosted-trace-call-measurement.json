@@ -1,0 +1,1504 @@
+{
+  "kitchen": {
+    "contextTitle": "kitchen-fixtures-player-build.spec.ts:102 › player creates storage and delivery capacity before Kitchen",
+    "calls": [
+      {
+        "callId": "call@8",
+        "method": "newPage",
+        "startMs": 7.003000000026077,
+        "endMs": 35.99199999985285,
+        "durationMs": 28.988999999826774,
+        "params": {}
+      },
+      {
+        "callId": "call@10",
+        "method": "addInitScript",
+        "startMs": 43.77499999990687,
+        "endMs": 44.54899999988265,
+        "durationMs": 0.7739999999757856,
+        "params": {
+          "source": "(() => {\n    const RealWorker = Worker;\n    const sent = [];\n    const received = [];\n    class TeeWorker extends RealWorker {\n      constructor(url, options) {\n        super(url, options);\n        super.addEventListener('message', event => {\n          var _kind, _event$data;\n          const kind = (_kind = (_event$data = event.data) === null || _event$data === void 0 ? void 0 : _event$data.kind) !== null && _kind !== void 0 ? _kind : '';\n          // Only the small messages, so the array cannot grow without bound.\n          if (kind === 'simulation/delta' || kind === 'simulation/snapshot' || kind === 'simulation/projection') return;\n          received.push(event.data);\n        });\n      }\n      postMessage(message, transfer) {\n        sent.push(message);\n        if (transfer === undefined) super.postMessage(message);else if (Array.isArray(transfer)) super.postMessage(message, transfer);else super.postMessage(message, transfer);\n      }\n    }\n    window.Worker = TeeWorker;\n    window.lockstateSentToWorker = sent;\n    window.lockstateFromWorker = received;\n\n    /*\n     * The Build panel intent recorder (#1017). See `BuildIntentRecord`.\n     *\n     * On `window` and in the **capture** phase, which is the earliest point in\n     * the propagation path: it therefore observes a click even when something\n     * further down stops the event before the panel's own handler runs, and\n     * that is exactly the state this recorder exists to make visible.\n     *\n     * Removal clears `buildableId` rather than setting a flag the checks\n     * consult, because `.hud-build__remove` *toggles*: a second press turns\n     * removal off again and the panel goes back to placing the row that is\n     * still selected, which this listener cannot see. Clearing is the\n     * conservative direction -- the checks below skip rather than accuse when\n     * they do not know what was asked.\n     */\n    const intent = {\n      buildableId: undefined,\n      removing: false,\n      at: 0\n    };\n    window.addEventListener('click', event => {\n      const target = event.target;\n      if (!(target instanceof Element)) return;\n      const row = target.closest('.hud-build__list [data-buildable]');\n      if (row !== null) {\n        var _row$getAttribute;\n        intent.buildableId = (_row$getAttribute = row.getAttribute('data-buildable')) !== null && _row$getAttribute !== void 0 ? _row$getAttribute : undefined;\n        intent.removing = false;\n        intent.at = Date.now();\n        return;\n      }\n      if (target.closest('.hud-build__remove') !== null) {\n        intent.buildableId = undefined;\n        intent.removing = true;\n        intent.at = Date.now();\n      }\n    }, true);\n    window.lockstateBuildIntent = intent;\n  })(undefined)"
+        }
+      },
+      {
+        "callId": "call@12",
+        "method": "setViewportSize",
+        "startMs": 45.63299999991432,
+        "endMs": 50.26799999992363,
+        "durationMs": 4.635000000009313,
+        "params": {
+          "viewportSize": {
+            "width": 1920,
+            "height": 1080
+          }
+        }
+      },
+      {
+        "callId": "call@14",
+        "method": "goto",
+        "startMs": 54.90200000000186,
+        "endMs": 1279.2060000000056,
+        "durationMs": 1224.3040000000037,
+        "params": {
+          "url": "/?renderer=oblique",
+          "timeout": 0,
+          "waitUntil": "load"
+        }
+      },
+      {
+        "callId": "call@16",
+        "method": "click",
+        "startMs": 1324.8559999999125,
+        "endMs": 3359.5419999998994,
+        "durationMs": 2034.685999999987,
+        "params": {
+          "selector": "internal:role=button[name=\"New prison\"s]",
+          "strict": true,
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@18",
+        "method": "expect",
+        "startMs": 3413.650999999838,
+        "endMs": 3502.929999999935,
+        "durationMs": 89.27900000009686,
+        "params": {
+          "selector": ".hud-clock__day",
+          "expression": "to.have.text",
+          "expectedText": [
+            {
+              "string": "1",
+              "normalizeWhiteSpace": true
+            }
+          ],
+          "expectedValue": {
+            "value": {
+              "v": "undefined"
+            },
+            "handles": []
+          },
+          "isNot": false,
+          "timeout": 10000
+        }
+      },
+      {
+        "callId": "call@20",
+        "method": "click",
+        "startMs": 3774.442000000039,
+        "endMs": 5993.613999999827,
+        "durationMs": 2219.1719999997877,
+        "params": {
+          "selector": "internal:role=button[name=\"Pause\"s]",
+          "strict": true,
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@22",
+        "method": "click",
+        "startMs": 6169.057999999961,
+        "endMs": 8399.001999999862,
+        "durationMs": 2229.9439999999013,
+        "params": {
+          "selector": "internal:role=button[name=\"Build\"s]",
+          "strict": true,
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@24",
+        "method": "click",
+        "startMs": 8575.486000000034,
+        "endMs": 10770.071999999927,
+        "durationMs": 2194.585999999894,
+        "params": {
+          "selector": "internal:role=button[name=\"Room plans\"s]",
+          "strict": true,
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@26",
+        "method": "click",
+        "startMs": 10952.298999999883,
+        "endMs": 13164.461999999825,
+        "durationMs": 2212.1629999999423,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> internal:role=button[name=\"Storage Room\"s]",
+          "strict": true,
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@28",
+        "method": "isVisible",
+        "startMs": 13338.22499999986,
+        "endMs": 13682.631999999983,
+        "durationMs": 344.40700000012293,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> internal:role=spinbutton[name=\"Plan origin X\"i]",
+          "strict": true
+        }
+      },
+      {
+        "callId": "call@30",
+        "method": "click",
+        "startMs": 13863.253999999957,
+        "endMs": 16072.140999999829,
+        "durationMs": 2208.8869999998715,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> internal:text=\"Enter coordinates\"s",
+          "strict": true,
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@32",
+        "method": "fill",
+        "startMs": 16251.230999999912,
+        "endMs": 17447.80199999991,
+        "durationMs": 1196.5709999999963,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> internal:role=spinbutton[name=\"Plan origin X\"i]",
+          "strict": true,
+          "value": "5",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@34",
+        "method": "fill",
+        "startMs": 17626.736999999965,
+        "endMs": 18818.059999999823,
+        "durationMs": 1191.3229999998584,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> internal:role=spinbutton[name=\"Plan origin Y\"i]",
+          "strict": true,
+          "value": "5",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@36",
+        "method": "expect",
+        "startMs": 18998.263000000035,
+        "endMs": 19340.13699999987,
+        "durationMs": 341.8739999998361,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> internal:role=status",
+          "expression": "to.have.text",
+          "expectedText": [
+            {
+              "string": "clear",
+              "matchSubstring": true,
+              "normalizeWhiteSpace": true
+            }
+          ],
+          "expectedValue": {
+            "value": {
+              "v": "undefined"
+            },
+            "handles": []
+          },
+          "isNot": false,
+          "timeout": 10000
+        }
+      },
+      {
+        "callId": "call@38",
+        "method": "click",
+        "startMs": 19516.501999999862,
+        "endMs": 21714.246999999974,
+        "durationMs": 2197.7450000001118,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> internal:role=button[name=\"Place room plan\"s]",
+          "strict": true,
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@40",
+        "method": "expect",
+        "startMs": 21901.268999999855,
+        "endMs": 22277.905000000028,
+        "durationMs": 376.6360000001732,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> internal:role=status",
+          "expression": "to.have.text",
+          "expectedText": [
+            {
+              "string": "submitted",
+              "matchSubstring": true,
+              "normalizeWhiteSpace": true
+            }
+          ],
+          "expectedValue": {
+            "value": {
+              "v": "undefined"
+            },
+            "handles": []
+          },
+          "isNot": false,
+          "timeout": 10000
+        }
+      },
+      {
+        "callId": "call@42",
+        "method": "keyboardPress",
+        "startMs": 22454.65599999996,
+        "endMs": 22973.341000000015,
+        "durationMs": 518.6850000000559,
+        "params": {
+          "key": "Escape"
+        }
+      },
+      {
+        "callId": "call@44",
+        "method": "click",
+        "startMs": 23152.221999999834,
+        "endMs": 25381.94200000004,
+        "durationMs": 2229.720000000205,
+        "params": {
+          "selector": "internal:role=button[name=\"Build\"s]",
+          "strict": true,
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@46",
+        "method": "click",
+        "startMs": 25561.003999999957,
+        "endMs": 27789.034999999916,
+        "durationMs": 2228.030999999959,
+        "params": {
+          "selector": "internal:role=button[name=\"Room plans\"s]",
+          "strict": true,
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@48",
+        "method": "click",
+        "startMs": 27971.875,
+        "endMs": 30214.54099999997,
+        "durationMs": 2242.6659999999683,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> internal:role=button[name=\"Delivery Bay\"s]",
+          "strict": true,
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@50",
+        "method": "isVisible",
+        "startMs": 30393.033999999985,
+        "endMs": 30739.38099999982,
+        "durationMs": 346.3469999998342,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> internal:role=spinbutton[name=\"Plan origin X\"i]",
+          "strict": true
+        }
+      },
+      {
+        "callId": "call@52",
+        "method": "fill",
+        "startMs": 30917.701999999816,
+        "endMs": 32134.893999999855,
+        "durationMs": 1217.1920000000391,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> internal:role=spinbutton[name=\"Plan origin X\"i]",
+          "strict": true,
+          "value": "12",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@54",
+        "method": "fill",
+        "startMs": 32350.639999999898,
+        "endMs": 33596.805999999866,
+        "durationMs": 1246.1659999999683,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> internal:role=spinbutton[name=\"Plan origin Y\"i]",
+          "strict": true,
+          "value": "5",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@56",
+        "method": "expect",
+        "startMs": 33774.92599999998,
+        "endMs": 34123.18599999999,
+        "durationMs": 348.2600000000093,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> internal:role=status",
+          "expression": "to.have.text",
+          "expectedText": [
+            {
+              "string": "clear",
+              "matchSubstring": true,
+              "normalizeWhiteSpace": true
+            }
+          ],
+          "expectedValue": {
+            "value": {
+              "v": "undefined"
+            },
+            "handles": []
+          },
+          "isNot": false,
+          "timeout": 10000
+        }
+      },
+      {
+        "callId": "call@58",
+        "method": "click",
+        "startMs": 34300.976000000024,
+        "endMs": 36521.64599999995,
+        "durationMs": 2220.6699999999255,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> internal:role=button[name=\"Place room plan\"s]",
+          "strict": true,
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@60",
+        "method": "expect",
+        "startMs": 36705.98999999999,
+        "endMs": 37064.158999999985,
+        "durationMs": 358.1689999999944,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> internal:role=status",
+          "expression": "to.have.text",
+          "expectedText": [
+            {
+              "string": "submitted",
+              "matchSubstring": true,
+              "normalizeWhiteSpace": true
+            }
+          ],
+          "expectedValue": {
+            "value": {
+              "v": "undefined"
+            },
+            "handles": []
+          },
+          "isNot": false,
+          "timeout": 10000
+        }
+      },
+      {
+        "callId": "call@62",
+        "method": "keyboardPress",
+        "startMs": 37243.31700000004,
+        "endMs": 37778.14999999991,
+        "durationMs": 534.8329999998678,
+        "params": {
+          "key": "Escape"
+        }
+      },
+      {
+        "callId": "call@64",
+        "method": "click",
+        "startMs": 37970.153999999864,
+        "endMs": 40264.79099999997,
+        "durationMs": 2294.6370000001043,
+        "params": {
+          "selector": "internal:role=button[name=\"Fast forward\"s]",
+          "strict": true,
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@66",
+        "method": "click",
+        "startMs": 40462.99300000002,
+        "endMs": 42633.19999999995,
+        "durationMs": 2170.2069999999367,
+        "params": {
+          "selector": "internal:role=button[name=\"Fast forward\"s]",
+          "strict": true,
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@68",
+        "method": "getAttribute",
+        "startMs": 42821.55199999991,
+        "endMs": 43189.56799999997,
+        "durationMs": 368.01600000006147,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@70",
+        "method": "getAttribute",
+        "startMs": 43390.86599999992,
+        "endMs": 43789.768999999855,
+        "durationMs": 398.90299999993294,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@72",
+        "method": "getAttribute",
+        "startMs": 43990.97799999989,
+        "endMs": 44359.373999999836,
+        "durationMs": 368.3959999999497,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@74",
+        "method": "getAttribute",
+        "startMs": 44573.07400000002,
+        "endMs": 44942.80899999989,
+        "durationMs": 369.7349999998696,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@76",
+        "method": "getAttribute",
+        "startMs": 45235.723,
+        "endMs": 45516.38099999982,
+        "durationMs": 280.6579999998212,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@78",
+        "method": "getAttribute",
+        "startMs": 45718.05199999991,
+        "endMs": 46107.70499999984,
+        "durationMs": 389.65299999993294,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@80",
+        "method": "getAttribute",
+        "startMs": 46312.77299999981,
+        "endMs": 46706.83799999999,
+        "durationMs": 394.06500000017695,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@82",
+        "method": "getAttribute",
+        "startMs": 46917.38599999994,
+        "endMs": 47316.55999999982,
+        "durationMs": 399.17399999988265,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@84",
+        "method": "getAttribute",
+        "startMs": 47526.11899999995,
+        "endMs": 47933.77099999995,
+        "durationMs": 407.65200000000186,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@86",
+        "method": "getAttribute",
+        "startMs": 48145.64099999983,
+        "endMs": 48564.737999999896,
+        "durationMs": 419.09700000006706,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@88",
+        "method": "getAttribute",
+        "startMs": 48777.98499999987,
+        "endMs": 49202.1669999999,
+        "durationMs": 424.1820000000298,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@90",
+        "method": "getAttribute",
+        "startMs": 49424.70499999984,
+        "endMs": 49851.3189999999,
+        "durationMs": 426.6140000000596,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@92",
+        "method": "getAttribute",
+        "startMs": 50072.44900000002,
+        "endMs": 50505.89799999981,
+        "durationMs": 433.4489999997895,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@94",
+        "method": "getAttribute",
+        "startMs": 50740.04700000002,
+        "endMs": 51186.10999999987,
+        "durationMs": 446.0629999998491,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@96",
+        "method": "getAttribute",
+        "startMs": 51424.72899999982,
+        "endMs": 51876.51599999983,
+        "durationMs": 451.7870000000112,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@98",
+        "method": "getAttribute",
+        "startMs": 52215.76799999992,
+        "endMs": 52613.601999999955,
+        "durationMs": 397.83400000003166,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@100",
+        "method": "getAttribute",
+        "startMs": 52865.805999999866,
+        "endMs": 53340.99099999992,
+        "durationMs": 475.1850000000559,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@102",
+        "method": "getAttribute",
+        "startMs": 53596.42399999988,
+        "endMs": 54089.70299999998,
+        "durationMs": 493.27900000009686,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@104",
+        "method": "getAttribute",
+        "startMs": 54353.13699999987,
+        "endMs": 54933.64199999999,
+        "durationMs": 580.5050000001211,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@106",
+        "method": "getAttribute",
+        "startMs": 55220.28199999989,
+        "endMs": 55762.45699999994,
+        "durationMs": 542.1750000000466,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@108",
+        "method": "getAttribute",
+        "startMs": 56043.01099999994,
+        "endMs": 56597.88599999994,
+        "durationMs": 554.875,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@110",
+        "method": "getAttribute",
+        "startMs": 56882.41599999997,
+        "endMs": 57436.902,
+        "durationMs": 554.4860000000335,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@112",
+        "method": "getAttribute",
+        "startMs": 57720.393999999855,
+        "endMs": 58300.62099999981,
+        "durationMs": 580.2269999999553,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@114",
+        "method": "getAttribute",
+        "startMs": 58584.46999999997,
+        "endMs": 59151.81099999999,
+        "durationMs": 567.3410000000149,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      }
+    ],
+    "uncompleted": [
+      {
+        "method": "getAttribute",
+        "startMs": 59445.22499999986,
+        "params": {
+          "selector": ".hud-build",
+          "strict": true,
+          "name": "data-queued",
+          "timeout": 0
+        }
+      }
+    ]
+  },
+  "cards": {
+    "contextTitle": "room-template-cards.spec.ts:3 › Full HD catalogue compares all room footprints before selection and keeps row controls in view",
+    "calls": [
+      {
+        "callId": "call@92",
+        "method": "newPage",
+        "startMs": 3.0230000000447035,
+        "endMs": 173.5639999997802,
+        "durationMs": 170.5409999997355,
+        "params": {}
+      },
+      {
+        "callId": "call@94",
+        "method": "setViewportSize",
+        "startMs": 175.3179999999702,
+        "endMs": 177.63299999991432,
+        "durationMs": 2.3149999999441206,
+        "params": {
+          "viewportSize": {
+            "width": 1920,
+            "height": 1080
+          }
+        }
+      },
+      {
+        "callId": "call@96",
+        "method": "goto",
+        "startMs": 178.72799999965355,
+        "endMs": 1371.3519999999553,
+        "durationMs": 1192.6240000003017,
+        "params": {
+          "url": "/?renderer=oblique",
+          "timeout": 0,
+          "waitUntil": "load"
+        }
+      },
+      {
+        "callId": "call@98",
+        "method": "click",
+        "startMs": 1418.6729999999516,
+        "endMs": 3219.7599999997765,
+        "durationMs": 1801.086999999825,
+        "params": {
+          "selector": "internal:role=button[name=\"New prison\"i]",
+          "strict": true,
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@100",
+        "method": "click",
+        "startMs": 3268.9509999998845,
+        "endMs": 4556.320999999996,
+        "durationMs": 1287.3700000001118,
+        "params": {
+          "selector": "internal:role=button[name=\"Build\"s]",
+          "strict": true,
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@102",
+        "method": "click",
+        "startMs": 4732.625999999698,
+        "endMs": 6976.068999999668,
+        "durationMs": 2243.44299999997,
+        "params": {
+          "selector": "internal:role=button[name=\"Room plans\"s]",
+          "strict": true,
+          "timeout": 0
+        }
+      },
+      {
+        "callId": "call@104",
+        "method": "expect",
+        "startMs": 7159.217999999877,
+        "endMs": 7503.413999999873,
+        "durationMs": 344.1959999999963,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i]",
+          "expression": "to.be.visible",
+          "expectedValue": {
+            "value": {
+              "v": "undefined"
+            },
+            "handles": []
+          },
+          "isNot": false,
+          "timeout": 10000
+        }
+      },
+      {
+        "callId": "call@106",
+        "method": "expect",
+        "startMs": 7681.521999999881,
+        "endMs": 8024.543999999762,
+        "durationMs": 343.0219999998808,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> .hud-template__card",
+          "expression": "to.have.count",
+          "expectedNumber": 20,
+          "expectedValue": {
+            "value": {
+              "v": "undefined"
+            },
+            "handles": []
+          },
+          "isNot": false,
+          "timeout": 10000
+        }
+      },
+      {
+        "callId": "call@108",
+        "method": "expect",
+        "startMs": 8201.44999999972,
+        "endMs": 8545.337999999989,
+        "durationMs": 343.8880000002682,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-basic\"] >> .hud-template__fixture",
+          "expression": "to.have.count",
+          "expectedNumber": 2,
+          "expectedValue": {
+            "value": {
+              "v": "undefined"
+            },
+            "handles": []
+          },
+          "isNot": false,
+          "timeout": 10000
+        }
+      },
+      {
+        "callId": "call@110",
+        "method": "waitForSelector",
+        "startMs": 8722.134999999776,
+        "endMs": 9747.513999999966,
+        "durationMs": 1025.37900000019,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-basic\"] >> .hud-template__miniature",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@114",
+        "method": "queryCount",
+        "startMs": 10103.763999999966,
+        "endMs": 10446.023000000045,
+        "durationMs": 342.25900000007823,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-basic\"] >> .hud-template__fixture"
+        }
+      },
+      {
+        "callId": "call@116",
+        "method": "waitForSelector",
+        "startMs": 10632.398999999743,
+        "endMs": 11663.183999999892,
+        "durationMs": 1030.785000000149,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-basic\"] >> .hud-template__fixture >> nth=0",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@120",
+        "method": "waitForSelector",
+        "startMs": 12016.233000000007,
+        "endMs": 13023.612999999896,
+        "durationMs": 1007.3799999998882,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-basic\"] >> .hud-template__fixture >> nth=1",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@124",
+        "method": "expect",
+        "startMs": 13374.520999999717,
+        "endMs": 13721.788999999873,
+        "durationMs": 347.26800000015646,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-large\"] >> .hud-template__fixture",
+          "expression": "to.have.count",
+          "expectedNumber": 3,
+          "expectedValue": {
+            "value": {
+              "v": "undefined"
+            },
+            "handles": []
+          },
+          "isNot": false,
+          "timeout": 10000
+        }
+      },
+      {
+        "callId": "call@126",
+        "method": "waitForSelector",
+        "startMs": 13895.520000000019,
+        "endMs": 14914.701999999583,
+        "durationMs": 1019.1819999995641,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-large\"] >> .hud-template__miniature",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@130",
+        "method": "queryCount",
+        "startMs": 15256.09499999974,
+        "endMs": 15598.086999999825,
+        "durationMs": 341.9920000000857,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-large\"] >> .hud-template__fixture"
+        }
+      },
+      {
+        "callId": "call@132",
+        "method": "waitForSelector",
+        "startMs": 15778.765999999829,
+        "endMs": 16804.544999999925,
+        "durationMs": 1025.7790000000969,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-large\"] >> .hud-template__fixture >> nth=0",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@136",
+        "method": "waitForSelector",
+        "startMs": 17154.65399999963,
+        "endMs": 18163.283999999985,
+        "durationMs": 1008.6300000003539,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-large\"] >> .hud-template__fixture >> nth=1",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@140",
+        "method": "waitForSelector",
+        "startMs": 18514.699000000022,
+        "endMs": 19529.967999999877,
+        "durationMs": 1015.2689999998547,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-large\"] >> .hud-template__fixture >> nth=2",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@144",
+        "method": "expect",
+        "startMs": 19877.183999999892,
+        "endMs": 20213.774999999907,
+        "durationMs": 336.5910000000149,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"shower-room\"] >> .hud-template__fixture",
+          "expression": "to.have.count",
+          "expectedNumber": 2,
+          "expectedValue": {
+            "value": {
+              "v": "undefined"
+            },
+            "handles": []
+          },
+          "isNot": false,
+          "timeout": 10000
+        }
+      },
+      {
+        "callId": "call@146",
+        "method": "waitForSelector",
+        "startMs": 20389.091000000015,
+        "endMs": 21398.748999999836,
+        "durationMs": 1009.6579999998212,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"shower-room\"] >> .hud-template__miniature",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@150",
+        "method": "queryCount",
+        "startMs": 21746.819999999832,
+        "endMs": 22091.81899999967,
+        "durationMs": 344.9989999998361,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"shower-room\"] >> .hud-template__fixture"
+        }
+      },
+      {
+        "callId": "call@152",
+        "method": "waitForSelector",
+        "startMs": 22267.108999999706,
+        "endMs": 23284.409999999683,
+        "durationMs": 1017.3009999999776,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"shower-room\"] >> .hud-template__fixture >> nth=0",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@156",
+        "method": "waitForSelector",
+        "startMs": 23629.088999999687,
+        "endMs": 24648.035999999847,
+        "durationMs": 1018.9470000001602,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"shower-room\"] >> .hud-template__fixture >> nth=1",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@160",
+        "method": "expect",
+        "startMs": 24996.96900000004,
+        "endMs": 25343.15399999963,
+        "durationMs": 346.1849999995902,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-row-four\"] >> .hud-template__fixture",
+          "expression": "to.have.count",
+          "expectedNumber": 8,
+          "expectedValue": {
+            "value": {
+              "v": "undefined"
+            },
+            "handles": []
+          },
+          "isNot": false,
+          "timeout": 10000
+        }
+      },
+      {
+        "callId": "call@162",
+        "method": "waitForSelector",
+        "startMs": 25520.680999999866,
+        "endMs": 26532.143999999855,
+        "durationMs": 1011.4629999999888,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-row-four\"] >> .hud-template__miniature",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@166",
+        "method": "queryCount",
+        "startMs": 26874.716999999713,
+        "endMs": 27219.849999999627,
+        "durationMs": 345.1329999999143,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-row-four\"] >> .hud-template__fixture"
+        }
+      },
+      {
+        "callId": "call@168",
+        "method": "waitForSelector",
+        "startMs": 27396.277999999933,
+        "endMs": 28407.091999999713,
+        "durationMs": 1010.8139999997802,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-row-four\"] >> .hud-template__fixture >> nth=0",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@172",
+        "method": "waitForSelector",
+        "startMs": 28752.170999999624,
+        "endMs": 29766.3759999997,
+        "durationMs": 1014.2050000000745,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-row-four\"] >> .hud-template__fixture >> nth=1",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@176",
+        "method": "waitForSelector",
+        "startMs": 30112.888999999966,
+        "endMs": 31126.96499999985,
+        "durationMs": 1014.0759999998845,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-row-four\"] >> .hud-template__fixture >> nth=2",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@180",
+        "method": "waitForSelector",
+        "startMs": 31490.88199999975,
+        "endMs": 32500.59499999974,
+        "durationMs": 1009.7129999999888,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-row-four\"] >> .hud-template__fixture >> nth=3",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@184",
+        "method": "waitForSelector",
+        "startMs": 32847.07499999972,
+        "endMs": 33860.654999999795,
+        "durationMs": 1013.5800000000745,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-row-four\"] >> .hud-template__fixture >> nth=4",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@188",
+        "method": "waitForSelector",
+        "startMs": 34217.38599999994,
+        "endMs": 35288.12699999986,
+        "durationMs": 1070.7409999999218,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-row-four\"] >> .hud-template__fixture >> nth=5",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@192",
+        "method": "waitForSelector",
+        "startMs": 35638.472999999765,
+        "endMs": 36655.07799999975,
+        "durationMs": 1016.6049999999814,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-row-four\"] >> .hud-template__fixture >> nth=6",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@196",
+        "method": "waitForSelector",
+        "startMs": 37001.07899999991,
+        "endMs": 38028.21699999971,
+        "durationMs": 1027.1379999998026,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"cell-row-four\"] >> .hud-template__fixture >> nth=7",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@200",
+        "method": "expect",
+        "startMs": 38375.3469999996,
+        "endMs": 38715.6679999996,
+        "durationMs": 340.3209999999963,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"canteen-basic\"] >> .hud-template__fixture",
+          "expression": "to.have.count",
+          "expectedNumber": 6,
+          "expectedValue": {
+            "value": {
+              "v": "undefined"
+            },
+            "handles": []
+          },
+          "isNot": false,
+          "timeout": 10000
+        }
+      },
+      {
+        "callId": "call@202",
+        "method": "waitForSelector",
+        "startMs": 38892.689999999944,
+        "endMs": 39912.44999999972,
+        "durationMs": 1019.7599999997765,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"canteen-basic\"] >> .hud-template__miniature",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@206",
+        "method": "queryCount",
+        "startMs": 40260.03299999982,
+        "endMs": 40602.19299999997,
+        "durationMs": 342.160000000149,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"canteen-basic\"] >> .hud-template__fixture"
+        }
+      },
+      {
+        "callId": "call@208",
+        "method": "waitForSelector",
+        "startMs": 40784.525999999605,
+        "endMs": 41806.65199999977,
+        "durationMs": 1022.1260000001639,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"canteen-basic\"] >> .hud-template__fixture >> nth=0",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@212",
+        "method": "waitForSelector",
+        "startMs": 42152.45699999994,
+        "endMs": 43173.43499999959,
+        "durationMs": 1020.9779999996535,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"canteen-basic\"] >> .hud-template__fixture >> nth=1",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@216",
+        "method": "waitForSelector",
+        "startMs": 43558.88399999961,
+        "endMs": 44559.25999999978,
+        "durationMs": 1000.3760000001639,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"canteen-basic\"] >> .hud-template__fixture >> nth=2",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@220",
+        "method": "waitForSelector",
+        "startMs": 44905.304000000004,
+        "endMs": 45920.650999999605,
+        "durationMs": 1015.3469999996014,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"canteen-basic\"] >> .hud-template__fixture >> nth=3",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@224",
+        "method": "waitForSelector",
+        "startMs": 46258.89599999972,
+        "endMs": 47262.76799999969,
+        "durationMs": 1003.8719999999739,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"canteen-basic\"] >> .hud-template__fixture >> nth=4",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@228",
+        "method": "waitForSelector",
+        "startMs": 47606.00899999961,
+        "endMs": 48610.60299999965,
+        "durationMs": 1004.594000000041,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"canteen-basic\"] >> .hud-template__fixture >> nth=5",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@232",
+        "method": "expect",
+        "startMs": 48956.77499999991,
+        "endMs": 49300.125,
+        "durationMs": 343.35000000009313,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"kitchen-basic\"] >> .hud-template__fixture",
+          "expression": "to.have.count",
+          "expectedNumber": 3,
+          "expectedValue": {
+            "value": {
+              "v": "undefined"
+            },
+            "handles": []
+          },
+          "isNot": false,
+          "timeout": 10000
+        }
+      },
+      {
+        "callId": "call@234",
+        "method": "waitForSelector",
+        "startMs": 49475.689999999944,
+        "endMs": 50483.617999999784,
+        "durationMs": 1007.9279999998398,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"kitchen-basic\"] >> .hud-template__miniature",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@238",
+        "method": "queryCount",
+        "startMs": 50829.514999999665,
+        "endMs": 51168.54899999965,
+        "durationMs": 339.0339999999851,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"kitchen-basic\"] >> .hud-template__fixture"
+        }
+      },
+      {
+        "callId": "call@240",
+        "method": "waitForSelector",
+        "startMs": 51340.69799999986,
+        "endMs": 52387.60599999968,
+        "durationMs": 1046.9079999998212,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"kitchen-basic\"] >> .hud-template__fixture >> nth=0",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@244",
+        "method": "waitForSelector",
+        "startMs": 52727.07299999986,
+        "endMs": 53739.28099999996,
+        "durationMs": 1012.2080000001006,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"kitchen-basic\"] >> .hud-template__fixture >> nth=1",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@248",
+        "method": "waitForSelector",
+        "startMs": 54084.13899999997,
+        "endMs": 55093.363999999594,
+        "durationMs": 1009.2249999996275,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"kitchen-basic\"] >> .hud-template__fixture >> nth=2",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@252",
+        "method": "expect",
+        "startMs": 55438.20499999961,
+        "endMs": 55776.165999999736,
+        "durationMs": 337.96100000012666,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"holding-cell-basic\"] >> .hud-template__fixture",
+          "expression": "to.have.count",
+          "expectedNumber": 2,
+          "expectedValue": {
+            "value": {
+              "v": "undefined"
+            },
+            "handles": []
+          },
+          "isNot": false,
+          "timeout": 10000
+        }
+      },
+      {
+        "callId": "call@254",
+        "method": "waitForSelector",
+        "startMs": 55951.935999999754,
+        "endMs": 56954.21999999974,
+        "durationMs": 1002.2839999999851,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"holding-cell-basic\"] >> .hud-template__miniature",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      },
+      {
+        "callId": "call@258",
+        "method": "queryCount",
+        "startMs": 57305.36100000003,
+        "endMs": 57649.707999999635,
+        "durationMs": 344.3469999996014,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"holding-cell-basic\"] >> .hud-template__fixture"
+        }
+      },
+      {
+        "callId": "call@260",
+        "method": "waitForSelector",
+        "startMs": 57830.08999999985,
+        "endMs": 58846.878999999724,
+        "durationMs": 1016.7889999998733,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"holding-cell-basic\"] >> .hud-template__fixture >> nth=0",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      }
+    ],
+    "uncompleted": [
+      {
+        "method": "waitForSelector",
+        "startMs": 59194.582999999635,
+        "params": {
+          "selector": "internal:role=dialog[name=\"Room plans\"i] >> [data-template-id=\"holding-cell-basic\"] >> .hud-template__fixture >> nth=1",
+          "strict": true,
+          "timeout": 0,
+          "state": "attached"
+        }
+      }
+    ]
+  }
+}
