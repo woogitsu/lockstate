@@ -72,4 +72,6 @@ Index: five inherited trailing agent rows moved unchanged into canonical first t
 `canonical-index-inherited-missing-record.log` retains1failure/4controls for the
 inherited absent #2001 camera-build-gesture record. Its opened original README
 supplies only truthful source counts to the new canonical row; no native result
-was invented. `canonical-index.log` records the corrected gate.
+was invented. `canonical-index-row-placement-error.log` retains my1failure/4controls from an
+extra blank before that new row. Removing only that separator makes it part of
+the canonical table; `canonical-index.log` records5/5 GREEN.

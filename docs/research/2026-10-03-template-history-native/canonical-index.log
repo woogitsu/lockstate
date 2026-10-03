@@ -1,35 +1,9 @@
 
  RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-history-native-20261003
 
- ❯ tests/foundation/research-index-contract.test.ts (5 tests | 1 failed) 80ms
-     × keeps every row inside the one table 6ms
 
-⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
-
- FAIL  tests/foundation/research-index-contract.test.ts > research index contract > keeps every row inside the one table
-AssertionError: a row sits outside the table. The index appends at one point and that point is the end of the table, not the end of the file: expected [ Array(1) ] to deeply equal []
-
-- Expected
-+ Received
-
-- []
-+ [
-+   "row \"2026-10-03 World construction gesture ownership\" is at line 407, outside the table that runs to line 405",
-+ ]
-
- ❯ tests/foundation/research-index-contract.test.ts:223:7
-    221|       stranded,
-    222|       'a row sits outside the table. The index appends at one point an…
-    223|     ).toEqual([]);
-       |       ^
-    224|   });
-    225| });
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
-
-
- Test Files  1 failed (1)
-      Tests  1 failed | 4 passed (5)
-   Start at  08:25:19
-   Duration  271ms (transform 16ms, setup 0ms, import 33ms, tests 80ms, environment 0ms)
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  08:25:52
+   Duration  217ms (transform 15ms, setup 0ms, import 32ms, tests 72ms, environment 0ms)
 
