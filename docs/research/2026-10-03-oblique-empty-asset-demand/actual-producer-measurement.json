@@ -1,0 +1,649 @@
+{
+  "catalogs": 64,
+  "eagerSelectedImages": 64,
+  "encodedBytes": 738609,
+  "rgbaLowerBoundBytes": 36634624,
+  "emptyOnDemandImages": 0,
+  "entries": [
+    {
+      "id": "furniture.yard.exercise-station",
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+300-elev40.96bf089124af.png",
+      "sha256": "96bf089124afaa1fb73f14c939452bfa070d5cd88fa5a3fc920c57975f71bd96",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 10802
+    },
+    {
+      "id": "furniture.common-room.upholstered-bench",
+      "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+300-elev40.64c2e24677ea.png",
+      "sha256": "64c2e24677ead61d8a7a0b8f6143171c5550fc029894f58e68bc47be416983ef",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 11339
+    },
+    {
+      "id": "furniture.classroom.school-chair",
+      "image": "/assets/environment/oblique/furniture.classroom.school-chair-yaw+300-elev40.4edfe021a867.png",
+      "sha256": "4edfe021a8670ce6b704fb523764016aa35393689f1ac04a27cd8e8d1c9109f8",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 6619
+    },
+    {
+      "id": "furniture.cell.cot.single",
+      "image": "/assets/environment/oblique/furniture.cell.cot.single-yaw+300-elev40.faccdd4d94af.png",
+      "sha256": "faccdd4d94af62dbb9bf239a5bfbdecac1daeab6c9542aed8a9a9a874368eae7",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 7706
+    },
+    {
+      "id": "furniture.storage-room.timber-rack",
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+300-elev40.13d9fadda21f.png",
+      "sha256": "13d9fadda21f26afd30b16e61999905bf6f9e1ff9b3922ba1d20236dc3145b57",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 8256
+    },
+    {
+      "id": "wall.interior.module.full",
+      "image": "/assets/environment/oblique/wall-module-full-yaw-45-elev45.d11380f7c0ac.png",
+      "sha256": "d11380f7c0ac5d972b431d64f23fa25b759ff3de011f0ba295d6efa95bf9fe53",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 21750
+    },
+    {
+      "id": "wall.interior.module.west.full",
+      "image": "/assets/environment/oblique/wall-module-west-full-yaw-45-elev45.961310abe678.png",
+      "sha256": "961310abe6780382d3c958519ab93c2340457087941cfb2ed5c81b46545f748a",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 22376
+    },
+    {
+      "id": "wall.interior.module.cutaway",
+      "image": "/assets/environment/oblique/wall-module-cutaway-yaw-45-elev45.e9397ac4b9d6.png",
+      "sha256": "e9397ac4b9d63f5a18988d31e0aabf36b9cefa4efaeeb4927a43beaab14669ac",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 13344
+    },
+    {
+      "id": "wall.interior.module.west.cutaway",
+      "image": "/assets/environment/oblique/wall-module-west-cutaway-yaw-45-elev45.d98fa663476f.png",
+      "sha256": "d98fa663476fcc9adf6f15346e53605215f58fd3f1c5089049284b096f86a07b",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 13822
+    },
+    {
+      "id": "furniture.cell.bed.single.variants",
+      "image": "/assets/environment/oblique/cell-bed-yaw-45-elev45.74095e5922cd.png",
+      "sha256": "74095e5922cdc2e62fc7826a20ff9848e2583227f3bdf428b2a9855894d14243",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 26244
+    },
+    {
+      "id": "door.interior.open.full",
+      "image": "/assets/environment/oblique/cell-door-open-yaw-45-elev45.40921f961341.png",
+      "sha256": "40921f9613417d04bd8ec9e842a93abf32982a48326bfecaf641153afbdfd2ec",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 19909
+    },
+    {
+      "id": "door.interior.open.cutaway",
+      "image": "/assets/environment/oblique/cell-door-north-cutaway-yaw-45-elev45.03ababd95b12.png",
+      "sha256": "03ababd95b126c05b85b12241e2aad53589791d8f33152189968abbb60004930",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 11196
+    },
+    {
+      "id": "door.interior.open.west.full",
+      "image": "/assets/environment/oblique/cell-door-west-full-yaw-45-elev45.ec435cdad35d.png",
+      "sha256": "ec435cdad35d052a7cb35fe45e97f5a960b1c1cef6439125c847b649e0608acc",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 21709
+    },
+    {
+      "id": "door.interior.open.west.cutaway",
+      "image": "/assets/environment/oblique/cell-door-west-cutaway-yaw-45-elev45.6109b4c8f99c.png",
+      "sha256": "6109b4c8f99c8aed492c32fe36948f401640d763a7fce8e689b130ba6617b1b6",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 11439
+    },
+    {
+      "id": "fixture.cell.toilet_sink",
+      "image": "/assets/environment/oblique/cell-toilet-yaw-45-elev40.b3fe27fabbbf.png",
+      "sha256": "b3fe27fabbbfcbb68426c616196e2b221f0b67107b6f1312c170b150ab710b49",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 14324
+    },
+    {
+      "id": "furniture.storage.rack.wooden",
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+300-elev40.8846d69e2316.png",
+      "sha256": "8846d69e23162f459677865a6c62f7772b3d189630380323bd6ed7267363dd12",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 10405
+    },
+    {
+      "id": "furniture.chair.wooden",
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+300-elev40.2f3d110ea54c.png",
+      "sha256": "2f3d110ea54c5305300070d398ebb846478baf2ea848d9103f5b14f6ee8d6e88",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 7831
+    },
+    {
+      "id": "floor.cell.sealed-concrete",
+      "image": "/assets/environment/oblique/floor-cell-yaw-45-elev45.f362fceb7be3.png",
+      "sha256": "f362fceb7be335feb4161d55cc330db00752ee358726ce513b2124d656f40afc",
+      "resolutionPx": [
+        128,
+        128
+      ],
+      "encodedBytes": 8724
+    },
+    {
+      "id": "floor.linoleum.institutional",
+      "image": "/assets/environment/oblique/floor-corridor-yaw-45-elev45.c0ef65857ded.png",
+      "sha256": "c0ef65857ded2b12b7b106666b854de5efb278e3aba8131967ad2851ac1febc5",
+      "resolutionPx": [
+        128,
+        128
+      ],
+      "encodedBytes": 6129
+    },
+    {
+      "id": "floor.canteen.terrazzo",
+      "image": "/assets/environment/oblique/floor-canteen-yaw-45-elev45.b8bf710d732d.png",
+      "sha256": "b8bf710d732d2f6ed0b2047683741b81d8d4258cf82e507ffe8019905a5e22be",
+      "resolutionPx": [
+        128,
+        128
+      ],
+      "encodedBytes": 6130
+    },
+    {
+      "id": "actor.prisoner.base",
+      "image": "/assets/environment/oblique/actor-prisoner-yaw-45-elev45.2ecf5465679a.png",
+      "sha256": "2ecf5465679a998e5cf4380a1ea9413ea8cdc915a6a985976e2ffb4c5e2370d2",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 14616
+    },
+    {
+      "id": "actor.guard.base",
+      "image": "/assets/environment/oblique/actor-guard-yaw-45-elev45.c7352a388ac2.png",
+      "sha256": "c7352a388ac2bb8075e924066c4abe39019d09272582ad2273a8dec5ffa55b17",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 9501
+    },
+    {
+      "id": "actor.cook.base",
+      "image": "/assets/environment/oblique/actor-cook-yaw-45-elev45.16b8abd3656c.png",
+      "sha256": "16b8abd3656c3395333538bb6dda8bf1c843c3e55e31565ea2bd3f9fa0462f45",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 10814
+    },
+    {
+      "id": "actor.medic.base",
+      "image": "/assets/environment/oblique/actor-medic-yaw-45-elev45.3c68840d1fbf.png",
+      "sha256": "3c68840d1fbf6b57018b2367c84ef74f3c46e787739f521cfbcdb308171e9c9f",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 11134
+    },
+    {
+      "id": "actor.staff.base",
+      "image": "/assets/environment/oblique/actor-staff-yaw-45-elev45.bb8d15f97f7d.png",
+      "sha256": "bb8d15f97f7d596fa816fc4d496bebbeb6cf49bc413d15011acdac24e297303a",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 10273
+    },
+    {
+      "id": "wall.interior.corner.inner.north-west.full",
+      "image": "/assets/environment/oblique/wall-corner-north-west-full-yaw-45-elev45.f871ecb6f11f.png",
+      "sha256": "f871ecb6f11f97851cb3c416c21a9dab15580675c1ea64b7970aaa523b545092",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 18245
+    },
+    {
+      "id": "wall.interior.corner.inner.north-west.cutaway",
+      "image": "/assets/environment/oblique/wall-corner-north-west-cutaway-yaw-45-elev45.46222ac72e32.png",
+      "sha256": "46222ac72e320a839af9d57f0d7a53a3ec4c57f3028dc2bd759542a3578f72b5",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 11337
+    },
+    {
+      "id": "floor.shower.ceramic",
+      "image": "/assets/environment/oblique/floor-shower-yaw-45-elev45.421ea8f74f06.png",
+      "sha256": "421ea8f74f06ad53e01811820c8c23d83a692cea675e667a755b6cd791d73524",
+      "resolutionPx": [
+        128,
+        128
+      ],
+      "encodedBytes": 6762
+    },
+    {
+      "id": "fixture.shower.head",
+      "image": "/assets/environment/oblique/fixture.shower.head-yaw+300-elev40.84bd56fcf5f1.png",
+      "sha256": "84bd56fcf5f16dc981bfbb9f4db28c178c4c5262c7b39d75cb086e266a2d0a1a",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 6000
+    },
+    {
+      "id": "door.shower.privacy.open.full",
+      "image": "/assets/environment/oblique/shower-privacy-door-full-yaw-45-elev45.18b909749016.png",
+      "sha256": "18b909749016599155528a35af28cf2c99fb2e1929e776fd2cefda20c0c2346c",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 17562
+    },
+    {
+      "id": "door.shower.privacy.open.cutaway",
+      "image": "/assets/environment/oblique/shower-privacy-door-cutaway-yaw-45-elev45.e992058304fe.png",
+      "sha256": "e992058304fe6be2d8944c883491c87e9485399d7633568f0a566d07630c0ef4",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 11417
+    },
+    {
+      "id": "floor.terrain.dirt",
+      "image": "/assets/environment/oblique/floor-terrain-dirt-yaw-45-elev45.40d4eca89db2.png",
+      "sha256": "40d4eca89db2508bafdf7996586a7e3844f6e68c6767a4c340f227f8fd97e813",
+      "resolutionPx": [
+        128,
+        128
+      ],
+      "encodedBytes": 7940
+    },
+    {
+      "id": "floor.terrain.grass",
+      "image": "/assets/environment/oblique/floor-terrain-grass-yaw-45-elev45.751dcd28f827.png",
+      "sha256": "751dcd28f827c10dca1853c5df2876a7df64afc6284d4c1631d405d0210f3af5",
+      "resolutionPx": [
+        128,
+        128
+      ],
+      "encodedBytes": 7618
+    },
+    {
+      "id": "floor.terrain.dirt-grass.edge.north",
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-north-yaw-45-elev45.a681371bbea0.png",
+      "sha256": "a681371bbea096e78ae0d9d4cc71334d8feb6847846a15f7f4bfe5b8dc4a975a",
+      "resolutionPx": [
+        128,
+        128
+      ],
+      "encodedBytes": 2868
+    },
+    {
+      "id": "floor.terrain.dirt-grass.edge.east",
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-east-yaw-45-elev45.b4392b01567c.png",
+      "sha256": "b4392b01567c952b264fb925e6787988fe1bf4b7ad5b19512f800e7c913a5803",
+      "resolutionPx": [
+        128,
+        128
+      ],
+      "encodedBytes": 2904
+    },
+    {
+      "id": "floor.terrain.dirt-grass.edge.south",
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-45-elev45.c07bdc4b76ab.png",
+      "sha256": "c07bdc4b76ab6476561be6eb739c5a7978342554a86b9154f8a30f908f84e449",
+      "resolutionPx": [
+        128,
+        128
+      ],
+      "encodedBytes": 2760
+    },
+    {
+      "id": "floor.terrain.dirt-grass.edge.west",
+      "image": "/assets/environment/oblique/floor-dirt-grass-edge-west-yaw-45-elev45.a2ec33364338.png",
+      "sha256": "a2ec3336433803ea1c29e391d01e38275d8ff6a005e3061919fbde5daa260be1",
+      "resolutionPx": [
+        128,
+        128
+      ],
+      "encodedBytes": 3009
+    },
+    {
+      "id": "wall.interior.corner.inner.north-east.full",
+      "image": "/assets/environment/oblique/wall-corner-north-east-full-yaw-45-elev45.0d98bdcab1df.png",
+      "sha256": "0d98bdcab1dfb8882e87530ad3b1eba4e98c36039d8af03d4e11fea377e78527",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 30402
+    },
+    {
+      "id": "wall.interior.corner.inner.north-east.cutaway",
+      "image": "/assets/environment/oblique/wall-corner-north-east-cutaway-yaw-45-elev45.307a1fd32c82.png",
+      "sha256": "307a1fd32c82aa171b168e95bb1ea7686c2520268d83c441868b18a7a6d43f68",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 16454
+    },
+    {
+      "id": "wall.interior.corner.inner.south-east.full",
+      "image": "/assets/environment/oblique/wall-corner-south-east-full-yaw-45-elev45.e9f94d81d85a.png",
+      "sha256": "e9f94d81d85a28e4e6071819a1a70b109b23abcb9948bc74b5404197b34d8a94",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 27213
+    },
+    {
+      "id": "wall.interior.corner.inner.south-east.cutaway",
+      "image": "/assets/environment/oblique/wall-corner-south-east-cutaway-yaw-45-elev45.06bf1b3a0d8a.png",
+      "sha256": "06bf1b3a0d8a6f98dc0cefd9ea43e5ee14225bb36e319944ad2d0d454035dfe1",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 16926
+    },
+    {
+      "id": "wall.interior.junction.t.west.full",
+      "image": "/assets/environment/oblique/wall-junction-t-west-full-yaw-45-elev45.c5e0ff6eca9d.png",
+      "sha256": "c5e0ff6eca9d0ab41094d2b0d4f0ca427c7149302a1f264d77f366737ece50c9",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 34240
+    },
+    {
+      "id": "wall.interior.junction.t.west.cutaway",
+      "image": "/assets/environment/oblique/wall-junction-t-west-cutaway-yaw-45-elev45.13f7928a8d50.png",
+      "sha256": "13f7928a8d509d1ef9f24970d316c3f64aad4d8cd47e6b9870fae1d87a44371b",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 19908
+    },
+    {
+      "id": "wall.square.brick.full",
+      "image": "/assets/environment/oblique/square-brick-full-wall-yaw-045-elev45.b17091c17260.png",
+      "sha256": "b17091c17260d041d14d4594e60a670bc4e0465412855b101a9b97f54b34762f",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 9218
+    },
+    {
+      "id": "wall.square.brick.low",
+      "image": "/assets/environment/oblique/square-brick-low-wall-yaw-045-elev45.1f712df62e5e.png",
+      "sha256": "1f712df62e5e4e7b5533bd14c3b438ee94255e3e682c64f6e093e02a4f308a47",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 7062
+    },
+    {
+      "id": "furniture.dining.table.wooden",
+      "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+300-elev40.88831c70a40d.png",
+      "sha256": "88831c70a40decd8db51c3a0e475fd547564d31be0275d60c2b68f49481935d8",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 17467
+    },
+    {
+      "id": "furniture.corridor.bench.variants",
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev40.788a2ecb837d.png",
+      "sha256": "788a2ecb837d71162595e2b0b9701924fcb0f29fcf4a5c77d6c32dc21a7827e7",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 8748
+    },
+    {
+      "id": "floor.reception.linoleum",
+      "image": "/assets/environment/oblique/floor-reception-yaw-45-elev45.6dcaf6e6b44b.png",
+      "sha256": "6dcaf6e6b44bf6c0ada95c94ae2f7afb5b24054b5e797e536c29b1c444c2ec76",
+      "resolutionPx": [
+        128,
+        128
+      ],
+      "encodedBytes": 6343
+    },
+    {
+      "id": "furniture.office.desk.employee.variants",
+      "image": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+300-elev40.09dee978bfed.png",
+      "sha256": "09dee978bfed1a2fdcf32a66ed5f25ae7547e9e3b2e79386f5e96e3e9acb1737",
+      "resolutionPx": [
+        512,
+        512
+      ],
+      "encodedBytes": 10008
+    },
+    {
+      "id": "furniture.medical-bed.variants",
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev40.bd2db1e50007.png",
+      "sha256": "bd2db1e500072bc0fe8c26de9e07b32002def9aaf673e7938ecb6759ade992b3",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 11674
+    },
+    {
+      "id": "fixture.medicine-cabinet.variants",
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev40.717733ee6861.png",
+      "sha256": "717733ee6861ddc89bde35f6a054f402f27b5196f153f7c371b30a8a5354ea44",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 3243
+    },
+    {
+      "id": "utility.security-console.variants",
+      "image": "/assets/environment/oblique/utility.security-console.variants-yaw+300-elev40.9efe0d30115d.png",
+      "sha256": "9efe0d30115dcad9ec7a490a86c68eddc68604e7715f8c9f6eba6056e05eb59b",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 5480
+    },
+    {
+      "id": "utility.loading-dock-door.variants",
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev40.142e26025b0b.png",
+      "sha256": "142e26025b0b5e128eb866cf2d1f29bd9295172dc14ead22c9b4a774b60bcfa7",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 7584
+    },
+    {
+      "id": "utility.utility-panel.variants",
+      "image": "/assets/environment/oblique/utility.utility-panel.variants-yaw+300-elev40.b7048d770cd1.png",
+      "sha256": "b7048d770cd11bc7ea838f1a733620b856d7d72ae87f2ef890ab3afebbb99dbc",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 4792
+    },
+    {
+      "id": "furniture.library.bookshelf.variants",
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev40.ec72ac7ae01d.png",
+      "sha256": "ec72ac7ae01dff96f4b1d79852334d4af60e80a0de87a7240f33aa63b854c643",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 11946
+    },
+    {
+      "id": "furniture.kitchen.stove.variants",
+      "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev40.b8b57a8d367e.png",
+      "sha256": "b8b57a8d367e0d23e1e4820475bed3f9027545951e0d0d7151316bcc76e43fe4",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 11961
+    },
+    {
+      "id": "furniture.kitchen.prep-counter.variants",
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev40.daa34902b620.png",
+      "sha256": "daa34902b62027994251f9e67b7b6264e8ebd86ab8938e94d2edef7a506f96a7",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 11446
+    },
+    {
+      "id": "furniture.kitchen.fridge.variants",
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+300-elev40.09bfb9c9da1a.png",
+      "sha256": "09bfb9c9da1a6a4a37e86cb2124a6884e4b4e22daa16f5d2757882de87704576",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 6240
+    },
+    {
+      "id": "utility.washing-machine.variants",
+      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+300-elev40.b285c8f9ed0a.png",
+      "sha256": "b285c8f9ed0a515600023fc2030ea17e510f10a0a965db28a47a5bd6f54aaf7f",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 9710
+    },
+    {
+      "id": "fixture.cell.waste_bin",
+      "image": "/assets/environment/oblique/fixture.cell.waste-bin-yaw+300-elev40.9cf00229dd97.png",
+      "sha256": "9cf00229dd97fe12839f2588c31416e972608a9315250ef7fb28229e8c7ea8c0",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 4547
+    },
+    {
+      "id": "furniture.office.desk.generic",
+      "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev40.4b149587d26e.png",
+      "sha256": "4b149587d26e459fdd9c90c17ff890c189081e0be9803f19be7f46b3a5cdab0f",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 6829
+    },
+    {
+      "id": "fixture.cell.sink.handwash",
+      "image": "/assets/environment/oblique/fixture.cell.sink.handwash-yaw+300-elev40.9a0b41e7cdc2.png",
+      "sha256": "9a0b41e7cdc2ad36e228b3d772bbdeb7cc16e777b7cf2d33a12cdaeff2d31947",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 4765
+    },
+    {
+      "id": "furniture.yard.steel-bench",
+      "image": "/assets/environment/oblique/furniture.yard.steel-bench-yaw+300-elev40.5e4ce93fa297.png",
+      "sha256": "5e4ce93fa297120ed8ea22b4afe49ff1141ebcfc2934fe3b2f0d7d2aeb54c6e8",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 12445
+    },
+    {
+      "id": "fixture.yard.steel-waste-bin",
+      "image": "/assets/environment/oblique/fixture.yard.steel-waste-bin-yaw+300-elev40.963e6e5c1242.png",
+      "sha256": "963e6e5c124221556fd4fa580d1f8dc9dd3665e23a761fc002d6e842ddef72d7",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "encodedBytes": 7144
+    }
+  ]
+}
