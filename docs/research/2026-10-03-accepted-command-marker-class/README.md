@@ -82,3 +82,49 @@ The expanded fixture executes every current command type through actual packed c
 The first expanded run was52 GREEN/8 fixture failures (`success-fixture-error.txt`), not eight production defects. PlaceObject/RemoveObject incorrectly attempted a bed outside every room; ReleaseGuardAssignment incorrectly expected an empty sector to claim a guard; DismissAlert incorrectly expected automatic template zoning to emit an ordinary zoning event. The corrected scenarios genuinely complete an earlier Cell for admitted residents and legal furniture, hire/admit before selecting a real held guard, and designate an ordinary earlier Yard to produce the event being dismissed. The standing bed at19,19 is removed; the separate legal bed is ordered at20,19 inside the earlier Cell. No production rule is relaxed to accommodate these errors.
 
 Final accepted controls60/60 GREEN3.33s (`accepted-controls.txt`); application TypeScript exits0. Each accepted non-history action is followed by both a canonical-same regime edit and a genuinely refused purchase; packed Undo still cannot cross the previously accepted action. All five history-owned commands retain their actual independent Undo/Redo behavior. Guard release clears a real claim, dismissal removes the real employee, standing bed removal changes the physical registry and actual alert dismissal records its real event ordinal. Absent DismissAlert remains the explicit count0 acknowledgement control. Producer negatives, exact restoration and bounded neighboring/docs/build gates are still pending here.
+
+## Actual producer negatives and terminal runtime evidence
+
+All three mutations change the real leased SessionCommands adapter in an isolated detached HEAD. Each is applied independently from the same original bytes, restored in `finally`, and followed by a byte equality check. No test, protocol, domain producer or saved field is changed to manufacture the failure.
+
+| Actual producer mutation | Observed result | What the genuine commands detect |
+| --- | --- | --- |
+| Include `unchanged` in the single outer marker writer |18 RED/42 controls,3.69s|Eight refused routes and the canonical-same regime edit block eligible Yard Undo, live/V8.|
+| Disconnect the single outer marker writer |30 RED/30 controls,3.28s|All fourteen accepted non-history types lose their existing later-action boundary; the original absent-alert acknowledgement controls also fail.|
+| Disconnect the targeted canonical category equality reader |2 RED/58 controls,3.23s|Only the unchanged timetable edit incorrectly becomes a newer action.|
+
+Exact final restore60/60 GREEN3.31s (`restored.txt`). `producer-restoration.json` records the checkpoint, independent statuses, production diff0 and matching before/after SHA256 `c46e801353fc1b6475c488bc748bef6c28c5a22562da076ee7ea4525afc14d1e`. The named branch is restored; no production mutation is left active.
+
+Bounded neighboring gates120/120 GREEN across twelve actual files,13.21s (`neighbors.txt`): existing occupied cancellation/refusal and manual Unzone selection, Undo recency, Redo admission atomicity, room zoning, guard release, hiring, dismissal, admission, regime editing/producers and procurement sell-back. Application TypeScript and tools TypeScript each exit0; production client build GREEN7.58s. These are source/kernel/domain checks, not native browser or remote CI acceptance.
+
+The first original eight documentation gates yielded61 GREEN/1 failure13.24s: only the new record's absent research-index row (`docs-before-index.txt`). All source-anchor, quotation and citation guards already passed, so no live-fragment correction is proposed. No budget, allowlist, guard or historical citation is changed. Final index/documentation gate is pending this checkpoint.
+
+Preparation boundaries retain their existing sequencing: collective cancellation/removal and successful un-zoning may genuinely relocate residents or unzone instances before their guaranteed accepted reversal; they are not described as pure queries. The shared marker uses the explicit accepted outcome after that sequence, never a refusal count or whole-session snapshot. A valid current-revision cancellable order has no further domain refusal between accepted collective preparation and its existing construction cancellation. Ordinary malformed/unknown/refused commands acquire no independent gesture here. The separately pending #1985 Load persistence question remains outside this scope.
+
+## Final bounded documentation gate and nineteen-type outcome audit
+
+Parent granted only the own research row in the existing continuous table. The first insertion left a blank line before that row; the index guard caught it (`index-fixture-error.txt`,61 GREEN/1 row-placement failure,5.00s). The row is now contiguous with all existing rows preserved. Final original eight documentation gates62/62 GREEN10.39s (`docs.txt`), with process-local `GIT_NO_LAZY_FETCH=1` and the exact published own branch fetched. No anchor/quotation/citation change was needed and no foundation test, budget or guard was edited. Testing stops after these bounded green gates.
+
+| Current command | Final accepted effect | Refused or unchanged effect |
+| --- | --- | --- |
+| PlaceBuildOrder |history-owned|History registers only accepted orders; this adapter writes no unrelated-action marker.|
+| PlaceObject |history-owned|Existing refused placement writes no gesture.|
+| PlaceRoomTemplate |history-owned|Existing authoritative refusal writes no gesture.|
+| Undo |history-owned|Existing history/collective refusal retains eligibility.|
+| Redo |history-owned|Existing atomic preflight and history refusal retain eligibility.|
+| CancelBuildOrder |changed after current-revision cancellable membership and accepted collective preparation|unchanged for absent/terminal/stale/collectively refused targets.|
+| CancelMaterialPurchase |changed on existing `ok:true`|unchanged on existing refusal.|
+| RemoveObject |changed on existing actual removal/order cancellation|unchanged on absent or collective refusal.|
+| RemoveWall |changed on existing object-first removal or shell cancellation|unchanged on absent or collective refusal.|
+| UnzoneRoom |changed on existing `unzoned`|unchanged on refusal.|
+| ZoneRoom |changed on existing `zoned`|unchanged on refusal.|
+| AdmitPrisoner |changed on existing `admitted`|unchanged on immediate refusal.|
+| PurchaseMaterials |changed on existing `ok:true`|unchanged on refusal.|
+| SellMaterials |changed on existing `ok:true`|unchanged on refusal.|
+| HireStaff |changed on existing `hired`|unchanged on refusal.|
+| ReleaseGuardAssignment |changed on existing `released`|unchanged on refusal.|
+| DismissStaff |changed on existing `dismissed`|unchanged on refusal.|
+| EditRegimeBlock |changed on existing applied, different canonical targeted categories|unchanged on refusal or equal canonical categories; other blocks are not compared.|
+| DismissAlert |explicit existing acknowledgement, including count0|No new refusal/no-op policy is introduced.|
+
+The source's final narrowed command switch uses `never`; the test's complete `Record` and action switch also require explicit coverage of a future command type. All nineteen accepted cases have live/V8 packed controls, including real claimed-guard release and real alert dismissal. The original absent-alert acknowledgement and canonical-same edit remain distinct, proven controls. No browser, remote CI, merge, release or V9 claim is made.
