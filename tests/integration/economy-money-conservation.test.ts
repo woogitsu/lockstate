@@ -1016,7 +1016,7 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
       [
         { type: 'PlaceBuildOrder', orderId: 'order-wall-1', definitionId: WALL, x: 4, y: 6, edge: 'north', transactionId: 'build-1' },
         /*
-         * `expectedRevision: 1`, not read off `session.runtime` -- `order-wall-1`
+         * `expectedRevision: '1'`, not read off `session.runtime` -- `order-wall-1`
          * does not exist yet when this array is built. Both commands are
          * dispatched at the same tick and `PlaceBuildOrder` runs first (lower
          * sequence): `submitOrder` writes exactly one state
@@ -1024,7 +1024,7 @@ describe('cancelling a build order in each of the states ruling 20 names (ADR 00
          * is 1 by the time this `CancelBuildOrder` runs in the same step.
          * Exactly `command-success-notices.test.ts`'s `order-a` case.
          */
-        { type: 'CancelBuildOrder', orderId: 'order-wall-1', expectedRevision: 1 },
+        { type: 'CancelBuildOrder', orderId: 'order-wall-1', expectedRevision: '1' },
       ],
       'place and cancel at one tick',
     );

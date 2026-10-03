@@ -30,7 +30,7 @@ function stubSource(
 ): {
   allOrders: () => readonly BuildOrder[];
   previewCancelRefundMinorUnits: (orderId: string) => number;
-  revisionOf: (orderId: string) => number;
+  revisionOf: (orderId: string) => string;
 } {
   // These tests are about ordering, not revisions (ADR 0107 concerns
   // `ConstructionSystem` itself, exercised by
@@ -38,7 +38,7 @@ function stubSource(
   // `construction.test.ts`'s own revision tests), so every order stubs the
   // same fixed value rather than a fixture supplying both sides of a
   // comparison this file never makes.
-  return { allOrders: () => orders, previewCancelRefundMinorUnits: previewOf, revisionOf: () => 0 };
+  return { allOrders: () => orders, previewCancelRefundMinorUnits: previewOf, revisionOf: () => '0' };
 }
 
 /**
@@ -177,12 +177,12 @@ describe('the pending build queue, as a read model', () => {
       // the row must name it, because `CancelBuildOrder` pays it.
       // `tests/integration/construction-queue-row-pays-what-it-shows.test.ts`
       // is where that agreement is proved against the treasury itself.
-      // `revision: 2` for both (ADR 0107): `submitOrder`'s own
+      // `revision: '2'` for both (ADR 0107): `submitOrder`'s own
       // `'approved'` write is each order's first (revision 1), and the
       // scheduled pass `runTo(runtime, 1)` steps through moves it on to
       // `'materials-pending'`, its second (revision 2).
-      { orderId: 'order-a', definitionId: 'wall-brick', tile: { x: 3, y: 3 }, edge: 'north', state: 'materials-pending', cancelRefundMinorUnits: 80, revision: 2 },
-      { orderId: 'order-b', definitionId: 'wall-brick', tile: { x: 4, y: 9 }, edge: 'west', state: 'materials-pending', cancelRefundMinorUnits: 80, revision: 2 },
+      { orderId: 'order-a', definitionId: 'wall-brick', tile: { x: 3, y: 3 }, edge: 'north', state: 'materials-pending', cancelRefundMinorUnits: 80, revision: '2' },
+      { orderId: 'order-b', definitionId: 'wall-brick', tile: { x: 4, y: 9 }, edge: 'west', state: 'materials-pending', cancelRefundMinorUnits: 80, revision: '2' },
     ]);
   });
 

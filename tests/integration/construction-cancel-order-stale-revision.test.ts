@@ -58,7 +58,7 @@ describe("ADR 0107: a CancelBuildOrder naming a stale revision is refused, not s
     // which bumps the revision past what the row above read.
     run(runtime, 10);
     expect(runtime.construction.getOrder('order-a')?.state, 'the order moved on, which is the whole premise').toBe('in-progress');
-    expect(runtime.construction.revisionOf('order-a')).toBeGreaterThan(staleRevision);
+    expect(BigInt(runtime.construction.revisionOf('order-a'))).toBeGreaterThan(BigInt(staleRevision));
 
     const balanceBeforeStalePress = runtime.treasury.balanceMinorUnits;
     dispatch(runtime, { type: 'CancelBuildOrder', orderId: 'order-a', expectedRevision: staleRevision });
@@ -108,7 +108,7 @@ describe("ADR 0107: a CancelBuildOrder naming a stale revision is refused, not s
 
   it("does not disturb the pre-existing idempotency: an unknown order id is still swallowed silently, revision aside", () => {
     const runtime = session();
-    dispatch(runtime, { type: 'CancelBuildOrder', orderId: 'order-that-never-was', expectedRevision: 0 });
+    dispatch(runtime, { type: 'CancelBuildOrder', orderId: 'order-that-never-was', expectedRevision: '0' });
     expect(runtime.refusals.last, 'unchanged behaviour Decision §4 item 1 declines to touch').toBeUndefined();
   });
 });

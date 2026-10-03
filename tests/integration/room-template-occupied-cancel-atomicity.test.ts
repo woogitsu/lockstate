@@ -75,7 +75,7 @@ it('leaves stale occupied cancellation on its existing refusal path before any r
   until(runtime, () => runtime.prisoners.roomInstances.totalOccupancy === 1);
   const fixture = runtime.construction.allOrders().find(order => order.id.includes('-2-object-000'))!;
   const { kernel: _beforeKernel, ...before } = captureSessionSnapshot(runtime);
-  send(runtime, { type: 'CancelBuildOrder', orderId: fixture.id, expectedRevision: runtime.construction.revisionOf(fixture.id)! - 1 });
+  send(runtime, { type: 'CancelBuildOrder', orderId: fixture.id, expectedRevision: (BigInt(runtime.construction.revisionOf(fixture.id)) - 1n).toString() });
   const { kernel: _afterKernel, ...after } = captureSessionSnapshot(runtime);
   expect(after).toEqual(before);
   expect(runtime.refusals.last).toMatchObject({ reason: 'cancel-build-order.stale-cancellation' });
