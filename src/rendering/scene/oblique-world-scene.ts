@@ -6,6 +6,7 @@ import { KeyboardInputAdapter, activeKeyboardContexts, loadInputSettings, type S
 import type { RenderActor, RenderFeed, RenderFrame } from '../feed/render-feed';
 import { TILE_SIZE_PX, worldToTile } from '../tile-metrics';
 import { VOID_COLOR, ZONING_TINT_ALPHA, UNOWNED_SHADE_ALPHA, UNOWNED_SHADE_COLOR } from '../world/appearance';
+import { BLOCKED_PLACEMENT_PREVIEW_TINT } from '../world/appearance';
 import {
   changeObliquePoseAtScreenPoint,
   panObliqueGroundAnchorToScreen,
@@ -503,13 +504,21 @@ export class ObliqueWorldScene extends Phaser.Scene {
     const topRight = projectedTileQuad(rect.tileX + rect.width - 1, rect.tileY, this.pose);
     const bottomRight = projectedTileQuad(rect.tileX + rect.width - 1, rect.tileY + rect.height - 1, this.pose);
     const bottomLeft = projectedTileQuad(rect.tileX, rect.tileY + rect.height - 1, this.pose);
-    this.fillQuad(graphics, [topLeft[0], topRight[1], bottomRight[2], bottomLeft[3]], 0x6dc9bb, 0.4);
+    const tint = gesture.kind === 'object' && this.objectTool?.previewVerdict?.() === 'blocked'
+      ? BLOCKED_PLACEMENT_PREVIEW_TINT : 0x6dc9bb;
+    this.fillQuad(graphics, [topLeft[0], topRight[1], bottomRight[2], bottomLeft[3]], tint, 0.4);
   }
 
   private cancelGesture(): void {
     this.gesture = undefined;
     this.gestureGraphics?.clear();
     this.clearToolTargets();
+  }
+
+  /** Verdict publication repaints the retained physical aim without changing the camera/gesture. */
+  public refreshObjectToolVerdict(): void {
+    if (this.objectTool?.isArmed() !== true && this.gesture?.kind === 'object') this.cancelGesture();
+    else this.paintGesturePreview();
   }
 
   private commitGesture(): void {

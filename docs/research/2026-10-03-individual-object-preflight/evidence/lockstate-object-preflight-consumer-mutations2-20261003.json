@@ -1,0 +1,14 @@
+[
+    {
+        "tag":  "world-verdict-omission",
+        "exit":  1,
+        "before":  "02704C6626F19A586299B508D0FE56A66AC9018C82D2273F5F182F232D37F721",
+        "restored":  "02704C6626F19A586299B508D0FE56A66AC9018C82D2273F5F182F232D37F721"
+    },
+    {
+        "tag":  "running-publication-omission",
+        "exit":  1,
+        "before":  "05E8A309E4C5FFD2AE551275F90F3EC894603D13FFC7725DD5AF8CC9EDCF487D",
+        "restored":  "05E8A309E4C5FFD2AE551275F90F3EC894603D13FFC7725DD5AF8CC9EDCF487D"
+    }
+]

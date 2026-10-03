@@ -1,0 +1,50 @@
+[
+    {
+        "file":  "lockstate-object-preflight-consumer-original-red-20261003.txt",
+        "sha256":  "7B3838C625D0475BDDA587A15A259203951F687B27194DBE5ACDADD89EC8BE14"
+    },
+    {
+        "file":  "lockstate-object-preflight-consumer-types-20261003.txt",
+        "sha256":  "9B3E4E3D629976D792057EF6825DCE9135D6A6862B1E512BBC39E6EA7F2E913A"
+    },
+    {
+        "file":  "lockstate-object-preflight-consumer-final-types-20261003.txt",
+        "sha256":  "D6454713E93844047668C2C13D79A97EC99586294D806B98735BE3B80426B3C5"
+    },
+    {
+        "file":  "lockstate-object-preflight-consumer-restored-green-20261003.txt",
+        "sha256":  "16FFF3FC96D603501147FF3D5FBED04951116D153B3497A6D85807FB4255B773"
+    },
+    {
+        "file":  "lockstate-object-preflight-stale-owner-omission-red-20261003.txt",
+        "sha256":  "F6AF7CFECEC8053029273876F4281EDF7344198DFD95E38301FD5EFB4DD5A765"
+    },
+    {
+        "file":  "lockstate-object-preflight-paused-publication-omission-red-20261003.txt",
+        "sha256":  "89CBDE7ECA74136344E6539B1763DB447FD2FE5958F4C501B4AC10E2CEDC5CC0"
+    },
+    {
+        "file":  "lockstate-object-preflight-async-scene-refresh-omission-red-20261003.txt",
+        "sha256":  "5704F687A90FC05BCDF419532C410237A4B448BF97D5CF878C1DE6F750BF7367"
+    },
+    {
+        "file":  "lockstate-object-preflight-oblique-verdict-omission-red-20261003.txt",
+        "sha256":  "D46E11D5EA3249A80FF5A45D9BF62412869AB839093C978E7FCCF73E4C699AE9"
+    },
+    {
+        "file":  "lockstate-object-preflight-world-verdict-omission-red-20261003.txt",
+        "sha256":  "8A998DD5C672D8CCFDFF1E74F0DEC83B42859A92126BE21111B35429D3FCEE2E"
+    },
+    {
+        "file":  "lockstate-object-preflight-running-publication-omission-red-20261003.txt",
+        "sha256":  "A3D6E3305521D20E18F4DBAB1C6F9152A35EBE773F9EBBA8ABEA3C10E1DFA741"
+    },
+    {
+        "file":  "lockstate-object-preflight-consumer-mutations-20261003.json",
+        "sha256":  "4398B7E042D3D238B76FBBAEC44F6B58B5B5E889D0816DB4463EB7455E0E1E98"
+    },
+    {
+        "file":  "lockstate-object-preflight-consumer-mutations2-20261003.json",
+        "sha256":  "B6734921334DE10C369CB439D57691B18D6F13DBE49E0FDBCD9FA8C3C6146412"
+    }
+]

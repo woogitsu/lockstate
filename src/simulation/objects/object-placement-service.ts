@@ -29,8 +29,9 @@ import { roomInstanceContaining, type RoomCapacityResolver } from './room-capaci
  * the container.
  *
  * This service is therefore not a placement *system*: it has no `update`, it
- * holds no state a snapshot has to carry, and it runs only inside a command
- * dispatch. What it does is decide whether the placement is legal and mint the
+ * holds no state a snapshot has to carry. Its mutation runs only inside a command
+ * dispatch; the same pure admission check also serves read-only preflight queries.
+ * What it does is decide whether the placement is legal and mint the
  * order; the object appears when the order finishes, through
  * `onOrderCompleted` below.
  *
