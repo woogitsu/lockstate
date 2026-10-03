@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 // Pending native transfer-neck acceptance; original opened palette/detail controls retained.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
@@ -223,6 +224,7 @@ test(`player builds Basic cell at quarterTurns${quarterTurns} and retains toilet
   await page.mouse.move(1300, 700);
   // Genuine native pose controls expose the front service hardware instead
   // of measuring the door that occludes the toilet in the initial -45 view.
+  await openCameraControls(page);
   const turn = quarterTurns === 0 ? 'Rotate camera right' : 'Rotate camera left';
   for (let step = 0; step < 4; step++) await page.getByRole('button', { name: turn, exact: true }).click();
   const completed = await page.screenshot({ path: info.outputPath('dedicated-cell-toilet-worker-completed-fullhd.png') });
@@ -268,6 +270,7 @@ test(`player builds Basic cell at quarterTurns${quarterTurns} and retains toilet
   // Original palette recipe ends q0 at global15; q1 at global-105/local-15.
   // Additional right steps2/4 reach global45/-45, both local45 afterorientation.
   // Public native RMB drag17px lowers45deg to40.129859deg, selecting source40.
+  await openCameraControls(page);
   for (let step=0;step<(quarterTurns===0?2:4);step++) {
     await page.getByRole('button',{name:'Rotate camera right',exact:true}).click();
   }

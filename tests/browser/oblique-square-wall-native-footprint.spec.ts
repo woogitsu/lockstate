@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { writeFile } from 'node:fs/promises';
 import { expect, test, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
@@ -165,6 +166,7 @@ for (const cutaway of [false, true]) for (const pose of poses) test(`native comp
   await minimap.click({position:{x:map.width*20.5/32,y:map.height*20.5/32}});
   const mapClick=await page.evaluate(()=>(window as unknown as {wallMinimapClick:{fx:number;fy:number}}).wallMinimapClick);
   const target={x:mapClick.fx*32,y:mapClick.fy*32};
+  await openCameraControls(page);
   for(let i=0;i<pose.turns;i++)await page.getByRole('button',{name:'Rotate camera right',exact:true}).click();
   for(let i=0;i<pose.raises;i++)await page.getByRole('button',{name:'Raise camera angle',exact:true}).click();
   await expect.poll(() => wallTextures.some(url => url.includes(`square-brick-${cutaway ? 'low' : 'full'}-wall-yaw${pose.yaw<0?'-':'+'}${String(Math.abs(pose.yaw)).padStart(3,'0')}-elev${pose.elevation===80?65:pose.elevation}`))).toBe(true);

@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { writeFile } from 'node:fs/promises';
 import { expect, test } from './network-changed-fixture';
 import { installTee, sentCommands, showPanel } from './playtest-harness';
@@ -72,6 +73,7 @@ test('a publicly hired Guard keeps actual identity and visible authored body thr
   // The newly allocated guard has never walked: default south heading=0.
   // Real public 15-degree steps: camera -45 -9*15 = -180, elevation stays45.
   // No zoom/scale change. These expected inputs do not expose a private bound pose.
+  await openCameraControls(page);
   for (let index = 0; index < 9; index++) {
     await page.getByRole('button', { name: 'Rotate camera left', exact: true }).click();
   }

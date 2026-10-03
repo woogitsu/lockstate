@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 import { writeFile } from 'node:fs/promises';
@@ -159,7 +160,10 @@ test(`player builds the bookshelf in Classroom at quarterTurns${quarterTurns} an
   // A quarter-turned 2x1 bookshelf is measured from the same authored face:
   // rotate the actual camera -90 degrees: assetYaw = cameraYaw +90.
   // This retains the original -45-degree authored book face, not its rear.
-  if (quarterTurns === 1) for (let step = 0; step < 6; step++) await page.getByRole('button', { name: 'Rotate camera left', exact: true }).click();
+  if (quarterTurns === 1) {
+    await openCameraControls(page);
+    for (let step = 0; step < 6; step++) await page.getByRole('button', { name: 'Rotate camera left', exact: true }).click();
+  }
   await page.mouse.move(1300, 700);
   const completed = await page.screenshot({ path: info.outputPath('bookshelf-worker-completed-fullhd.png') });
   // Authored object000 at local(1,1), size2x1, becomes local(5,1)
@@ -187,6 +191,7 @@ test(`player builds the bookshelf in Classroom at quarterTurns${quarterTurns} an
   expect(afterPixels).toBe(beforePixels);
   await writeFile(info.outputPath('bookshelf-worker-and-save-evidence.json'), JSON.stringify({ quarterTurns, owned, beforePixels, afterPixels,
     commands: (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate') }, null, 2));
+  await openCameraControls(page);
   for (let step = 0; step < 3; step++) await page.getByRole('button', { name: 'Rotate camera left', exact: true }).click();
   await page.mouse.move(1300, 700);
   await page.screenshot({ path: info.outputPath('physical-hardware-loaded-fullhd.png') });

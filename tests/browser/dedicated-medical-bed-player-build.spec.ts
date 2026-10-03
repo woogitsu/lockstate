@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 // Actual combined native Infirmary Build/Load accepted on bb521c103e, 2026-10-03.
 // Historical q0 control retained; original q1 estimate passed inspected native PNGs unchanged.
 import { writeFile } from 'node:fs/promises';
@@ -241,6 +242,7 @@ test(`player builds Infirmary at quarterTurns${quarterTurns} and retains the aut
 
   // Separate genuine native-camera detail view for rail/caster/lifting
   // inspection. No source-preview render is substituted for player pixels.
+  await openCameraControls(page);
   for (let step = 0; step < 6; step++) {
     await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
   }

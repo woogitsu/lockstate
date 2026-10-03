@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { expect, test } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 
@@ -15,13 +16,14 @@ for (const renderer of ['world', 'oblique'] as const) {
           window.addEventListener(type, event => {
             const target = event.target;
             if (!(target instanceof Element)) return;
-            if (!target.matches('canvas, .hud__corner > select.hud-build__category')) return;
-            events.push({ type, tag: target.tagName, view: target.matches('.hud__corner > select.hud-build__category'), value: target instanceof HTMLSelectElement ? target.value : null });
+            if (!target.matches('canvas, .hud-camera-panel > select.hud-build__category')) return;
+            events.push({ type, tag: target.tagName, view: target.matches('.hud-camera-panel > select.hud-build__category'), value: target instanceof HTMLSelectElement ? target.value : null });
           }, true);
         }
       }, scale);
       await page.setViewportSize({ width: 1920, height: 1080 });
       await page.goto(`/?renderer=${renderer}`);
+      await openCameraControls(page);
       await page.getByRole('button', { name: 'New prison', exact: true }).click();
       await page.getByRole('button', { name: 'Pause', exact: true }).click();
       await page.getByRole('button', { name: 'Build', exact: true }).click();
@@ -36,7 +38,7 @@ for (const renderer of ['world', 'oblique'] as const) {
       const point = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
       const hit = await page.evaluate(point => {
         const target = document.elementFromPoint(point.x, point.y);
-        return { tag: target?.tagName, view: target?.matches('.hud__corner > select.hud-build__category') === true };
+        return { tag: target?.tagName, view: target?.matches('.hud-camera-panel > select.hud-build__category') === true };
       }, point);
       const before = await sentCommands(page);
       const clip = { x: 700, y: 350, width: 180, height: 180 };

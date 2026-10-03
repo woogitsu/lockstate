@@ -1,5 +1,6 @@
 import { createRequire } from 'node:module';
 import { writeFileSync } from 'node:fs';
+import { openCameraControls } from './public-camera-controls';
 import { resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { expect, test as base, type Page, type TestInfo } from './network-changed-fixture';
@@ -172,6 +173,7 @@ test('opt-in #2018 completed public cot: required PNG, real camera turn and whol
     await expect.poll(() => decoded(initial.sha256), { message: 'actual loader decodes the required completed cot PNG' }).toBe(true);
     await centreCot(page); const original = await page.screenshot({ path: info.outputPath('actual-q0-cot-original-calibrated-fullhd.png') });
     receipt['originalBlanketPixels'] = originalBlanketPixels(original); expect(receipt['originalBlanketPixels']).toBeGreaterThan(700);
+    await openCameraControls(page);
     await time('public one-step camera right', () => page.getByRole('button', { name: 'Rotate camera right', exact: true }).click());
     await expect.poll(() => decoded(turned.sha256), { message: 'actual public camera change decodes the new selected cot orientation' }).toBe(true);
     const assets = await observer.read();
@@ -182,6 +184,7 @@ test('opt-in #2018 completed public cot: required PNG, real camera turn and whol
     await centreCot(page); await page.screenshot({ path: info.outputPath('actual-loaded-turned-cot-pending-root-calibration-fullhd.png') });
     // Return through the public control to the original independently calibrated
     // pose; Load reframing is handled only through the actual minimap.
+    await openCameraControls(page);
     await page.getByRole('button', { name: 'Rotate camera left', exact: true }).click(); await centreCot(page);
     const restored = await page.screenshot({ path: info.outputPath('actual-loaded-original-cot-calibrated-fullhd.png') });
     receipt['restoredBlanketPixels'] = originalBlanketPixels(restored); expect(receipt['restoredBlanketPixels']).toBeGreaterThan(700);

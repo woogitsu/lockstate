@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { expect, test } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 
@@ -5,6 +6,7 @@ test('a native View arrow starts renderer selection without panning the old map 
   await installTee(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/');
+  await openCameraControls(page);
   await page.getByRole('button', { name: 'New prison', exact: true }).click();
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
   const view = page.getByRole('combobox', { name: 'View', exact: true });

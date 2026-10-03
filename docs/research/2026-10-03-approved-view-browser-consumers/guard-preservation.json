@@ -1,0 +1,301 @@
+{
+  "base": "01d6aa666373fec181b3f474210aea4fa8de51e3",
+  "originalConsumers": 49,
+  "allOriginalBodiesPreserved": true,
+  "results": [
+    {
+      "file": "tests/browser/angled-ground-band-audit.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 2,
+      "currentExpectCalls": 2
+    },
+    {
+      "file": "tests/browser/bookshelf-player-build.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 20,
+      "currentExpectCalls": 20
+    },
+    {
+      "file": "tests/browser/build-target-readability.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 12,
+      "currentExpectCalls": 12
+    },
+    {
+      "file": "tests/browser/canteen-dining-table-evidence.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 5,
+      "currentExpectCalls": 5
+    },
+    {
+      "file": "tests/browser/cell-cot-evidence.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 5,
+      "currentExpectCalls": 5
+    },
+    {
+      "file": "tests/browser/common-room-upholstered-player-build.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 44,
+      "currentExpectCalls": 44
+    },
+    {
+      "file": "tests/browser/compact-camera-pose-controls.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 8,
+      "currentExpectCalls": 8
+    },
+    {
+      "file": "tests/browser/dedicated-camera-pan-player.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 61,
+      "currentExpectCalls": 61
+    },
+    {
+      "file": "tests/browser/dedicated-cell-toilet-player-build.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 32,
+      "currentExpectCalls": 32
+    },
+    {
+      "file": "tests/browser/dedicated-kitchen-stove-player-build.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 23,
+      "currentExpectCalls": 23
+    },
+    {
+      "file": "tests/browser/dedicated-loading-dock-door-player-build.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 29,
+      "currentExpectCalls": 29
+    },
+    {
+      "file": "tests/browser/dedicated-medical-bed-player-build.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 25,
+      "currentExpectCalls": 25
+    },
+    {
+      "file": "tests/browser/dedicated-medicine-cabinet-player-build.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 25,
+      "currentExpectCalls": 25
+    },
+    {
+      "file": "tests/browser/dedicated-office-desk-player-build.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 26,
+      "currentExpectCalls": 26
+    },
+    {
+      "file": "tests/browser/dedicated-security-console-player-build.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 25,
+      "currentExpectCalls": 25
+    },
+    {
+      "file": "tests/browser/dedicated-utility-panel-player-build.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 27,
+      "currentExpectCalls": 27
+    },
+    {
+      "file": "tests/browser/first-square-clock-hint.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 12,
+      "currentExpectCalls": 12
+    },
+    {
+      "file": "tests/browser/generic-wooden-rack-player-build.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 26,
+      "currentExpectCalls": 26
+    },
+    {
+      "file": "tests/browser/hired-guard-player-build.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 28,
+      "currentExpectCalls": 28
+    },
+    {
+      "file": "tests/browser/hud-camera-pose-controls.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 6,
+      "currentExpectCalls": 6
+    },
+    {
+      "file": "tests/browser/hud-minimap-identity.audit.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 13,
+      "currentExpectCalls": 13
+    },
+    {
+      "file": "tests/browser/integrated-square-walls.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 37,
+      "currentExpectCalls": 37
+    },
+    {
+      "file": "tests/browser/interior-north-door-evidence.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 15,
+      "currentExpectCalls": 15
+    },
+    {
+      "file": "tests/browser/laundry-washer-evidence.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 5,
+      "currentExpectCalls": 5
+    },
+    {
+      "file": "tests/browser/live-renderer-selection.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 32,
+      "currentExpectCalls": 32
+    },
+    {
+      "file": "tests/browser/live-view-held-native-arrow.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 12,
+      "currentExpectCalls": 12
+    },
+    {
+      "file": "tests/browser/live-view-keyboard-focus.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 27,
+      "currentExpectCalls": 28
+    },
+    {
+      "file": "tests/browser/live-view-native-mouse-target.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 13,
+      "currentExpectCalls": 13
+    },
+    {
+      "file": "tests/browser/live-view-native-popup-held-key.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 15,
+      "currentExpectCalls": 15
+    },
+    {
+      "file": "tests/browser/native-classroom-desk.recipe.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 33,
+      "currentExpectCalls": 33
+    },
+    {
+      "file": "tests/browser/native-garbage-room.recipe.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 24,
+      "currentExpectCalls": 24
+    },
+    {
+      "file": "tests/browser/native-reception-room.recipe.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 25,
+      "currentExpectCalls": 25
+    },
+    {
+      "file": "tests/browser/native-small-prison-showcase.recipe.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 30,
+      "currentExpectCalls": 30
+    },
+    {
+      "file": "tests/browser/oblique-demand-loading.profile.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 37,
+      "currentExpectCalls": 37
+    },
+    {
+      "file": "tests/browser/oblique-low-angle-picking.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 6,
+      "currentExpectCalls": 6
+    },
+    {
+      "file": "tests/browser/oblique-object-area-drag-under-hud.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 30,
+      "currentExpectCalls": 30
+    },
+    {
+      "file": "tests/browser/oblique-pending-wall-player.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 28,
+      "currentExpectCalls": 28
+    },
+    {
+      "file": "tests/browser/oblique-production.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 30,
+      "currentExpectCalls": 30
+    },
+    {
+      "file": "tests/browser/oblique-room-template-picking.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 15,
+      "currentExpectCalls": 15
+    },
+    {
+      "file": "tests/browser/oblique-square-wall-native-footprint.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 17,
+      "currentExpectCalls": 17
+    },
+    {
+      "file": "tests/browser/oblique-wheel-anchor.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 10,
+      "currentExpectCalls": 10
+    },
+    {
+      "file": "tests/browser/room-template-renderer-preflight-receipt.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 28,
+      "currentExpectCalls": 28
+    },
+    {
+      "file": "tests/browser/room-template-renderer-stationary-hover.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 31,
+      "currentExpectCalls": 31
+    },
+    {
+      "file": "tests/browser/room-template-world-mouse.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 29,
+      "currentExpectCalls": 29
+    },
+    {
+      "file": "tests/browser/shower-head-player-build.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 20,
+      "currentExpectCalls": 20
+    },
+    {
+      "file": "tests/browser/staff-room-padded-chair/native-evidence.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 27,
+      "currentExpectCalls": 27
+    },
+    {
+      "file": "tests/browser/utility-panel-player-build.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 19,
+      "currentExpectCalls": 19
+    },
+    {
+      "file": "tests/browser/wooden-bench-player-build.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 24,
+      "currentExpectCalls": 24
+    },
+    {
+      "file": "tests/browser/wooden-chair-player-build.spec.ts",
+      "originalBodyPreservedAfterExplicitPrerequisites": true,
+      "originalExpectCalls": 23,
+      "currentExpectCalls": 23
+    }
+  ]
+}

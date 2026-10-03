@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { expect, test } from './network-changed-fixture';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
 import { captureSessionSnapshot } from '../../src/simulation/runtime/restore-session';
@@ -134,6 +135,7 @@ for (const renderer of ['top-down', 'oblique'] as const) {
       // Exercise every production camera input over the actual loaded cell,
       // including Blender walls and furniture, rather than an empty map.
       const canvas = page.locator('#game-root canvas');
+      await openCameraControls(page);
       let image = await canvas.screenshot();
       await page.getByRole('button', { name: 'Rotate camera right' }).click();
       await expect.poll(async () => (await canvas.screenshot()).equals(image)).toBe(false);

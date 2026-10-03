@@ -1,0 +1,20 @@
+diff --git a/tests/browser/laundry-linen-rack/native-evidence.ts b/tests/browser/laundry-linen-rack/native-evidence.ts
+index be466db..b93e6bb 100644
+--- a/tests/browser/laundry-linen-rack/native-evidence.ts
++++ b/tests/browser/laundry-linen-rack/native-evidence.ts
+@@ -1,6 +1,7 @@
+ /** Opt-in prepared evidence on the existing public Laundry route. No native verdict. */
+ import { createHash } from 'node:crypto';
+ import { writeFile } from 'node:fs/promises';
++import { openCameraControls } from '../public-camera-controls';
+ import type { SessionSnapshotBundle } from '../../../src/simulation/runtime/restore-session';
+ import { SAVE_SCHEMA_VERSION } from '../../../src/persistence/save-schema';
+ import { parseObliqueModuleCatalog } from '../../../src/rendering/assets/oblique-module-catalog';
+@@ -129,6 +130,7 @@ export function assertLaundryNativeOwners(data: SessionSnapshotBundle, turns: 0
+ export async function recordLaundryCanonical(page: Page, info: TestInfo, turns: 0 | 1,
+   observer: Awaited<ReturnType<typeof observeLaundryLinenNetwork>>, loaded: SessionSnapshotBundle, paidOrderId: string) {
+   assertLaundryNativeOwners(loaded, turns, paidOrderId);
++  await openCameraControls(page);
+   for (let step = 0; step < 7; step++) await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
+   for (let step = 0; step < 3; step++) await page.getByRole('button', { name: 'Lower camera angle', exact: true }).click();
+   for (let step = 0; step < 2; step++) await page.getByRole('button', { name: 'Raise camera angle', exact: true }).click();

@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 // Genuine native generic rack routes, calibrated independent pixels and Save/Load.
 import { writeFile } from 'node:fs/promises';
 import { assertOwnedObjectOrders, recordOwnedObjectSnapshot, type ExpectedOwnedObject } from './owned-object-worker-evidence';
@@ -275,6 +276,7 @@ test(`player reaches default generic racks at quarterTurns${quarterTurns} and re
   await info.attach('generic-wooden-rack-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
 
   // Real native pose changes expose the authored support hardware after Load.
+  await openCameraControls(page);
   for (let step = 0; step < 3; step++) await page.getByRole('button', { name: quarterTurns === 0 ? 'Rotate camera right' : 'Rotate camera left', exact: true }).click();
   await page.mouse.move(1300, 700);
   await page.screenshot({ path: info.outputPath('physical-hardware-loaded-fullhd.png') });

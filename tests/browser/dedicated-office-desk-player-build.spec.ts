@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 // Fresh combined-source acceptance uses actual Reception construction and Save/Load.
 // Isolated detail-source controls are retained; this run records the combined worker owner.
 import { writeFile } from 'node:fs/promises';
@@ -249,6 +250,7 @@ test(`player builds Reception at quarterTurns${quarterTurns} and retains dedicat
 
   // Native opposite-side observation exposes the pedestal face hidden in the
   // default palette views. Keep those palette crops/thresholds unchanged.
+  await openCameraControls(page);
   for (let step = 0; step < 12; step++) {
     await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
   }

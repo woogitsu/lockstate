@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 // Integrated V8 owner acceptance; retain the original opened native palette/detail controls.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
@@ -201,6 +202,7 @@ test(`player builds Utility Room at quarterTurns${quarterTurns} and retains util
   await minimap.click({ position: { x: bounds.width * 22 / 32, y: bounds.height * 7 / 32 } });
   await page.mouse.move(1300, 700);
   // Observe the real front controls after the actual template quarter turn.
+  await openCameraControls(page);
   const turn = quarterTurns === 0 ? 'Rotate camera right' : 'Rotate camera left';
   for (let step = 0; step < 4; step++) await page.getByRole('button', { name: turn, exact: true }).click();
   const completed = await page.screenshot({ path: info.outputPath('dedicated-utility-panel-worker-completed-fullhd.png') });

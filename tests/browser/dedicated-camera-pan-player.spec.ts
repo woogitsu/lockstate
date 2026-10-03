@@ -1,4 +1,5 @@
 import { expect, test, type Page } from './network-changed-fixture';
+import { openCameraControls } from './public-camera-controls';
 import { installTee, sentCommands } from './playtest-harness';
 import { observeUnroundedMinimapViewport, type MinimapViewportPercent } from './minimap-unrounded-reference';
 
@@ -134,6 +135,7 @@ for (const mode of ['world', 'oblique'] as const) for (const uiScale of [1, 2]) 
       uiScale: Number(getComputedStyle(document.documentElement).getPropertyValue('--ui-scale')) }))).toEqual({ width: 1920, height: 1080, zoom: 1, uiScale });
     await expect(page.locator('#game-root canvas')).toBeVisible();
     await expect(page.locator('.hud-minimap__viewport')).toBeVisible();
+    await openCameraControls(page);
     await expect(page.locator('.hud-camera-pan button')).toHaveCount(4);
     // Keep all four movement observations strictly inside the map. Clipped
     // minimap boxes cannot serve as a precise camera-ground reference.

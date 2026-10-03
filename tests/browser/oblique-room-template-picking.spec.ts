@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { expect, test } from './network-changed-fixture';
 import { installTee, sentCommands, type TeeWindow } from './playtest-harness';
 
@@ -9,6 +10,7 @@ test('angled room plan ghost and mouse placement agree through four yaw directio
   await page.goto('/?renderer=oblique');
   await page.getByRole('button', { name: 'New prison' }).click();
   await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await openCameraControls(page);
   const turn = page.getByRole('button', { name: 'Rotate camera right', exact: true });
   const raise = page.getByRole('button', { name: 'Raise camera angle', exact: true });
   const lower = page.getByRole('button', { name: 'Lower camera angle', exact: true });

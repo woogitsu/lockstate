@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { writeFile } from 'node:fs/promises';
 import { expect, test, type Page, type TestInfo } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
@@ -106,6 +107,7 @@ for (const scale of [1, 2]) {
     await expect(yard).toHaveAttribute('aria-checked', 'true');
     await page.locator('.hud-rooms__arm').click();
     await expect(page.locator('.hud-rooms__arm')).toHaveAttribute('aria-pressed', 'true');
+    await openCameraControls(page);
     const turn = page.getByRole('button', { name: 'Rotate camera left', exact: true });
     const box = await turn.boundingBox();
     if (!box) throw new Error('Camera turn control missing');

@@ -1,3 +1,4 @@
+import { openCameraControls } from './public-camera-controls';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 
@@ -145,6 +146,7 @@ test('player builds the utility panel in Utility Room and keeps it after Save/Lo
   if (bounds === null) throw new Error('minimap absent');
   await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 7.5 / 32 } });
   await page.mouse.move(1300, 700);
+  await openCameraControls(page);
   await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
   await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
   await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
