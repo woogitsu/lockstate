@@ -27,5 +27,6 @@ Original occupied refusal, collective row exclusion, genuine release/retry, spar
 - Same four files and same 131 cases: **131 passes, 8.76 seconds**; [corrected raw output](./raw/corrected-owned.txt).
 - Strict application and tools TypeScript: both exit 0; [app output](./raw/types-app.txt), [tools output](./raw/types-tools.txt).
 - [Machine receipt](./raw/terminal.json) retains exact base, original log hash and scope.
+- Bounded research-index, documentation-link and quotation contracts: **26 passes, one inherited failure, 13.80 seconds**; [raw output](./raw/docs-terminal.txt). Index and quotation contracts pass. The existing construction-history V9 record cites `docs/research/2026-10-03-queued-template-cancellation-load/v9-review-proposal.md`, which is absent from this exact integrated tree. Source line 7 contains an ordinary single-line path; the apparent line break in the raw terminal is output wrapping. This correction leaves the parent's separate documentation surface untouched.
 
 No production mutation, browser, server, build or full-suite execution was performed in this correction. These results establish the scoped consumer correction; they do not add a new producer-negative or native acceptance claim. The previous V9 source record retains its separate actual producer omission/restoration evidence.
