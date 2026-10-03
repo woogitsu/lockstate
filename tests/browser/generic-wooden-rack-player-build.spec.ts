@@ -57,8 +57,12 @@ async function rackPixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promise
     // Actual native FullHD calibration at b61518d4e1, after full public LFS
     // hydration. The retained timber diffuseRGBA(.45,.27,.12,1) gives different
     // lit faces at native orientation0/1: RGB93,69,42 versus117,88,55.
-    // Isolated non-overlapping regions: normal275/339, rotated362/93.
+    // Isolated non-overlapping regions: historical normal275/339, rotated362/93.
     // Rotated rear rack is partly behind the wall; only visible timber counts.
+    // Physical supports change shading at b90c8b3: exact normal153/214, with
+    // one 8-bit channel step360/423. Retain the original regions and >200/>70
+    // thresholds; a1/255 tolerance counts the authored timber's adjacent
+    // sampled shades, not metal, ground, masonry, or another furniture palette.
     const rects = quarterTurns === 0
       ? [[820, 330, 110, 160], [935, 330, 110, 160]]
       : [[820, 300, 110, 190], [935, 400, 90, 100]];
@@ -67,7 +71,8 @@ async function rackPixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promise
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;
       let count = 0;
       for (let i = 0; i < pixels.length; i += 4) {
-        if (pixels[i] === colour[0] && pixels[i + 1] === colour[1] && pixels[i + 2] === colour[2]) count++;
+        if (Math.abs(pixels[i]! - colour[0]!) <= 1 && Math.abs(pixels[i + 1]! - colour[1]!) <= 1
+          && Math.abs(pixels[i + 2]! - colour[2]!) <= 1) count++;
       }
       return count;
     });

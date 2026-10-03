@@ -176,8 +176,10 @@ test(`player builds Staff Room at quarterTurns${quarterTurns} and retains both a
     { anchorTile: { x: 21, y: 7 }, orientation: 0, sourceOrderId: 'room-template-000000000002-2-object-001' },
     { anchorTile: { x: 23, y: 8 }, orientation: 0, sourceOrderId: 'room-template-000000000002-2-object-002' },
   ] : [
-    { anchorTile: { x: 22, y: 8 }, orientation: 1, sourceOrderId: 'room-template-000000000002-2-object-001' },
-    { anchorTile: { x: 23, y: 6 }, orientation: 1, sourceOrderId: 'room-template-000000000002-2-object-002' },
+    // Authored index001 at local(1,2) rotates to(3,1); index002 at(3,3)
+    // rotates to(2,3) in this6x6 template. Sorted anchors do not reorder owners.
+    { anchorTile: { x: 22, y: 8 }, orientation: 1, sourceOrderId: 'room-template-000000000002-2-object-002' },
+    { anchorTile: { x: 23, y: 6 }, orientation: 1, sourceOrderId: 'room-template-000000000002-2-object-001' },
   ];
   const completedData = await recordOwnedObjectSnapshot(page, info.outputPath('completed-worker-snapshot.json'));
   assertOwnedObjectOrders(completedData, 'object.chair', 'chair-wooden', owned);
