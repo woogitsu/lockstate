@@ -16,4 +16,17 @@ Every model must pass strict actual descriptor parsing, source hash/camera/72pos
 
 ## Verification boundary
 
-Independent local source/body regression tests and meaningful production guard omission/exact restoration are being prepared. Local bytes are not described as delivered network bytes. Strict TypeScript, actual production build and opt-in collection are pending. Existing config remains inherited60s/expect10s/workers1/retries0. No browser/server, Blender rerender, native model acceptance or guessed ROI/colors.
+Actual local body/source tests5GREEN. A genuine mutation removed ONLY `sourceSha256: art.sourceSha256` from the native observer's delivered-catalog assertion. The matching-body-hash bad-source control becomes1RED while4other tests remain GREEN. Observer bytes are restored in finally; all157protected source/PNG/descriptor/fixture/runtime files match, then5GREEN. This validates the native evidence assertion locally, not a browser or Blender control. One initial unit read guessed a dotted Office descriptor filename; the actual discovered hyphen filename was corrected before the first publication.
+
+Final focused4suites21GREEN, including both original public typed q0/q1 constructions and WHOLE V8 roundtrip. Strict application/browser tests/tools TypeScript exit0; actual local Cloudflare production build exit0. Both new desk and retained chair descriptor/PNG bytes in the built client exactly match the published sources. Opt-in config generator executed; actual Playwright `--list` collected exactly3serialcases without starting browser/server. All356base research rows are preserved in order with one own new row. Local bytes are not described as delivered network bytes. Existing config remains inherited60s/expect10s/workers1/retries0. No browser/server, Blender rerender, native model acceptance or guessed ROI/colors.
+
+## Root execution handoff
+
+Run the existing generator, then the existing actual built-client route from the integrated root:
+
+```text
+node tooling/research/write-reception-room-native-config.mjs
+node node_modules/@playwright/test/cli.js test --config assets/intermediate/reception-room-native-preparation/playwright.reception.artifact.config.ts
+```
+
+The current local route collects3tests; no extra retry/slow/timeout or config override is added. The exact original fixture prefix, capacity/room snapshot assertions, public actions and whole paused Save/Load compare unchanged against092828. New per-model `models` receipt requires descriptor/source/frame/actual200body and decoded Blob evidence for the new desk as well as both original chairs' shared frame. New delivered desk file: `reception-registration-desk-actual200-source60-elev40.png`. q0/q1 actual pixel calibration, model visibility before/afterLoad and consumer controls remain root-owned; no guessed regions, thresholds or color values.

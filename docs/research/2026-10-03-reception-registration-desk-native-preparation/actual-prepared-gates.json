@@ -1,0 +1,27 @@
+[
+  {
+    "check": "typed-V8-and-local-body-GREEN",
+    "exitCode": 0,
+    "nativeBrowserStarted": false
+  },
+  {
+    "check": "strict-application-browser-tools-types-GREEN",
+    "exitCode": 0,
+    "nativeBrowserStarted": false
+  },
+  {
+    "check": "actual-production-build-GREEN",
+    "exitCode": 0,
+    "nativeBrowserStarted": false
+  },
+  {
+    "check": "generated-opt-in-config",
+    "exitCode": 0,
+    "nativeBrowserStarted": false
+  },
+  {
+    "check": "actual-opt-in-collection-only",
+    "exitCode": 0,
+    "nativeBrowserStarted": false
+  }
+]
