@@ -106,3 +106,64 @@ it('requires actual saved-source geometry/light/camera REDs, exact restores and 
   const original = proof.frames.find(row => row.stage === 'after-cycles-literal-graphs' && row.yawDegrees === -45)!;
   expect(repeat.sha256).toBe(original.sha256); expect(read(repeat.image)).toEqual(read(original.image));
 });
+
+it('transfers only existing approved material colors and roughness with59parts and58 actual surface contacts retained', () => {
+  const variant = JSON.parse(read(folder + 'actual-approved-material-variant.json').toString('utf8')) as {
+    source: string; sourceSha256: string; originalPhysicalAssembly: Physical; synchronizedPhysicalAssembly: Physical;
+    onlyChangedPrincipledInputs: string[]; retainedSurfaceContacts: { distanceToPartSurface: number; distanceToTargetSurface: number }[];
+    materialTransfers: { originalBaseColor: number[]; approvedDiffuseRGBA: number[]; originalShaderRoughness: number; approvedMaterialRoughness: number }[];
+    frames: Frame[]; joinedDiagnosticFrames: Frame[]; newPaletteColors: boolean; productionDispatchChanged: boolean;
+  };
+  expect(variant.sourceSha256).toBe('53c35a0013a93ed662983a2888031c8377ba1965981e3ef98757e20547bd9cd8');
+  expect(sourceSha(read(variant.source))).toBe(variant.sourceSha256);
+  expect(variant.originalPhysicalAssembly).toEqual(proof.physicalAssembly);
+  const { completeStoredMaterialGraphs: originalGraphs, ...originalGeometry } = variant.originalPhysicalAssembly;
+  const { completeStoredMaterialGraphs: synchronizedGraphs, ...synchronizedGeometry } = variant.synchronizedPhysicalAssembly;
+  expect(synchronizedGeometry).toEqual(originalGeometry);
+  function otherGraphFields(graphs: Material[]): unknown {
+    const rows = structuredClone(graphs) as (Material & { canonicalMaterialSha256?: string })[];
+    for (const material of rows) {
+      delete material.canonicalMaterialSha256;
+      for (const node of material.nodes) if (node.type === 'ShaderNodeBsdfPrincipled') {
+        for (const input of node.inputs) if (input.name === 'Base Color' || input.name === 'Roughness') input.value = 'EXPLICIT_EXISTING_APPROVED_VALUE_TRANSFER';
+      }
+    }
+    return rows;
+  }
+  expect(otherGraphFields(synchronizedGraphs)).toEqual(otherGraphFields(originalGraphs));
+  expect(variant.onlyChangedPrincipledInputs).toEqual(['Base Color', 'Roughness']);
+  expect(variant.retainedSurfaceContacts).toHaveLength(58);
+  for (const contact of variant.retainedSurfaceContacts) {
+    expect(contact.distanceToPartSurface).toBeLessThanOrEqual(1e-6);
+    expect(contact.distanceToTargetSurface).toBeLessThanOrEqual(1e-6);
+  }
+  expect(variant.materialTransfers).toHaveLength(9);
+  variant.materialTransfers.forEach((transfer, index) => {
+    const shader = synchronizedGraphs[index]!.nodes.find(node => node.type === 'ShaderNodeBsdfPrincipled')!;
+    expect(shader.inputs.find(input => input.name === 'Base Color')!.value).toEqual(transfer.approvedDiffuseRGBA);
+    expect(shader.inputs.find(input => input.name === 'Roughness')!.value).toBe(transfer.approvedMaterialRoughness);
+  });
+  expect(variant.frames).toHaveLength(2); expect(variant.joinedDiagnosticFrames).toHaveLength(4);
+  for (const frame of [...variant.frames, ...variant.joinedDiagnosticFrames]) { expect(sha(read(frame.image))).toBe(frame.sha256); decodeCanonical(frame.image); }
+  expect([variant.newPaletteColors, variant.productionDispatchChanged]).toEqual([false, false]);
+  const guard = JSON.parse(read(folder + 'actual-approved-material-controls.json').toString('utf8')) as {
+    actualSavedMutantSha256: string; red: { exitCode: number }; green: { exitCode: number };
+    protectedBefore: Record<string, string>; protectedAfter: Record<string, string>; protectedCount: number;
+  };
+  expect(guard.actualSavedMutantSha256).not.toBe(variant.sourceSha256);
+  expect([guard.red.exitCode, guard.green.exitCode]).toEqual([1, 0]);
+  expect(guard.protectedAfter).toEqual(guard.protectedBefore); expect(guard.protectedCount).toBe(2643);
+});
+
+it('reports measured neighbor sensitivity separately from actual sprite or native seam acceptance', () => {
+  const measurement = JSON.parse(read(folder + 'actual-joined-neighbor-sensitivity.json').toString('utf8')) as {
+    diagnosticOnly: boolean; nativeAcceptance: boolean; acceptanceThresholdInvented: boolean;
+    poses: { yawDegrees: number; samples: { meanRGBDelta: number[]; allPixelsOpaque: boolean }[] }[];
+  };
+  expect([measurement.diagnosticOnly, measurement.nativeAcceptance, measurement.acceptanceThresholdInvented]).toEqual([true, false, false]);
+  expect(measurement.poses.map(row => row.yawDegrees)).toEqual([-45, 135]);
+  for (const pose of measurement.poses) {
+    expect(pose.samples).toHaveLength(4);
+    for (const sample of pose.samples) { expect(sample.meanRGBDelta).toEqual([0, 0, 0]); expect(sample.allPixelsOpaque).toBe(true); }
+  }
+});
