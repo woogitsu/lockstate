@@ -53,7 +53,9 @@ import { identifierSchema, sequenceSchema, type VersionedPayload } from './types
  */
 export const placeBuildOrderSchema = z.object({
   type: z.literal('PlaceBuildOrder'),
-  orderId: z.string(),
+  // Stored construction IDs must be nonempty. Opaque historical saved queues
+  // remain lossless; unpackCommand rejects a malformed entry before dispatch.
+  orderId: z.string().min(1),
   definitionId: z.string().min(1),
   x: z.number().int(),
   y: z.number().int(),
@@ -166,11 +168,9 @@ export const unzoneRoomSchema = z.object({
  * (#89), and any session that had accepted a loose id could not have been
  * saved anyway.
  *
- * `PlaceBuildOrder.orderId` is deliberately left as `z.string()`. Its
- * save-side counterpart (`buildOrderSchema`) is `z.string().min(1)`, which is
- * looser than this schema rather than stricter, so there is no disagreement
- * there to close and tightening it would be a change with no defect behind
- * it.
+ * #2027 corrected the former claim that construction's save-side `.min(1)`
+ * was looser than `z.string()`. Both construction producers now require a
+ * nonempty order ID too; their broader free-form grammar remains unchanged.
  */
 export const purchaseMaterialsSchema = z.object({
   type: z.literal('PurchaseMaterials'),
@@ -451,7 +451,7 @@ export const hireStaffSchema = z.object({
  */
 export const placeObjectSchema = z.object({
   type: z.literal('PlaceObject'),
-  orderId: z.string(),
+  orderId: z.string().min(1),
   definitionId: z.string(),
   x: z.number().int(),
   y: z.number().int(),
