@@ -21,3 +21,6 @@ Fresh Issues searches: preflight session, room template busy, room plan timeout,
 Only `src/ui/room-template-tool.ts`: ephemeral placement ownership token and abandonment on existing standDown. Unconditionally invalidate the old selection revision even for a numeric, unarmed operation. Old completion/finally must neither submit into a replacement session nor clear a newer pending operation. Current `main.onWorkerAvailability` already calls standDown on successful/failed claims, so no new main/host/bridge/persistence/protocol/locale/tariff changes are proposed.
 
 No producer-negative proof exists yet. This checkpoint is diagnosis, not an accepted regression or completed fix. Browser is exclusively held by root; no own browser, CI lookup or run was started.
+## First implementation checkpoint
+
+Expanded source baseline `expanded-baseline.txt`:7 RED /1 same-session legal GREEN,3.28s (4New/Load armed or numeric,2cancel/rearm,1replacement-request overlap). `fixed.txt`:8GREEN3.06s after the tool-only token/reset correction. Final neighboring gates and production mutations are still pending at this checkpoint. Current permanent spec is `tests/unit/ui-room-template-session-preflight.test.ts`; it additionally checks that stale finally cannot open another worker request while the replacement's real query is pending.

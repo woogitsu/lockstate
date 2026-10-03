@@ -38,7 +38,7 @@ export class RoomTemplateTool {
   private selected: RoomTemplateId = 'cell-basic';
   private mirrorX = false;
   private quarterTurns: QuarterTurns = 0;
-  private busy = false;
+  private busy: symbol | undefined;
   private armed = false;
   private selectionRevision = 0;
 
@@ -56,7 +56,13 @@ export class RoomTemplateTool {
   public get revision(): number { return this.selectionRevision; }
   public isArmed(): boolean { return this.armed; }
   public arm(): void { this.port.onArm?.(); this.armed = true; this.selectionRevision += 1; }
-  public standDown(): void { if (this.armed) this.selectionRevision += 1; this.armed = false; }
+  public standDown(): void {
+    this.selectionRevision += 1;
+    this.armed = false;
+    // Session replacement already stands this shared tool down. A request
+    // belonging to that abandoned operation must not block the new session.
+    this.busy = undefined;
+  }
   public async quote(): Promise<RoomTemplateCostQuote | undefined> { return this.port.quote?.(this.selected); }
 
   public planAt(origin: TemplateSquare): RotatedRoomTemplateGeometry {
@@ -78,8 +84,9 @@ export class RoomTemplateTool {
   }
 
   public async placeAt(origin: TemplateSquare): Promise<RoomTemplatePreflight | { readonly ok: false; readonly reason: 'busy' }> {
-    if (this.busy) return { ok: false, reason: 'busy' };
-    this.busy = true;
+    if (this.busy !== undefined) return { ok: false, reason: 'busy' };
+    const placement = Symbol();
+    this.busy = placement;
     try {
       const revision = this.selectionRevision;
       const request = this.requestAt(origin);
@@ -89,7 +96,7 @@ export class RoomTemplateTool {
       await this.port.place(request);
       return verdict;
     } finally {
-      this.busy = false;
+      if (this.busy === placement) this.busy = undefined;
     }
   }
 }
