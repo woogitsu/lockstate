@@ -1,0 +1,22 @@
+00:01.157  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\assets\source\blender\fixture.cell.toilet_sink.soft-light.blend"
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\tooling\blender\render-cell-toilet-cycles.py", line 108, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\tooling\blender\render-cell-toilet-cycles.py", line 65, in main
+    scene=configure()
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\tooling\blender\render-cell-toilet-cycles.py", line 32, in configure
+    prepare.verify_scene(scene,EXPECTED)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\tooling\blender\prepare-cell-toilet-cycles.py", line 62, in verify_scene
+    audit.actual_contacts(scene) # Actual contact failure precedes source SHA checks.
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\tooling\blender\refine-cell-toilet-flush-neck.py", line 37, in actual_contacts
+    if min(hi[i]-lo[i] for i in range(3))<=1e-5:raise ValueError('Flush neck lacks actual connection: '+target)
+                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Flush neck lacks actual connection: Cistern teal ceramic band
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\tooling\blender\render-cell-toilet-cycles.py', exiting.

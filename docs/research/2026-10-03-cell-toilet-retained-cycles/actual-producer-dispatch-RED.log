@@ -1,0 +1,14 @@
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\tooling\blender\render-cell-toilet-cycles.py", line 108, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\tooling\blender\render-cell-toilet-cycles.py", line 65, in main
+    scene=configure()
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\tooling\blender\render-cell-toilet-cycles.py", line 28, in configure
+    raise ValueError('Toilet Cycles dedicated producer dispatch changed')
+ValueError: Toilet Cycles dedicated producer dispatch changed
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\tooling\blender\render-cell-toilet-cycles.py', exiting.

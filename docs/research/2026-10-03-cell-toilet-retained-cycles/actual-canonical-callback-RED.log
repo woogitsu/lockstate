@@ -1,0 +1,12 @@
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\tooling\blender\render-oblique-cell-toilet.py", line 277, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\tooling\blender\render-oblique-cell-toilet.py", line 236, in main
+    raise ValueError('Toilet canonical Cycles producer dispatch changed')
+ValueError: Toilet canonical Cycles producer dispatch changed
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-cycles-20261003\tooling\blender\render-oblique-cell-toilet.py', exiting.
