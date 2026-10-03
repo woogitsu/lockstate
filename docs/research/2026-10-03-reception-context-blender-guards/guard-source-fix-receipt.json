@@ -1,0 +1,21 @@
+{
+  "actualExistingGuardContractRed": true,
+  "missingWrappers": [
+    "render-classroom-teacher-desk-oblique.py",
+    "render-garbage-room-bin-oblique.py"
+  ],
+  "staticAfterFix": {
+    "passed": 4,
+    "skipped": 1,
+    "liveSceneTestSkippedBecauseBlenderNotOnPATH": true
+  },
+  "genuineBlenderWrapperVerifyPassedBoth": true,
+  "BlenderVersion": "5.2.1 LTS",
+  "threads": 1,
+  "serialProcesses": true,
+  "renderCalls": 0,
+  "artSourceProvenanceDescriptor144PNGByteExactUnchanged": true,
+  "protectedFileCount": 150,
+  "canonicalHelper": "pipeline_common.require_blender_version()",
+  "versionGuardBeforeSourceOrExporterImports": true
+}
