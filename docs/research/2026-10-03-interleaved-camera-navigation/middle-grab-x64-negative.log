@@ -1,0 +1,73 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-next-camera-menu-audit-20261003
+
+ ❯ tests/unit/oblique-camera-interleaved-navigation.test.ts (24 tests | 12 failed) 10ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw-75 CSSratio1 wheel-120 4ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw-75 CSSratio1 wheel120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw-75 CSSratio2 wheel-120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw-75 CSSratio2 wheel120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw30 CSSratio1 wheel-120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw30 CSSratio1 wheel120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw30 CSSratio2 wheel-120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw30 CSSratio2 wheel120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw125 CSSratio1 wheel-120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw125 CSSratio1 wheel120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw125 CSSratio2 wheel-120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw125 CSSratio2 wheel120 0ms
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  12 failed | 33 passed (45)
+   Start at  03:18:34
+   Duration  1.12s (transform 630ms, setup 0ms, import 1.77s, tests 19ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw-75 CSSratio1 wheel-120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw-75 CSSratio1 wheel120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw-75 CSSratio2 wheel-120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw-75 CSSratio2 wheel120
+AssertionError: expected 946.4866298854287 to be close to 882.4866298854286, received difference is 64.00000000000011, but expected 5e-10
+ ❯ sameGround tests/unit/oblique-camera-interleaved-navigation.test.ts:36:20
+     34| }
+     35| function sameGround(actual: { x: number; y: number }, expected: { x: n…
+     36|   expect(actual.x).toBeCloseTo(expected.x, 9);
+       |                    ^
+     37|   expect(actual.y).toBeCloseTo(expected.y, 9);
+     38| }
+ ❯ tests/unit/oblique-camera-interleaved-navigation.test.ts:70:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw30 CSSratio1 wheel-120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw30 CSSratio1 wheel120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw30 CSSratio2 wheel-120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw30 CSSratio2 wheel120
+AssertionError: expected 694.2586506801866 to be close to 630.2586506801866, received difference is 64, but expected 5e-10
+ ❯ sameGround tests/unit/oblique-camera-interleaved-navigation.test.ts:36:20
+     34| }
+     35| function sameGround(actual: { x: number; y: number }, expected: { x: n…
+     36|   expect(actual.x).toBeCloseTo(expected.x, 9);
+       |                    ^
+     37|   expect(actual.y).toBeCloseTo(expected.y, 9);
+     38| }
+ ❯ tests/unit/oblique-camera-interleaved-navigation.test.ts:70:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw125 CSSratio1 wheel-120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw125 CSSratio1 wheel120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw125 CSSratio2 wheel-120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw125 CSSratio2 wheel120
+AssertionError: expected 803.8845969591366 to be close to 739.8845969591365, received difference is 64.00000000000011, but expected 5e-10
+ ❯ sameGround tests/unit/oblique-camera-interleaved-navigation.test.ts:36:20
+     34| }
+     35| function sameGround(actual: { x: number; y: number }, expected: { x: n…
+     36|   expect(actual.x).toBeCloseTo(expected.x, 9);
+       |                    ^
+     37|   expect(actual.y).toBeCloseTo(expected.y, 9);
+     38| }
+ ❯ tests/unit/oblique-camera-interleaved-navigation.test.ts:70:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+

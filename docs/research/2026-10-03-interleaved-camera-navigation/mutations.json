@@ -1,0 +1,18 @@
+[
+  {
+    "mutation": "wheel-cursor-pivot",
+    "uniqueOccurrences": 1,
+    "negativeExitCode": 1,
+    "restoredExitCode": 0,
+    "byteExactRestored": true,
+    "originalSha256": "d461926ee16903ca9b430dd08f6cb649b55801cc4472449b22ecf7b51227949e"
+  },
+  {
+    "mutation": "middle-grab-x64",
+    "uniqueOccurrences": 1,
+    "negativeExitCode": 1,
+    "restoredExitCode": 0,
+    "byteExactRestored": true,
+    "originalSha256": "d461926ee16903ca9b430dd08f6cb649b55801cc4472449b22ecf7b51227949e"
+  }
+]

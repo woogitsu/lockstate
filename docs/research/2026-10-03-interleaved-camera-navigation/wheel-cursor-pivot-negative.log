@@ -1,0 +1,236 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-next-camera-menu-audit-20261003
+
+ ❯ tests/unit/oblique-camera-interleaved-navigation.test.ts (24 tests | 24 failed) 10ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw-75 CSSratio1 wheel-120 4ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw-75 CSSratio1 wheel120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw-75 CSSratio2 wheel-120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw-75 CSSratio2 wheel120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw30 CSSratio1 wheel-120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw30 CSSratio1 wheel120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw30 CSSratio2 wheel-120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw30 CSSratio2 wheel120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw125 CSSratio1 wheel-120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw125 CSSratio1 wheel120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw125 CSSratio2 wheel-120 0ms
+   × keeps a grabbed ground point through middle drag/wheel/drag at yaw125 CSSratio2 wheel120 0ms
+   × keeps the current ground pivot through right drag/wheel/drag at yaw-75 CSSratio1 wheel-120 0ms
+   × keeps the current ground pivot through right drag/wheel/drag at yaw-75 CSSratio1 wheel120 0ms
+   × keeps the current ground pivot through right drag/wheel/drag at yaw-75 CSSratio2 wheel-120 0ms
+   × keeps the current ground pivot through right drag/wheel/drag at yaw-75 CSSratio2 wheel120 0ms
+   × keeps the current ground pivot through right drag/wheel/drag at yaw30 CSSratio1 wheel-120 0ms
+   × keeps the current ground pivot through right drag/wheel/drag at yaw30 CSSratio1 wheel120 0ms
+   × keeps the current ground pivot through right drag/wheel/drag at yaw30 CSSratio2 wheel-120 0ms
+   × keeps the current ground pivot through right drag/wheel/drag at yaw30 CSSratio2 wheel120 0ms
+   × keeps the current ground pivot through right drag/wheel/drag at yaw125 CSSratio1 wheel-120 0ms
+   × keeps the current ground pivot through right drag/wheel/drag at yaw125 CSSratio1 wheel120 0ms
+   × keeps the current ground pivot through right drag/wheel/drag at yaw125 CSSratio2 wheel-120 0ms
+   × keeps the current ground pivot through right drag/wheel/drag at yaw125 CSSratio2 wheel120 0ms
+ ❯ tests/unit/oblique-camera-wheel-axis.test.ts (14 tests | 4 failed) 7ms
+   × retains oblique vertical direction and cursor anchor for wheel deltaX=0, deltaY=-120 2ms
+   × retains oblique vertical direction and cursor anchor for wheel deltaX=120, deltaY=-120 0ms
+   × retains oblique vertical direction and cursor anchor for wheel deltaX=0, deltaY=120 0ms
+   × retains oblique vertical direction and cursor anchor for wheel deltaX=-120, deltaY=120 0ms
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  28 failed | 17 passed (45)
+   Start at  03:18:31
+   Duration  1.12s (transform 620ms, setup 0ms, import 1.77s, tests 22ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 28 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw-75 CSSratio1 wheel-120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw-75 CSSratio2 wheel-120
+AssertionError: expected 863.8093145580203 to be close to 882.4866298854286, received difference is 18.677315327408223, but expected 5e-10
+ ❯ sameGround tests/unit/oblique-camera-interleaved-navigation.test.ts:36:20
+     34| }
+     35| function sameGround(actual: { x: number; y: number }, expected: { x: n…
+     36|   expect(actual.x).toBeCloseTo(expected.x, 9);
+       |                    ^
+     37|   expect(actual.y).toBeCloseTo(expected.y, 9);
+     38| }
+ ❯ tests/unit/oblique-camera-interleaved-navigation.test.ts:74:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/28]⎯
+
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw-75 CSSratio1 wheel120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw-75 CSSratio2 wheel120
+AssertionError: expected 905.833274044689 to be close to 882.4866298854286, received difference is 23.34664415926045, but expected 5e-10
+ ❯ sameGround tests/unit/oblique-camera-interleaved-navigation.test.ts:36:20
+     34| }
+     35| function sameGround(actual: { x: number; y: number }, expected: { x: n…
+     36|   expect(actual.x).toBeCloseTo(expected.x, 9);
+       |                    ^
+     37|   expect(actual.y).toBeCloseTo(expected.y, 9);
+     38| }
+ ❯ tests/unit/oblique-camera-interleaved-navigation.test.ts:74:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/28]⎯
+
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw30 CSSratio1 wheel-120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw30 CSSratio2 wheel-120
+AssertionError: expected 645.1825514802157 to be close to 630.2586506801866, received difference is 14.92390080002906, but expected 5e-10
+ ❯ sameGround tests/unit/oblique-camera-interleaved-navigation.test.ts:36:20
+     34| }
+     35| function sameGround(actual: { x: number; y: number }, expected: { x: n…
+     36|   expect(actual.x).toBeCloseTo(expected.x, 9);
+       |                    ^
+     37|   expect(actual.y).toBeCloseTo(expected.y, 9);
+     38| }
+ ❯ tests/unit/oblique-camera-interleaved-navigation.test.ts:74:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/28]⎯
+
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw30 CSSratio1 wheel120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw30 CSSratio2 wheel120
+AssertionError: expected 611.6037746801504 to be close to 630.2586506801866, received difference is 18.65487600003621, but expected 5e-10
+ ❯ sameGround tests/unit/oblique-camera-interleaved-navigation.test.ts:36:20
+     34| }
+     35| function sameGround(actual: { x: number; y: number }, expected: { x: n…
+     36|   expect(actual.x).toBeCloseTo(expected.x, 9);
+       |                    ^
+     37|   expect(actual.y).toBeCloseTo(expected.y, 9);
+     38| }
+ ❯ tests/unit/oblique-camera-interleaved-navigation.test.ts:74:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/28]⎯
+
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw125 CSSratio1 wheel-120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw125 CSSratio2 wheel-120
+AssertionError: expected 741.7408029440312 to be close to 739.8845969591365, received difference is 1.8562059848947001, but expected 5e-10
+ ❯ sameGround tests/unit/oblique-camera-interleaved-navigation.test.ts:36:20
+     34| }
+     35| function sameGround(actual: { x: number; y: number }, expected: { x: n…
+     36|   expect(actual.x).toBeCloseTo(expected.x, 9);
+       |                    ^
+     37|   expect(actual.y).toBeCloseTo(expected.y, 9);
+     38| }
+ ❯ tests/unit/oblique-camera-interleaved-navigation.test.ts:74:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/28]⎯
+
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw125 CSSratio1 wheel120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps a grabbed ground point through middle drag/wheel/drag at yaw125 CSSratio2 wheel120
+AssertionError: expected 737.5643394780182 to be close to 739.8845969591365, received difference is 2.3202574811183467, but expected 5e-10
+ ❯ sameGround tests/unit/oblique-camera-interleaved-navigation.test.ts:36:20
+     34| }
+     35| function sameGround(actual: { x: number; y: number }, expected: { x: n…
+     36|   expect(actual.x).toBeCloseTo(expected.x, 9);
+       |                    ^
+     37|   expect(actual.y).toBeCloseTo(expected.y, 9);
+     38| }
+ ❯ tests/unit/oblique-camera-interleaved-navigation.test.ts:74:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/28]⎯
+
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps the current ground pivot through right drag/wheel/drag at yaw-75 CSSratio1 wheel-120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps the current ground pivot through right drag/wheel/drag at yaw-75 CSSratio2 wheel-120
+AssertionError: expected 839.980921790179 to be close to 862.8138443186642, received difference is 22.832922528485255, but expected 5e-10
+ ❯ sameGround tests/unit/oblique-camera-interleaved-navigation.test.ts:36:20
+     34| }
+     35| function sameGround(actual: { x: number; y: number }, expected: { x: n…
+     36|   expect(actual.x).toBeCloseTo(expected.x, 9);
+       |                    ^
+     37|   expect(actual.y).toBeCloseTo(expected.y, 9);
+     38| }
+ ❯ tests/unit/oblique-camera-interleaved-navigation.test.ts:99:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/28]⎯
+
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps the current ground pivot through right drag/wheel/drag at yaw-75 CSSratio1 wheel120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps the current ground pivot through right drag/wheel/drag at yaw-75 CSSratio2 wheel120
+AssertionError: expected 891.3549974792709 to be close to 862.8138443186642, received difference is 28.541153160606655, but expected 5e-10
+ ❯ sameGround tests/unit/oblique-camera-interleaved-navigation.test.ts:36:20
+     34| }
+     35| function sameGround(actual: { x: number; y: number }, expected: { x: n…
+     36|   expect(actual.x).toBeCloseTo(expected.x, 9);
+       |                    ^
+     37|   expect(actual.y).toBeCloseTo(expected.y, 9);
+     38| }
+ ❯ tests/unit/oblique-camera-interleaved-navigation.test.ts:99:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/28]⎯
+
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps the current ground pivot through right drag/wheel/drag at yaw30 CSSratio1 wheel-120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps the current ground pivot through right drag/wheel/drag at yaw30 CSSratio2 wheel-120
+AssertionError: expected 685.7064126194066 to be close to 667.6581151150358, received difference is 18.048297504370794, but expected 5e-10
+ ❯ sameGround tests/unit/oblique-camera-interleaved-navigation.test.ts:36:20
+     34| }
+     35| function sameGround(actual: { x: number; y: number }, expected: { x: n…
+     36|   expect(actual.x).toBeCloseTo(expected.x, 9);
+       |                    ^
+     37|   expect(actual.y).toBeCloseTo(expected.y, 9);
+     38| }
+ ❯ tests/unit/oblique-camera-interleaved-navigation.test.ts:99:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/28]⎯
+
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps the current ground pivot through right drag/wheel/drag at yaw30 CSSratio1 wheel120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps the current ground pivot through right drag/wheel/drag at yaw30 CSSratio2 wheel120
+AssertionError: expected 645.0977432345725 to be close to 667.6581151150358, received difference is 22.56037188046332, but expected 5e-10
+ ❯ sameGround tests/unit/oblique-camera-interleaved-navigation.test.ts:36:20
+     34| }
+     35| function sameGround(actual: { x: number; y: number }, expected: { x: n…
+     36|   expect(actual.x).toBeCloseTo(expected.x, 9);
+       |                    ^
+     37|   expect(actual.y).toBeCloseTo(expected.y, 9);
+     38| }
+ ❯ tests/unit/oblique-camera-interleaved-navigation.test.ts:99:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/28]⎯
+
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps the current ground pivot through right drag/wheel/drag at yaw125 CSSratio1 wheel-120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps the current ground pivot through right drag/wheel/drag at yaw125 CSSratio2 wheel-120
+AssertionError: expected 730.149454860711 to be close to 730.768514454402, received difference is 0.6190595936909631, but expected 5e-10
+ ❯ sameGround tests/unit/oblique-camera-interleaved-navigation.test.ts:36:20
+     34| }
+     35| function sameGround(actual: { x: number; y: number }, expected: { x: n…
+     36|   expect(actual.x).toBeCloseTo(expected.x, 9);
+       |                    ^
+     37|   expect(actual.y).toBeCloseTo(expected.y, 9);
+     38| }
+ ❯ tests/unit/oblique-camera-interleaved-navigation.test.ts:99:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/28]⎯
+
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps the current ground pivot through right drag/wheel/drag at yaw125 CSSratio1 wheel120
+ FAIL  tests/unit/oblique-camera-interleaved-navigation.test.ts > keeps the current ground pivot through right drag/wheel/drag at yaw125 CSSratio2 wheel120
+AssertionError: expected 731.5423389465159 to be close to 730.768514454402, received difference is 0.7738244921139312, but expected 5e-10
+ ❯ sameGround tests/unit/oblique-camera-interleaved-navigation.test.ts:36:20
+     34| }
+     35| function sameGround(actual: { x: number; y: number }, expected: { x: n…
+     36|   expect(actual.x).toBeCloseTo(expected.x, 9);
+       |                    ^
+     37|   expect(actual.y).toBeCloseTo(expected.y, 9);
+     38| }
+ ❯ tests/unit/oblique-camera-interleaved-navigation.test.ts:99:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/28]⎯
+
+ FAIL  tests/unit/oblique-camera-wheel-axis.test.ts > retains oblique vertical direction and cursor anchor for wheel deltaX=0, deltaY=-120
+ FAIL  tests/unit/oblique-camera-wheel-axis.test.ts > retains oblique vertical direction and cursor anchor for wheel deltaX=120, deltaY=-120
+AssertionError: expected 760 to be close to 800, received difference is 40, but expected 5e-11
+ ❯ tests/unit/oblique-camera-wheel-axis.test.ts:80:25
+     78|     const projected = mode === 'oblique' ? groundToScreen(anchor, Refl…
+     79|       : worldToScreen(anchor, Reflect.get(actual, 'cameraState').call(…
+     80|     expect(projected.x).toBeCloseTo(pivot.x, 10);
+       |                         ^
+     81|     expect(projected.y).toBeCloseTo(pivot.y, 10);
+     82|   },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/28]⎯
+
+ FAIL  tests/unit/oblique-camera-wheel-axis.test.ts > retains oblique vertical direction and cursor anchor for wheel deltaX=0, deltaY=120
+ FAIL  tests/unit/oblique-camera-wheel-axis.test.ts > retains oblique vertical direction and cursor anchor for wheel deltaX=-120, deltaY=120
+AssertionError: expected 832 to be close to 800, received difference is 32, but expected 5e-11
+ ❯ tests/unit/oblique-camera-wheel-axis.test.ts:80:25
+     78|     const projected = mode === 'oblique' ? groundToScreen(anchor, Refl…
+     79|       : worldToScreen(anchor, Reflect.get(actual, 'cameraState').call(…
+     80|     expect(projected.x).toBeCloseTo(pivot.x, 10);
+       |                         ^
+     81|     expect(projected.y).toBeCloseTo(pivot.y, 10);
+     82|   },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/28]⎯
+

@@ -36,10 +36,27 @@ An initial fixture mistakenly passed `target` rather than the actual public
 camera DTO's `centre`, causing setup TypeError in 24 cases. Correcting that test
 fixture preceded the baseline. Those errors are not production regression proof.
 
-## Mutation status
+## Actual producer negatives and exact restoration
 
-Actual producer negatives and byte-exact restoration are pending. This initial
-checkpoint establishes the unchanged source baseline only.
+Both mutations affected exactly one occurrence in the actual scene source,
+ran sequentially, and restored the original bytes in `finally` before each
+restoration run. `mutations.json` records source SHA256
+`d461926ee16903ca9b430dd08f6cb649b55801cc4472449b22ecf7b51227949e`.
+
+| Actual source mutation | RED | Unaffected legal GREEN | Byte-exact restored |
+| --- | ---: | ---: | ---: |
+| Wheel callback omits its physical cursor pivot | 28 | 17 | 45/45 GREEN |
+| Middle-down grab anchor shifts world x by one64px square | 12 | 33 | 45/45 GREEN |
+
+The wheel mutation fails all24 new interleaved references plus the four existing
+angled vertical-wheel controls. Existing World wheel cases and camera-exit
+controls survive. The grab mutation fails the12 new middle cases by64px; the12
+right cases and21 existing controls survive. Raw logs retain each assertion;
+neither negative is a production finding. The original producer works correctly.
+
+Strict standalone TypeScript checking of the new test and its imports passed.
+Final production diff is empty. No timeout, assertion precision, retry, worker
+count or native test changed. Both Vitest runs use at most two workers.
 
 ## Limits
 
