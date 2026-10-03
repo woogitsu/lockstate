@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-bookshelf-parent-integration-20261003
+
+
+ Test Files  2 passed (2)
+      Tests  15 passed (15)
+   Start at  07:28:54
+   Duration  10.29s (transform 59ms, setup 0ms, import 9.65s, tests 1.74s, environment 0ms)
+

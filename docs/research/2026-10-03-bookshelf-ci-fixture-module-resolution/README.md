@@ -19,3 +19,11 @@ The exact failed contract reproduces locally:1RED/6GREEN, original two offender 
 ## Evidence limits
 
 CI-verify-log.txt is the actual GH CLI text response saved as UTF8 lines by PowerShell, not claimed as raw HTTP byte identity. The first log request was refused by GH CLI because the log contains escape sequences; the successful repeated log download explicitly allowed them. No run was cancelled, restarted or polled. The weakest claim is future hosted CI success: only exact past failure and scoped local guards/decoder equivalence are established here. A future failed check can falsify the release claim; no such release claim is made.
+
+## Terminal bounded controls
+
+The real test-consumer resolver was reverted to the original package entry in both affected specs, while the unchanged routing guard ran:1RED/6controls with the same two names. Both original fixed file buffers were restored in finally with identical SHA256 before/restored; the exact restored contract returns7/7. Mutation ran on this own detached HEAD to exclude temporary source bytes from branch sweeps; no gameplay production or native consumer mutation is claimed.
+
+Final strict application types exit0. Named bounded source neighbors pass42tests/6files: network-change signature, browser partition and selection, actor projection, pending-wall depth and genuine pending-wall fixture. Scoped research-index/documentation-links pass15tests/2files. No wider suite, new browser/server, build or native acceptance run was performed. Raw logs and exact executed inert recipes are retained.
+
+Existing network-changed-fixture already reexports CDPSession as well as Page/TestInfo. Parent's separate new second-touch spec can consume that existing export; this branch does not edit the fixture or that HUD-owned spec. Source/models/configuration/attributes and pre-existing native evidence have no diff from exact base. Root can cherry-pick the source correction plus final evidence; no parent merge commit is needed for already-mergeable PR2003.
