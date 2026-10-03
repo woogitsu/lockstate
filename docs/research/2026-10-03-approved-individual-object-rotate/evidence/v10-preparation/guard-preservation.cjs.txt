@@ -1,0 +1,16 @@
+const fs=require('node:fs'),cp=require('node:child_process'),crypto=require('node:crypto');
+const root='54aa78a9af4ec55232a740b85089c3e7177c8028';
+const rotate='docs/research/2026-10-03-approved-individual-object-rotate/object-rotate.native.ts',camera='docs/research/2026-10-03-camera-a-scale-fit/camera-controls.native.ts';
+const git=p=>cp.execFileSync('git',['show',root+':'+p],{encoding:'utf8'}).replaceAll('\r\n','\n');
+const read=p=>fs.readFileSync(p,'utf8').replaceAll('\r\n','\n');
+const shared="import { installShowcaseReadProbe, showcaseSnapshot } from '../../../tests/browser/native-small-prison-showcase-evidence';";
+const installOnly="import { installShowcaseReadProbe } from '../../../tests/browser/native-small-prison-showcase-evidence';";
+let current=read(rotate).replace(installOnly,shared).replace('traceRotation, readV10WholeSnapshot as showcaseSnapshot','traceRotation').replaceAll('whole V10 Save/Load','whole V9 Save/Load').replaceAll('-v10.json','-v9.json').replace('saveSchemaVersion).toBe(10)','saveSchemaVersion).toBe(9)').replaceAll("[String(orderId)]: '1'","[String(orderId)]: 1").replaceAll("[String(q3Owner)]: '1'","[String(q3Owner)]: 1");
+const rotatedPreserved=current===git(rotate);
+current=read(camera).replace(installOnly,shared).replace("import { readV10WholeSnapshot as showcaseSnapshot } from '../2026-10-03-approved-individual-object-rotate/native-evidence';\n",'');
+const cameraPreserved=current===git(camera);
+const configs=[rotate.replace('object-rotate.native.ts','playwright.native.config.ts'),camera.replace('camera-controls.native.ts','playwright.native.config.ts')];
+const budgetsPreserved=configs.every(p=>read(p)===git(p));
+const receipt={baseline:root,rotationBodyExceptExplicitV10ReadsExactlyPreserved:rotatedPreserved,cameraBodyExceptExplicitV10ReadExactlyPreserved:cameraPreserved,originalConfigBudgetsExactlyPreserved:budgetsPreserved,originalTrustedClicks:'[1,0,0,0,0,0,0]',historicalNativeArtifactFilesEdited:false,buildExecuted:false,browserExecuted:false,collectionExecuted:false,nativeAcceptance:'pending actual immutable integrated V10 build + sole lease',newSnapshotRead:'actual production-decoded envelope1, simulation-save-payload4, structured-clone, entire original data with no counter conversion',sourceContracts:{tests:35,files:4,exit:0},strictAppToolsExit:0};
+fs.writeFileSync('docs/research/2026-10-03-approved-individual-object-rotate/evidence/v10-preparation/guard-preservation.json',JSON.stringify(receipt,null,2)+'\n');
+if(!rotatedPreserved||!cameraPreserved||!budgetsPreserved)throw Error('Original guard body changed');console.log(receipt);

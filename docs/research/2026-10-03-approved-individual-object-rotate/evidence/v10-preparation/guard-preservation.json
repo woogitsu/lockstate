@@ -1,0 +1,19 @@
+{
+  "baseline": "54aa78a9af4ec55232a740b85089c3e7177c8028",
+  "rotationBodyExceptExplicitV10ReadsExactlyPreserved": true,
+  "cameraBodyExceptExplicitV10ReadExactlyPreserved": true,
+  "originalConfigBudgetsExactlyPreserved": true,
+  "originalTrustedClicks": "[1,0,0,0,0,0,0]",
+  "historicalNativeArtifactFilesEdited": false,
+  "buildExecuted": false,
+  "browserExecuted": false,
+  "collectionExecuted": false,
+  "nativeAcceptance": "pending actual immutable integrated V10 build + sole lease",
+  "newSnapshotRead": "actual production-decoded envelope1, simulation-save-payload4, structured-clone, entire original data with no counter conversion",
+  "sourceContracts": {
+    "tests": 35,
+    "files": 4,
+    "exit": 0
+  },
+  "strictAppToolsExit": 0
+}

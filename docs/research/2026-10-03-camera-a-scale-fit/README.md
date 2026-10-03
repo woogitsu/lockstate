@@ -45,3 +45,16 @@ approved concrete allocation, not a claim that the broader layout is finished.
 The earlier original and corrected-but-unapproved RED results remain above;
 they were not replaced by the later accepted run. This subject is still V9,
 not the separately approved V10 migration or a released production version.
+
+## V10 observer source preparation, not a new native run
+
+The current executable case now reads actual production-decoded protocol1 /
+snapshot4 worker replies through the same scoped read-only helper as approved
+Rotate. It retains the complete before/after equality and all original UI100 /
+UI200 actions, geometry, alert floors and60/10/worker1/retries0 configuration.
+The c28 V9 two-GREEN captures above remain immutable historical evidence.
+
+[Exact V10 dependency/source evidence and bounded execution recipe](../2026-10-03-approved-individual-object-rotate/V10_NATIVE_PREPARATION.md)
+records35 existing source/migration/coverage GREEN tests and both strict types.
+No browser/build/server or collection ran for this preparation. V10 native
+acceptance requires root's actual fresh integrated build and sole lease.

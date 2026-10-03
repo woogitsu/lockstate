@@ -110,3 +110,12 @@ visual acceptance or broader UI200 Build allocation.
 preserve both outcomes. Existing producer omission/restoration proof above is
 separate from this genuine native-input observer correction. Production release
 and the owner-approved V10 migration still require their own final gates.
+
+## Current V10 preparation — historical V9 evidence retained
+
+The executable case now targets owner-approved V10 exact string counters and
+snapshot4. It preserves the actual root click trace[1,0,0,0,0,0,0] and records
+that trace before checking it. [V10 source/recipe receipt](./V10_NATIVE_PREPARATION.md)
+contains exact dependencies, strict type/source results and the still-pending
+native execution. The earlier preparation receipt and original/corrected V9
+native directory contents are historical and unchanged.

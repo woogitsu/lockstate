@@ -75,3 +75,12 @@ processes and return the lease explicitly after the bounded run.
 the actual screenshot geometry or the built renderer's ghost. Only the future
 real integrated native run can decide those claims. The title and file names
 describe intended outputs, not already existing screenshots or a GREEN run.
+
+## Current V10 preparation — historical V9 evidence retained
+
+The executable case now targets owner-approved V10 exact string counters and
+snapshot4. It preserves the actual root click trace[1,0,0,0,0,0,0] and records
+that trace before checking it. [V10 source/recipe receipt](./V10_NATIVE_PREPARATION.md)
+contains exact dependencies, strict type/source results and the still-pending
+native execution. The earlier preparation receipt and original/corrected V9
+native directory contents are historical and unchanged.

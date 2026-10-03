@@ -1,7 +1,30 @@
 import { expect, type Page } from '../../../tests/browser/network-changed-fixture';
 import { createRequire } from 'node:module';
+import { writeFile } from 'node:fs/promises';
+import { sessionSnapshotBundleFromTransport, type SessionSnapshotBundle } from '../../../src/simulation/runtime/restore-session';
 import { decodeWorkerToMainMessage } from '../../../src/simulation/protocol/decode';
 import { minimapGroundReference, type MinimapViewportPercent } from '../../../tests/browser/minimap-unrounded-reference';
+
+/** Genuine read-only worker snapshot, with explicit V10 domain ownership.
+ * Both scoped native cases retain the entire reply before any version check.
+ * No conversion of exact tokens or selected-field substitute for whole equality.
+ */
+export async function readV10WholeSnapshot(page: Page, path?: string): Promise<SessionSnapshotBundle> {
+  const raw = await page.evaluate(async () => {
+    const read = Reflect.get(window, 'showcaseRead') as
+      (kind: 'simulation/request-snapshot', payload: { reason: 'consistency-check' }) => Promise<unknown>;
+    return read('simulation/request-snapshot', { reason: 'consistency-check' });
+  });
+  if (path !== undefined) await writeFile(path, JSON.stringify(raw, null, 2));
+  const decoded = decodeWorkerToMainMessage(raw);
+  expect(decoded.ok, 'actual worker snapshot must decode under the production envelope').toBe(true);
+  if (!decoded.ok || decoded.value.kind !== 'simulation/snapshot') throw new Error('Actual V10 worker snapshot absent');
+  expect(decoded.value.protocolVersion).toBe(1);
+  expect(decoded.value.payload.snapshot.schemaId).toBe('simulation-save-payload');
+  expect(decoded.value.payload.snapshot.schemaVersion).toBe(4);
+  if (decoded.value.payload.snapshot.transport !== 'structured-clone') throw new Error('Actual JSON-safe snapshot transport absent');
+  return sessionSnapshotBundleFromTransport(decoded.value.payload.snapshot.data);
+}
 
 interface Trace {
   requests: { messageId: string; payload: { projectionId: string; target: { definitionId?: string; anchor?: { x: number; y: number }; quarterTurns?: number } } }[];
