@@ -1,0 +1,38 @@
+const fs = require('node:fs');
+const cp = require('node:child_process');
+const original = 'docs/research/2026-10-03-modern-hud-hierarchy-paint-draft/source-proof.mjs.txt';
+const replay = 'docs/research/2026-10-03-modern-hud-hierarchy-paint-draft/.source-proof-replay.mjs';
+const extension = `
+const primitivesAst = ast(source('src/ui/primitives/primitives.css'));
+function exactRule(root, selector) { let result; root.walkRules(rule => { if (rule.selector === selector) result = rule; }); assert(result, selector); return result; }
+function actualRole(rule, property) { const decl = rule.nodes.find(node => node.prop === property); assert(decl, property); const token = /^var\\((--[a-z-]+)\\)$/.exec(decl.value); assert(token, decl.value); return token[1]; }
+const actionHover = exactRule(primitivesAst, '.ui-action:hover');
+const iconHover = exactRule(primitivesAst, '.ui-icon-button:hover');
+const modalButtons = exactRule(hudAst, '.hud-template button');
+const modalSelected = exactRule(hudAst, ".hud-template button[aria-pressed='true']");
+const modal = exactRule(hudAst, '.hud-template');
+const actualPairs = [
+  ['secondary action hover', actualRole(actionHover, 'color'), actualRole(actionHover, 'background')],
+  ['icon hover', actualRole(iconHover, 'color'), actualRole(iconHover, 'background')],
+  ['template selected', actualRole(modalSelected, 'color'), actualRole(modalButtons, 'background')],
+  ['template hover/active/focus base paint', actualRole(modalButtons, 'color'), actualRole(modalButtons, 'background')],
+  ['template unselected resting parent', actualRole(modalButtons, 'color'), actualRole(modal, 'background')],
+];
+const stateRows = [];
+for (const theme of ['light','dark']) for (const [state,fg,bg] of actualPairs) {
+ const global = tokens(theme); const measured = ratio(colour(fg,global),colour(bg,global));
+ assert(measured >= 4.5, theme+' '+state+' contrast '+measured);
+ stateRows.push({theme,state,foreground:fg,background:bg,ratio:measured,required:4.5});
+}
+const audit = {subject:'7411151a6c847cb4bbb1375d6bb704002eb18671',kind:'actual-source state-paint ratios; not computed browser style', rows:stateRows, minimumTextContrast: Math.min(...stateRows.map(row=>row.ratio)), disabledState:'Original action opacity0.5 and icon muted/transparent producers unchanged; no enabled-text floor claimed for unavailable controls.',nativeFocus:'Original native modal focus is untouched; this source reading does not measure its rendered ring.',browserExecuted:false,buildExecuted:false};
+fs.writeFileSync('docs/research/2026-10-03-modern-hud-paint-states-audit/state-contrast.json',JSON.stringify(audit,null,2)+'\\n');
+process.stdout.write(JSON.stringify(audit,null,2)+'\\n');
+`;
+try {
+  fs.writeFileSync(replay,fs.readFileSync(original,'utf8')+extension);
+  const result = cp.spawnSync(process.execPath,[replay],{encoding:'utf8'});
+  assertExit = result.status;
+  fs.writeFileSync(process.env.TEMP+'/lockstate-modern-template-state-read.txt',result.stdout+result.stderr);
+  if (result.status !== 0) throw new Error(result.stderr);
+} finally { if (fs.existsSync(replay)) fs.unlinkSync(replay); }
+process.stdout.write(fs.readFileSync('docs/research/2026-10-03-modern-hud-paint-states-audit/state-contrast.json','utf8'));

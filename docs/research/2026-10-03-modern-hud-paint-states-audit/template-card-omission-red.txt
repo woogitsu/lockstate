@@ -1,0 +1,26 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-modern-hud-paint-states-audit-20261003
+
+ ❯ tests/unit/ui-template-card-paint.test.ts (2 tests | 1 failed) 1062ms
+     × gives only resting unselected catalogue cards the quieter panel paint 1059ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  22:05:24
+   Duration  1.22s (transform 22ms, setup 0ms, import 46ms, tests 1.06s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-card-paint.test.ts > authored-template card resting paint > gives only resting unselected catalogue cards the quieter panel paint
+AssertionError: the real ordinary template cards are outside the .ui-action primitive rule: expected undefined to be defined
+ ❯ tests/unit/ui-template-card-paint.test.ts:18:97
+     16|     const selectors = [...hud().matchAll(rule)].map(match => match[1]?…
+     17|     const cards = selectors.find(selector => selector.startsWith('.hud…
+     18|     expect(cards, 'the real ordinary template cards are outside the .u…
+       |                                                                                                 ^
+     19|     for (const state of ["[aria-pressed='true']", ':hover', ':active',…
+     20|       expect(cards).toContain(`:not(${state})`);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

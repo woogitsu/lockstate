@@ -1,0 +1,18 @@
+{
+  "subject": "7411151a6c847cb4bbb1375d6bb704002eb18671",
+  "appAndToolsTypecheck": {"command": "pnpm --config.verify-deps-before-run=false typecheck", "exit": 0},
+  "restoredFocusedUnitFiles": 3,
+  "restoredFocusedTestsGreen": 93,
+  "actualSourceAstReplayExit": 0,
+  "actualSourceStateReadExit": 0,
+  "temporaryReplayModulesRemoved": true,
+  "remainingFoundationCoverage": {
+    "red": 1,
+    "green": 3,
+    "uncovered": ["docs/research/2026-10-03-approved-view-browser-consumers/guard-preservation.mjs"],
+    "owner": "Root"
+  },
+  "browserExecuted": false,
+  "buildExecuted": false,
+  "visualAcceptance": "pending"
+}
