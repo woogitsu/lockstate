@@ -68,3 +68,15 @@ observer camera button. Actual button is Rotate camera left, as used by the
 existing Bookshelf route; corrected only this name. All three physical World
 Wall/Bed/Yard chord cases GREEN. Raw report/captures remain in native/initial.
 Neither Kitchenq1 nor corrected/native negative controls are claimed passed yet.
+
+## Expanded session source checkpoint
+
+#1949 now cancels an ordinary World construction gesture at the actual worker
+session availability boundary. The #2004 HUD-only cancellation remains distinct.
+The real New/Load room-template preflight and held-primary Wall native fixtures
+are registered exactly once in the artifact suite and excluded from the source
+suite. Six bounded source suites pass112/112 in3.74s; all four native fixture
+modules pass strict TypeScript exit0. The upcoming combined native subject has
+10cases: Kitchen capacity/q0/q1, three Wall/Bed/Yard mouse-chord cases, two
+room-template New/Load cases and two ordinary Wall New/Load cases. Native verdicts
+and producer omissions remain pending; source results do not imply deployment.

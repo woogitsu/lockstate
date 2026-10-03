@@ -1498,3 +1498,17 @@ construction cancellation/re-arm #2004, and native New/Load session acceptance.
 Only root runs the browser, with one worker. Push every coherent checkpoint.
 Full hosted CI and serial release remain required; protected sharding #1983 and
 optional V9 proposals stay pending until the owner's answer.
+
+## Current delivery checkpoint - 2026-10-03
+
+Bookshelf/stationary renderer handoff consumer omissions are complete: actual
+q0/model+hover omissions9RED/1legal, explicitq1 omission1RED/1legal, exact
+source/worker restoration11GREEN. Published raw proof remains linked above.
+Kitchen integration now includes #2004 HUD cancellation and #1949 ordinary
+World New/Load cancellation in addition to #2001/#2002.112bounded source tests
+pass; combined10case native player route is next, one browser/worker at a time.
+Three independent agents currently refine the actual CellCot north headboard
+connections, prepare genuine Canteen native hardware capture, and audit camera
+changes during held template construction. Canteen/Washer source72poses and
+contacts are published; native integration follows Kitchen. This is ongoing
+local integration, not exact hosted green or a production release.
