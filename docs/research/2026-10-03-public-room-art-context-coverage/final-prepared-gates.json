@@ -1,0 +1,14 @@
+[
+  {
+    "check": "final-focused-GREEN",
+    "exitCode": 0
+  },
+  {
+    "check": "typecheck-GREEN",
+    "exitCode": 0
+  },
+  {
+    "check": "production-build-GREEN",
+    "exitCode": 0
+  }
+]
