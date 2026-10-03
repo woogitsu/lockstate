@@ -43,7 +43,7 @@ The standalone producer verifies **16 evaluated triangle-interior contact witnes
 2. Actual standalone producer dispatch tuple removed; real preview reached dedicated dispatch RED before image rendering.
 3. Actual valid RGBA PNG re-encoded with an opaque corner; descriptor SHA and hash-bearing filename matched the bad PNG. The real test passed byte/hash loading and reached decoded transparent-border RED.
 
-All three controls exited1. Exact original bytes were restored for source, provenance, producer and descriptor, and all72 own PNGs remained unchanged. The original generic chair source/descriptor/72 PNGs, shared exporter, registry and object mapping remained hash-identical. Fresh actual source/contact/camera verification and two dedicated unit tests are GREEN. RED/GREEN logs and restoration receipt are retained beside this report.
+All three controls exited1. Exact original bytes were restored for source, provenance, producer and descriptor, and all72 own PNGs remained unchanged. The original generic chair source/descriptor/72 PNGs, shared exporter, registry and object mapping remained hash-identical. Fresh actual source/contact/camera verification, two dedicated unit tests and full TypeScript typecheck are GREEN. RED/GREEN logs and restoration receipt are retained beside this report.
 
 ## Root integration handoff — actual native pending
 
@@ -64,6 +64,8 @@ Add a Reception room visual variant through the existing fully-contained rotated
 Keep the existing desk, default chair and Classroom school-chair routes. No registry/mapping edit is part of this model branch. No template, save, palette, price, capability, copy, workflow or renderer behavior change is proposed.
 
 The existing public Reception plan already produces the two genuine chair owners and can be rotated by its current public control. Root still needs its built-client placement/network evidence, calibrated visual proof for each actual chair, consumer negative controls and whole paused Save/Load. **No browser/server was started and no native pass is claimed.**
+
+All72 binary PNG identities and source provenance are recorded in `final-source-render-integrity.json`. A ready-to-observe actual yaw60/elevation40 frame is `/assets/environment/oblique/furniture.reception.waiting-armchair-yaw+60-elev40.4e6ee8fdb156.png`, full SHA256 `4e6ee8fdb156be06a9d023f8806d90aede0b12552d048dcdba383c5f68b4cb0d`. The retained original source SHA256 is `acd0e9decb3bb451b44e8354e797fb5656825f4748bbed832bab61659f06cd88`.
 
 ## Reproduction
 
