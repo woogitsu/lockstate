@@ -1,0 +1,40 @@
+
+node : [1A[2K[2m[WebServer] [22m(node:25740) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env be
+ing set.
+At line:6 char:1
++ node node_modules/@playwright/test/cli.js test --config tests/browser ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([1A[2K[2m[We... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wra
+ngler.json configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+
+Running 3 tests using 1 worker
+
+[1A[2K(node:63476) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:63476) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K[1/3] tests\browser\laundry-linen-rack\player-build.spec.ts:144:1 › player creates storage and delivery capacity before the paid Laundry rack
+[1A[2K[2/3] tests\browser\laundry-linen-rack\player-build.spec.ts:208:3 › player builds Laundry q0, independently buys linen rack and retains whole V10 after Save/Load
+[1A[2K[3/3] tests\browser\laundry-linen-rack\player-build.spec.ts:208:3 › player builds Laundry q1, independently buys linen rack and retains whole V10 after Save/Load
+[1A[2K  3 passed (2.6m)

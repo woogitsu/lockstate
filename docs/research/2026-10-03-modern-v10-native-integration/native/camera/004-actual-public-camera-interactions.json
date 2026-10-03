@@ -1,0 +1,167 @@
+{
+  "variant": "disclosure",
+  "movements": [
+    {
+      "direction": "right",
+      "hit": {
+        "x": 417,
+        "y": 175
+      },
+      "before": {
+        "left": 20,
+        "top": 33.125,
+        "width": 60,
+        "height": 33.75
+      },
+      "after": {
+        "left": 24,
+        "top": 33.125,
+        "width": 60,
+        "height": 33.75
+      }
+    },
+    {
+      "direction": "left",
+      "hit": {
+        "x": 261,
+        "y": 175
+      },
+      "before": {
+        "left": 24,
+        "top": 33.125,
+        "width": 60,
+        "height": 33.75
+      },
+      "after": {
+        "left": 20,
+        "top": 33.125,
+        "width": 60,
+        "height": 33.75
+      }
+    },
+    {
+      "direction": "down",
+      "hit": {
+        "x": 365,
+        "y": 175
+      },
+      "before": {
+        "left": 20,
+        "top": 33.125,
+        "width": 60,
+        "height": 33.75
+      },
+      "after": {
+        "left": 20,
+        "top": 37.125,
+        "width": 60,
+        "height": 33.75
+      }
+    },
+    {
+      "direction": "up",
+      "hit": {
+        "x": 313,
+        "y": 175
+      },
+      "before": {
+        "left": 20,
+        "top": 37.125,
+        "width": 60,
+        "height": 33.75
+      },
+      "after": {
+        "left": 20,
+        "top": 33.125,
+        "width": 60,
+        "height": 33.75
+      }
+    }
+  ],
+  "poses": [
+    {
+      "name": "Obróć kamerę w lewo",
+      "hit": {
+        "x": 171,
+        "y": 235
+      },
+      "before": {
+        "left": 19.5294,
+        "top": 19.5294,
+        "width": 60.9411,
+        "height": 60.9411
+      },
+      "after": {
+        "left": 21.4659,
+        "top": 19.6694,
+        "width": 57.0681,
+        "height": 60.6611
+      }
+    },
+    {
+      "name": "Obróć kamerę w prawo",
+      "hit": {
+        "x": 223,
+        "y": 235
+      },
+      "before": {
+        "left": 21.4659,
+        "top": 19.6694,
+        "width": 57.0681,
+        "height": 60.6611
+      },
+      "after": {
+        "left": 19.5294,
+        "top": 19.5294,
+        "width": 60.9411,
+        "height": 60.9411
+      }
+    },
+    {
+      "name": "Podnieś kąt kamery",
+      "hit": {
+        "x": 275,
+        "y": 235
+      },
+      "before": {
+        "left": 19.5294,
+        "top": 19.5294,
+        "width": 60.9411,
+        "height": 60.9411
+      },
+      "after": {
+        "left": 21.376,
+        "top": 21.376,
+        "width": 57.248,
+        "height": 57.248
+      }
+    },
+    {
+      "name": "Obniż kąt kamery",
+      "hit": {
+        "x": 327,
+        "y": 235
+      },
+      "before": {
+        "left": 21.376,
+        "top": 21.376,
+        "width": 57.248,
+        "height": 57.248
+      },
+      "after": {
+        "left": 19.5294,
+        "top": 19.5294,
+        "width": 60.9411,
+        "height": 60.9411
+      }
+    }
+  ],
+  "commandsBefore": [
+    {
+      "type": "RemoveWall",
+      "x": 15,
+      "y": 15,
+      "edge": "west"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "quarterTurns": 1,
+  "actualBefore": [
+    "object.chair@22,8:orientation=1",
+    "object.chair@23,6:orientation=1"
+  ],
+  "actualAfter": [
+    "object.chair@22,8:orientation=1",
+    "object.chair@23,6:orientation=1"
+  ],
+  "beforePixels": [
+    47,
+    53
+  ],
+  "afterPixels": [
+    47,
+    53
+  ],
+  "beforeTimberPixels": [
+    0,
+    0
+  ],
+  "afterTimberPixels": [
+    0,
+    0
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "staff-room-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      },
+      "quarterTurns": 1
+    }
+  ]
+}

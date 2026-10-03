@@ -95,3 +95,21 @@ The separate persistence lane implements exact decimal-string construction
 revision tokens, lossless V1–V9/queued-token migration and coordinated
 cancellation payload compatibility. Current c28 native photos remain V9;
 the V10 work is not silently included in that compiled subject.
+
+## Genuine V10 combined client checkpoint
+
+The later actual production build `85f4471ebebc08f50400ee606c613197999be39a`
+includes the approved exact counters and the new retained-material Cell cot,
+Cell toilet and full square wall alongside Staff/Laundry and the modern HUD.
+Actual Camera A at public UI100/UI200, individual Rotate in EN/PL and completed
+Staff q0/q1 whole paused V10 Save/Load are GREEN, with original reports and
+compiled hashes in [the integration record](../../research/2026-10-03-modern-v10-native-integration/README.md).
+Remaining model and extreme-counter native cases plus complete release gates
+are still required. This checkpoint does not overwrite the earlier V9 reports.
+
+Three active lanes cover a genuine modern Kitchen stove model, the public
+V9 MAX-counter import/cancel/Export boundary, and a reproduced auto-Fit bug
+where the open Camera A panel covers a complete room template. Root integrates
+their separate work and retains the sole browser/build lease. Common Room's
+new genuine matrix is published separately; this frozen client does not yet
+include or establish its runtime acceptance.

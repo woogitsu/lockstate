@@ -1,0 +1,61 @@
+{
+  "compiledSourceHead": "85f4471ebebc08f50400ee606c613197999be39a",
+  "compiledFilesVerified": 91,
+  "v10GitBlobEvidenceVerified": 38,
+  "runs": [
+    {
+      "name": "camera",
+      "startTime": "2026-10-03T21:51:01.414Z",
+      "duration": 47518.388999999996,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    {
+      "name": "rotate",
+      "startTime": "2026-10-03T21:53:18.458Z",
+      "duration": 37688.93,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    {
+      "name": "staff-q1",
+      "startTime": "2026-10-03T21:56:16.815Z",
+      "duration": 94947.539,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    {
+      "name": "staff-q0",
+      "startTime": "2026-10-03T22:00:11.382Z",
+      "duration": 93845.929,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    {
+      "name": "staff-q0-missing-capacity",
+      "startTime": "2026-10-03T21:59:18.031Z",
+      "duration": 3298.067,
+      "expected": 0,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    {
+      "name": "laundry",
+      "startTime": "2026-10-03T22:05:27.907Z",
+      "duration": 157037.607,
+      "expected": 3,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  ]
+}

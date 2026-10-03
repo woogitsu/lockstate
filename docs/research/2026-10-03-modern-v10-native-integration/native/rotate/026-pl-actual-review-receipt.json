@@ -1,0 +1,3018 @@
+{
+  "receipts": [
+    {
+      "scale": 100,
+      "state": "selected-q0",
+      "actual": {
+        "viewport": {
+          "width": 1920,
+          "height": 1080,
+          "dpr": 1,
+          "visualScale": 1
+        },
+        "uiScale": "100",
+        "row": {
+          "x": 1582,
+          "y": 557,
+          "width": 313,
+          "height": 44
+        },
+        "panel": {
+          "x": 1569,
+          "y": 161,
+          "width": 339,
+          "height": 617.5625
+        },
+        "gap": 8,
+        "flexWrap": "nowrap",
+        "flowWidth": 313,
+        "flowButtonCount": 4,
+        "overflowWidth": 0,
+        "allocations": [
+          {
+            "selector": ".hud__rail",
+            "x": 1556,
+            "y": 95,
+            "width": 364,
+            "height": 985,
+            "minimumHeight": "0px",
+            "maximumHeight": "none",
+            "heightRule": "985px",
+            "position": "relative",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "hidden",
+            "clientHeight": 985,
+            "scrollHeight": 985,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud__side",
+            "x": 1557,
+            "y": 161,
+            "width": 363,
+            "height": 621,
+            "minimumHeight": "0px",
+            "maximumHeight": "none",
+            "heightRule": "621px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "1",
+            "flexShrink": "1",
+            "overflowY": "auto",
+            "clientHeight": 621,
+            "scrollHeight": 621,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build",
+            "x": 1569,
+            "y": 161,
+            "width": 339,
+            "height": 617.5625,
+            "minimumHeight": "auto",
+            "maximumHeight": "none",
+            "heightRule": "617.562px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "auto",
+            "clientHeight": 616,
+            "scrollHeight": 616,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build > .ui-panel__body",
+            "x": 1570,
+            "y": 207,
+            "width": 337,
+            "height": 570.5625,
+            "minimumHeight": "335.2px",
+            "maximumHeight": "none",
+            "heightRule": "554.562px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "visible",
+            "clientHeight": 571,
+            "scrollHeight": 571,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build__catalogue",
+            "x": 1578,
+            "y": 215,
+            "width": 321,
+            "height": 333,
+            "minimumHeight": "140px",
+            "maximumHeight": "none",
+            "heightRule": "333px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "visible",
+            "clientHeight": 333,
+            "scrollHeight": 333,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build__list",
+            "x": 1582,
+            "y": 276,
+            "width": 313,
+            "height": 264,
+            "minimumHeight": "88px",
+            "maximumHeight": "264px",
+            "heightRule": "264px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "auto",
+            "clientHeight": 264,
+            "scrollHeight": 968,
+            "scrollTop": 154,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build__map",
+            "x": 1578,
+            "y": 548,
+            "width": 321,
+            "height": 176.5625,
+            "minimumHeight": "auto",
+            "maximumHeight": "none",
+            "heightRule": "159.562px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "overflowY": "visible",
+            "clientHeight": 176,
+            "scrollHeight": 176,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".save-panel",
+            "x": 1569,
+            "y": 790,
+            "width": 340,
+            "height": 278,
+            "minimumHeight": "25%",
+            "maximumHeight": "none",
+            "heightRule": "278px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "auto",
+            "clientHeight": 276,
+            "scrollHeight": 276,
+            "scrollTop": 0,
+            "insideViewport": true
+          }
+        ],
+        "buttons": [
+          {
+            "className": "ui-action hud-build__arm",
+            "text": "Stawiaj na mapie",
+            "x": 1582,
+            "y": 557,
+            "width": 110.265625,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "44px",
+            "flexBasis": "auto",
+            "flexGrow": "1",
+            "flexShrink": "1",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1620.453125,
+                "y": 562,
+                "width": 57.359375,
+                "height": 17
+              },
+              {
+                "x": 1631.421875,
+                "y": 579,
+                "width": 35.40625,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__remove",
+            "text": "Usuń",
+            "x": 1700.265625,
+            "y": 557,
+            "width": 47.171875,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "44px",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1709.265625,
+                "y": 570.5,
+                "width": 29.171875,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__buy-toggle",
+            "text": "Kup",
+            "x": 1755.4375,
+            "y": 557,
+            "width": 44,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "44px",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1766.15625,
+                "y": 570.5,
+                "width": 22.546875,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__rotate-object",
+            "text": "Obróć obiekt 0°",
+            "x": 1807.4375,
+            "y": 557,
+            "width": 87.5625,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "44px",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1833.421875,
+                "y": 562,
+                "width": 35.59375,
+                "height": 17
+              },
+              {
+                "x": 1825.4375,
+                "y": 579,
+                "width": 51.546875,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          }
+        ]
+      }
+    },
+    {
+      "scale": 100,
+      "state": "armed-q0",
+      "actual": {
+        "viewport": {
+          "width": 1920,
+          "height": 1080,
+          "dpr": 1,
+          "visualScale": 1
+        },
+        "uiScale": "100",
+        "row": {
+          "x": 1582,
+          "y": 557,
+          "width": 313,
+          "height": 44
+        },
+        "panel": {
+          "x": 1569,
+          "y": 161,
+          "width": 339,
+          "height": 617.5625
+        },
+        "gap": 8,
+        "flexWrap": "nowrap",
+        "flowWidth": 313,
+        "flowButtonCount": 4,
+        "overflowWidth": 0,
+        "allocations": [
+          {
+            "selector": ".hud__rail",
+            "x": 1556,
+            "y": 95,
+            "width": 364,
+            "height": 985,
+            "minimumHeight": "0px",
+            "maximumHeight": "none",
+            "heightRule": "985px",
+            "position": "relative",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "hidden",
+            "clientHeight": 985,
+            "scrollHeight": 985,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud__side",
+            "x": 1557,
+            "y": 161,
+            "width": 363,
+            "height": 621,
+            "minimumHeight": "0px",
+            "maximumHeight": "none",
+            "heightRule": "621px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "1",
+            "flexShrink": "1",
+            "overflowY": "auto",
+            "clientHeight": 621,
+            "scrollHeight": 621,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build",
+            "x": 1569,
+            "y": 161,
+            "width": 339,
+            "height": 617.5625,
+            "minimumHeight": "auto",
+            "maximumHeight": "none",
+            "heightRule": "617.562px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "auto",
+            "clientHeight": 616,
+            "scrollHeight": 616,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build > .ui-panel__body",
+            "x": 1570,
+            "y": 207,
+            "width": 337,
+            "height": 570.5625,
+            "minimumHeight": "335.2px",
+            "maximumHeight": "none",
+            "heightRule": "554.562px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "visible",
+            "clientHeight": 571,
+            "scrollHeight": 571,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build__catalogue",
+            "x": 1578,
+            "y": 215,
+            "width": 321,
+            "height": 333,
+            "minimumHeight": "140px",
+            "maximumHeight": "none",
+            "heightRule": "333px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "visible",
+            "clientHeight": 333,
+            "scrollHeight": 333,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build__list",
+            "x": 1582,
+            "y": 276,
+            "width": 313,
+            "height": 264,
+            "minimumHeight": "88px",
+            "maximumHeight": "264px",
+            "heightRule": "264px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "auto",
+            "clientHeight": 264,
+            "scrollHeight": 968,
+            "scrollTop": 154,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build__map",
+            "x": 1578,
+            "y": 548,
+            "width": 321,
+            "height": 176.5625,
+            "minimumHeight": "auto",
+            "maximumHeight": "none",
+            "heightRule": "159.562px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "overflowY": "visible",
+            "clientHeight": 176,
+            "scrollHeight": 176,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".save-panel",
+            "x": 1569,
+            "y": 790,
+            "width": 340,
+            "height": 278,
+            "minimumHeight": "25%",
+            "maximumHeight": "none",
+            "heightRule": "278px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "auto",
+            "clientHeight": 276,
+            "scrollHeight": 276,
+            "scrollTop": 0,
+            "insideViewport": true
+          }
+        ],
+        "buttons": [
+          {
+            "className": "ui-action hud-build__arm",
+            "text": "Przestań stawiać",
+            "x": 1582,
+            "y": 557,
+            "width": 109.375,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "44px",
+            "flexBasis": "auto",
+            "flexGrow": "1",
+            "flexShrink": "1",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1624.5,
+                "y": 562,
+                "width": 48.375,
+                "height": 17
+              },
+              {
+                "x": 1627.828125,
+                "y": 579,
+                "width": 41.703125,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__remove",
+            "text": "Usuń",
+            "x": 1699.375,
+            "y": 557,
+            "width": 47.171875,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "44px",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1708.375,
+                "y": 570.5,
+                "width": 29.171875,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__buy-toggle",
+            "text": "Kup",
+            "x": 1754.546875,
+            "y": 557,
+            "width": 44,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "44px",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1765.265625,
+                "y": 570.5,
+                "width": 22.546875,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__rotate-object",
+            "text": "Obróć obiekt 0°",
+            "x": 1806.546875,
+            "y": 557,
+            "width": 88.453125,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "44px",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1832.96875,
+                "y": 562,
+                "width": 35.59375,
+                "height": 17
+              },
+              {
+                "x": 1825,
+                "y": 579,
+                "width": 51.546875,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          }
+        ]
+      }
+    },
+    {
+      "scale": 100,
+      "state": "armed-q1",
+      "actual": {
+        "viewport": {
+          "width": 1920,
+          "height": 1080,
+          "dpr": 1,
+          "visualScale": 1
+        },
+        "uiScale": "100",
+        "row": {
+          "x": 1582,
+          "y": 557,
+          "width": 313,
+          "height": 44
+        },
+        "panel": {
+          "x": 1569,
+          "y": 161,
+          "width": 339,
+          "height": 617.5625
+        },
+        "gap": 8,
+        "flexWrap": "nowrap",
+        "flowWidth": 313,
+        "flowButtonCount": 4,
+        "overflowWidth": 0,
+        "allocations": [
+          {
+            "selector": ".hud__rail",
+            "x": 1556,
+            "y": 95,
+            "width": 364,
+            "height": 985,
+            "minimumHeight": "0px",
+            "maximumHeight": "none",
+            "heightRule": "985px",
+            "position": "relative",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "hidden",
+            "clientHeight": 985,
+            "scrollHeight": 985,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud__side",
+            "x": 1557,
+            "y": 161,
+            "width": 363,
+            "height": 621,
+            "minimumHeight": "0px",
+            "maximumHeight": "none",
+            "heightRule": "621px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "1",
+            "flexShrink": "1",
+            "overflowY": "auto",
+            "clientHeight": 621,
+            "scrollHeight": 621,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build",
+            "x": 1569,
+            "y": 161,
+            "width": 339,
+            "height": 617.5625,
+            "minimumHeight": "auto",
+            "maximumHeight": "none",
+            "heightRule": "617.562px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "auto",
+            "clientHeight": 616,
+            "scrollHeight": 616,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build > .ui-panel__body",
+            "x": 1570,
+            "y": 207,
+            "width": 337,
+            "height": 570.5625,
+            "minimumHeight": "335.2px",
+            "maximumHeight": "none",
+            "heightRule": "554.562px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "visible",
+            "clientHeight": 571,
+            "scrollHeight": 571,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build__catalogue",
+            "x": 1578,
+            "y": 215,
+            "width": 321,
+            "height": 333,
+            "minimumHeight": "140px",
+            "maximumHeight": "none",
+            "heightRule": "333px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "visible",
+            "clientHeight": 333,
+            "scrollHeight": 333,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build__list",
+            "x": 1582,
+            "y": 276,
+            "width": 313,
+            "height": 264,
+            "minimumHeight": "88px",
+            "maximumHeight": "264px",
+            "heightRule": "264px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "auto",
+            "clientHeight": 264,
+            "scrollHeight": 968,
+            "scrollTop": 154,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build__map",
+            "x": 1578,
+            "y": 548,
+            "width": 321,
+            "height": 176.5625,
+            "minimumHeight": "auto",
+            "maximumHeight": "none",
+            "heightRule": "159.562px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "overflowY": "visible",
+            "clientHeight": 176,
+            "scrollHeight": 176,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".save-panel",
+            "x": 1569,
+            "y": 790,
+            "width": 340,
+            "height": 278,
+            "minimumHeight": "25%",
+            "maximumHeight": "none",
+            "heightRule": "278px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "auto",
+            "clientHeight": 276,
+            "scrollHeight": 276,
+            "scrollTop": 0,
+            "insideViewport": true
+          }
+        ],
+        "buttons": [
+          {
+            "className": "ui-action hud-build__arm",
+            "text": "Przestań stawiać",
+            "x": 1582,
+            "y": 557,
+            "width": 106.40625,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "44px",
+            "flexBasis": "auto",
+            "flexGrow": "1",
+            "flexShrink": "1",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1623.015625,
+                "y": 562,
+                "width": 48.375,
+                "height": 17
+              },
+              {
+                "x": 1626.34375,
+                "y": 579,
+                "width": 41.703125,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__remove",
+            "text": "Usuń",
+            "x": 1696.40625,
+            "y": 557,
+            "width": 47.171875,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "44px",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1705.40625,
+                "y": 570.5,
+                "width": 29.171875,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__buy-toggle",
+            "text": "Kup",
+            "x": 1751.578125,
+            "y": 557,
+            "width": 44,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "44px",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1762.296875,
+                "y": 570.5,
+                "width": 22.546875,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__rotate-object",
+            "text": "Obróć obiekt 90°",
+            "x": 1803.578125,
+            "y": 557,
+            "width": 91.421875,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "44px",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1831.484375,
+                "y": 562,
+                "width": 35.59375,
+                "height": 17
+              },
+              {
+                "x": 1820,
+                "y": 579,
+                "width": 58.5625,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          }
+        ]
+      }
+    },
+    {
+      "scale": 100,
+      "state": "armed-q3",
+      "actual": {
+        "viewport": {
+          "width": 1920,
+          "height": 1080,
+          "dpr": 1,
+          "visualScale": 1
+        },
+        "uiScale": "100",
+        "row": {
+          "x": 1582,
+          "y": 557,
+          "width": 313,
+          "height": 44
+        },
+        "panel": {
+          "x": 1569,
+          "y": 161,
+          "width": 339,
+          "height": 617.5625
+        },
+        "gap": 8,
+        "flexWrap": "nowrap",
+        "flowWidth": 313,
+        "flowButtonCount": 4,
+        "overflowWidth": 0,
+        "allocations": [
+          {
+            "selector": ".hud__rail",
+            "x": 1556,
+            "y": 95,
+            "width": 364,
+            "height": 985,
+            "minimumHeight": "0px",
+            "maximumHeight": "none",
+            "heightRule": "985px",
+            "position": "relative",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "hidden",
+            "clientHeight": 985,
+            "scrollHeight": 985,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud__side",
+            "x": 1557,
+            "y": 161,
+            "width": 363,
+            "height": 621,
+            "minimumHeight": "0px",
+            "maximumHeight": "none",
+            "heightRule": "621px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "1",
+            "flexShrink": "1",
+            "overflowY": "auto",
+            "clientHeight": 621,
+            "scrollHeight": 621,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build",
+            "x": 1569,
+            "y": 161,
+            "width": 339,
+            "height": 617.5625,
+            "minimumHeight": "auto",
+            "maximumHeight": "none",
+            "heightRule": "617.562px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "auto",
+            "clientHeight": 616,
+            "scrollHeight": 616,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build > .ui-panel__body",
+            "x": 1570,
+            "y": 207,
+            "width": 337,
+            "height": 570.5625,
+            "minimumHeight": "335.2px",
+            "maximumHeight": "none",
+            "heightRule": "554.562px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "visible",
+            "clientHeight": 571,
+            "scrollHeight": 571,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build__catalogue",
+            "x": 1578,
+            "y": 215,
+            "width": 321,
+            "height": 333,
+            "minimumHeight": "140px",
+            "maximumHeight": "none",
+            "heightRule": "333px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "visible",
+            "clientHeight": 333,
+            "scrollHeight": 333,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build__list",
+            "x": 1582,
+            "y": 276,
+            "width": 313,
+            "height": 264,
+            "minimumHeight": "88px",
+            "maximumHeight": "264px",
+            "heightRule": "264px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "auto",
+            "clientHeight": 264,
+            "scrollHeight": 968,
+            "scrollTop": 154,
+            "insideViewport": true
+          },
+          {
+            "selector": ".hud-build__map",
+            "x": 1578,
+            "y": 548,
+            "width": 321,
+            "height": 176.5625,
+            "minimumHeight": "auto",
+            "maximumHeight": "none",
+            "heightRule": "159.562px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "overflowY": "visible",
+            "clientHeight": 176,
+            "scrollHeight": 176,
+            "scrollTop": 0,
+            "insideViewport": true
+          },
+          {
+            "selector": ".save-panel",
+            "x": 1569,
+            "y": 790,
+            "width": 340,
+            "height": 278,
+            "minimumHeight": "25%",
+            "maximumHeight": "none",
+            "heightRule": "278px",
+            "position": "static",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "overflowY": "auto",
+            "clientHeight": 276,
+            "scrollHeight": 276,
+            "scrollTop": 0,
+            "insideViewport": true
+          }
+        ],
+        "buttons": [
+          {
+            "className": "ui-action hud-build__arm",
+            "text": "Przestań stawiać",
+            "x": 1582,
+            "y": 557,
+            "width": 103.609375,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "44px",
+            "flexBasis": "auto",
+            "flexGrow": "1",
+            "flexShrink": "1",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1621.609375,
+                "y": 562,
+                "width": 48.375,
+                "height": 17
+              },
+              {
+                "x": 1624.953125,
+                "y": 579,
+                "width": 41.703125,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__remove",
+            "text": "Usuń",
+            "x": 1693.609375,
+            "y": 557,
+            "width": 47.171875,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "44px",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1702.609375,
+                "y": 570.5,
+                "width": 29.171875,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__buy-toggle",
+            "text": "Kup",
+            "x": 1748.78125,
+            "y": 557,
+            "width": 44,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "44px",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "0",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1759.5,
+                "y": 570.5,
+                "width": 22.546875,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          },
+          {
+            "className": "ui-action hud-build__rotate-object",
+            "text": "Obróć obiekt 270°",
+            "x": 1800.78125,
+            "y": 557,
+            "width": 94.21875,
+            "height": 44,
+            "minimumHeight": 44,
+            "position": "static",
+            "minWidth": "44px",
+            "flexBasis": "auto",
+            "flexGrow": "0",
+            "flexShrink": "1",
+            "padding": [
+              "8px",
+              "8px"
+            ],
+            "labelStyle": {
+              "whiteSpace": "normal",
+              "overflowWrap": "break-word"
+            },
+            "ink": [
+              {
+                "x": 1810.265625,
+                "y": 562,
+                "width": 75.234375,
+                "height": 17
+              },
+              {
+                "x": 1834.921875,
+                "y": 579,
+                "width": 25.9375,
+                "height": 17
+              }
+            ],
+            "insideRow": true,
+            "insidePanel": true,
+            "insideViewport": true,
+            "labelInside": true,
+            "inkInside": true,
+            "labelFits": true,
+            "hit": true
+          }
+        ]
+      }
+    }
+  ],
+  "trace": {
+    "requests": [
+      {
+        "protocolVersion": 1,
+        "messageId": "ffffe1b2-3d22-4ef2-92d2-f912aa7a5b51",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 16,
+              "y": 14
+            },
+            "quarterTurns": 1
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "3e5aad33-aa7b-4f27-8629-ee10a67d384e",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 16,
+              "y": 14
+            },
+            "quarterTurns": 2
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "06d9a5fd-e861-43ee-ad55-4b53a7bd8166",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 16,
+              "y": 14
+            },
+            "quarterTurns": 3
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "492c09a5-18d8-4b1a-bda5-fbf97f197b02",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 16,
+              "y": 14
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "09a5fe6b-af89-43ef-a081-bac2cc9295ff",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 16,
+              "y": 14
+            },
+            "quarterTurns": 1
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "fb973613-6f7d-4fc3-ad2d-072174afda88",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 18,
+              "y": 16
+            },
+            "quarterTurns": 1
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "d07cd034-b9d2-478e-a237-e27d7841f0e5",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 18,
+              "y": 16
+            },
+            "quarterTurns": 2
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "96857177-d248-46fc-9228-79c4b4ac1e22",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 18,
+              "y": 16
+            },
+            "quarterTurns": 3
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "8a1aa4ec-33fe-4d48-801a-1332e04cc68a",
+        "kind": "simulation/request-projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "target": {
+            "kind": "object-placement",
+            "definitionId": "desk-wooden",
+            "anchor": {
+              "x": 16,
+              "y": 14
+            },
+            "quarterTurns": 3
+          }
+        }
+      }
+    ],
+    "replies": [
+      {
+        "protocolVersion": 1,
+        "messageId": "66eee145-2eb2-4229-911e-36f66e7780d2",
+        "replyTo": "ffffe1b2-3d22-4ef2-92d2-f912aa7a5b51",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": true,
+              "footprint": [
+                {
+                  "x": 16,
+                  "y": 14
+                },
+                {
+                  "x": 16,
+                  "y": 15
+                }
+              ],
+              "catalogueCostMinorUnits": 130,
+              "roomInstanceId": "room.yard:12:10"
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "2264b13b-23c3-4c6b-9f50-c720dd0f26db",
+        "replyTo": "3e5aad33-aa7b-4f27-8629-ee10a67d384e",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": true,
+              "footprint": [
+                {
+                  "x": 16,
+                  "y": 14
+                },
+                {
+                  "x": 17,
+                  "y": 14
+                }
+              ],
+              "catalogueCostMinorUnits": 130,
+              "roomInstanceId": "room.yard:12:10"
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "622f9abf-d5ca-4de0-9cfc-672cdde0bc32",
+        "replyTo": "06d9a5fd-e861-43ee-ad55-4b53a7bd8166",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": true,
+              "footprint": [
+                {
+                  "x": 16,
+                  "y": 14
+                },
+                {
+                  "x": 16,
+                  "y": 15
+                }
+              ],
+              "catalogueCostMinorUnits": 130,
+              "roomInstanceId": "room.yard:12:10"
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "2905635a-b705-4c8a-b28a-5c62deb9797f",
+        "replyTo": "492c09a5-18d8-4b1a-bda5-fbf97f197b02",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": true,
+              "footprint": [
+                {
+                  "x": 16,
+                  "y": 14
+                },
+                {
+                  "x": 17,
+                  "y": 14
+                }
+              ],
+              "catalogueCostMinorUnits": 130,
+              "roomInstanceId": "room.yard:12:10"
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "2eed6cb7-b1cb-4497-949b-19261b0a8ed2",
+        "replyTo": "09a5fe6b-af89-43ef-a081-bac2cc9295ff",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": true,
+              "footprint": [
+                {
+                  "x": 16,
+                  "y": 14
+                },
+                {
+                  "x": 16,
+                  "y": 15
+                }
+              ],
+              "catalogueCostMinorUnits": 130,
+              "roomInstanceId": "room.yard:12:10"
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "a96af1c8-091b-4876-ad8a-8b7f654ea5cd",
+        "replyTo": "fb973613-6f7d-4fc3-ad2d-072174afda88",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": true,
+              "footprint": [
+                {
+                  "x": 18,
+                  "y": 16
+                },
+                {
+                  "x": 18,
+                  "y": 17
+                }
+              ],
+              "catalogueCostMinorUnits": 130,
+              "roomInstanceId": "room.yard:12:10"
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "b0cc468e-252c-45e1-8506-aba5c31bb3da",
+        "replyTo": "d07cd034-b9d2-478e-a237-e27d7841f0e5",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": true,
+              "footprint": [
+                {
+                  "x": 18,
+                  "y": 16
+                },
+                {
+                  "x": 19,
+                  "y": 16
+                }
+              ],
+              "catalogueCostMinorUnits": 130,
+              "roomInstanceId": "room.yard:12:10"
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "6ac1bbee-5fea-4011-9b32-2c89af53975c",
+        "replyTo": "96857177-d248-46fc-9228-79c4b4ac1e22",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": true,
+              "footprint": [
+                {
+                  "x": 18,
+                  "y": 16
+                },
+                {
+                  "x": 18,
+                  "y": 17
+                }
+              ],
+              "catalogueCostMinorUnits": 130,
+              "roomInstanceId": "room.yard:12:10"
+            }
+          }
+        }
+      },
+      {
+        "protocolVersion": 1,
+        "messageId": "e9f6063e-58e9-4618-b1d0-a62c626bd5c6",
+        "replyTo": "8a1aa4ec-33fe-4d48-801a-1332e04cc68a",
+        "kind": "simulation/projection",
+        "payload": {
+          "projectionId": "world/object-placement-preflight",
+          "tick": 0,
+          "view": {
+            "transport": "structured-clone",
+            "schemaId": "object-placement-preflight",
+            "schemaVersion": 1,
+            "data": {
+              "ok": false,
+              "reason": "tile-occupied",
+              "tile": {
+                "x": 16,
+                "y": 14
+              },
+              "footprint": [
+                {
+                  "x": 16,
+                  "y": 14
+                },
+                {
+                  "x": 16,
+                  "y": 15
+                }
+              ],
+              "catalogueCostMinorUnits": 130
+            }
+          }
+        }
+      }
+    ],
+    "clicks": [
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 1
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 0
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 0
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 0
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 0
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 0
+      },
+      {
+        "className": "ui-action hud-build__rotate-object",
+        "trusted": true,
+        "detail": 0
+      }
+    ],
+    "keys": [
+      {
+        "code": "Enter",
+        "trusted": true,
+        "rotateFocused": true
+      },
+      {
+        "code": "Space",
+        "trusted": true,
+        "rotateFocused": true
+      },
+      {
+        "code": "KeyR",
+        "trusted": true,
+        "rotateFocused": true
+      },
+      {
+        "code": "Enter",
+        "trusted": true,
+        "rotateFocused": true
+      },
+      {
+        "code": "Enter",
+        "trusted": true,
+        "rotateFocused": true
+      },
+      {
+        "code": "Enter",
+        "trusted": true,
+        "rotateFocused": true
+      },
+      {
+        "code": "Enter",
+        "trusted": true,
+        "rotateFocused": true
+      }
+    ],
+    "mouse": [
+      {
+        "type": "mousedown",
+        "x": 1659,
+        "y": 219,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1659,
+        "y": 219,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1590,
+        "y": 22,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1590,
+        "y": 22,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 65,
+        "y": 277,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 65,
+        "y": 277,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1738,
+        "y": 686,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1738,
+        "y": 686,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1738,
+        "y": 877,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1738,
+        "y": 877,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1639,
+        "y": 868,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1639,
+        "y": 868,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1704,
+        "y": 910,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1704,
+        "y": 910,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 65,
+        "y": 225,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 65,
+        "y": 225,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1738,
+        "y": 391,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1738,
+        "y": 391,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1738,
+        "y": 408,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1738,
+        "y": 408,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1637,
+        "y": 579,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1637,
+        "y": 579,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1850,
+        "y": 579,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1850,
+        "y": 579,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 523,
+        "y": 926,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 523,
+        "y": 926,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 352,
+        "y": 892,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 352,
+        "y": 892,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 966,
+        "y": 544,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": true
+      },
+      {
+        "type": "mouseup",
+        "x": 966,
+        "y": 544,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": true
+      },
+      {
+        "type": "mousedown",
+        "x": 966,
+        "y": 544,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": true
+      },
+      {
+        "type": "mouseup",
+        "x": 966,
+        "y": 544,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": true
+      },
+      {
+        "type": "mousedown",
+        "x": 1863,
+        "y": 237,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1863,
+        "y": 237,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1364,
+        "y": 108,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1364,
+        "y": 108,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1738,
+        "y": 387,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1738,
+        "y": 387,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1094,
+        "y": 672,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": true
+      },
+      {
+        "type": "mouseup",
+        "x": 1094,
+        "y": 672,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": true
+      },
+      {
+        "type": "mousedown",
+        "x": 1738,
+        "y": 317,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1738,
+        "y": 317,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 65,
+        "y": 173,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 65,
+        "y": 173,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1817,
+        "y": 219,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1817,
+        "y": 219,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1659,
+        "y": 267,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1659,
+        "y": 267,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mousedown",
+        "x": 1659,
+        "y": 347,
+        "buttons": 1,
+        "trusted": true,
+        "canvas": false
+      },
+      {
+        "type": "mouseup",
+        "x": 1659,
+        "y": 347,
+        "buttons": 0,
+        "trusted": true,
+        "canvas": false
+      }
+    ]
+  },
+  "commands": [
+    {
+      "type": "ZoneRoom",
+      "roomId": "room.yard",
+      "x": 12,
+      "y": 10,
+      "width": 8,
+      "height": 8
+    },
+    {
+      "type": "PlaceObject",
+      "orderId": "object-4a5ee031-84a3-422b-bb6d-9d495b56cc41",
+      "definitionId": "desk-wooden",
+      "x": 16,
+      "y": 14,
+      "quarterTurns": 1
+    },
+    {
+      "type": "PlaceObject",
+      "orderId": "object-47ffa816-0f4a-4bd9-8348-3329431d2819",
+      "definitionId": "desk-wooden",
+      "x": 18,
+      "y": 16,
+      "quarterTurns": 3
+    }
+  ],
+  "whole": {
+    "masterSeed": 1744181258,
+    "kernel": {
+      "tick": 0,
+      "expectedSequence": 3,
+      "rngStates": [
+        {
+          "name": "contraband.detection",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              1261504732,
+              1730714123,
+              617519132,
+              645213787
+            ]
+          }
+        },
+        {
+          "name": "contraband.intelligence",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              566097771,
+              2721442085,
+              3570328826,
+              4149418174
+            ]
+          }
+        },
+        {
+          "name": "contraband.introduction",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              3830231457,
+              3677991272,
+              3690882354,
+              649301532
+            ]
+          }
+        },
+        {
+          "name": "identity.actor-name",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              3917219947,
+              3695189935,
+              3326543249,
+              3422435468
+            ]
+          }
+        },
+        {
+          "name": "prisoners.classification",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2739623710,
+              3775354901,
+              2987386877,
+              885009119
+            ]
+          }
+        },
+        {
+          "name": "prisoners.sentence",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2395272585,
+              246162646,
+              1827966097,
+              698906068
+            ]
+          }
+        }
+      ],
+      "commands": []
+    },
+    "world": {
+      "version": 1,
+      "chunkSize": 32,
+      "ownedChunks": [
+        {
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "chunks": [
+        {
+          "x": 0,
+          "y": 0,
+          "lifecycle": "loaded",
+          "geometryRevision": 0,
+          "contentRevision": 64,
+          "dirty": true,
+          "terrain": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "topEdge": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "leftEdge": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "zoning": [
+            [
+              0,
+              332
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              24
+            ],
+            [
+              9,
+              8
+            ],
+            [
+              0,
+              460
+            ]
+          ]
+        }
+      ]
+    },
+    "construction": {
+      "orders": [
+        {
+          "id": "object-4a5ee031-84a3-422b-bb6d-9d495b56cc41",
+          "definitionId": "desk-wooden",
+          "location": {
+            "x": 16,
+            "y": 14
+          },
+          "objectOrientation": 1,
+          "placementSequence": 1,
+          "state": "approved",
+          "progress": 0,
+          "materialsAllocated": []
+        },
+        {
+          "id": "object-47ffa816-0f4a-4bd9-8348-3329431d2819",
+          "definitionId": "desk-wooden",
+          "location": {
+            "x": 18,
+            "y": 16
+          },
+          "objectOrientation": 3,
+          "placementSequence": 2,
+          "state": "approved",
+          "progress": 0,
+          "materialsAllocated": []
+        }
+      ],
+      "newerActionThanTheStackTop": false,
+      "orderRevisions": {
+        "object-47ffa816-0f4a-4bd9-8348-3329431d2819": "1",
+        "object-4a5ee031-84a3-422b-bb6d-9d495b56cc41": "1"
+      },
+      "undoStack": [
+        [
+          "object-4a5ee031-84a3-422b-bb6d-9d495b56cc41"
+        ]
+      ],
+      "redoStack": [],
+      "currentTransaction": [
+        "object-47ffa816-0f4a-4bd9-8348-3329431d2819"
+      ],
+      "currentTransactionId": "object-47ffa816-0f4a-4bd9-8348-3329431d2819"
+    },
+    "entities": {
+      "capacity": 5000,
+      "nextAvailableIndex": 0,
+      "maxActiveIndex": -1,
+      "generations": [
+        [
+          0,
+          5000
+        ]
+      ],
+      "freeIndices": [],
+      "alive": [
+        [
+          0,
+          5000
+        ]
+      ]
+    },
+    "simulation": {
+      "regimeSchedules": [
+        {
+          "classificationGroupId": "general-population",
+          "blocks": [
+            {
+              "startTickOfDay": 0,
+              "endTickOfDay": 400,
+              "allowedCategories": [
+                "sleep"
+              ]
+            },
+            {
+              "startTickOfDay": 400,
+              "endTickOfDay": 500,
+              "allowedCategories": [
+                "meal",
+                "hygiene"
+              ]
+            },
+            {
+              "startTickOfDay": 500,
+              "endTickOfDay": 1000,
+              "allowedCategories": [
+                "work",
+                "education",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1000,
+              "endTickOfDay": 1200,
+              "allowedCategories": [
+                "recreation",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1200,
+              "endTickOfDay": 1300,
+              "allowedCategories": [
+                "meal"
+              ]
+            },
+            {
+              "startTickOfDay": 1300,
+              "endTickOfDay": 1800,
+              "allowedCategories": [
+                "work",
+                "education",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1800,
+              "endTickOfDay": 2000,
+              "allowedCategories": [
+                "recreation",
+                "hygiene",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2000,
+              "endTickOfDay": 2100,
+              "allowedCategories": [
+                "meal"
+              ]
+            },
+            {
+              "startTickOfDay": 2100,
+              "endTickOfDay": 2300,
+              "allowedCategories": [
+                "recreation",
+                "hygiene",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2300,
+              "endTickOfDay": 2400,
+              "allowedCategories": [
+                "sleep"
+              ]
+            }
+          ]
+        },
+        {
+          "classificationGroupId": "high-risk",
+          "blocks": [
+            {
+              "startTickOfDay": 0,
+              "endTickOfDay": 2000,
+              "allowedCategories": [
+                "sleep",
+                "meal",
+                "hygiene"
+              ]
+            },
+            {
+              "startTickOfDay": 2000,
+              "endTickOfDay": 2200,
+              "allowedCategories": [
+                "recreation",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2200,
+              "endTickOfDay": 2400,
+              "allowedCategories": [
+                "sleep",
+                "meal",
+                "hygiene"
+              ]
+            }
+          ]
+        }
+      ],
+      "prisoners": {
+        "components": {
+          "activeLength": 0,
+          "sentenceLengthTicks": [],
+          "priorIncidentsAtIntake": [],
+          "sentenceEndTick": [],
+          "riskTier": [],
+          "classificationGroupIndex": [],
+          "intakeStage": [],
+          "solitarySanctionEndTick": [],
+          "injured": [],
+          "needs": {
+            "hunger": [],
+            "sleep": [],
+            "hygiene": [],
+            "bladder": [],
+            "safety": [],
+            "recreation": []
+          },
+          "actionIndex": [],
+          "actionPhase": [],
+          "phaseStartedAtTick": [],
+          "needFulfilledLastTick": [],
+          "tileX": [],
+          "tileY": []
+        },
+        "coldState": {
+          "accommodationInstanceId": [],
+          "currentActionTargetInstanceId": []
+        },
+        "roomInstanceDefinitions": [
+          {
+            "instanceId": "room.yard:12:10",
+            "roomCatalogId": "room.yard",
+            "anchorTile": {
+              "x": 12,
+              "y": 10
+            },
+            "width": 8,
+            "height": 8
+          }
+        ],
+        "roomInstanceOccupancy": [
+          [
+            "room.yard:12:10",
+            []
+          ]
+        ]
+      },
+      "operations": {
+        "containers": [
+          [
+            "construction-materials",
+            []
+          ]
+        ],
+        "jobs": [],
+        "jobWorkers": {
+          "workers": [],
+          "busy": []
+        },
+        "electricity": {
+          "type": "electricity",
+          "nodes": [],
+          "connections": [],
+          "failedNodeIds": []
+        },
+        "water": {
+          "type": "water",
+          "nodes": [],
+          "connections": [],
+          "failedNodeIds": []
+        }
+      },
+      "navigation": {
+        "doors": []
+      },
+      "security": {
+        "sectorDefinitions": [
+          {
+            "id": "security-sector.prison",
+            "gradeId": "grade.general",
+            "doorIds": [],
+            "postTile": {
+              "x": 16,
+              "y": 16
+            }
+          }
+        ],
+        "sectorControlStates": [
+          [
+            "security-sector.prison",
+            "normal"
+          ]
+        ],
+        "guards": {
+          "entityStore": {
+            "capacity": 500,
+            "nextAvailableIndex": 0,
+            "maxActiveIndex": -1,
+            "generations": [
+              [
+                0,
+                500
+              ]
+            ],
+            "freeIndices": [],
+            "alive": [
+              [
+                0,
+                500
+              ]
+            ]
+          },
+          "records": []
+        },
+        "schedules": [
+          {
+            "sectorId": "security-sector.prison",
+            "blocks": [
+              {
+                "startTickOfDay": 0,
+                "endTickOfDay": 2400,
+                "requiredGuardCount": 1
+              }
+            ]
+          }
+        ],
+        "deployment": {
+          "metrics": {
+            "deploymentFailures": 0
+          }
+        },
+        "patrol": {
+          "metrics": {
+            "loopsCompletedOnTime": 0,
+            "loopsCompletedLate": 0,
+            "loopsMissed": 0
+          }
+        }
+      },
+      "contraband": {
+        "items": [],
+        "intelligence": [],
+        "intelligenceSequence": 0,
+        "informants": [],
+        "confiscations": [],
+        "searchPolicies": [
+          {
+            "scope": "cell",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 40,
+            "baseDetectionProbability": 0.7,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.2
+          },
+          {
+            "scope": "delivery",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 25,
+            "baseDetectionProbability": 0.6,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.15
+          },
+          {
+            "scope": "person",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 20,
+            "baseDetectionProbability": 0.75,
+            "concealmentPenaltyPerPoint": 0.06,
+            "intelligenceConfidenceBonus": 0.2
+          },
+          {
+            "scope": "sector",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 15,
+            "baseDetectionProbability": 0.5,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.25
+          }
+        ],
+        "searchContainerLocations": [],
+        "search": {
+          "queue": [],
+          "active": [],
+          "metrics": {
+            "itemsDiscovered": 0,
+            "itemsMissed": 0,
+            "searchesCompleted": 0,
+            "searchesCancelled": 0
+          }
+        }
+      },
+      "economy": {
+        "treasury": {
+          "balanceMinorUnits": 24740
+        },
+        "procurement": {
+          "pending": [
+            {
+              "orderId": "jit:0:item.wood-plank:0",
+              "itemId": "item.wood-plank",
+              "quantity": 2,
+              "arrivesAtTick": 100,
+              "paidMinorUnits": 130
+            },
+            {
+              "orderId": "jit:0:item.wood-plank:2",
+              "itemId": "item.wood-plank",
+              "quantity": 2,
+              "arrivesAtTick": 100,
+              "paidMinorUnits": 130
+            }
+          ]
+        },
+        "payroll": {
+          "unpaidWagesMinorUnits": 0
+        }
+      },
+      "objects": {
+        "placedObjects": []
+      },
+      "alerts": {
+        "sequence": 1,
+        "records": [
+          {
+            "sequence": 1,
+            "tick": 0,
+            "type": "rooms.zoned",
+            "roomNameKey": "room.yard.name"
+          }
+        ],
+        "dismissed": []
+      },
+      "inFlight": {
+        "navigation": {
+          "pending": [],
+          "results": []
+        },
+        "prisoners": {
+          "locomotion": {
+            "walks": [],
+            "headings": []
+          },
+          "pathRequestIds": [],
+          "requestSequence": 0
+        },
+        "guards": {
+          "locomotion": {
+            "walks": [],
+            "headings": []
+          },
+          "deploymentRequestSequence": 0,
+          "patrolRequestSequence": 0
+        },
+        "search": {
+          "requestSequence": 0,
+          "jobs": []
+        }
+      },
+      "incidents": {
+        "log": [],
+        "sectorRisk": [],
+        "gangs": {
+          "definitions": [
+            {
+              "id": "gang.alpha",
+              "territorySectorIds": [
+                "security-sector.prison"
+              ]
+            },
+            {
+              "id": "gang.beta",
+              "territorySectorIds": [
+                "security-sector.prison"
+              ]
+            }
+          ],
+          "members": [],
+          "reputation": [
+            [
+              "gang.alpha",
+              0.5
+            ],
+            [
+              "gang.beta",
+              0.5
+            ]
+          ],
+          "grudges": []
+        },
+        "tunnels": [],
+        "watchedSectorIds": [
+          "security-sector.prison"
+        ],
+        "trigger": {
+          "metrics": {
+            "incidentsTriggered": 0,
+            "riotsTriggered": 0,
+            "retaliationsTriggered": 0
+          },
+          "sequence": 0
+        },
+        "response": {
+          "metrics": {
+            "incidentsResolved": 0,
+            "incidentsLapsed": 0,
+            "respondersDispatched": 0,
+            "routeFailures": 0
+          }
+        }
+      }
+    },
+    "identity": {
+      "version": 1,
+      "poolId": "placeholder.v1",
+      "entries": []
+    }
+  }
+}

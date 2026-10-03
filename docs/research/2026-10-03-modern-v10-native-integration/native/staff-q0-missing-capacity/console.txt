@@ -1,0 +1,57 @@
+
+node : [1A[2K[2m[WebServer] [22m(node:58352) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env be
+ing set.
+At line:6 char:1
++ node node_modules/@playwright/test/cli.js test --config tests/browser ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([1A[2K[2m[We... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wra
+ngler.json configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 1 test using 1 worker
+
+[1A[2K(node:38208) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+
+
+[1A[2K(node:38208) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[1/1] tests\browser\wooden-chair-player-build.spec.ts:235:3 › player builds Staff Room at quarterTurns0 and retains both authored chair palettes and anchors after Save/Load
+[1A[2K  1) tests\browser\wooden-chair-player-build.spec.ts:235:3 › player builds Staff Room at quarterTurns0 and retains both authored chair palettes and anchors after Save/Load 
+
+    Error: this case consumes the first stage actual IndexedDB save
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeDefined[2m()[22m
+
+    Received: [31mundefined[39m
+
+      146 | for (const quarterTurns of [0, 1] as const) {
+      147 | test(`player builds Staff Room at quarterTurns${quarterTurns} and retains both authored chair palettes and anchors after Save/Load`, async ({ page }, info) => {
+    > 148 |   expect(routeStorage, 'this case consumes the first stage actual IndexedDB save').toBeDefined();
+          |                                                                                    ^
+      149 |   await installWorkerProbe(page);
+      150 |   await installTee(page);
+      151 |     const staffNative = await observeStaffChairNetwork(page);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\wooden-chair-player-build.spec.ts:148:84
+
+
+[1A[2K  1 failed
+    tests\browser\wooden-chair-player-build.spec.ts:235:3 › player builds Staff Room at quarterTurns0 and retains both authored chair palettes and anchors after Save/Load 

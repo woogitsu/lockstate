@@ -1755,3 +1755,14 @@ V1–V9 migration for#2025. Root continues actual modern-world integration;
 three lanes now cover the Cell cot Blender model, Staff image observer and
 V10 persistence. All detailed native results and decisions are in the linked
 modern appearance record; neither a RED calibration nor partial CI is release.
+
+The subsequent genuinely built `85f4471ebebc08f50400ee606c613197999be39a`
+client includes V10 and new Cell cot/toilet/full-wall exports. Camera A at both
+public UI100/UI200, EN/PL individual Rotate and completed Staff q0/q1 whole
+V10 Save/Load now pass their original native guards. [Current actual evidence](../../research/2026-10-03-modern-v10-native-integration/README.md)
+retains compiled hashes, screenshots and every original run; the earlier c28
+V9 results remain historical. Root continues remaining model/counter runtime
+checks. Three independent lanes cover Kitchen Blender production, the public
+extreme-counter boundary, and the reproduced open-View auto-Fit occlusion
+[#2026](https://github.com/woogitsu/lockstate/issues/2026). No model sample,
+partial gate or source-only reproduction is called a completed release.

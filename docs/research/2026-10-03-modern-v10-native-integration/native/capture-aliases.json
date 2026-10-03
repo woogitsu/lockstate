@@ -1,0 +1,1179 @@
+[
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003.json",
+    "archived": "camera/report.json",
+    "sourceBytes": 4737,
+    "sourceSha256": "04517d88e00e47ea782e44a18a244d7c437b83f39922e012d2137d731811ef39",
+    "archivedBytes": 4737,
+    "archivedSha256": "04517d88e00e47ea782e44a18a244d7c437b83f39922e012d2137d731811ef39"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003.txt",
+    "archived": "camera/console.txt",
+    "sourceBytes": 4108,
+    "sourceSha256": "6228d26e86e226bdda93d356c3f70bbc847d374fa1a8e5a1fc0d1cb6b076c8aa",
+    "archivedBytes": 2059,
+    "archivedSha256": "6e1384201d9e9e7c3d460f7e2ddb62c7db088a283c7fb21406ecb7eb757d3b62",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\.last-run.json",
+    "archived": "camera/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\camera-controls.native.ts--22c1b--with-a-real-worker-refusal\\actual-paused-after-camera-whole.json",
+    "archived": "camera/002-actual-paused-after-camera-whole.json",
+    "sourceBytes": 15874,
+    "sourceSha256": "15a5ed2fc4c3f5100724f69166ed8c3c05e9afe3238a31b540c751c04e03c6c6",
+    "archivedBytes": 15874,
+    "archivedSha256": "15a5ed2fc4c3f5100724f69166ed8c3c05e9afe3238a31b540c751c04e03c6c6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\camera-controls.native.ts--22c1b--with-a-real-worker-refusal\\actual-paused-before-camera-whole.json",
+    "archived": "camera/003-actual-paused-before-camera-whole.json",
+    "sourceBytes": 15874,
+    "sourceSha256": "e1b066afd04cd4ffe2066cc04ddff9752291cabc2875c190cd39505bf1ceaa58",
+    "archivedBytes": 15874,
+    "archivedSha256": "e1b066afd04cd4ffe2066cc04ddff9752291cabc2875c190cd39505bf1ceaa58"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\camera-controls.native.ts--22c1b--with-a-real-worker-refusal\\actual-public-camera-interactions.json",
+    "archived": "camera/004-actual-public-camera-interactions.json",
+    "sourceBytes": 2943,
+    "sourceSha256": "67ede17549c4619185c137d6c129723909ecd1ef472e952a7b99da2f5ba0c386",
+    "archivedBytes": 2943,
+    "archivedSha256": "67ede17549c4619185c137d6c129723909ecd1ef472e952a7b99da2f5ba0c386"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\camera-controls.native.ts--22c1b--with-a-real-worker-refusal\\actual-ui100-active-status-all-camera-geometry.json",
+    "archived": "camera/005-actual-ui100-active-status-all-camera-geometry.json",
+    "sourceBytes": 7093,
+    "sourceSha256": "5c1a2888daaa2f84e1ced4b73bec582fe99cb1b0acee7fd147f72b8763fe8015",
+    "archivedBytes": 7093,
+    "archivedSha256": "5c1a2888daaa2f84e1ced4b73bec582fe99cb1b0acee7fd147f72b8763fe8015"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\camera-controls.native.ts--22c1b--with-a-real-worker-refusal\\actual-ui100-active-status-all-camera.png",
+    "archived": "camera/006-actual-ui100-active-status-all-camera.png",
+    "sourceBytes": 1486391,
+    "sourceSha256": "b738d69803f92ac5fa393b2b48aaa8a6fcae86097297433911420812192acafa",
+    "archivedBytes": 1486391,
+    "archivedSha256": "b738d69803f92ac5fa393b2b48aaa8a6fcae86097297433911420812192acafa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\camera-controls.native.ts--22c1b--with-a-real-worker-refusal\\actual-ui100-disclosure-closed.png",
+    "archived": "camera/007-actual-ui100-disclosure-closed.png",
+    "sourceBytes": 212994,
+    "sourceSha256": "9e236c0552684a6ca08c9225e77a38f69ddea5b276db7b79cf7d284f1e69cc80",
+    "archivedBytes": 212994,
+    "archivedSha256": "9e236c0552684a6ca08c9225e77a38f69ddea5b276db7b79cf7d284f1e69cc80"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\camera-controls.native.ts--22c1b--with-a-real-worker-refusal\\actual-ui100-returned-world-active-status.png",
+    "archived": "camera/008-actual-ui100-returned-world-active-status.png",
+    "sourceBytes": 253189,
+    "sourceSha256": "2b87176d4ee2a1e8a3be0257020da7a142afb1c703518dd3e0a929ce495c1423",
+    "archivedBytes": 253189,
+    "archivedSha256": "2b87176d4ee2a1e8a3be0257020da7a142afb1c703518dd3e0a929ce495c1423"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\camera-controls.native.ts--22c1b--with-a-real-worker-refusal\\diagnostic-before-angled-zoom-ui100.json",
+    "archived": "camera/009-diagnostic-before-angled-zoom-ui100.json",
+    "sourceBytes": 7093,
+    "sourceSha256": "5c1a2888daaa2f84e1ced4b73bec582fe99cb1b0acee7fd147f72b8763fe8015",
+    "archivedBytes": 7093,
+    "archivedSha256": "5c1a2888daaa2f84e1ced4b73bec582fe99cb1b0acee7fd147f72b8763fe8015"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\camera-controls.native.ts--22c1b--with-a-real-worker-refusal\\diagnostic-before-angled-zoom-ui100.png",
+    "archived": "camera/010-diagnostic-before-angled-zoom-ui100.png",
+    "sourceBytes": 1510587,
+    "sourceSha256": "ffbcf0d2fdb30eae54679656f8a0d243acda90af82e24ccaf73a6f893c0c373f",
+    "archivedBytes": 1510587,
+    "archivedSha256": "ffbcf0d2fdb30eae54679656f8a0d243acda90af82e24ccaf73a6f893c0c373f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\camera-controls.native.ts--f91ae--with-a-real-worker-refusal\\actual-paused-after-camera-whole.json",
+    "archived": "camera/011-actual-paused-after-camera-whole.json",
+    "sourceBytes": 15872,
+    "sourceSha256": "d8a17a54ac9a0257c9088c9a4e2341744cd86386e92c08dffba0c8d6106dccd0",
+    "archivedBytes": 15872,
+    "archivedSha256": "d8a17a54ac9a0257c9088c9a4e2341744cd86386e92c08dffba0c8d6106dccd0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\camera-controls.native.ts--f91ae--with-a-real-worker-refusal\\actual-paused-before-camera-whole.json",
+    "archived": "camera/012-actual-paused-before-camera-whole.json",
+    "sourceBytes": 15872,
+    "sourceSha256": "3efe45a43a1262b9d7620f1a3f1a9433ff5813292d558c4143e5bbf9ab80b014",
+    "archivedBytes": 15872,
+    "archivedSha256": "3efe45a43a1262b9d7620f1a3f1a9433ff5813292d558c4143e5bbf9ab80b014"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\camera-controls.native.ts--f91ae--with-a-real-worker-refusal\\actual-public-camera-interactions.json",
+    "archived": "camera/013-actual-public-camera-interactions.json",
+    "sourceBytes": 2947,
+    "sourceSha256": "4e75d48bb10c0ac84c20de4534a21a0371a9fe3afb5310a37c69aa05e300e573",
+    "archivedBytes": 2947,
+    "archivedSha256": "4e75d48bb10c0ac84c20de4534a21a0371a9fe3afb5310a37c69aa05e300e573"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\camera-controls.native.ts--f91ae--with-a-real-worker-refusal\\actual-ui200-active-status-all-camera-geometry.json",
+    "archived": "camera/014-actual-ui200-active-status-all-camera-geometry.json",
+    "sourceBytes": 7248,
+    "sourceSha256": "0b932c89e3cd0d7ae72e4e7ae6046953a8ca1fbfe14b9fa9deff80cc912ae9a2",
+    "archivedBytes": 7248,
+    "archivedSha256": "0b932c89e3cd0d7ae72e4e7ae6046953a8ca1fbfe14b9fa9deff80cc912ae9a2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\camera-controls.native.ts--f91ae--with-a-real-worker-refusal\\actual-ui200-active-status-all-camera.png",
+    "archived": "camera/015-actual-ui200-active-status-all-camera.png",
+    "sourceBytes": 462730,
+    "sourceSha256": "1eeb644b2b0001fd63efd307753fac37559c59b68ea02e75bbb36ef537ab3ddf",
+    "archivedBytes": 462730,
+    "archivedSha256": "1eeb644b2b0001fd63efd307753fac37559c59b68ea02e75bbb36ef537ab3ddf"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\camera-controls.native.ts--f91ae--with-a-real-worker-refusal\\actual-ui200-disclosure-closed.png",
+    "archived": "camera/016-actual-ui200-disclosure-closed.png",
+    "sourceBytes": 277446,
+    "sourceSha256": "73b22b8cd0cb9f19cf1e653850d1dfd309166e65ad9d5c5d0d8b86dbfd00aead",
+    "archivedBytes": 277446,
+    "archivedSha256": "73b22b8cd0cb9f19cf1e653850d1dfd309166e65ad9d5c5d0d8b86dbfd00aead"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\camera-controls.native.ts--f91ae--with-a-real-worker-refusal\\actual-ui200-returned-world-active-status.png",
+    "archived": "camera/017-actual-ui200-returned-world-active-status.png",
+    "sourceBytes": 296112,
+    "sourceSha256": "b930cd4f168c204ea2a1d63de15768a34c6a3707b06757ee48b028522ae7012a",
+    "archivedBytes": 296112,
+    "archivedSha256": "b930cd4f168c204ea2a1d63de15768a34c6a3707b06757ee48b028522ae7012a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\camera-controls.native.ts--f91ae--with-a-real-worker-refusal\\diagnostic-before-angled-zoom-ui200.json",
+    "archived": "camera/018-diagnostic-before-angled-zoom-ui200.json",
+    "sourceBytes": 7248,
+    "sourceSha256": "0b932c89e3cd0d7ae72e4e7ae6046953a8ca1fbfe14b9fa9deff80cc912ae9a2",
+    "archivedBytes": 7248,
+    "archivedSha256": "0b932c89e3cd0d7ae72e4e7ae6046953a8ca1fbfe14b9fa9deff80cc912ae9a2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-camera-native-20261003\\camera-controls.native.ts--f91ae--with-a-real-worker-refusal\\diagnostic-before-angled-zoom-ui200.png",
+    "archived": "camera/019-diagnostic-before-angled-zoom-ui200.png",
+    "sourceBytes": 490924,
+    "sourceSha256": "80059340c3eea2d940603e477ef579b881b1dc725148607e6523b2fdd9656875",
+    "archivedBytes": 490924,
+    "archivedSha256": "80059340c3eea2d940603e477ef579b881b1dc725148607e6523b2fdd9656875"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003.json",
+    "archived": "rotate/report.json",
+    "sourceBytes": 4814,
+    "sourceSha256": "86cdcbbf27ee25cc907e5576ce6996b78c0d2caf6ab694a15afb67c7fbe9297b",
+    "archivedBytes": 4814,
+    "archivedSha256": "86cdcbbf27ee25cc907e5576ce6996b78c0d2caf6ab694a15afb67c7fbe9297b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003.txt",
+    "archived": "rotate/console.txt",
+    "sourceBytes": 4258,
+    "sourceSha256": "efa0209873e8f6fc25a612a8ce0159e6f679b314db86984527c25f5fe1e39f60",
+    "archivedBytes": 2134,
+    "archivedSha256": "ccae5ff7eac7495e247a596dc953c808fb51245b6ced9ee3d2cbef7c71127494",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\.last-run.json",
+    "archived": "rotate/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-actual-public-export-v10.json",
+    "archived": "rotate/002-en-actual-public-export-v10.json",
+    "sourceBytes": 16375,
+    "sourceSha256": "aff4a194a645b074423b64eac7702bdc4c256ecd87896133e4e2105a33baeda3",
+    "archivedBytes": 16375,
+    "archivedSha256": "aff4a194a645b074423b64eac7702bdc4c256ecd87896133e4e2105a33baeda3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-actual-review-receipt.json",
+    "archived": "rotate/003-en-actual-review-receipt.json",
+    "sourceBytes": 76846,
+    "sourceSha256": "6d615f62396481494e43f5ade33bf34659ded0212b68df72ee7141d8a0612a59",
+    "archivedBytes": 76846,
+    "archivedSha256": "6d615f62396481494e43f5ade33bf34659ded0212b68df72ee7141d8a0612a59"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-actual-all20-cards-fullhd.png",
+    "archived": "rotate/004-en-ui100-actual-all20-cards-fullhd.png",
+    "sourceBytes": 243927,
+    "sourceSha256": "b5b9e014c796dedd33c78d1099060a89e6f1ab6ef573d1da3c3b9188fc26605e",
+    "archivedBytes": 243927,
+    "archivedSha256": "b5b9e014c796dedd33c78d1099060a89e6f1ab6ef573d1da3c3b9188fc26605e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-actual-all20-cards.json",
+    "archived": "rotate/005-en-ui100-actual-all20-cards.json",
+    "sourceBytes": 2812,
+    "sourceSha256": "b6ff8177eadc10aa9a95df09af1d3ed8284471df5d927f2bcd6ee3022644136b",
+    "archivedBytes": 2812,
+    "archivedSha256": "b6ff8177eadc10aa9a95df09af1d3ed8284471df5d927f2bcd6ee3022644136b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-actual-loaded-fullhd.png",
+    "archived": "rotate/006-en-ui100-actual-loaded-fullhd.png",
+    "sourceBytes": 299059,
+    "sourceSha256": "f6b319b46ebee8cb941f5c0f893af7864d78163020e31ebdbd151798992a1bbc",
+    "archivedBytes": 299059,
+    "archivedSha256": "f6b319b46ebee8cb941f5c0f893af7864d78163020e31ebdbd151798992a1bbc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-actual-loaded-whole-v10.json",
+    "archived": "rotate/007-en-ui100-actual-loaded-whole-v10.json",
+    "sourceBytes": 19286,
+    "sourceSha256": "16646ffde7c23b1ea99e4a3c6c3c7c9c2b2c93e2eab5cdaac588984438c2de5b",
+    "archivedBytes": 19286,
+    "archivedSha256": "16646ffde7c23b1ea99e4a3c6c3c7c9c2b2c93e2eab5cdaac588984438c2de5b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-actual-q0-q1-secondary-pixels.json",
+    "archived": "rotate/008-en-ui100-actual-q0-q1-secondary-pixels.json",
+    "sourceBytes": 427,
+    "sourceSha256": "98e06d3db8a7cc8c7176b63942f7fb9257525d887cea6fefb5d32280a9d2960a",
+    "archivedBytes": 427,
+    "archivedSha256": "98e06d3db8a7cc8c7176b63942f7fb9257525d887cea6fefb5d32280a9d2960a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-actual-q1-original-primary-held.png",
+    "archived": "rotate/009-en-ui100-actual-q1-original-primary-held.png",
+    "sourceBytes": 312827,
+    "sourceSha256": "ed217b5de943dea8028b0c04180205ce7abd3e24481f7cf17c3b9162354bb2cb",
+    "archivedBytes": 312827,
+    "archivedSha256": "ed217b5de943dea8028b0c04180205ce7abd3e24481f7cf17c3b9162354bb2cb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-actual-q1-q3-paid-whole-v10.json",
+    "archived": "rotate/010-en-ui100-actual-q1-q3-paid-whole-v10.json",
+    "sourceBytes": 19286,
+    "sourceSha256": "ffdf3cca78a7f8f5146737f05c5c0469c357fa729278e6a846e4544e5da89cd2",
+    "archivedBytes": 19286,
+    "archivedSha256": "ffdf3cca78a7f8f5146737f05c5c0469c357fa729278e6a846e4544e5da89cd2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-actual-q1-whole.json",
+    "archived": "rotate/011-en-ui100-actual-q1-whole.json",
+    "sourceBytes": 18456,
+    "sourceSha256": "aae2b21b1bc27362dac52efc6d96d3c8c803b341b807825847bdf77408eddfd3",
+    "archivedBytes": 18456,
+    "archivedSha256": "aae2b21b1bc27362dac52efc6d96d3c8c803b341b807825847bdf77408eddfd3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-actual-q3-blocked-q1-claim-fullhd.png",
+    "archived": "rotate/012-en-ui100-actual-q3-blocked-q1-claim-fullhd.png",
+    "sourceBytes": 331212,
+    "sourceSha256": "53565589057e463e3f11ebd77758f50bd9819ee1a8714079a15032e44c038fd6",
+    "archivedBytes": 331212,
+    "archivedSha256": "53565589057e463e3f11ebd77758f50bd9819ee1a8714079a15032e44c038fd6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-armed-q0-fullhd.png",
+    "archived": "rotate/013-en-ui100-armed-q0-fullhd.png",
+    "sourceBytes": 291469,
+    "sourceSha256": "66df153d7b59308e89ed1830bf9d79dd3d1e2db5d8ca7c66748365750a312eba",
+    "archivedBytes": 291469,
+    "archivedSha256": "66df153d7b59308e89ed1830bf9d79dd3d1e2db5d8ca7c66748365750a312eba"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-armed-q0-geometry.json",
+    "archived": "rotate/014-en-ui100-armed-q0-geometry.json",
+    "sourceBytes": 7546,
+    "sourceSha256": "15112f21c9acef749d46a321b8da8e0254b18a24e747bd6e4b66c176e1f9c3a2",
+    "archivedBytes": 7546,
+    "archivedSha256": "15112f21c9acef749d46a321b8da8e0254b18a24e747bd6e4b66c176e1f9c3a2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-armed-q1-fullhd.png",
+    "archived": "rotate/015-en-ui100-armed-q1-fullhd.png",
+    "sourceBytes": 291800,
+    "sourceSha256": "2463289aab23c58eb599a6f1b5a0b38394986fbe220588cd03fedf78eec7ba1a",
+    "archivedBytes": 291800,
+    "archivedSha256": "2463289aab23c58eb599a6f1b5a0b38394986fbe220588cd03fedf78eec7ba1a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-armed-q1-geometry.json",
+    "archived": "rotate/016-en-ui100-armed-q1-geometry.json",
+    "sourceBytes": 7545,
+    "sourceSha256": "7c70dbfe9c1189800e261ac56d2564aa95645dd7bb8edecff5d3e049c6e24bb0",
+    "archivedBytes": 7545,
+    "archivedSha256": "7c70dbfe9c1189800e261ac56d2564aa95645dd7bb8edecff5d3e049c6e24bb0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-armed-q3-fullhd.png",
+    "archived": "rotate/017-en-ui100-armed-q3-fullhd.png",
+    "sourceBytes": 312943,
+    "sourceSha256": "e530839cb466ee85f96fcbb66e0401f933e5134306e21774d5d5f6bd8266ea92",
+    "archivedBytes": 312943,
+    "archivedSha256": "e530839cb466ee85f96fcbb66e0401f933e5134306e21774d5d5f6bd8266ea92"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-armed-q3-geometry.json",
+    "archived": "rotate/018-en-ui100-armed-q3-geometry.json",
+    "sourceBytes": 7549,
+    "sourceSha256": "461e904b9a25d44ae8939557413500b9fc72fc08dc5940eca355c0e76bc75eee",
+    "archivedBytes": 7549,
+    "archivedSha256": "461e904b9a25d44ae8939557413500b9fc72fc08dc5940eca355c0e76bc75eee"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-q0-secondary0.png",
+    "archived": "rotate/019-en-ui100-q0-secondary0.png",
+    "sourceBytes": 1536,
+    "sourceSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2",
+    "archivedBytes": 1536,
+    "archivedSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-q0-secondary1.png",
+    "archived": "rotate/020-en-ui100-q0-secondary1.png",
+    "sourceBytes": 1639,
+    "sourceSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0",
+    "archivedBytes": 1639,
+    "archivedSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-q1-secondary0.png",
+    "archived": "rotate/021-en-ui100-q1-secondary0.png",
+    "sourceBytes": 1639,
+    "sourceSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0",
+    "archivedBytes": 1639,
+    "archivedSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-q1-secondary1.png",
+    "archived": "rotate/022-en-ui100-q1-secondary1.png",
+    "sourceBytes": 1536,
+    "sourceSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2",
+    "archivedBytes": 1536,
+    "archivedSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-selected-q0-fullhd.png",
+    "archived": "rotate/023-en-ui100-selected-q0-fullhd.png",
+    "sourceBytes": 291223,
+    "sourceSha256": "3d4fab254cf0a807036f3334c3447334c1850dcc6569861fd8a4cf68c8852688",
+    "archivedBytes": 291223,
+    "archivedSha256": "3d4fab254cf0a807036f3334c3447334c1850dcc6569861fd8a4cf68c8852688"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-en-a3cd6-ers-and-whole-V10-Save-Load\\en-ui100-selected-q0-geometry.json",
+    "archived": "rotate/024-en-ui100-selected-q0-geometry.json",
+    "sourceBytes": 7543,
+    "sourceSha256": "f308b516038687be838ecca68e544e47d40c17e354ea8080fb965c7dc34c1381",
+    "archivedBytes": 7543,
+    "archivedSha256": "f308b516038687be838ecca68e544e47d40c17e354ea8080fb965c7dc34c1381"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-actual-public-export-v10.json",
+    "archived": "rotate/025-pl-actual-public-export-v10.json",
+    "sourceBytes": 16382,
+    "sourceSha256": "4024c0dd2f037abcde55cd4035e4e655de961bce564c2b93d8b7f09c2d52d399",
+    "archivedBytes": 16382,
+    "archivedSha256": "4024c0dd2f037abcde55cd4035e4e655de961bce564c2b93d8b7f09c2d52d399"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-actual-review-receipt.json",
+    "archived": "rotate/026-pl-actual-review-receipt.json",
+    "sourceBytes": 76876,
+    "sourceSha256": "939a299e6d311f5e7a8d47b49eb17e316d14ffdadba150aa30626e3c05524122",
+    "archivedBytes": 76876,
+    "archivedSha256": "939a299e6d311f5e7a8d47b49eb17e316d14ffdadba150aa30626e3c05524122"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-actual-all20-cards-fullhd.png",
+    "archived": "rotate/027-pl-ui100-actual-all20-cards-fullhd.png",
+    "sourceBytes": 266702,
+    "sourceSha256": "62d0664fbdedfa6996cb764806072b79364dc25847bc7c3cc3a767d8c8d2a51e",
+    "archivedBytes": 266702,
+    "archivedSha256": "62d0664fbdedfa6996cb764806072b79364dc25847bc7c3cc3a767d8c8d2a51e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-actual-all20-cards.json",
+    "archived": "rotate/028-pl-ui100-actual-all20-cards.json",
+    "sourceBytes": 2834,
+    "sourceSha256": "54db7b23349f7fe72768c54ca16839e1e537c055881c5bb53f636de78dd74aa3",
+    "archivedBytes": 2834,
+    "archivedSha256": "54db7b23349f7fe72768c54ca16839e1e537c055881c5bb53f636de78dd74aa3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-actual-loaded-fullhd.png",
+    "archived": "rotate/029-pl-ui100-actual-loaded-fullhd.png",
+    "sourceBytes": 311363,
+    "sourceSha256": "ad9e8ad455a8545e8105c93b649a97478f161659c4d169a3b1ffa59b6439f6aa",
+    "archivedBytes": 311363,
+    "archivedSha256": "ad9e8ad455a8545e8105c93b649a97478f161659c4d169a3b1ffa59b6439f6aa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-actual-loaded-whole-v10.json",
+    "archived": "rotate/030-pl-ui100-actual-loaded-whole-v10.json",
+    "sourceBytes": 19293,
+    "sourceSha256": "74d2dd4e72f3d8e4ac05fb6baea3f673cd11dbc53c66e541bf3265fbbf7b694b",
+    "archivedBytes": 19293,
+    "archivedSha256": "74d2dd4e72f3d8e4ac05fb6baea3f673cd11dbc53c66e541bf3265fbbf7b694b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-actual-q0-q1-secondary-pixels.json",
+    "archived": "rotate/031-pl-ui100-actual-q0-q1-secondary-pixels.json",
+    "sourceBytes": 427,
+    "sourceSha256": "98e06d3db8a7cc8c7176b63942f7fb9257525d887cea6fefb5d32280a9d2960a",
+    "archivedBytes": 427,
+    "archivedSha256": "98e06d3db8a7cc8c7176b63942f7fb9257525d887cea6fefb5d32280a9d2960a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-actual-q1-original-primary-held.png",
+    "archived": "rotate/032-pl-ui100-actual-q1-original-primary-held.png",
+    "sourceBytes": 327165,
+    "sourceSha256": "685a5a2950d3e19e279711fe2d1eb6e747661e5c86155dc65e231c1c6e3ad858",
+    "archivedBytes": 327165,
+    "archivedSha256": "685a5a2950d3e19e279711fe2d1eb6e747661e5c86155dc65e231c1c6e3ad858"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-actual-q1-q3-paid-whole-v10.json",
+    "archived": "rotate/033-pl-ui100-actual-q1-q3-paid-whole-v10.json",
+    "sourceBytes": 19293,
+    "sourceSha256": "e008d304c704399ddd5405a283e66b95f959ad1d83b7b757342ab22394bc4f12",
+    "archivedBytes": 19293,
+    "archivedSha256": "e008d304c704399ddd5405a283e66b95f959ad1d83b7b757342ab22394bc4f12"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-actual-q1-whole.json",
+    "archived": "rotate/034-pl-ui100-actual-q1-whole.json",
+    "sourceBytes": 18463,
+    "sourceSha256": "395e7bd241525fc73c34cfbd79233638830d680e1948eb0ce7572e7fa3c9628a",
+    "archivedBytes": 18463,
+    "archivedSha256": "395e7bd241525fc73c34cfbd79233638830d680e1948eb0ce7572e7fa3c9628a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-actual-q3-blocked-q1-claim-fullhd.png",
+    "archived": "rotate/035-pl-ui100-actual-q3-blocked-q1-claim-fullhd.png",
+    "sourceBytes": 341728,
+    "sourceSha256": "c53fae21a19802d24367d47166b674c89bf092f70bb3c0a2f487e44c4c44a249",
+    "archivedBytes": 341728,
+    "archivedSha256": "c53fae21a19802d24367d47166b674c89bf092f70bb3c0a2f487e44c4c44a249"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-armed-q0-fullhd.png",
+    "archived": "rotate/036-pl-ui100-armed-q0-fullhd.png",
+    "sourceBytes": 306548,
+    "sourceSha256": "80ff6b819dcd1c000eefee7eb93b5b98c39b8a82a6771618171db11b7f41a453",
+    "archivedBytes": 306548,
+    "archivedSha256": "80ff6b819dcd1c000eefee7eb93b5b98c39b8a82a6771618171db11b7f41a453"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-armed-q0-geometry.json",
+    "archived": "rotate/037-pl-ui100-armed-q0-geometry.json",
+    "sourceBytes": 7542,
+    "sourceSha256": "2b9d0533c1fab22c4b0b6938952a2e73a9fa4d04aa9f1f5eb7b65fc4321dea67",
+    "archivedBytes": 7542,
+    "archivedSha256": "2b9d0533c1fab22c4b0b6938952a2e73a9fa4d04aa9f1f5eb7b65fc4321dea67"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-armed-q1-fullhd.png",
+    "archived": "rotate/038-pl-ui100-armed-q1-fullhd.png",
+    "sourceBytes": 306861,
+    "sourceSha256": "61dae97a1c02b36a588727f05ce0b5cfba1a15bc6dc9254ddf84951862f1bd19",
+    "archivedBytes": 306861,
+    "archivedSha256": "61dae97a1c02b36a588727f05ce0b5cfba1a15bc6dc9254ddf84951862f1bd19"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-armed-q1-geometry.json",
+    "archived": "rotate/039-pl-ui100-armed-q1-geometry.json",
+    "sourceBytes": 7552,
+    "sourceSha256": "a0276d58612e5e71a9710a9b316fced03f14d6b0d64e5865752d3da382d182ce",
+    "archivedBytes": 7552,
+    "archivedSha256": "a0276d58612e5e71a9710a9b316fced03f14d6b0d64e5865752d3da382d182ce"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-armed-q3-fullhd.png",
+    "archived": "rotate/040-pl-ui100-armed-q3-fullhd.png",
+    "sourceBytes": 327197,
+    "sourceSha256": "bb2174722eebb170d9e7aeabeb3426c7ebb4b6fdd8dde0ae575dd85434f9ae11",
+    "archivedBytes": 327197,
+    "archivedSha256": "bb2174722eebb170d9e7aeabeb3426c7ebb4b6fdd8dde0ae575dd85434f9ae11"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-armed-q3-geometry.json",
+    "archived": "rotate/041-pl-ui100-armed-q3-geometry.json",
+    "sourceBytes": 7557,
+    "sourceSha256": "4e33fef102abc7a81bc3f41f0cdaa4b9b6672c35a4be1ae540c1c5a5926f70aa",
+    "archivedBytes": 7557,
+    "archivedSha256": "4e33fef102abc7a81bc3f41f0cdaa4b9b6672c35a4be1ae540c1c5a5926f70aa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-q0-secondary0.png",
+    "archived": "rotate/042-pl-ui100-q0-secondary0.png",
+    "sourceBytes": 1536,
+    "sourceSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2",
+    "archivedBytes": 1536,
+    "archivedSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-q0-secondary1.png",
+    "archived": "rotate/043-pl-ui100-q0-secondary1.png",
+    "sourceBytes": 1639,
+    "sourceSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0",
+    "archivedBytes": 1639,
+    "archivedSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-q1-secondary0.png",
+    "archived": "rotate/044-pl-ui100-q1-secondary0.png",
+    "sourceBytes": 1639,
+    "sourceSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0",
+    "archivedBytes": 1639,
+    "archivedSha256": "9cf9fc042dac629b3b8f1377f0d9b230b2ed56229eafa28a5ea4df6acbbd20f0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-q1-secondary1.png",
+    "archived": "rotate/045-pl-ui100-q1-secondary1.png",
+    "sourceBytes": 1536,
+    "sourceSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2",
+    "archivedBytes": 1536,
+    "archivedSha256": "7c07bba54902dd50dc108d2896c71559f0054a2ebf1bb3e6a797976371022ce2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-selected-q0-fullhd.png",
+    "archived": "rotate/046-pl-ui100-selected-q0-fullhd.png",
+    "sourceBytes": 306393,
+    "sourceSha256": "a8f6af8827cbb0a75d9773fbd684c4b3c671233e650e9f087000f6374fcf8420",
+    "archivedBytes": 306393,
+    "archivedSha256": "a8f6af8827cbb0a75d9773fbd684c4b3c671233e650e9f087000f6374fcf8420"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-rotate-native-20261003\\object-rotate.native.ts-pl-cf486-ers-and-whole-V10-Save-Load\\pl-ui100-selected-q0-geometry.json",
+    "archived": "rotate/047-pl-ui100-selected-q0-geometry.json",
+    "sourceBytes": 7555,
+    "sourceSha256": "831219f0ddec7db9e8bdd360eff2290264f54358c4c250423f8cef7e768524ba",
+    "archivedBytes": 7555,
+    "archivedSha256": "831219f0ddec7db9e8bdd360eff2290264f54358c4c250423f8cef7e768524ba"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003.json",
+    "archived": "staff-q1/report.json",
+    "sourceBytes": 5160,
+    "sourceSha256": "5db77d4c500a4d0669e7c55781b7c86da2e92562ffccd18131a8726e4b7299c7",
+    "archivedBytes": 5160,
+    "archivedSha256": "5db77d4c500a4d0669e7c55781b7c86da2e92562ffccd18131a8726e4b7299c7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003.txt",
+    "archived": "staff-q1/console.txt",
+    "sourceBytes": 4012,
+    "sourceSha256": "8da19ab65b4c499f58fe355511ec4190e7ac355c6823b967126f249e76282e3a",
+    "archivedBytes": 2011,
+    "archivedSha256": "677efbe25f51ac5722b8947261a760121da9ef52364ba2d72baf040623582c74",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003\\.last-run.json",
+    "archived": "staff-q1/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\attachments\\wooden-chair-worker-and-save-evidence-c7e0ccb2119853c599d71ed7dffac8fb394ff250.json",
+    "archived": "staff-q1/002-wooden-chair-worker-and-save-evidence-c7e0ccb2119853c599d71ed7df.json",
+    "sourceBytes": 583,
+    "sourceSha256": "d4523886fbd3f015bd08bcd5ac3d890411a77d8bf06e4be7176966390172a4ea",
+    "archivedBytes": 583,
+    "archivedSha256": "d4523886fbd3f015bd08bcd5ac3d890411a77d8bf06e4be7176966390172a4ea"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "staff-q1/003-completed-worker-snapshot.json",
+    "sourceBytes": 80468,
+    "sourceSha256": "1997ed0847735b1f074fcb102090cc52f183cd5696ae99ac7b596ccd32415282",
+    "archivedBytes": 80468,
+    "archivedSha256": "1997ed0847735b1f074fcb102090cc52f183cd5696ae99ac7b596ccd32415282"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "staff-q1/004-loaded-worker-snapshot.json",
+    "sourceBytes": 80468,
+    "sourceSha256": "df5b19dd1f2552363cc55f483462c4a0da7e808f74e34c4c623c034cac740ae8",
+    "archivedBytes": 80468,
+    "archivedSha256": "df5b19dd1f2552363cc55f483462c4a0da7e808f74e34c4c623c034cac740ae8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\physical-hardware-loaded-fullhd.png",
+    "archived": "staff-q1/005-physical-hardware-loaded-fullhd.png",
+    "sourceBytes": 354235,
+    "sourceSha256": "c56e24e904d2f8e08ddd6c2ffcbc9c4c40ccd2f81b6b3923171607c4e2dfd023",
+    "archivedBytes": 354235,
+    "archivedSha256": "c56e24e904d2f8e08ddd6c2ffcbc9c4c40ccd2f81b6b3923171607c4e2dfd023"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\staff-chair-actual-network-decoder-receipt.json",
+    "archived": "staff-q1/006-staff-chair-actual-network-decoder-receipt.json",
+    "sourceBytes": 26060,
+    "sourceSha256": "c52bcc40531f6783a6a4b5ae410aa2665a5c3d4d2dd0bfa36540a8c6f9d56ad7",
+    "archivedBytes": 26060,
+    "archivedSha256": "c52bcc40531f6783a6a4b5ae410aa2665a5c3d4d2dd0bfa36540a8c6f9d56ad7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\staff-chair-actual-network.json",
+    "archived": "staff-q1/007-staff-chair-actual-network.json",
+    "sourceBytes": 4496,
+    "sourceSha256": "b7df9bab34c98c998e012063906246e6b1081fa7be71a25119df94e3305a0ac0",
+    "archivedBytes": 4496,
+    "archivedSha256": "b7df9bab34c98c998e012063906246e6b1081fa7be71a25119df94e3305a0ac0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\staff-chair-actual200-source60-e40.png",
+    "archived": "staff-q1/008-staff-chair-actual200-source60-e40.png",
+    "sourceBytes": 10805,
+    "sourceSha256": "a200ce9518d232a2ef0f6bdac0343738042804f87fb3e57f67c9f648345682f8",
+    "archivedBytes": 10805,
+    "archivedSha256": "a200ce9518d232a2ef0f6bdac0343738042804f87fb3e57f67c9f648345682f8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\staff-chair-canonical-source60-e40-canvas.png",
+    "archived": "staff-q1/009-staff-chair-canonical-source60-e40-canvas.png",
+    "sourceBytes": 1664932,
+    "sourceSha256": "70d6990b562bcb81643fed580d939ae0a6f9b35ea0bcab402f7f6bcd438a1940",
+    "archivedBytes": 1664932,
+    "archivedSha256": "70d6990b562bcb81643fed580d939ae0a6f9b35ea0bcab402f7f6bcd438a1940"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\staff-chair-canonical-source60-e40-fullhd.png",
+    "archived": "staff-q1/010-staff-chair-canonical-source60-e40-fullhd.png",
+    "sourceBytes": 1664932,
+    "sourceSha256": "70d6990b562bcb81643fed580d939ae0a6f9b35ea0bcab402f7f6bcd438a1940",
+    "archivedBytes": 1664932,
+    "archivedSha256": "70d6990b562bcb81643fed580d939ae0a6f9b35ea0bcab402f7f6bcd438a1940"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\staff-chair-native-prepared-route-receipt.json",
+    "archived": "staff-q1/011-staff-chair-native-prepared-route-receipt.json",
+    "sourceBytes": 235945,
+    "sourceSha256": "f707c94d48de869dcb5766944d2c9324230b5d61c5a91950a965e0f18c2239bc",
+    "archivedBytes": 235945,
+    "archivedSha256": "f707c94d48de869dcb5766944d2c9324230b5d61c5a91950a965e0f18c2239bc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\staff-chair-whole-paused-after-camera.json",
+    "archived": "staff-q1/012-staff-chair-whole-paused-after-camera.json",
+    "sourceBytes": 80468,
+    "sourceSha256": "e28c95a41db755359a65327b6bd749d87e8d3bf2b99533548362ad42b223ce42",
+    "archivedBytes": 80468,
+    "archivedSha256": "e28c95a41db755359a65327b6bd749d87e8d3bf2b99533548362ad42b223ce42"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\staff-chair-whole-paused-completed.json",
+    "archived": "staff-q1/013-staff-chair-whole-paused-completed.json",
+    "sourceBytes": 80468,
+    "sourceSha256": "6e0cebb427b83887b2d58411f8593446eb0d66e6ece662deb6bce44cc824076e",
+    "archivedBytes": 80468,
+    "archivedSha256": "6e0cebb427b83887b2d58411f8593446eb0d66e6ece662deb6bce44cc824076e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\staff-chair-whole-paused-loaded.json",
+    "archived": "staff-q1/014-staff-chair-whole-paused-loaded.json",
+    "sourceBytes": 80468,
+    "sourceSha256": "2bcf114ae4948f152bd52d10401b3b816f0a9f3fe49918ee6060fcea73c4e947",
+    "archivedBytes": 80468,
+    "archivedSha256": "2bcf114ae4948f152bd52d10401b3b816f0a9f3fe49918ee6060fcea73c4e947"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\wooden-chair-loaded-fullhd.png",
+    "archived": "staff-q1/015-wooden-chair-loaded-fullhd.png",
+    "sourceBytes": 1569566,
+    "sourceSha256": "06d5354a4a8863c130b0cdde248012b559a632d28b08dc79581a53bba3d83b9d",
+    "archivedBytes": 1569566,
+    "archivedSha256": "06d5354a4a8863c130b0cdde248012b559a632d28b08dc79581a53bba3d83b9d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\wooden-chair-worker-and-save-evidence.json",
+    "archived": "staff-q1/016-wooden-chair-worker-and-save-evidence.json",
+    "sourceBytes": 583,
+    "sourceSha256": "d4523886fbd3f015bd08bcd5ac3d890411a77d8bf06e4be7176966390172a4ea",
+    "archivedBytes": 583,
+    "archivedSha256": "d4523886fbd3f015bd08bcd5ac3d890411a77d8bf06e4be7176966390172a4ea"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\wooden-chair-worker-completed-fullhd.png",
+    "archived": "staff-q1/017-wooden-chair-worker-completed-fullhd.png",
+    "sourceBytes": 1604553,
+    "sourceSha256": "1d22d1ba3628e38cf3833831282a65c6e23985da423da726e17f69d26d2a9258",
+    "archivedBytes": 1604553,
+    "archivedSha256": "1d22d1ba3628e38cf3833831282a65c6e23985da423da726e17f69d26d2a9258"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "staff-q1/018-worker-and-completed-save-evidence.json",
+    "sourceBytes": 400,
+    "sourceSha256": "401086e68d8964bc7108ce1ed91a23e7e3c327087857211412399af346a7a6d3",
+    "archivedBytes": 400,
+    "archivedSha256": "401086e68d8964bc7108ce1ed91a23e7e3c327087857211412399af346a7a6d3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-native-20261003.json",
+    "archived": "staff-q0-missing-capacity/report.json",
+    "sourceBytes": 6898,
+    "sourceSha256": "a2383e544dfb3e57797a30e18c2e9cee461364573020a8e159b06df627155129",
+    "archivedBytes": 6898,
+    "archivedSha256": "a2383e544dfb3e57797a30e18c2e9cee461364573020a8e159b06df627155129"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-native-20261003.txt",
+    "archived": "staff-q0-missing-capacity/console.txt",
+    "sourceBytes": 6322,
+    "sourceSha256": "5f43a616e2c780a01b29bc5cd330cdb3b2f794687c111338ec31da0c200e41ee",
+    "archivedBytes": 3169,
+    "archivedSha256": "1e81e35cd3af78c45f7727a8051974d51b47e2a9e162c223e782dc5a9fd876b3",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-native-20261003\\.last-run.json",
+    "archived": "staff-q0-missing-capacity/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "a9e1c39f0c2e2754602bc936f2a57a5444b922fd65440af77be40b3ca94b7dc7",
+    "archivedBytes": 96,
+    "archivedSha256": "a9e1c39f0c2e2754602bc936f2a57a5444b922fd65440af77be40b3ca94b7dc7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "staff-q0-missing-capacity/002-failed-player-fullhd.png",
+    "sourceBytes": 4253,
+    "sourceSha256": "27abb4affaed83ae85739b62b71e5e860d2e6ee7b4fa91c915f5a3c26227b944",
+    "archivedBytes": 4253,
+    "archivedSha256": "27abb4affaed83ae85739b62b71e5e860d2e6ee7b4fa91c915f5a3c26227b944"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003.json",
+    "archived": "staff-q0/report.json",
+    "sourceBytes": 5184,
+    "sourceSha256": "344bce81e45812fcf44eec4c25819833898fffdb25dde6934771ee4d77e9c028",
+    "archivedBytes": 5184,
+    "archivedSha256": "344bce81e45812fcf44eec4c25819833898fffdb25dde6934771ee4d77e9c028"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003.txt",
+    "archived": "staff-q0/console.txt",
+    "sourceBytes": 4012,
+    "sourceSha256": "83a3e8e00fdbf1c82ee52750ea33e2c5e464930bb71de4d118cfe5ad706b5681",
+    "archivedBytes": 2011,
+    "archivedSha256": "1eabf0b4e2390de07964affc480166ebf856a9cbf5ee589fb55ec43360ee1375",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003\\.last-run.json",
+    "archived": "staff-q0/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\attachments\\wooden-chair-worker-and-save-evidence-53ac4289d928d2d6083895c7ebf1024600564724.json",
+    "archived": "staff-q0/002-wooden-chair-worker-and-save-evidence-53ac4289d928d2d6083895c7eb.json",
+    "sourceBytes": 562,
+    "sourceSha256": "3140b007d9d6ff2770c4d5428bb79a703f98b3634cd0f2813a44b39b9e15bfee",
+    "archivedBytes": 562,
+    "archivedSha256": "3140b007d9d6ff2770c4d5428bb79a703f98b3634cd0f2813a44b39b9e15bfee"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "staff-q0/003-completed-worker-snapshot.json",
+    "sourceBytes": 80638,
+    "sourceSha256": "46ec87e0f0653746bb3a57e32e3fab7c153e85a07d4c510d8dfae754dc05aefe",
+    "archivedBytes": 80638,
+    "archivedSha256": "46ec87e0f0653746bb3a57e32e3fab7c153e85a07d4c510d8dfae754dc05aefe"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "staff-q0/004-loaded-worker-snapshot.json",
+    "sourceBytes": 80638,
+    "sourceSha256": "379f290ad078e0a89677596d33e10f6c3d25c45ebc6120f3ecddea998923a087",
+    "archivedBytes": 80638,
+    "archivedSha256": "379f290ad078e0a89677596d33e10f6c3d25c45ebc6120f3ecddea998923a087"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\physical-hardware-loaded-fullhd.png",
+    "archived": "staff-q0/005-physical-hardware-loaded-fullhd.png",
+    "sourceBytes": 337227,
+    "sourceSha256": "046659298cc6a7dac8293843ab69163c9fbe9851950fd6f4f241adde56f11bea",
+    "archivedBytes": 337227,
+    "archivedSha256": "046659298cc6a7dac8293843ab69163c9fbe9851950fd6f4f241adde56f11bea"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-actual-network-decoder-receipt.json",
+    "archived": "staff-q0/006-staff-chair-actual-network-decoder-receipt.json",
+    "sourceBytes": 27609,
+    "sourceSha256": "38f18833cb41431ffa657feeccab0528d1d0927349b81fb043ab199653e1fbe5",
+    "archivedBytes": 27609,
+    "archivedSha256": "38f18833cb41431ffa657feeccab0528d1d0927349b81fb043ab199653e1fbe5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-actual-network.json",
+    "archived": "staff-q0/007-staff-chair-actual-network.json",
+    "sourceBytes": 5994,
+    "sourceSha256": "17c00ce3168dedb457000b5bf09f0f4053925fd69baaf6805ea63d730c65fe47",
+    "archivedBytes": 5994,
+    "archivedSha256": "17c00ce3168dedb457000b5bf09f0f4053925fd69baaf6805ea63d730c65fe47"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-actual200-source60-e40.png",
+    "archived": "staff-q0/008-staff-chair-actual200-source60-e40.png",
+    "sourceBytes": 10805,
+    "sourceSha256": "a200ce9518d232a2ef0f6bdac0343738042804f87fb3e57f67c9f648345682f8",
+    "archivedBytes": 10805,
+    "archivedSha256": "a200ce9518d232a2ef0f6bdac0343738042804f87fb3e57f67c9f648345682f8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-canonical-source60-e40-canvas.png",
+    "archived": "staff-q0/009-staff-chair-canonical-source60-e40-canvas.png",
+    "sourceBytes": 1596885,
+    "sourceSha256": "1b0f9ff4d44890088cbc7f752768d9657d0a7c03194ba51584fd921f71ab0f38",
+    "archivedBytes": 1596885,
+    "archivedSha256": "1b0f9ff4d44890088cbc7f752768d9657d0a7c03194ba51584fd921f71ab0f38"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-canonical-source60-e40-fullhd.png",
+    "archived": "staff-q0/010-staff-chair-canonical-source60-e40-fullhd.png",
+    "sourceBytes": 1596885,
+    "sourceSha256": "1b0f9ff4d44890088cbc7f752768d9657d0a7c03194ba51584fd921f71ab0f38",
+    "archivedBytes": 1596885,
+    "archivedSha256": "1b0f9ff4d44890088cbc7f752768d9657d0a7c03194ba51584fd921f71ab0f38"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-native-prepared-route-receipt.json",
+    "archived": "staff-q0/011-staff-chair-native-prepared-route-receipt.json",
+    "sourceBytes": 237912,
+    "sourceSha256": "e5ce4d5a0efb12f8ac6e1b2a98e2f77e78db9d31c81595e6826bd6eced98d158",
+    "archivedBytes": 237912,
+    "archivedSha256": "e5ce4d5a0efb12f8ac6e1b2a98e2f77e78db9d31c81595e6826bd6eced98d158"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-whole-paused-after-camera.json",
+    "archived": "staff-q0/012-staff-chair-whole-paused-after-camera.json",
+    "sourceBytes": 80638,
+    "sourceSha256": "75622227adbb88c022717ffb2cba827692ba84a10ac8b83e3f3eb6323c66bee9",
+    "archivedBytes": 80638,
+    "archivedSha256": "75622227adbb88c022717ffb2cba827692ba84a10ac8b83e3f3eb6323c66bee9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-whole-paused-completed.json",
+    "archived": "staff-q0/013-staff-chair-whole-paused-completed.json",
+    "sourceBytes": 80638,
+    "sourceSha256": "15254a3eed868a03ede3807d430fd995ccb666e01178ffe3e1e13d2f4fd52d1f",
+    "archivedBytes": 80638,
+    "archivedSha256": "15254a3eed868a03ede3807d430fd995ccb666e01178ffe3e1e13d2f4fd52d1f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-whole-paused-loaded.json",
+    "archived": "staff-q0/014-staff-chair-whole-paused-loaded.json",
+    "sourceBytes": 80638,
+    "sourceSha256": "28f1804d4dde5689e6548b93602e363ce6c053e2f80b6644e4a50cab294f2a67",
+    "archivedBytes": 80638,
+    "archivedSha256": "28f1804d4dde5689e6548b93602e363ce6c053e2f80b6644e4a50cab294f2a67"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\wooden-chair-loaded-fullhd.png",
+    "archived": "staff-q0/015-wooden-chair-loaded-fullhd.png",
+    "sourceBytes": 1572572,
+    "sourceSha256": "e917dfea54c18cf209fa0f6bd747023d3be467ae61d607b7ee9be0c2033053dd",
+    "archivedBytes": 1572572,
+    "archivedSha256": "e917dfea54c18cf209fa0f6bd747023d3be467ae61d607b7ee9be0c2033053dd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\wooden-chair-worker-and-save-evidence.json",
+    "archived": "staff-q0/016-wooden-chair-worker-and-save-evidence.json",
+    "sourceBytes": 562,
+    "sourceSha256": "3140b007d9d6ff2770c4d5428bb79a703f98b3634cd0f2813a44b39b9e15bfee",
+    "archivedBytes": 562,
+    "archivedSha256": "3140b007d9d6ff2770c4d5428bb79a703f98b3634cd0f2813a44b39b9e15bfee"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\wooden-chair-worker-completed-fullhd.png",
+    "archived": "staff-q0/017-wooden-chair-worker-completed-fullhd.png",
+    "sourceBytes": 1607621,
+    "sourceSha256": "cf95311e45ffdbc7eba2d89056125d4b19e69229b113e0649996aa29ddf75ba4",
+    "archivedBytes": 1607621,
+    "archivedSha256": "cf95311e45ffdbc7eba2d89056125d4b19e69229b113e0649996aa29ddf75ba4"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-staff-q0-capacity-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "staff-q0/018-worker-and-completed-save-evidence.json",
+    "sourceBytes": 377,
+    "sourceSha256": "de74fe7abb0c70f345074db4025dc19605e58b285e0eb0b27d6f248007eea07b",
+    "archivedBytes": 377,
+    "archivedSha256": "de74fe7abb0c70f345074db4025dc19605e58b285e0eb0b27d6f248007eea07b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003.json",
+    "archived": "laundry/report.json",
+    "sourceBytes": 5743,
+    "sourceSha256": "e354296872ff35d5fb654c42e18e91df39506776070bde498cea09d2058ba746",
+    "archivedBytes": 5743,
+    "archivedSha256": "e354296872ff35d5fb654c42e18e91df39506776070bde498cea09d2058ba746"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003.txt",
+    "archived": "laundry/console.txt",
+    "sourceBytes": 4366,
+    "sourceSha256": "556b36e074065bfbca2a087c77d8df75d2f907dd5e7174127ca6c911ca268092",
+    "archivedBytes": 2190,
+    "archivedSha256": "eb0a75b7823eaad0ad56469c9f13c9c06a2b540b3aae7e9377b393823e7dde24",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\.last-run.json",
+    "archived": "laundry/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-4075f-s-whole-V10-after-Save-Load\\capacity-whole-V10-paused.json",
+    "archived": "laundry/002-capacity-whole-V10-paused.json",
+    "sourceBytes": 56742,
+    "sourceSha256": "923d47d74ccef54f5cc33aae06fdc547418b3267e86b48be123e054d2509d399",
+    "archivedBytes": 56742,
+    "archivedSha256": "923d47d74ccef54f5cc33aae06fdc547418b3267e86b48be123e054d2509d399"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-4075f-s-whole-V10-after-Save-Load\\completed-Laundry-before-rack.json",
+    "archived": "laundry/003-completed-Laundry-before-rack.json",
+    "sourceBytes": 79286,
+    "sourceSha256": "c41e4eb831f5ed3297c3d8bf7f5265eec405d82ae037745fcc941de5899f56cf",
+    "archivedBytes": 79286,
+    "archivedSha256": "c41e4eb831f5ed3297c3d8bf7f5265eec405d82ae037745fcc941de5899f56cf"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-4075f-s-whole-V10-after-Save-Load\\laundry-linen-rack-actual-network-decoder-receipt.json",
+    "archived": "laundry/004-laundry-linen-rack-actual-network-decoder-receipt.json",
+    "sourceBytes": 27049,
+    "sourceSha256": "ae6e8f73a17675e61a15423f763201de0b4b92fdb488283c121bb3f8c6d294e2",
+    "archivedBytes": 27049,
+    "archivedSha256": "ae6e8f73a17675e61a15423f763201de0b4b92fdb488283c121bb3f8c6d294e2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-4075f-s-whole-V10-after-Save-Load\\laundry-linen-rack-actual-network.json",
+    "archived": "laundry/005-laundry-linen-rack-actual-network.json",
+    "sourceBytes": 5810,
+    "sourceSha256": "f94a6735e4f963ae7170fe4b85db48961382d947912fc0c841eb74540b9bc36c",
+    "archivedBytes": 5810,
+    "archivedSha256": "f94a6735e4f963ae7170fe4b85db48961382d947912fc0c841eb74540b9bc36c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-4075f-s-whole-V10-after-Save-Load\\laundry-linen-rack-actual200-source60-e40.png",
+    "archived": "laundry/006-laundry-linen-rack-actual200-source60-e40.png",
+    "sourceBytes": 18692,
+    "sourceSha256": "65f80634dc026fa83c95fcf81ee40e539f0f947ab8dc0b03f0c0eb377b883716",
+    "archivedBytes": 18692,
+    "archivedSha256": "65f80634dc026fa83c95fcf81ee40e539f0f947ab8dc0b03f0c0eb377b883716"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-4075f-s-whole-V10-after-Save-Load\\laundry-linen-rack-canonical-source60-e40-canvas.png",
+    "archived": "laundry/007-laundry-linen-rack-canonical-source60-e40-canvas.png",
+    "sourceBytes": 1562284,
+    "sourceSha256": "15690fd2ac5458c5bb7038d5453cab7a6283c4a611bfa85c81b9c3b5f107b728",
+    "archivedBytes": 1562284,
+    "archivedSha256": "15690fd2ac5458c5bb7038d5453cab7a6283c4a611bfa85c81b9c3b5f107b728"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-4075f-s-whole-V10-after-Save-Load\\laundry-linen-rack-canonical-source60-e40-fullhd.png",
+    "archived": "laundry/008-laundry-linen-rack-canonical-source60-e40-fullhd.png",
+    "sourceBytes": 1562284,
+    "sourceSha256": "15690fd2ac5458c5bb7038d5453cab7a6283c4a611bfa85c81b9c3b5f107b728",
+    "archivedBytes": 1562284,
+    "archivedSha256": "15690fd2ac5458c5bb7038d5453cab7a6283c4a611bfa85c81b9c3b5f107b728"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-4075f-s-whole-V10-after-Save-Load\\laundry-linen-rack-native-prepared-receipt.json",
+    "archived": "laundry/009-laundry-linen-rack-native-prepared-receipt.json",
+    "sourceBytes": 167323,
+    "sourceSha256": "0cd9e61e81b8fa1d3b890799738428406c651f511198890f86ee9342993fb291",
+    "archivedBytes": 167323,
+    "archivedSha256": "0cd9e61e81b8fa1d3b890799738428406c651f511198890f86ee9342993fb291"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-4075f-s-whole-V10-after-Save-Load\\laundry-rack-completed-fullhd.png",
+    "archived": "laundry/010-laundry-rack-completed-fullhd.png",
+    "sourceBytes": 1488921,
+    "sourceSha256": "07ea2412625bb9dad4ddeed136a8d9373b969b934685a0ba5cc55d6c88fcfd48",
+    "archivedBytes": 1488921,
+    "archivedSha256": "07ea2412625bb9dad4ddeed136a8d9373b969b934685a0ba5cc55d6c88fcfd48"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-4075f-s-whole-V10-after-Save-Load\\laundry-rack-loaded-fullhd.png",
+    "archived": "laundry/011-laundry-rack-loaded-fullhd.png",
+    "sourceBytes": 1453847,
+    "sourceSha256": "c17f9f39134f4c3960b220c346dc4c7b251d8f410ebea089507ac1c47f5b65e6",
+    "archivedBytes": 1453847,
+    "archivedSha256": "c17f9f39134f4c3960b220c346dc4c7b251d8f410ebea089507ac1c47f5b65e6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-4075f-s-whole-V10-after-Save-Load\\laundry-whole-V10-paused-after-camera.json",
+    "archived": "laundry/012-laundry-whole-V10-paused-after-camera.json",
+    "sourceBytes": 80574,
+    "sourceSha256": "5fa58dd3de759f10f9ee87e091006d574233596530b2b2c83da5f594316f25d0",
+    "archivedBytes": 80574,
+    "archivedSha256": "5fa58dd3de759f10f9ee87e091006d574233596530b2b2c83da5f594316f25d0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-4075f-s-whole-V10-after-Save-Load\\laundry-whole-V10-paused-after-load.json",
+    "archived": "laundry/013-laundry-whole-V10-paused-after-load.json",
+    "sourceBytes": 80574,
+    "sourceSha256": "c8662fde954f86ef4631926f13882df60cc6ffb3f610e8bee353c805a5a0dcd8",
+    "archivedBytes": 80574,
+    "archivedSha256": "c8662fde954f86ef4631926f13882df60cc6ffb3f610e8bee353c805a5a0dcd8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-4075f-s-whole-V10-after-Save-Load\\laundry-whole-V10-paused-before-save.json",
+    "archived": "laundry/014-laundry-whole-V10-paused-before-save.json",
+    "sourceBytes": 80574,
+    "sourceSha256": "0476aba3911435f645bcb5d589dec2f10e33bee716e57b3d97fbb46fff0dea4d",
+    "archivedBytes": 80574,
+    "archivedSha256": "0476aba3911435f645bcb5d589dec2f10e33bee716e57b3d97fbb46fff0dea4d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-5ca02-s-whole-V10-after-Save-Load\\capacity-whole-V10-paused.json",
+    "archived": "laundry/015-capacity-whole-V10-paused.json",
+    "sourceBytes": 56742,
+    "sourceSha256": "0fb0305d0cad2f352377f91158fe27249e002fed2bc4850fa5c4d894f365be83",
+    "archivedBytes": 56742,
+    "archivedSha256": "0fb0305d0cad2f352377f91158fe27249e002fed2bc4850fa5c4d894f365be83"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-5ca02-s-whole-V10-after-Save-Load\\completed-Laundry-before-rack.json",
+    "archived": "laundry/016-completed-Laundry-before-rack.json",
+    "sourceBytes": 79487,
+    "sourceSha256": "546852c50bf8dcdafaabfdd1e49af79cd75d380aa940802a19466245be672961",
+    "archivedBytes": 79487,
+    "archivedSha256": "546852c50bf8dcdafaabfdd1e49af79cd75d380aa940802a19466245be672961"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-5ca02-s-whole-V10-after-Save-Load\\laundry-linen-rack-actual-network-decoder-receipt.json",
+    "archived": "laundry/017-laundry-linen-rack-actual-network-decoder-receipt.json",
+    "sourceBytes": 27049,
+    "sourceSha256": "2c36c25b7f8591a857bf2eafcf6ee51e30fa3932d069d05f85406fb820ded35c",
+    "archivedBytes": 27049,
+    "archivedSha256": "2c36c25b7f8591a857bf2eafcf6ee51e30fa3932d069d05f85406fb820ded35c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-5ca02-s-whole-V10-after-Save-Load\\laundry-linen-rack-actual-network.json",
+    "archived": "laundry/018-laundry-linen-rack-actual-network.json",
+    "sourceBytes": 5810,
+    "sourceSha256": "f94a6735e4f963ae7170fe4b85db48961382d947912fc0c841eb74540b9bc36c",
+    "archivedBytes": 5810,
+    "archivedSha256": "f94a6735e4f963ae7170fe4b85db48961382d947912fc0c841eb74540b9bc36c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-5ca02-s-whole-V10-after-Save-Load\\laundry-linen-rack-actual200-source60-e40.png",
+    "archived": "laundry/019-laundry-linen-rack-actual200-source60-e40.png",
+    "sourceBytes": 18692,
+    "sourceSha256": "65f80634dc026fa83c95fcf81ee40e539f0f947ab8dc0b03f0c0eb377b883716",
+    "archivedBytes": 18692,
+    "archivedSha256": "65f80634dc026fa83c95fcf81ee40e539f0f947ab8dc0b03f0c0eb377b883716"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-5ca02-s-whole-V10-after-Save-Load\\laundry-linen-rack-canonical-source60-e40-canvas.png",
+    "archived": "laundry/020-laundry-linen-rack-canonical-source60-e40-canvas.png",
+    "sourceBytes": 1565891,
+    "sourceSha256": "2e4ecca7e6104f4693528af9aa9c5cec7a86acfa70819bc7918dc221b353d4a2",
+    "archivedBytes": 1565891,
+    "archivedSha256": "2e4ecca7e6104f4693528af9aa9c5cec7a86acfa70819bc7918dc221b353d4a2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-5ca02-s-whole-V10-after-Save-Load\\laundry-linen-rack-canonical-source60-e40-fullhd.png",
+    "archived": "laundry/021-laundry-linen-rack-canonical-source60-e40-fullhd.png",
+    "sourceBytes": 1565891,
+    "sourceSha256": "2e4ecca7e6104f4693528af9aa9c5cec7a86acfa70819bc7918dc221b353d4a2",
+    "archivedBytes": 1565891,
+    "archivedSha256": "2e4ecca7e6104f4693528af9aa9c5cec7a86acfa70819bc7918dc221b353d4a2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-5ca02-s-whole-V10-after-Save-Load\\laundry-linen-rack-native-prepared-receipt.json",
+    "archived": "laundry/022-laundry-linen-rack-native-prepared-receipt.json",
+    "sourceBytes": 167621,
+    "sourceSha256": "060ba4f6345d7581877efa3f6374edf60e47707d7e8c2e7738826f842b1825c2",
+    "archivedBytes": 167621,
+    "archivedSha256": "060ba4f6345d7581877efa3f6374edf60e47707d7e8c2e7738826f842b1825c2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-5ca02-s-whole-V10-after-Save-Load\\laundry-rack-completed-fullhd.png",
+    "archived": "laundry/023-laundry-rack-completed-fullhd.png",
+    "sourceBytes": 1506176,
+    "sourceSha256": "1f03ef4997f7fa2345ea5f667c37e43c5c2d69fca6d7658b189882ad29b55701",
+    "archivedBytes": 1506176,
+    "archivedSha256": "1f03ef4997f7fa2345ea5f667c37e43c5c2d69fca6d7658b189882ad29b55701"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-5ca02-s-whole-V10-after-Save-Load\\laundry-rack-loaded-fullhd.png",
+    "archived": "laundry/024-laundry-rack-loaded-fullhd.png",
+    "sourceBytes": 1470383,
+    "sourceSha256": "48cd6f284e71bcd9388970b49f1441c82c181e82a91ee917fcbcd27771a1f3e1",
+    "archivedBytes": 1470383,
+    "archivedSha256": "48cd6f284e71bcd9388970b49f1441c82c181e82a91ee917fcbcd27771a1f3e1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-5ca02-s-whole-V10-after-Save-Load\\laundry-whole-V10-paused-after-camera.json",
+    "archived": "laundry/025-laundry-whole-V10-paused-after-camera.json",
+    "sourceBytes": 80775,
+    "sourceSha256": "6226172b4ff19e0c35fa6b0894ac5f88b57119a0037131759feb4dc3575e07dd",
+    "archivedBytes": 80775,
+    "archivedSha256": "6226172b4ff19e0c35fa6b0894ac5f88b57119a0037131759feb4dc3575e07dd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-5ca02-s-whole-V10-after-Save-Load\\laundry-whole-V10-paused-after-load.json",
+    "archived": "laundry/026-laundry-whole-V10-paused-after-load.json",
+    "sourceBytes": 80775,
+    "sourceSha256": "481ac1478ee9f244c4c383a7678a7a6a246f88ac0c5005107bc62fa2978c0ff5",
+    "archivedBytes": 80775,
+    "archivedSha256": "481ac1478ee9f244c4c383a7678a7a6a246f88ac0c5005107bc62fa2978c0ff5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-laundry-native-20261003\\player-build-player-builds-5ca02-s-whole-V10-after-Save-Load\\laundry-whole-V10-paused-before-save.json",
+    "archived": "laundry/027-laundry-whole-V10-paused-before-save.json",
+    "sourceBytes": 80775,
+    "sourceSha256": "957f3a75e5488326380a6fd765459fa7414be7842c35d4cdb7921cc0eb393fa7",
+    "archivedBytes": 80775,
+    "archivedSha256": "957f3a75e5488326380a6fd765459fa7414be7842c35d4cdb7921cc0eb393fa7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-integrated-build-20261003.txt",
+    "archived": "build/console.txt",
+    "sourceBytes": 4670,
+    "sourceSha256": "f3a9033576044d85bedb8f99be68cdd7373266867225fe26488057cb493c31d9",
+    "archivedBytes": 2358,
+    "archivedSha256": "7a634c9e5cf3bd667653f7be147dcffe9f543c26af34f7a04bf1eaab750fdde8",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-integrated-types-20261003.txt",
+    "archived": "types/console.txt",
+    "sourceBytes": 814,
+    "sourceSha256": "e817eb7014ade28cb9448bbeee6f816b3b8332659fc8c0d8848fe8a285ca480e",
+    "archivedBytes": 406,
+    "archivedSha256": "41cfdc1de46651ed4beb0bcb30b96a5cdc05129dc97818cac96b263cf25079fb",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-v10-integrated-assets-20261003.txt",
+    "archived": "assets/console.txt",
+    "sourceBytes": 1258,
+    "sourceSha256": "18c960f20f466b132888c356fff6e231d4bec68425ffde1541bb78fb04ca9eb1",
+    "archivedBytes": 629,
+    "archivedSha256": "43e55f1112f578476c56fc3d69bcf422bca24e8000da6fddf54ccca96b8ff787",
+    "conversion": "UTF16LE console to UTF8"
+  }
+]

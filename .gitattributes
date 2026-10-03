@@ -74,3 +74,8 @@ docs/research/2026-10-03-approved-individual-object-rotate/native/**/*.zip filte
 docs/research/2026-10-03-laundry-retained-cycles-production/native/** -text
 docs/research/2026-10-03-laundry-retained-cycles-production/native/**/*.png filter=lfs diff=lfs merge=lfs -text
 docs/research/2026-10-03-laundry-retained-cycles-production/native/**/*.zip filter=lfs diff=lfs merge=lfs -text
+
+# Actual integrated V10 product: preserve raw whole replies and original runs.
+docs/research/2026-10-03-modern-v10-native-integration/native/** -text
+docs/research/2026-10-03-modern-v10-native-integration/native/**/*.png filter=lfs diff=lfs merge=lfs -text
+docs/research/2026-10-03-modern-v10-native-integration/native/**/*.zip filter=lfs diff=lfs merge=lfs -text
