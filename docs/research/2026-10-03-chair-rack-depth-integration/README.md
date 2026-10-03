@@ -84,3 +84,8 @@ Exact mapping/scene bytes and the entire simulation worker were restored before 
 Root opened all6 actual post-load hardware captures. Rack structural joins, Chair metal/timber frame and Shower nozzle/connector are visible in the actual built client. Pending-wall receipts at yaw0/180 show rear body0, visible front body56 and held masonry0; after actual image completion rear0/front blue12 or13/masonry1382 or845. This distinguishes a covered real actor from a missing actor and a genuinely pending texture from a cached loaded frame.
 
 [Terminal report summary](native/terminal-summary.json), [corrected6-case report](native/observer-corrected/report.json), [q0 consumer negatives](native/q0-negative/report.json), [q1 consumer negatives](native/q1-negative/report.json), [exact restored11-case report](native/exact-restored/report.json), [byte-exact source/worker receipt](native/lockstate-crs-depth-control-receipt-20261003.json). Original failures and exact capture aliases remain available in each collection. No hosted full CI or release claim is made.
+
+
+### Cleanup correction independently verified
+
+Frozen35102d2fd94c7106a14b6f9f6907d96968d325f9, only actual pending fallback depth disconnected: both rear-body assertions RED, with no secondary route-cleanup errors. Exact scene/worker byte restoration: both actual yaw0/180 pending/loaded cases GREEN48.5s. Original q0 report remains unchanged. [Isolated negative](native/cleanup-verified/q0-negative/report.json), [exact restored](native/cleanup-verified/restored/report.json), [source and worker receipt](native/cleanup-verified/receipt.json).
