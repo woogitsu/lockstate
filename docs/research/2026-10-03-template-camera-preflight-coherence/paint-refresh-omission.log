@@ -1,0 +1,72 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-camera-revision-audit-20261003
+
+ ❯ tests/unit/ui-template-camera-preflight-coherence.test.ts (8 tests | 2 failed) 73ms
+   × actual angled zoom/normal: pending old preflight, stationary primary release retains displayed footprint/quote 8ms
+   × actual angled zoom/mirrored: pending old preflight, stationary primary release retains displayed footprint/quote 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-camera-preflight-coherence.test.ts > actual angled zoom/normal: pending old preflight, stationary primary release retains displayed footprint/quote
+AssertionError: expected { …(2) } to match object { target: { origin: { …(2) }, …(1) } }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "target": {
+      "origin": {
+-       "x": 11,
++       "x": 10,
+        "y": 11,
+      },
+      "quarterTurns": 1,
+    },
+  }
+
+ ❯ tests/unit/ui-template-camera-preflight-coherence.test.ts:144:40
+    142|       await h.paint();
+    143|       const requests = h.actors.sent.filter(message => message.kind ==…
+    144|       expect(requests.at(-1)?.payload).toMatchObject({ target: { origi…
+       |                                        ^
+    145|       const changedOrigin = expected.x !== h.initialOrigin.x || expect…
+    146|       if (changedOrigin) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/ui-template-camera-preflight-coherence.test.ts > actual angled zoom/mirrored: pending old preflight, stationary primary release retains displayed footprint/quote
+AssertionError: expected { …(2) } to match object { target: { origin: { …(2) }, …(2) } }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "target": {
+      "mirrorX": true,
+      "origin": {
+-       "x": 11,
++       "x": 10,
+        "y": 11,
+      },
+      "quarterTurns": 1,
+    },
+  }
+
+ ❯ tests/unit/ui-template-camera-preflight-coherence.test.ts:144:40
+    142|       await h.paint();
+    143|       const requests = h.actors.sent.filter(message => message.kind ==…
+    144|       expect(requests.at(-1)?.payload).toMatchObject({ target: { origi…
+       |                                        ^
+    145|       const changedOrigin = expected.x !== h.initialOrigin.x || expect…
+    146|       if (changedOrigin) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 6 passed (8)
+   Start at  06:52:25
+   Duration  3.21s (transform 1.12s, setup 0ms, import 3.01s, tests 73ms, environment 0ms)
+
