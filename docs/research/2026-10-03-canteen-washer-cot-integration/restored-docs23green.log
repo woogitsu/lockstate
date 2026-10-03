@@ -1,0 +1,17 @@
+pnpm : $ vitest run "tests/foundation/research-index-contract.test.ts" "tests/foundation/documentation-links-contract.t
+est.ts" "tests/foundation/documentation-commit-citation-contract.test.ts" "--maxWorkers=2"
+At line:19 char:1
++ pnpm --config.verify-deps-before-run=false test tests/foundation/rese ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-washer-cot-integration-20261003
+
+
+ Test Files  3 passed (3)
+      Tests  23 passed (23)
+   Start at  07:52:00
+   Duration  3.64s (transform 67ms, setup 0ms, import 4.36s, tests 726ms, environment 0ms)
+

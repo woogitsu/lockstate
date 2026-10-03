@@ -8,6 +8,15 @@
     "archivedSha256": "5bb8d7fd0af7dc417966feaa006418b75508dc7c986ca27ffa6d6369665c8c5a"
   },
   {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003.txt",
+    "archived": "initial/console.txt",
+    "sourceBytes": 41376,
+    "sourceSha256": "c5eac964e42a0ead027e24ac31fd5b638778f5e322aaa80842d5db621e36fb92",
+    "archivedBytes": 20734,
+    "archivedSha256": "0ce72c56b3a88242b57518a1c3532d5e85d4a8ddf61a533358232c4d66359fa1",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
     "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\.last-run.json",
     "archived": "initial/001-.last-run.json",
     "sourceBytes": 194,
