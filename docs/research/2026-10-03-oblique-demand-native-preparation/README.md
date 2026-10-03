@@ -73,6 +73,14 @@ identified frozen compiled subjects.
   large-chunk warning retained. [Build output](./build-production.txt).
 - Actual no-browser collection: exactly three tests in one opt-in file.
   [Collection output](./collection.txt). No server or browser was launched.
+- Bounded documentation index, links and published-commit citation gates:
+  **23 GREEN / 3 files**, lazy fetching disabled after one exact named refresh
+  of the already published source branch. [Output](./documentation-gates.txt).
+
+[Preparation receipt](./preparation-receipt.json) pins the executed fixture
+bytes, local emitted JavaScript hashes and exact limitations. The production
+source diff against the subject is empty. These emitted hashes identify local
+compilation only; native served-body equality must still be observed at execution.
 
 Checkout used skipped LFS smudging. The local build proves compilation and
 collection, **not hydrated PNG usability**. Execution must use the coordinator's
