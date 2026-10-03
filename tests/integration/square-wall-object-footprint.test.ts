@@ -71,7 +71,9 @@ function refuseWall(runtime: Runtime, location: { x: number; y: number }) {
   }
   expect(wall).toMatchObject({ state: 'failed', failReason: 'unbuildable', materialsAllocated: [] });
   const { orders: _orders, ...afterHistory } = runtime.construction.snapshot();
-  expect(afterHistory).toEqual(history);
+  expect(afterHistory).toEqual({ ...history,
+    orderRevisions: { ...history.orderRevisions, 'overlapping-wall': 1 },
+  });
   for (const order of originalOrders) expect(runtime.construction.getOrder(order.id)).toEqual(order);
   const after = captureSessionSnapshot(runtime);
   expect(after.world).toEqual(before.world);

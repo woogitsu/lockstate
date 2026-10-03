@@ -71,9 +71,13 @@ it.each(cases)('pending plan protects incoming $axis far square: q=$quarterTurns
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'independent-fixture', definitionId, ...anchor });
     if (conflicts) {
       expect(runtime.construction.getOrder('independent-fixture')).toMatchObject({ state: 'failed', failReason: 'unbuildable', materialsAllocated: [] });
-      // Existing policy retains one diagnostic failed row. Nothing else in the
-      // session, paid plan, materials, history or geometry may change.
-      expect(gameplay(runtime, 'independent-fixture')).toEqual(before);
+      // V9 retains the diagnostic failed row and its one state transition.
+      // All original counters, paid plan, materials, history and geometry stay.
+      expect(gameplay(runtime, 'independent-fixture')).toEqual({
+        ...before, construction: { ...before.construction,
+          orderRevisions: { ...before.construction.orderRevisions, 'independent-fixture': 1 },
+        },
+      });
       expect(runtime.treasury.balanceMinorUnits).toBe(funds);
       expect(runtime.construction.allOrders().map(order => [order.id, runtime.construction.revisionOf(order.id)]).filter(([id]) => id !== 'independent-fixture')).toEqual(revisions);
       finish(runtime);

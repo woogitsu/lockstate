@@ -156,7 +156,9 @@ it('protects the actual completed template door without optional completed gestu
   expect(runtime.treasury.snapshot()).toEqual(funds);
   const { orders: _beforeOrders, ...beforeHistory } = before.construction;
   const { orders: _afterOrders, ...afterHistory } = runtime.construction.snapshot();
-  expect(afterHistory).toEqual(beforeHistory);
+  expect(afterHistory).toEqual({ ...beforeHistory,
+    orderRevisions: { ...beforeHistory.orderRevisions, 'legacy-door-square': 1 },
+  });
   expect(captureSessionSnapshot(runtime).world).toEqual(before.world);
   access(runtime, door, 'legacy after refusal');
 });

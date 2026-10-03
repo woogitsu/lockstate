@@ -76,7 +76,9 @@ it.each(cases)('preserves $stage Cell against later walls, mirror=$mirrorX turn=
     // Ordinary build refusals retain a failed diagnostic order, unlike object
     // placement. It must receive no funding and enter no reversible history.
     const { orders: _orders, ...afterHistory } = runtime.construction.snapshot();
-    expect(afterHistory).toEqual(history);
+    expect(afterHistory).toEqual({ ...history,
+      orderRevisions: { ...history.orderRevisions, [orderId]: 1 },
+    });
     for (const order of originalOrders) expect(runtime.construction.getOrder(order.id)).toEqual(order);
     expect(runtime.treasury.snapshot()).toEqual(money);
     const after = captureSessionSnapshot(runtime);
