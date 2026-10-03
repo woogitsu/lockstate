@@ -78,9 +78,10 @@ it.each([0, 1] as const)('buys a separate orientation0 rack inside actual public
   const entries = registry.entries.filter(entry => entry.assetId === solid!.assetId);
   expect(entries).toEqual([{ assetId: 'furniture.laundry.linen-rack', manifest: '/game-content/oblique-furniture-laundry-linen-rack.v1.json' }]);
   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL(entries[0]!.manifest.slice(1), publicRoot), 'utf8')));
-  expect(catalog.sourceSha256).toBe('779d11f79c28b8049ccd3371d840c75b52cd153439f3882e28c593d05dd964ec');
+  expect(catalog.source).toBe('assets/source/blender/furniture.laundry.linen-rack.soft-light.blend');
+  expect(catalog.sourceSha256).toBe('2916717c4dd17d7be39a5725858b2356e53181cb735f2faeb28963d0adafa299');
   const selected = selectObliqueModuleFrame(catalog, { yawRadians: solid!.assetYawRadians ?? camera.yawRadians, elevationRadians: camera.elevationRadians });
-  expect(selected).toEqual({ yawDegrees: 60, elevationDegrees: 40, image: '/assets/environment/oblique/furniture.laundry.linen-rack-yaw+60-elev40.e2f44421aff0.png', sha256: 'e2f44421aff04ef5dbe7ea36f9c1102bffaa10b88ab498ad02e7a6b74b78dda1' });
+  expect(selected).toEqual({ yawDegrees: 60, elevationDegrees: 40, image: '/assets/environment/oblique/furniture.laundry.linen-rack-yaw+60-elev40.65f80634dc02.png', sha256: '65f80634dc026fa83c95fcf81ee40e539f0f947ab8dc0b03f0c0eb377b883716' });
   expect(createHash('sha256').update(readFileSync(new URL(selected.image.slice(1), publicRoot))).digest('hex')).toBe(selected.sha256);
   const envelope = createSaveEnvelope({ gameVersion: 'laundry-linen-source-proof', prisonId: `laundry-q${turns}`, revision: 1, createdAt: 0, updatedAt: 1, ...whole });
   expect(envelope.saveSchemaVersion).toBe(9);

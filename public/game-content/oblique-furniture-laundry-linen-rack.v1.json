@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "assetId": "furniture.laundry.linen-rack",
-  "source": "assets/source/blender/furniture.laundry.linen-rack.blend",
-  "sourceSha256": "779d11f79c28b8049ccd3371d840c75b52cd153439f3882e28c593d05dd964ec",
+  "source": "assets/source/blender/furniture.laundry.linen-rack.soft-light.blend",
+  "sourceSha256": "2916717c4dd17d7be39a5725858b2356e53181cb735f2faeb28963d0adafa299",
   "resolutionPx": [
     256,
     256
@@ -44,434 +44,434 @@
     {
       "yawDegrees": 0,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+00-elev20.7a75920425e9.png",
-      "sha256": "7a75920425e93402fb500e40031579a7621ba022bde79a93803c6178296d104d"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+00-elev20.feb45cecf5d6.png",
+      "sha256": "feb45cecf5d6239f5a27e9f4472c4c7c517176433afdfebd74b32f642e82a20a"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+00-elev30.f7203f15e874.png",
-      "sha256": "f7203f15e87478f6733da3470fa4082c30f42a143b200fcfdb1510e2095c6b2d"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+00-elev30.e1ea2d25cb36.png",
+      "sha256": "e1ea2d25cb36646bebacf699057b0a7e296e6bd4f6540b967eb40f8ed3413e88"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+00-elev40.da7adfbe2436.png",
-      "sha256": "da7adfbe24363a966b64fc7bd1ebebd7e044c1a97f98b7f631086de29bb0800f"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+00-elev40.07f4c926abee.png",
+      "sha256": "07f4c926abee5819947d0f94eecc651962bc95d311862b65d21be73025a11053"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+00-elev50.860a7fdd065e.png",
-      "sha256": "860a7fdd065efe9a7c9fef390eb9047bf81b3cf47dc653df49f2b662c1b07d2e"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+00-elev50.133aff5285c2.png",
+      "sha256": "133aff5285c204d5dd03530ab91d1710a2afd3597ac97df5df35dc89084e463d"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+00-elev60.64335985d363.png",
-      "sha256": "64335985d36315dd5414236c66612bacc4a815d82bedbb2a49782fbd5f10476a"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+00-elev60.a8a1a9eca0ee.png",
+      "sha256": "a8a1a9eca0eeef8992d6e1927fba95d1f95c04a83725e811d5ce58b0c83b424b"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+00-elev70.94ba82a59df3.png",
-      "sha256": "94ba82a59df3a7912d13d636edd85592c02c7b25f435c41641fe3e66844c40d4"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+00-elev70.fa6ab9485a50.png",
+      "sha256": "fa6ab9485a506dd46cf97cf6a70a8af098e4147c4f41d889682e826bf325d119"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+30-elev20.ee358b5783c6.png",
-      "sha256": "ee358b5783c67e2dd0f3caefa6e3b91704cb60cfec8f74e49552ae69de9a30f1"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+30-elev20.0ec01816e859.png",
+      "sha256": "0ec01816e8596013c29b7edb9dd6c7ef23e26d3c28128afb6b7de2ffc8d14ef6"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+30-elev30.0e18174e9cfd.png",
-      "sha256": "0e18174e9cfd3a279d507019df1d9e654331e420cd5e51e46bba8217f19133e9"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+30-elev30.62fc3dc15c21.png",
+      "sha256": "62fc3dc15c219d30569d180882ef4797f6acbbbf58fe8a3f3427fa183ecd4dc0"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+30-elev40.8f106c47b336.png",
-      "sha256": "8f106c47b336607ea8d2c6274c1a4843549ef6009a039016832963d42a04ecd0"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+30-elev40.49ff3c51ad83.png",
+      "sha256": "49ff3c51ad83a5d8ced7350677cb2d9026ea69b4b7983183c7c129e12ea8ad74"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+30-elev50.6bb91a8e5588.png",
-      "sha256": "6bb91a8e55884b7e4a2eabf48b9e9539cd03ddeb965042a2c25812fdeb9755af"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+30-elev50.135725c4d836.png",
+      "sha256": "135725c4d836a3253819fdc379ddce98507ba0c47e95255160c2af047285b485"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+30-elev60.681248a879a8.png",
-      "sha256": "681248a879a8f2344d7156462b55de6d714c8552d1b6ee22240045ecb637ebb4"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+30-elev60.e57326d89732.png",
+      "sha256": "e57326d89732b12869ba6ea2a5793f1d56d4acf7733587ebb3a2001503c4f3e0"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+30-elev70.8b209706bb72.png",
-      "sha256": "8b209706bb726baacd14e735ac4692332cff888eadff55b19b31af1ed6c2a824"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+30-elev70.6f068fb1000f.png",
+      "sha256": "6f068fb1000f6943466fbcdd45ae1e52400aedbbbcb1093a96a90aee9d4e1072"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+60-elev20.142e741f02df.png",
-      "sha256": "142e741f02dfa8f21048fcac95ad63cd8bb3043f8c1510f38c338b8536b53c75"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+60-elev20.f8308170bac2.png",
+      "sha256": "f8308170bac21090b55ccdacffc5256b97508133bfdec498da0d8ece06519587"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+60-elev30.01621a692657.png",
-      "sha256": "01621a692657f3a02ce0341faf37fdfa7992e7a34fbb7966e247206e62ca2587"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+60-elev30.de803c8066f7.png",
+      "sha256": "de803c8066f7960f5e5723fcb24edd671354c3850b9e7474f17574c547bf07f3"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+60-elev40.e2f44421aff0.png",
-      "sha256": "e2f44421aff04ef5dbe7ea36f9c1102bffaa10b88ab498ad02e7a6b74b78dda1"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+60-elev40.65f80634dc02.png",
+      "sha256": "65f80634dc026fa83c95fcf81ee40e539f0f947ab8dc0b03f0c0eb377b883716"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+60-elev50.c03cf272f6f3.png",
-      "sha256": "c03cf272f6f36416e1a478d6d791374ccffb4ccf0826657eb332bf14178f989c"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+60-elev50.4519aea7d6c3.png",
+      "sha256": "4519aea7d6c35be4e783a692a13b3171c98a935b218862f21bb559076020a60a"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+60-elev60.b53a14835a04.png",
-      "sha256": "b53a14835a049450acefb08bb0dd2bca7fd3e091f9eddf27fb9fbb97a154f069"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+60-elev60.1b5134bbe831.png",
+      "sha256": "1b5134bbe8313db6650872bb178731c988de9820a57cd76fbc22915c646c893e"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+60-elev70.79d8b1572e8a.png",
-      "sha256": "79d8b1572e8ac33dd2f019903279c0d0ef46e06d981a1d7f0e6e4b579c72ef24"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+60-elev70.a03e19d83446.png",
+      "sha256": "a03e19d83446c08f25482e7286ae93c2aac4928f56ffe2cfe6aa23528c636fab"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+90-elev20.3d3c5e0c3b74.png",
-      "sha256": "3d3c5e0c3b743633915eef747a4cc1abde2dbd2f073e2c6e8645be058456d0d4"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+90-elev20.ec78cd309efb.png",
+      "sha256": "ec78cd309efb4c72885957f85e810d7a0f6554e5187c849de2d162c74507859b"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+90-elev30.1f696324a710.png",
-      "sha256": "1f696324a710edce030c402f06f9113322eaa8667e4b24e3a8f91f622165ceef"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+90-elev30.de3b83768f7e.png",
+      "sha256": "de3b83768f7e1750f49d9f4d2c13c571eb8019b38ccd76b83d68aa54c36dd8d3"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+90-elev40.7006750b0e32.png",
-      "sha256": "7006750b0e326a786fbd77c1c3e5dd2c1e4905db9b56011c4e939646f20e7796"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+90-elev40.c74aaebdf034.png",
+      "sha256": "c74aaebdf0342f62736eaf80a6b30fef7e457957dc3f5fe2c879987905abcaa1"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+90-elev50.0ec3b3699d48.png",
-      "sha256": "0ec3b3699d48925fcdbb23522841a0bb04d62a9d17dbe27f41cd75652500b41e"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+90-elev50.df98265d3f64.png",
+      "sha256": "df98265d3f6438c3eb34aca8cb8f6bd93aa7f36a185d2cc6db39deeed54207b5"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+90-elev60.207f1618d491.png",
-      "sha256": "207f1618d491bd18e2ffad885b4f0a227fbdf13f9639d00f1943e1fadaf1c912"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+90-elev60.8476fabc6afb.png",
+      "sha256": "8476fabc6afbf9ea3ef968f13cd0c740548e1a56a743dc235035071d6799c57c"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+90-elev70.4e645f91089e.png",
-      "sha256": "4e645f91089e78a9fcf46fc16c406fa2881feca15f955eef9cca8f82431ed475"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+90-elev70.b195f25bfec9.png",
+      "sha256": "b195f25bfec906f4b491bb65e25c0754c3b771f2bcb0418ccfba9fd03e97e8ff"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+120-elev20.be96634dc4c8.png",
-      "sha256": "be96634dc4c8584d209889615d22d1b350f84e0a10ec4e55e642ac72397173b7"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+120-elev20.a99ea59b3b0f.png",
+      "sha256": "a99ea59b3b0f6f21446b7475f09df6d41b582772296bea464d815a816ea02512"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+120-elev30.c2ec4656117b.png",
-      "sha256": "c2ec4656117b0b40497da7da17e2249054fd734a9bff385a90102ab19e85b620"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+120-elev30.ca96c1a12744.png",
+      "sha256": "ca96c1a12744f11e65b1b40475a59dd241afb0dcbeab78aa006bccfd8d867a2c"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+120-elev40.bc4276912ccf.png",
-      "sha256": "bc4276912ccf7a6f2b3d1be093210cf3bbbd378e436ed1dd88e0821ee0ba7b1e"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+120-elev40.c40c77ee22a3.png",
+      "sha256": "c40c77ee22a36732bc5deb5891a16191bb41028e04d455badc1453aa83a14524"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+120-elev50.5f4cc6ba9471.png",
-      "sha256": "5f4cc6ba94716e8455ff78cf5ce9ec299e3e7882609d7e6c5e7bac3e3b7dc153"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+120-elev50.88122a223313.png",
+      "sha256": "88122a2233130247bfffc0afe5010345270f84b79d08ee35d445202612baf067"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+120-elev60.352cb3cf21cc.png",
-      "sha256": "352cb3cf21cccff0b6d14a7c2653480adfd17c191df4a62b0e9943cbfcd4f231"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+120-elev60.27e6b864cf5c.png",
+      "sha256": "27e6b864cf5cac2256f739a45d20b06f4deeebeae7a3fdfd6a08de910f3d8be0"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+120-elev70.fc6862b6dd43.png",
-      "sha256": "fc6862b6dd434cad250a1f05578f11966c29efde719f1523413e95dd1ccc69ee"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+120-elev70.89cf65add743.png",
+      "sha256": "89cf65add74337912628d44ec87b7dc4ac3e2ec6d0de18e52aa762fa59331fde"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+150-elev20.510e9fd10553.png",
-      "sha256": "510e9fd1055349232ac8dbeaabab9e09f97eba85906a3ac143aa29592579261b"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+150-elev20.43ef5b769b27.png",
+      "sha256": "43ef5b769b270bd18bf5e12521021042454465747b4c32d17354ce8625ce4ff7"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+150-elev30.b41c779d3e0a.png",
-      "sha256": "b41c779d3e0a35ca9091fe1999c8f5e78f39ebab4ad2348ab05e1aedaeaa178a"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+150-elev30.f5dfbed903dd.png",
+      "sha256": "f5dfbed903dd532d3b56b28b20beabe86de02c6a9e796b79c58c2f93a69638f8"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+150-elev40.8c5497aa95c0.png",
-      "sha256": "8c5497aa95c05e1751a5cdc33fdb3199242e53a27c7d35fe2eb7760ea26d6659"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+150-elev40.5ddfc7c49ae2.png",
+      "sha256": "5ddfc7c49ae27a39be744239669fc5cde3b47351c197b2ba9fda189421af6e11"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+150-elev50.f20476b3f85f.png",
-      "sha256": "f20476b3f85f5bf23d2c1a8eb406af711dd9b3fcc8d204e124cbcb50ae72b327"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+150-elev50.9f43ba1b6c53.png",
+      "sha256": "9f43ba1b6c5371d73e1378cffb6c33e4ef007abdcabd20eca775416b593b52a8"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+150-elev60.dbb71ff5ec6a.png",
-      "sha256": "dbb71ff5ec6a898e68fd930573219993758c4da9bdfb1cb05fb868d036b23769"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+150-elev60.771c645e5005.png",
+      "sha256": "771c645e500513b693dc31db23c1c2966b64980e580f728d1be5ad44a4288774"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+150-elev70.8a8bd1595f53.png",
-      "sha256": "8a8bd1595f53bac1df5e330884c70ce7e41b44b94045ad9a18335b8a0bb4b98a"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+150-elev70.1a9950bad288.png",
+      "sha256": "1a9950bad2888eb08424569d2054f52375c0335fe04834fc13360889a4f197bd"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+180-elev20.52226cacc6bc.png",
-      "sha256": "52226cacc6bc320490cedb3eef88af11d0858fa14bd63cf85d89500ab7ac94c0"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+180-elev20.2c6112ca6b7c.png",
+      "sha256": "2c6112ca6b7c7ae29b4b00953de806f51f0fd9628f8e6540d9e48e3f34f99987"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+180-elev30.9529d2457cb8.png",
-      "sha256": "9529d2457cb82ebcb53b66f214fced481d3f324fb3159cdd80c27668313f5911"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+180-elev30.624839db2a4a.png",
+      "sha256": "624839db2a4a268e40b4a8b756a1bdde0861413043904c9206794f0d81d5bd2d"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+180-elev40.d4ebb2bccf2f.png",
-      "sha256": "d4ebb2bccf2ff3e8374e9b561af5b53e98c4c8b4f3d92d43b734613c124a93a1"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+180-elev40.af9ca9e4f497.png",
+      "sha256": "af9ca9e4f49755702d1715b8a9435d144aedf73c6a3ed7d9c6043748d00b1fd6"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+180-elev50.88c174b38ae4.png",
-      "sha256": "88c174b38ae411fc37b1ac2b7ac03f63986c48238e285c82f7d6e3e21eef1196"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+180-elev50.9bc034f6869b.png",
+      "sha256": "9bc034f6869b61c1ee8d0b38c4d793a783091849323208395eb770ed313138ef"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+180-elev60.1d18fb18d79e.png",
-      "sha256": "1d18fb18d79efe4e44d0e6a3d69f07dce8b73412ad12cc29d53511c3ed68d6e5"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+180-elev60.d505b367685a.png",
+      "sha256": "d505b367685abe1b1cd6d27a133fe3efb6bf2622dfe0ce102741559e77003598"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+180-elev70.8b71c3d29eda.png",
-      "sha256": "8b71c3d29eda56ebd7c6e8d8c3b590993ca309de2b8d7a84328fe8bfc43b5055"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+180-elev70.66fd8c27a1c5.png",
+      "sha256": "66fd8c27a1c53f0056e4ed46302aee712189b7b5a76667d7ca9f1c44421cdb4c"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+210-elev20.d8eca6610ba8.png",
-      "sha256": "d8eca6610ba844cea18cbbb489d8e997d1a0a308b8d2e2e6b815b4f6a6ede647"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+210-elev20.828749113a38.png",
+      "sha256": "828749113a38d8e1fd9595436a5a0533c70397aa724132adbccd16a228b7693a"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+210-elev30.1932bd4a9a2c.png",
-      "sha256": "1932bd4a9a2c524ebb47467a845e3ca4d8dcb42b6988743f172094583c6fb68f"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+210-elev30.865840691786.png",
+      "sha256": "8658406917866a8bebc809ce65f34bbd966ae780d944204d38d67596d9509abf"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+210-elev40.143c38b72694.png",
-      "sha256": "143c38b726943790073a8f0b2d7af89dd62019e585c071e212cadade3b2f6003"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+210-elev40.546c9e7e8659.png",
+      "sha256": "546c9e7e86597bbe3e62af713f2f7bdd25bf97c91f4916dfaf187cee257a9b3e"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+210-elev50.b0e227907580.png",
-      "sha256": "b0e2279075809dacb9359119fe6ffda64f3bfdd5eed8020ff034bd28c519918b"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+210-elev50.7485e777bd25.png",
+      "sha256": "7485e777bd257f7928127757df3aad149cb4c51dfbbf4d78000edcbd32bea203"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+210-elev60.3d4550cdfd7b.png",
-      "sha256": "3d4550cdfd7b68d5d4f6acbde5c7d14a6a7cda7e112a40f93c82422a4c035bb9"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+210-elev60.5e9ad32c3fe1.png",
+      "sha256": "5e9ad32c3fe1cd7a4c798c2d6faafd2ee3dbdbf47190e412d26e4064492f6fa7"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+210-elev70.6ce5efb518db.png",
-      "sha256": "6ce5efb518db3ae980ad4f8a8a70ea970c052e745fc63ceabb58438fc1ab6616"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+210-elev70.d6503f85608e.png",
+      "sha256": "d6503f85608e165c3729ee2be2cc24d2c6f9ae0f55eba7566a62f42fd6306794"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+240-elev20.d99f084f1642.png",
-      "sha256": "d99f084f16424488f0cb6ca41c335b0f9dad73c726907f9fbfeae5ea2dfb6907"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+240-elev20.aff80c9aa90b.png",
+      "sha256": "aff80c9aa90bd5f46fca8988ad44c86953203821201d0461acd8be5f9c89a54c"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+240-elev30.af2aa276ddd2.png",
-      "sha256": "af2aa276ddd27664e4da48b1462ca88239bc1c029ab8645bc5352fb8ecf68cb9"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+240-elev30.6e9082a46ba7.png",
+      "sha256": "6e9082a46ba794dd02e062a805c2c270a8b9561bf13d9b1e26d7ea756dcd4ca7"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+240-elev40.a4fceeb9d6ed.png",
-      "sha256": "a4fceeb9d6ed6df856650247e26f901fee4243b97bc38342e1a411a1ccd548c9"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+240-elev40.67338f13499e.png",
+      "sha256": "67338f13499eeb55c4af40811fc23d25040385d3fe257ab1b27aa9561d8a529f"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+240-elev50.c1547c17f002.png",
-      "sha256": "c1547c17f002337fc91812cd4d63dca0b654381eac7bdfcced6049e30825f479"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+240-elev50.1c27cb010e9d.png",
+      "sha256": "1c27cb010e9d9d8d24fb013067a04ea348ad68eb7efa4cde380740255ed990fe"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+240-elev60.eba10fef94c8.png",
-      "sha256": "eba10fef94c89da7932c276e3e77b8dd76ac78dc1aff1ff3b05f93214721abf7"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+240-elev60.dee4ec292492.png",
+      "sha256": "dee4ec292492a067e30dafd49f87212962405cc013f1c6c885a0de9745c8cc41"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+240-elev70.00a5750eb5af.png",
-      "sha256": "00a5750eb5af0315a134b79ee1c0f00b0d13e7761ef13072be31bfd90026c251"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+240-elev70.0430ab6f978a.png",
+      "sha256": "0430ab6f978a45035d1ec1436e060b6382afdc44bb62ff6d111415e1412e9b10"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+270-elev20.4d81caae7ac5.png",
-      "sha256": "4d81caae7ac5f63920558607bec1abce242303119c5614e99d816fd473de1912"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+270-elev20.84ccf5275b37.png",
+      "sha256": "84ccf5275b372ac3aecdc459d12ebdaa6422f71504862c9548898af75de7f77f"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+270-elev30.c004a010f11c.png",
-      "sha256": "c004a010f11c512b1f6455c3c4b8cbdf300fea56feab3f45b6a6d49fe2e075c9"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+270-elev30.42182491eb37.png",
+      "sha256": "42182491eb3746e068525c8ee7e96220d877dcd8309e62c3e11fd9b670dff666"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+270-elev40.4e06de998342.png",
-      "sha256": "4e06de9983423d711b6591eb40d27ec487b771b13a26b2fe2c11798551c4303c"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+270-elev40.676d9e397cf5.png",
+      "sha256": "676d9e397cf5dcc3589a2d115474f8dca5fb9121064ad88816e086a70df7bb15"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+270-elev50.788162c021ba.png",
-      "sha256": "788162c021ba6db63675ea5832dc0708d2cd69586d2be2d4ec3a2f47d945cba2"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+270-elev50.ec40fc234576.png",
+      "sha256": "ec40fc2345767491a1ea94e42c03b12ad921288a6626dbe9968ed63d37c26151"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+270-elev60.667039168ab4.png",
-      "sha256": "667039168ab4c1977dbf766cf006031962f57ce2b96d2f8da420d5da301e4435"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+270-elev60.0e0d302a840e.png",
+      "sha256": "0e0d302a840eaecaab4d7630fe608820566c6c084b13c24f92774925922c8e4b"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+270-elev70.0912c096b714.png",
-      "sha256": "0912c096b71494e2c30306df3f08dab3fd20634215e3e89fafb0c1534be13aa5"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+270-elev70.c87915b147cf.png",
+      "sha256": "c87915b147cf186e56f7d4e694301f9f2790523a5ef14e4880a93eba4ff292a3"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+300-elev20.22cf4a454bef.png",
-      "sha256": "22cf4a454bef7dec16e6205f447dc5a523c5c24655c42cd13682df82f8da04dd"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+300-elev20.3cb943625bb0.png",
+      "sha256": "3cb943625bb0b4020f12d348ce3ae957f82f99135e7b368485a190bba8e1f100"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+300-elev30.d49f34497663.png",
-      "sha256": "d49f34497663ef0c95ebc71947e3ba54b1497dda6b935c3c82d861389e3e1979"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+300-elev30.957c50ac67ea.png",
+      "sha256": "957c50ac67ea66e1ce40370ac6b44ff499595c3aa39ece6e0d71bb1ca7e3f462"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+300-elev40.78da6f954c67.png",
-      "sha256": "78da6f954c673e7e70a2ad0cf30f20259029592ddf20e39a8588842663d93c87"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+300-elev40.786c3ef1acf8.png",
+      "sha256": "786c3ef1acf85395eafbcda450120e41e9338c232a64d4a05015960878a4423e"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+300-elev50.128b35b45dc0.png",
-      "sha256": "128b35b45dc03a0ac500e04d3c494c42afe6405b18dac37ac0719fdd44c6ff33"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+300-elev50.6f3726b7489f.png",
+      "sha256": "6f3726b7489f97515618a96c63f7e78df894a6f304c6d930032a38f18dfdbbab"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+300-elev60.01e751689081.png",
-      "sha256": "01e751689081c1458ab5d58b061e73870a7e810ce804075a3d04722d55065ffc"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+300-elev60.acda708621ac.png",
+      "sha256": "acda708621ac6fc47a783a397639bc417efdef3e10b7bc331dc9e9f5647323a5"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+300-elev70.9b7a5c1a63f3.png",
-      "sha256": "9b7a5c1a63f320edbe2e791b6c5da6d1624afd7e633b4a82e7f2c81b007fad09"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+300-elev70.200950883b6e.png",
+      "sha256": "200950883b6ef584b5bcd71aa1882b256667d7243839f566da3f65efe6ab217d"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+330-elev20.2f7979ec8534.png",
-      "sha256": "2f7979ec85349172c7979cb6feb8b1c8b191433bcc2ad350c681baafae0401c6"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+330-elev20.2c10f1aea0a3.png",
+      "sha256": "2c10f1aea0a3789b8432a0538aa320ac3578b5622d2a802d85d5af889edca367"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+330-elev30.b48a31bbda15.png",
-      "sha256": "b48a31bbda15b4b808f549f20bf7a131513fadfdad0fed8a518ecd1302ebc8cd"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+330-elev30.67b98a786144.png",
+      "sha256": "67b98a786144a573e7f40b2c3c7940f57ccaede4d4d0e282efb226ced526389c"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+330-elev40.118a8d78255e.png",
-      "sha256": "118a8d78255ecb9dfc1edc7d05118f9673988af92ba585a1bb71ad9a2116347d"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+330-elev40.e978e98aa624.png",
+      "sha256": "e978e98aa62455362113f7ea18b7e1b140f2a9317dc01ec28caa079136f8558e"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+330-elev50.f4823ba4b4bb.png",
-      "sha256": "f4823ba4b4bb031d9807b6fb49aedddc87b895a429c792bbe4d8eccffaef2257"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+330-elev50.dd127ba97361.png",
+      "sha256": "dd127ba9736185b6847fb4ebc2c5cf7aa3d2d92a6a4ba23d9ce9840f7eb2831c"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+330-elev60.631003f40590.png",
-      "sha256": "631003f40590d913f15ec15d44aaf054e86e45474b24a45b2089540a364b1328"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+330-elev60.b786dcdcbb63.png",
+      "sha256": "b786dcdcbb63811cddefd9c237187d22c416975f7b94cac92acd581679d20e4d"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+330-elev70.249d28fd6de2.png",
-      "sha256": "249d28fd6de2f44fd2a8255e393018365db98db9f44bbf4f1f8534bddf92600e"
+      "image": "/assets/environment/oblique/furniture.laundry.linen-rack-yaw+330-elev70.442d4d746c83.png",
+      "sha256": "442d4d746c83f010ce6dc2fd9d5f4916a57afc4f2f1f92659ec35d4501bbd132"
     }
   ]
 }
