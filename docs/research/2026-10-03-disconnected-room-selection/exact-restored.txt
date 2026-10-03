@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-disconnected-room-selection-audit-20261003
+
+
+ Test Files  2 passed (2)
+      Tests  8 passed (8)
+   Start at  11:32:54
+   Duration  4.47s (transform 1.15s, setup 0ms, import 2.70s, tests 2.03s, environment 0ms)
+
