@@ -23,9 +23,18 @@
     ]
   },
   {
+    "name": "reference-offline-arithmetic",
+    "exitCode": 0,
+    "elapsedSeconds": 0.058,
+    "command": [
+      "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "docs/research/2026-10-03-dedicated-camera-pan-native/reference-offline-audit.cjs"
+    ]
+  },
+  {
     "name": "strict-fixture-typescript",
     "exitCode": 0,
-    "elapsedSeconds": 0.122,
+    "elapsedSeconds": 0.173,
     "command": [
       "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
       "node_modules/typescript/bin/tsc",
@@ -48,7 +57,7 @@
   {
     "name": "prepared-four-case-collection",
     "exitCode": 0,
-    "elapsedSeconds": 0.725,
+    "elapsedSeconds": 0.756,
     "command": [
       "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
       "node_modules/@playwright/test/cli.js",
@@ -57,15 +66,6 @@
       "--config",
       "tests/browser/playwright.config.ts",
       "dedicated-camera-pan-player.spec.ts"
-    ]
-  },
-  {
-    "name": "reference-offline-arithmetic",
-    "exitCode": 0,
-    "elapsedSeconds": 0.058,
-    "command": [
-      "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
-      "docs/research/2026-10-03-dedicated-camera-pan-native/reference-offline-audit.cjs"
     ]
   }
 ]
