@@ -1,0 +1,32 @@
+{
+  "controls": [
+    {
+      "control": "actual-source-producer-omits-connecting-stem",
+      "exitCode": 1,
+      "error": "ValueError: Expected forty-three retained and twenty-one physical shower fittings",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-reverses-connecting-stem",
+      "exitCode": 1,
+      "error": "ValueError: Evaluated wall-mounted shower geometric surfaces face inward: angled-shower-head.head outlet connecting stem",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-short-stem-does-not-connect",
+      "exitCode": 1,
+      "error": "ValueError: Actual outlet stem does not bridge the original arm/head connection gap",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-stem-escapes-bounds",
+      "exitCode": 1,
+      "error": "ValueError: New shower fittings changed accepted full source bounds",
+      "rejectedBeforeSourceSave": true
+    }
+  ],
+  "sourceProvenanceBuilderExactlyRestored": true,
+  "originalSourceBytesUnchanged": true,
+  "exactRestoredProductionVerifyExitCode": 0,
+  "sourceSha256": "0a375563958f382d6b1d8dde1a6252ace7ed3883f4994a78d040361a65397ea1"
+}

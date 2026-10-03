@@ -1,0 +1,21 @@
+{
+  "controls": [
+    {
+      "control": "original-shower-source-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Shower head retained/authored mesh set changed"
+    },
+    {
+      "control": "wrong-shower-Y-fit-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Shower head declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-shower-target-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Shower head declared occupied rectangle/source fit/accepted target changed"
+    }
+  ],
+  "wrapperBytesExactlyRestored": true,
+  "exactRestoredNativeVerifyExitCode": 0
+}
