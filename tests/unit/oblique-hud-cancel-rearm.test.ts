@@ -6,6 +6,7 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { WorldScene } from '../../src/rendering/scene/world-scene';
 import { ObliqueWorldScene } from '../../src/rendering/scene/oblique-world-scene';
 import { EMPTY_RENDER_FRAME } from '../../src/rendering/feed/render-feed';
+import { pressArm } from '../../src/ui/hud/tool-arming';
 import { BUILDABLE_REGISTRY } from '../../src/simulation/construction';
 import { defaultObjectRegistry } from '../../src/content/object-catalog';
 import { BuildTool } from '../../src/ui/build-tool';
@@ -110,8 +111,20 @@ const activation = hudSource.slice(marker).match(/onActivate: \(\) => \{([\s\S]*
 const armCase = source.match(/case 'arm-build-tool': \{([\s\S]*?)\r?\n        \}\r?\n\r?\n        case 'arm-room-tool':/);
 if (marker < 0 || activation === null || armCase === null) throw Error('Unique actual HUD/main arming callbacks absent');
 const applyArm = new Function('intent', 'roomTemplateTool', 'tool', 'objects', 'objectFootprintOf', 'BUILDABLE_REGISTRY', armCase[1]!);
-function armButton(h: Awaited<ReturnType<typeof setup>>, selected: 'wall' | 'object') {
+function armButton(h: Awaited<ReturnType<typeof setup>>, selected: 'wall' | 'object' | 'room') {
   h.tools.wall.setArmed(false); h.tools.object.setArmed(false);
+  h.tools.room.setArmed(false);
+  if (selected === 'room') {
+    const roomSource = readFileSync(new URL('../../src/ui/hud/rooms-panel.ts', import.meta.url), 'utf8');
+    const marker = roomSource.indexOf('  const armButton: ActionButton = createActionButton(');
+    const action = roomSource.slice(marker).match(/onActivate: \(\) => \{([\s\S]*?)\r?\n    \},/);
+    const arm = source.match(/case 'arm-room-tool':([\s\S]*?)\r?\n        case 'set-clock':/);
+    if (marker < 0 || action === null || arm === null) throw Error('Actual Rooms arming callback absent');
+    const apply = new Function('intent', 'roomTemplateTool', 'rooms', arm[1]!); const transitions: boolean[] = [];
+    const options = { onArm: (armed: boolean, values: { roomId: string; removing: boolean }) => { transitions.push(armed); apply({ armed, ...values }, undefined, h.tools.room); } };
+    const activate = new Function('options', 'selectedId', 'paintActions', 'pressArm', `let armed=false; let removing=false; let drawingFolded=false; return () => {${action[1]}};`)(options, 'room.yard', () => undefined, pressArm) as () => void;
+    activate(); return { activate, transitions };
+  }
   const definitionId = selected === 'wall' ? 'wall-brick' : 'bed-wooden';
   const transitions: boolean[] = [];
   const objectFootprintOf = (id: string) => { const objectId = BUILDABLE_REGISTRY.get(id)?.placesObjectId;
@@ -123,7 +136,7 @@ function armButton(h: Awaited<ReturnType<typeof setup>>, selected: 'wall' | 'obj
     `let armed = false; let removing = false; return () => {${activation![1]}};`)(options, definitionId, () => undefined) as () => void;
   activate(); return { activate, transitions };
 }
-for (const tool of ['wall', 'object'] as const) {
+for (const tool of ['wall', 'object', 'room'] as const) {
   it(`Oblique/${tool}: HUD cancel then re-arm before next render frame must not complete the cancelled old left press`, async () => {
     const h = await setup('oblique', tool); const hud = armButton(h, tool);
     h.mouse('down', 0, 1); h.mouse('move', 0, 1, 940);
@@ -131,20 +144,21 @@ for (const tool of ['wall', 'object'] as const) {
     expect(hud.transitions).toEqual([true, false, true]); expect(h.pointer.primaryDown).toBe(true);
     // No update/frame occurs between these real HUD callbacks and the old release.
     h.mouse('up', 0, 0, 940);
-    console.log('CANCEL_REARM_OLD_RELEASE', JSON.stringify({ tool, transitions: hud.transitions, commands: h.actors.submitted().map(m => m.payload.command.data) }));
+    console.log('CANCEL_REARM_OLD_RELEASE', JSON.stringify({ tool, transitions: hud.transitions, commands: h.actors.submitted().map(m => m.payload.command.data), roomReports: h.roomReports }));
+    expect(h.roomReports, 'cancelled room rectangle must not reach pending confirmation').toHaveLength(0);
     expect(h.actors.submitted(), 'a cancelled old press cannot buy after re-arm without a fresh primary down').toHaveLength(0);
     h.mouse('down', 0, 1); h.mouse('up', 0, 0);
-    expect(h.actors.submitted().length).toBeGreaterThan(0);
+    expect(tool === 'room' ? h.roomReports.length : h.actors.submitted().length).toBeGreaterThan(0);
   });
   it(`Oblique/${tool}: HUD cancel alone prevents old release and fresh primary press after re-arm still works`, async () => {
     const h = await setup('oblique', tool); const hud = armButton(h, tool);
     h.mouse('down', 0, 1); hud.activate(); h.mouse('up', 0, 0);
-    expect(h.actors.submitted()).toHaveLength(0); hud.activate(); h.mouse('down', 0, 1); h.mouse('up', 0, 0);
-    expect(h.actors.submitted().length).toBeGreaterThan(0);
+    expect(h.actors.submitted()).toHaveLength(0); expect(h.roomReports).toHaveLength(0); hud.activate(); h.mouse('down', 0, 1); h.mouse('up', 0, 0);
+    expect(tool === 'room' ? h.roomReports.length : h.actors.submitted().length).toBeGreaterThan(0);
   });
   it(`Oblique/${tool}: ordinary fresh armed gesture submits its genuine command`, async () => {
     const h = await setup('oblique', tool); armButton(h, tool);
     h.mouse('down', 0, 1); h.mouse('up', 0, 0);
-    expect(h.actors.submitted()).toHaveLength(1);
+    expect(tool === 'room' ? h.roomReports : h.actors.submitted()).toHaveLength(1);
   });
 }

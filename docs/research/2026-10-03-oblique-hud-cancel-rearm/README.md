@@ -43,3 +43,12 @@ Fresh all-state re-arm/cancel searches and complete959/1907 bodies/comments reta
 This finding concerns ordinary Build/Object HUD cancellation invisible before the
 next renderer update. It does not duplicate the stationary camera endpoint refresh,
 which current paintGesturePreview already computes correctly.
+
+## Rooms extension (before production changes)
+
+The genuine Rooms armButton.onActivate body and actual pressArm reducer feed the
+exact main arm-room-tool body and RoomTool. The same false?true transition revives
+its old Yard rectangle report10,11,2?1. This stages explicit confirmation only;
+no ZoneRoom was auto-submitted. Updated original3red6controls.log records3 RED/6
+legal controls across wall/Bed/Rooms; strict-types-expanded.log exits0. Initial
+six-case evidence remains archived. Native timing remains unproven.
