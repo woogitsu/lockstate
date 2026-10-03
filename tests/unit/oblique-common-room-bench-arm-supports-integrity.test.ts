@@ -58,7 +58,13 @@ it('retains every original bench part and stored shader graph with exactly two a
 it('consumes the detailed default through the existing descriptor and decodes every canonical frame without clipping', () => {
   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL('public/game-content/oblique-furniture.common-room-bench.v1.json', root), 'utf8')));
   expect(catalog.assetId).toBe('furniture.common-room.upholstered-bench');
-  expect(catalog.source).toBe(provenance.source); expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+  const soft=JSON.parse(readFileSync(new URL('assets/source/blender/furniture.common-room.upholstered-bench.soft-light.provenance.json',root),'utf8')) as {source:string;sourceSha256:string;retainedSource:string;retainedSourceSha256:string;physicalAssembly:{rawMeshes:unknown[];completeStoredMaterialGraphs:unknown[];actualInteriorContacts:unknown[]}};
+  expect(soft.retainedSource).toBe(provenance.source);expect(soft.retainedSourceSha256).toBe(provenance.sourceSha256);
+  expect(soft.physicalAssembly.rawMeshes).toEqual(provenance.allAuthoredRawMeshes);
+  expect(soft.physicalAssembly.completeStoredMaterialGraphs).toEqual(provenance.retainedMaterialValues);
+  expect(soft.physicalAssembly.actualInteriorContacts).toEqual(provenance.actualTriangleInteriorContacts);
+  expect(catalog.source).toBe(soft.source);expect(catalog.sourceSha256).toBe(soft.sourceSha256);
+  expect(catalog.sourceSha256).toBe('70be43170198172589904862ed627e0c3360be9da4788fb93098feb7b4ecb4c7');
   expect(catalog.resolutionPx).toEqual([256,256]); expect(catalog.pivotPx).toEqual([128,128]);
   expect(catalog.nominalPixelsPerTile).toBe(64); expect(catalog.cameraTargetTiles).toEqual([1,.5,.52]);
   expect(catalog.frames).toHaveLength(72);

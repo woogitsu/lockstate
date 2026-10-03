@@ -1,0 +1,54 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-cycles-20261003
+
+x·x
+node :
+At line:3 char:1
++ node node_modules/vitest/vitest.mjs run tests/unit/oblique-common-roo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-common-room-bench-arm-supports-integrity.test.ts > consumes the detailed default through the
+existing descriptor and decodes every canonical frame without clipping
+AssertionError: expected 'assets/source/blender/furniture.commo…' to be 'assets/source/blender/furniture.commo…' // Obj
+ect.is equality
+
+Expected: "assets/source/blender/furniture.common-room.upholstered-bench.angled-detail.blend"
+Received: "assets/source/blender/furniture.common-room.upholstered-bench.soft-light.blend"
+
+ ❯ tests/unit/oblique-common-room-bench-arm-supports-integrity.test.ts:61:26
+     59|   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(ne…
+     60|   expect(catalog.assetId).toBe('furniture.common-room.upholstered-benc…
+     61|   expect(catalog.source).toBe(provenance.source); expect(catalog.sourc…
+       |                          ^
+     62|   expect(catalog.resolutionPx).toEqual([256,256]); expect(catalog.pivo…
+     63|   expect(catalog.nominalPixelsPerTile).toBe(64); expect(catalog.camera…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/oblique-common-room-bench-art.test.ts > authored Common Room bench variant catalog > preserves the tw
+o-square authored source and all 72 supported camera poses
+AssertionError: expected 'assets/source/blender/furniture.commo…' to be 'assets/source/blender/furniture.commo…' // Obj
+ect.is equality
+
+Expected: "assets/source/blender/furniture.common-room.upholstered-bench.angled-detail.blend"
+Received: "assets/source/blender/furniture.common-room.upholstered-bench.soft-light.blend"
+
+ ❯ tests/unit/oblique-common-room-bench-art.test.ts:16:28
+     14|   it('preserves the two-square authored source and all 72 supported ca…
+     15|     expect(catalog.assetId).toBe('furniture.common-room.upholstered-be…
+     16|     expect(catalog.source).toBe('assets/source/blender/furniture.commo…
+       |                            ^
+     17|     expect(catalog.sourceSha256).toBe(sha256(readFileSync(new URL(cata…
+     18|     expect(catalog.resolutionPx).toEqual([256, 256]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 1 passed (3)
+   Start at  23:38:59
+   Duration  242ms (transform 53ms, setup 0ms, import 185ms, tests 25ms, environment 0ms)
