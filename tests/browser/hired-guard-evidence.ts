@@ -30,9 +30,10 @@ export async function observeGuardImages(page: Page) {
   const responses: { url: string; status: number; sha256: string; width: number; height: number }[] = [];
   const descriptors: { url: string; status: number; data: unknown }[] = [];
   const errors: string[] = [];
+  const redirects: { url: string; status: number; location: string | null }[] = [];
   const pendingResponses: Promise<void>[] = [];
   page.on('response', response => {
-    if (new URL(response.url()).pathname === '/game-content/oblique-actor-guard.v1.json') {
+    if (decodeURIComponent(new URL(response.url()).pathname) === '/game-content/oblique-actor-guard.v1.json') {
       pendingResponses.push(response.json().then(data => {
         descriptors.push({ url: response.url(), status: response.status(), data: data as unknown });
       }).catch(error => { errors.push(String(error)); }));
@@ -40,6 +41,13 @@ export async function observeGuardImages(page: Page) {
     }
     if (!response.url().includes('/assets/environment/oblique/actor-guard-')) return;
     pendingResponses.push((async () => {
+      if (response.status() >= 300 && response.status() < 400) {
+        redirects.push({ url: response.url(), status: response.status(), location: await response.headerValue('location') });
+        return;
+      }
+      if (response.status() !== 200) {
+        errors.push(`Guard PNG ${response.status()} ${response.url()}`); return;
+      }
       const bytes = await response.body();
       expect(bytes.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
       responses.push({ url: response.url(), status: response.status(),
@@ -83,7 +91,7 @@ export async function observeGuardImages(page: Page) {
   return async () => {
     await Promise.all(pendingResponses);
     const images = await page.evaluate(() => (Reflect.get(window, 'guardLoadedImages') as ImageProbe).read());
-    return { responses, images, descriptors, errors };
+    return { responses, images, descriptors, redirects, errors };
   };
 }
 
