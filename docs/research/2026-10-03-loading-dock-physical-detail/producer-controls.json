@@ -1,0 +1,64 @@
+{
+  "controls": [
+    {
+      "control": "omit-physical-latch",
+      "exitCode": 1,
+      "error": "ValueError: Loading dock door retained/authored mesh set changed"
+    },
+    {
+      "control": "move-physical-glazing-stop",
+      "exitCode": 1,
+      "error": "ValueError: Loading dock door actual evaluated authored geometry changed"
+    },
+    {
+      "control": "move-retained-control",
+      "exitCode": 1,
+      "error": "ValueError: Loading dock door actual evaluated authored geometry changed"
+    },
+    {
+      "control": "change-retained-bevel",
+      "exitCode": 1,
+      "error": "ValueError: Loading dock actual authored topology/material assignment/modifier data changed"
+    },
+    {
+      "control": "change-retained-material-graph",
+      "exitCode": 1,
+      "error": "ValueError: Loading dock retained four material graphs changed"
+    },
+    {
+      "control": "change-added-latch-material",
+      "exitCode": 1,
+      "error": "ValueError: Loading dock actual authored topology/material assignment/modifier data changed"
+    },
+    {
+      "control": "wrong-loaded-X-scale",
+      "exitCode": 1,
+      "error": "ValueError: Loading dock declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-accepted-target",
+      "exitCode": 1,
+      "error": "ValueError: Loading dock declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-canonical-descriptor",
+      "exitCode": 1,
+      "error": "ValueError: Loading dock exporter targets the wrong canonical descriptor"
+    },
+    {
+      "control": "wrong-camera-span",
+      "exitCode": 1,
+      "error": "ValueError: Loading dock actual camera pitch differs from64pixels per tile"
+    },
+    {
+      "control": "wrong-camera-vector",
+      "exitCode": 1,
+      "error": "ValueError: Loading dock actual camera ground basis differs from world projection"
+    }
+  ],
+  "exactRestoredNativeVerifyExitCode": 0,
+  "sourceBytesUnchanged": true,
+  "wrapperSha256": "25c84757a8ee64d7b48ea84f8d413b3fff70346c84794acc8e11e72f66d128db",
+  "sourceSha256": "7eeca158b9e5f92abb139ab8164f5dd7a2aa2f2ca47936e4b08e4ea6c79a3aac",
+  "originalSourceSha256": "9a8b5cd29ed5809ec1c3f2c6f36f3d97d3a9a7f69551c0743e096591c26908c4"
+}
