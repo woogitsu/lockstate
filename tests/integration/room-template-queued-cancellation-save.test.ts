@@ -17,7 +17,7 @@ function reload(runtime: Runtime): Runtime {
     gameVersion: 'test', prisonId: 'queued-cancel', revision: 1, createdAt: 0, updatedAt: 1, ...bundle,
   }))));
   expect(decoded.ok).toBe(true);
-  if (!decoded.ok) throw Error('Actual queued command V8 must decode');
+  if (!decoded.ok) throw Error('Actual queued command V9 must decode');
   return restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
 }
 function pending(mirrorX: boolean) {
@@ -30,7 +30,7 @@ function pending(mirrorX: boolean) {
   return { runtime, orderId: order.id };
 }
 
-it.each([false, true])('the same genuine queued cancellation must retain its unchanged-state outcome through V8, mirror=%s', mirrorX => {
+it.each([false, true])('the same genuine queued cancellation must retain its unchanged-state outcome through V9, mirror=%s', mirrorX => {
   const pair = pending(mirrorX);
   const executeAtTick = pair.runtime.kernel.tick + CANCEL_BUILD_ORDER_LEAD_TICKS;
   const expectedRevision = pair.runtime.construction.revisionOf(pair.orderId);

@@ -11,6 +11,9 @@ import { type BuildabilityRequirement, canBuildAt } from '../world/buildability'
 import { type TilePosition, tileCoordinate, tileToChunk } from '../world/coordinates';
 
 export interface ConstructionSnapshot {
+  /** V9 continuity; absent in historical snapshots means false / no counters. */
+  readonly newerActionThanTheStackTop?: boolean;
+  readonly orderRevisions?: Readonly<Record<string, number>>;
   readonly orders: readonly BuildOrder[];
   readonly undoStack: readonly (readonly string[])[];
   readonly redoStack: readonly (readonly string[])[];
@@ -2334,6 +2337,8 @@ export class ConstructionSystem implements SystemRegistration {
     }));
     return {
       orders,
+      newerActionThanTheStackTop: this.newerActionThanTheStackTop,
+      orderRevisions: Object.fromEntries(this.orderRevisions),
       undoStack: this.undoStack.map((transaction) => [...transaction]),
       redoStack: this.redoStack.map((transaction) => [...transaction]),
       // The open gesture is emitted, not committed: capture reads state and
@@ -2408,6 +2413,8 @@ export class ConstructionSystem implements SystemRegistration {
     // default here rather than a migration step (#108).
     this.currentTransaction = data.currentTransaction === undefined ? [] : [...data.currentTransaction];
     this.currentTransactionId = data.currentTransactionId;
+    this.newerActionThanTheStackTop = data.newerActionThanTheStackTop ?? false;
+    this.orderRevisions = new Map(Object.entries(data.orderRevisions ?? {}));
   }
 
   /**

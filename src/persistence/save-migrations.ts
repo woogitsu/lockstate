@@ -13,6 +13,7 @@ import type {
   SaveEnvelopeV6,
   SaveEnvelopeV7,
   SaveEnvelopeV8,
+  SaveEnvelopeV9,
   SavePayloadV1,
   SavePayloadV3,
   SavePayloadV4,
@@ -611,4 +612,19 @@ export function migrateSaveEnvelopeV7ToV8(input: SaveEnvelopeV7): SaveEnvelopeV8
   const payload = structuredClone(input.payload);
   return { ...input, saveSchemaVersion: 8, payload,
     checksum: computeSaveChecksum(payload as unknown as JsonValue) };
+}
+
+/** V8 -> V9 clones raw validated data; lost history markers/counters are not inferred. */
+export function migrateSaveEnvelopeV8ToV9(input: SaveEnvelopeV8): SaveEnvelopeV9 {
+  const payload = structuredClone(input.payload);
+  const migratedPayload = {
+    ...payload,
+    construction: {
+      ...payload.construction,
+      newerActionThanTheStackTop: false,
+      orderRevisions: {},
+    },
+  };
+  return { ...input, saveSchemaVersion: 9, payload: migratedPayload,
+    checksum: computeSaveChecksum(migratedPayload as unknown as JsonValue) };
 }
