@@ -80,3 +80,126 @@ it.each([false, true].flatMap(saved => surfaces.map(surface => ({ saved, surface
     expect(runtime.treasury.balanceMinorUnits).toBe(funds);
   },
 );
+
+function until(runtime: Runtime, predicate: () => boolean) {
+  for (let tick = 0; tick < 30_000 && !predicate(); tick++) runtime.kernel.step();
+  expect(predicate()).toBe(true);
+}
+const successfulTypes: Record<SimulationCommand['type'], true> = {
+  PlaceBuildOrder: true, PlaceObject: true, PlaceRoomTemplate: true, Undo: true, Redo: true,
+  CancelBuildOrder: true, CancelMaterialPurchase: true, RemoveObject: true, RemoveWall: true,
+  ZoneRoom: true, UnzoneRoom: true, AdmitPrisoner: true, PurchaseMaterials: true, SellMaterials: true,
+  HireStaff: true, ReleaseGuardAssignment: true, DismissStaff: true, DismissAlert: true, EditRegimeBlock: true,
+};
+it.each([false, true].flatMap(saved => (Object.keys(successfulTypes) as SimulationCommand['type'][])
+  .map(type => ({ saved, type }))))('real accepted command preserves its own history meaning: saved=$saved type=$type', ({ saved, type }) => {
+  let runtime = createNewSimulationRuntime(73);
+  let guardId = 0;
+  if (type === 'UnzoneRoom' || type === 'DismissAlert') send(runtime, { type: 'ZoneRoom', roomId: 'room.yard', x: 18, y: 18, width: 8, height: 8 });
+  if (type === 'Undo') {
+    send(runtime, { type: 'PlaceRoomTemplate', templateId: 'yard-basic', origin: { x: 18, y: 18 } });
+    until(runtime, () => runtime.roomTemplates.snapshot().pending.length === 0);
+  }
+  if (['AdmitPrisoner', 'PlaceObject', 'RemoveObject', 'ReleaseGuardAssignment'].includes(type)) {
+    send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 18, y: 18 } });
+    until(runtime, () => runtime.roomTemplates.snapshot().pending.length === 0 && runtime.construction.allOrders().every(order => order.state === 'completed'));
+  }
+  if (type === 'SellMaterials') {
+    send(runtime, { type: 'PurchaseMaterials', orderId: 'earlier-stock', itemId: 'item.wood-plank', quantity: 4 });
+    until(runtime, () => runtime.procurement.pendingDeliveries.length === 0);
+  }
+  if (type === 'ReleaseGuardAssignment' || type === 'DismissStaff') {
+    send(runtime, { type: 'HireStaff', staffRoleId: 'staff-role.guard', x: 16, y: 16 });
+    guardId = runtime.securityGuards.allGuardIds()[0]!;
+    if (type === 'ReleaseGuardAssignment') {
+      // An empty default sector does not hold a guard. Real accommodation,
+      // staffing and admission produce a genuine deployment/search claimant.
+      for (let guard = 0; guard < 2; guard++) send(runtime, { type: 'HireStaff', staffRoleId: 'staff-role.guard', x: 16, y: 16 });
+      send(runtime, { type: 'AdmitPrisoner', sentenceLengthTicks: 100_000, priorIncidents: 0, x: 16, y: 16 });
+      until(runtime, () => runtime.securityGuards.allGuardIds().some(id => runtime.guardRelease.claimOf(id) !== undefined));
+      guardId = runtime.securityGuards.allGuardIds().find(id => runtime.guardRelease.claimOf(id) !== undefined)!;
+    }
+  }
+  if (type === 'CancelBuildOrder' || type === 'RemoveWall') {
+    send(runtime, { type: 'PlaceBuildOrder', orderId: 'older-wall', definitionId: 'wall-brick', x: 2, y: 2, footprint: 'square' });
+    until(runtime, () => runtime.construction.getOrder('older-wall')?.state === 'completed');
+  }
+  if (type === 'RemoveObject') {
+    // The genuine earlier Cell's authored bed is at19,19. A bed outside a
+    // room is refused by PlaceObject; standing removal requires no new bed.
+    expect(runtime.placedObjects.getSnapshot()).toHaveLength(2);
+  }
+  if (type === 'CancelMaterialPurchase') {
+    send(runtime, { type: 'PurchaseMaterials', orderId: 'older-delivery', itemId: 'item.brick', quantity: 1 });
+  }
+  send(runtime, { type: 'PlaceRoomTemplate', templateId: 'yard-basic', origin: { x: 5, y: 5 }, mirrorX: true, quarterTurns: 1 });
+  until(runtime, () => runtime.roomTemplates.snapshot().pending.length === 0);
+  expect(runtime.roomTemplates.snapshot().completed?.some(plan => plan.origin.x === 5 && plan.origin.y === 5)).toBe(true);
+  if (saved) runtime = reload(runtime);
+  const regime = runtime.prisoners.regimes.all()[0]!;
+  const block = regime.blocks[0]!;
+  let action: SimulationCommand;
+  switch (type) {
+    case 'ZoneRoom': action = { type, roomId: 'room.yard', x: 18, y: 18, width: 8, height: 8 }; break;
+    case 'UnzoneRoom': action = { type, x: 18, y: 18, width: 8, height: 8 }; break;
+    case 'AdmitPrisoner': action = { type, sentenceLengthTicks: 1_000_000, priorIncidents: 0, x: 16, y: 16 }; break;
+    case 'PurchaseMaterials': action = { type, orderId: 'accepted-buy', itemId: 'item.brick', quantity: 1 }; break;
+    case 'SellMaterials': action = { type, itemId: 'item.wood-plank', quantity: 1 }; break;
+    case 'HireStaff': action = { type, staffRoleId: 'staff-role.guard', x: 16, y: 16 }; break;
+    case 'ReleaseGuardAssignment': action = { type, guardId }; break;
+    case 'DismissStaff': action = { type, staffId: guardId }; break;
+    case 'DismissAlert': {
+      const event = runtime.events.getSnapshot().records.at(-1)!;
+      expect(event).toBeDefined();
+      action = { type, fromSequence: event.sequence, throughSequence: event.sequence }; break;
+    }
+    case 'EditRegimeBlock': action = { type, classificationGroupId: regime.classificationGroupId, startTickOfDay: block.startTickOfDay, allowedCategories: ['work'] }; break;
+    case 'CancelBuildOrder': action = { type, orderId: 'older-wall', expectedRevision: runtime.construction.revisionOf('older-wall') }; break;
+    case 'CancelMaterialPurchase':
+      expect(runtime.procurement.pendingDeliveries.some(delivery => delivery.orderId === 'older-delivery')).toBe(true);
+      action = { type, orderId: 'older-delivery' }; break;
+    case 'RemoveObject': action = { type, x: 19, y: 19 }; break;
+    case 'RemoveWall': action = { type, x: 2, y: 2, edge: 'north' }; break;
+    case 'PlaceBuildOrder': action = { type, orderId: 'new-wall', definitionId: 'wall-brick', x: 2, y: 2, footprint: 'square' }; break;
+    case 'PlaceObject': action = { type, orderId: 'new-bed', definitionId: 'bed-wooden', x: 20, y: 19 }; break;
+    case 'PlaceRoomTemplate': action = { type, templateId: 'yard-basic', origin: { x: 18, y: 18 } }; break;
+    case 'Undo': action = { type }; break;
+    case 'Redo':
+      send(runtime, { type: 'Undo' });
+      expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.yard')).toHaveLength(0);
+      action = { type }; break;
+    default: { const missing: never = type; throw new Error(`Missing actual accepted control ${String(missing)}`); }
+  }
+  const { kernel: _beforeKernel, ...before } = captureSessionSnapshot(runtime);
+  send(runtime, action);
+  expect(runtime.refusals.count).toBe(0);
+  if (type === 'ReleaseGuardAssignment') expect(runtime.guardRelease.claimOf(guardId)).toBeUndefined();
+  if (type === 'DismissStaff') expect(runtime.securityGuards.allGuardIds()).not.toContain(guardId);
+  if (type === 'RemoveObject') expect(runtime.placedObjects.getSnapshot()).toHaveLength(1);
+  if (action.type === 'DismissAlert') expect(runtime.events.getSnapshot().dismissed).toContain(action.fromSequence);
+  const { kernel: _afterKernel, ...after } = captureSessionSnapshot(runtime);
+  expect(after).not.toEqual(before);
+  const historyOwned = ['PlaceBuildOrder', 'PlaceObject', 'PlaceRoomTemplate', 'Undo', 'Redo'].includes(type);
+  if (type === 'Redo') until(runtime, () => runtime.roomTemplates.snapshot().pending.length === 0);
+  if (!historyOwned) {
+    // Neither another genuine refusal nor a canonical no-op can erase an
+    // already accepted later action. These are actual packed calls, not flags.
+    const current = runtime.prisoners.regimes.all()[0]!.blocks[0]!;
+    send(runtime, { type: 'EditRegimeBlock', classificationGroupId: regime.classificationGroupId, startTickOfDay: current.startTickOfDay, allowedCategories: [...current.allowedCategories].reverse() });
+    send(runtime, { type: 'PurchaseMaterials', orderId: 'later-refused-buy', itemId: 'item.brick', quantity: 1000 });
+    expect(runtime.refusals.last).toMatchObject({ reason: 'purchase.insufficient-funds' });
+    const accepted = captureSessionSnapshot(runtime);
+    send(runtime, { type: 'Undo' });
+    const afterUndo = captureSessionSnapshot(runtime);
+    expect(afterUndo.world).toEqual(accepted.world);
+    expect(afterUndo.construction).toEqual(accepted.construction);
+    expect(runtime.placedObjects.getSnapshot()).toEqual(accepted.simulation!.objects!.placedObjects);
+    expect(runtime.roomTemplates.snapshot().completed?.some(plan => plan.origin.x === 5 && plan.origin.y === 5)).toBe(true);
+    return;
+  }
+  send(runtime, { type: 'Undo' });
+  if (type === 'PlaceBuildOrder') expect(runtime.construction.getOrder('new-wall')?.state).toBe('cancelled');
+  if (type === 'PlaceObject') expect(runtime.construction.getOrder('new-bed')?.state).toBe('cancelled');
+  if (type === 'PlaceRoomTemplate') expect(runtime.roomTemplates.snapshot().pending).toHaveLength(0);
+  expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.yard')).toHaveLength(type === 'Undo' || type === 'Redo' ? 0 : 1);
+});
