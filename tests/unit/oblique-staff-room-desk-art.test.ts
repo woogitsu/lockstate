@@ -57,7 +57,7 @@ describe('existing employee desk in the Staff Room', () => {
     expect(obliqueAssetIdForPlacedObject('object.desk', 8, 4, footprint, [room('room.staff-room', 3, 3, 6, 6)]))
       .toBe('furniture.office.desk.generic');
     expect(obliqueAssetIdForPlacedObject('object.desk', 4, 4, footprint, [room('room.reception', 3, 3, 6, 6)]))
-      .toBe('furniture.office.desk.generic');
+      .toBe('furniture.reception.registration-desk');
     expect(obliqueAssetIdForPlacedObject('object.desk', 4, 4, footprint, []))
       .toBe('furniture.office.desk.generic');
   });
