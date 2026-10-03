@@ -796,5 +796,206 @@
     "sourceSha256": "7773e1446b2832516ce43415933f64fbc13f4227c53d9e7f972927e59c2bd632",
     "archivedBytes": 438603,
     "archivedSha256": "7773e1446b2832516ce43415933f64fbc13f4227c53d9e7f972927e59c2bd632"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003.json",
+    "archived": "showcase-canonical-frames-green/report.json",
+    "sourceBytes": 10749,
+    "sourceSha256": "56a3540b9eda174550a16898369da3d656c3ebe85b06e9f0e96b2777c7f5cfff",
+    "archivedBytes": 10749,
+    "archivedSha256": "56a3540b9eda174550a16898369da3d656c3ebe85b06e9f0e96b2777c7f5cfff"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003.txt",
+    "archived": "showcase-canonical-frames-green/console.txt",
+    "sourceBytes": 4902,
+    "sourceSha256": "e3f3514881c3f68c162403afceed813d50826d25f675e34d6706a23659e1de94",
+    "archivedBytes": 2466,
+    "archivedSha256": "f196e3c4f8946921acf302ddc96fdaea9b3eefa4cba32c0dc317ba2f7b645f26",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\.last-run.json",
+    "archived": "showcase-canonical-frames-green/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showca-2d3fa-m-and-Delivery-Bay-capacity\\actual-completed-whole-paused-snapshot.json",
+    "archived": "showcase-canonical-frames-green/002-actual-completed-whole-paused-snapshot.json",
+    "sourceBytes": 54385,
+    "sourceSha256": "24f40c1bd1fe2abddbb3cce764a1f1fbdb03398b2d4b5b8f06faa412d24a0453",
+    "archivedBytes": 54385,
+    "archivedSha256": "24f40c1bd1fe2abddbb3cce764a1f1fbdb03398b2d4b5b8f06faa412d24a0453"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showca-2d3fa-m-and-Delivery-Bay-capacity\\actual-public-stage-receipt.json",
+    "archived": "showcase-canonical-frames-green/003-actual-public-stage-receipt.json",
+    "sourceBytes": 356377,
+    "sourceSha256": "833b5e210d562fa9a468296633f753f4e210dc2f5a6717032b47ab404593a57a",
+    "archivedBytes": 356377,
+    "archivedSha256": "833b5e210d562fa9a468296633f753f4e210dc2f5a6717032b47ab404593a57a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showca-38e13--and-whole-paused-Save-Load\\same-prison-loaded-actual-fullhd.png",
+    "archived": "showcase-canonical-frames-green/004-same-prison-loaded-actual-fullhd.png",
+    "sourceBytes": 1072755,
+    "sourceSha256": "5490e10a29da8bfefc281c6e84717e5739000f6e89941ac0650f2ba1b223a39a",
+    "archivedBytes": 1072755,
+    "archivedSha256": "5490e10a29da8bfefc281c6e84717e5739000f6e89941ac0650f2ba1b223a39a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showca-38e13--and-whole-paused-Save-Load\\same-prison-public-camera-save-load-receipt.json",
+    "archived": "showcase-canonical-frames-green/005-same-prison-public-camera-save-load-receipt.json",
+    "sourceBytes": 731182,
+    "sourceSha256": "bc425c51deca720a1d8d21d69784a4922ef41cabd10f1ed315fe9c57973ab78a",
+    "archivedBytes": 731182,
+    "archivedSha256": "bc425c51deca720a1d8d21d69784a4922ef41cabd10f1ed315fe9c57973ab78a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showca-38e13--and-whole-paused-Save-Load\\whole-135-55-actual-canvas.png",
+    "archived": "showcase-canonical-frames-green/006-whole-135-55-actual-canvas.png",
+    "sourceBytes": 1072746,
+    "sourceSha256": "167e8f6de58c0c4a36a49ac174054c587ef68440369104563236095ae7a949e5",
+    "archivedBytes": 1072746,
+    "archivedSha256": "167e8f6de58c0c4a36a49ac174054c587ef68440369104563236095ae7a949e5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showca-38e13--and-whole-paused-Save-Load\\whole-135-55-actual-fullhd.png",
+    "archived": "showcase-canonical-frames-green/007-whole-135-55-actual-fullhd.png",
+    "sourceBytes": 1072746,
+    "sourceSha256": "167e8f6de58c0c4a36a49ac174054c587ef68440369104563236095ae7a949e5",
+    "archivedBytes": 1072746,
+    "archivedSha256": "167e8f6de58c0c4a36a49ac174054c587ef68440369104563236095ae7a949e5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showca-38e13--and-whole-paused-Save-Load\\whole-315-45-actual-canvas.png",
+    "archived": "showcase-canonical-frames-green/008-whole-315-45-actual-canvas.png",
+    "sourceBytes": 939112,
+    "sourceSha256": "b2478cecffa1cf0c889d44b686e47f9fb7c5daa98ad140f911f8c522d306560e",
+    "archivedBytes": 939112,
+    "archivedSha256": "b2478cecffa1cf0c889d44b686e47f9fb7c5daa98ad140f911f8c522d306560e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showca-38e13--and-whole-paused-Save-Load\\whole-315-45-actual-fullhd.png",
+    "archived": "showcase-canonical-frames-green/009-whole-315-45-actual-fullhd.png",
+    "sourceBytes": 939112,
+    "sourceSha256": "b2478cecffa1cf0c889d44b686e47f9fb7c5daa98ad140f911f8c522d306560e",
+    "archivedBytes": 939112,
+    "archivedSha256": "b2478cecffa1cf0c889d44b686e47f9fb7c5daa98ad140f911f8c522d306560e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showca-38e13--and-whole-paused-Save-Load\\whole-45-45-actual-canvas.png",
+    "archived": "showcase-canonical-frames-green/010-whole-45-45-actual-canvas.png",
+    "sourceBytes": 927980,
+    "sourceSha256": "e96221b3f6b95b2f8aaf4f6efdae41d70f91cc8ddbd5ee566d01400ae1fa3bac",
+    "archivedBytes": 927980,
+    "archivedSha256": "e96221b3f6b95b2f8aaf4f6efdae41d70f91cc8ddbd5ee566d01400ae1fa3bac"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showca-38e13--and-whole-paused-Save-Load\\whole-45-45-actual-fullhd.png",
+    "archived": "showcase-canonical-frames-green/011-whole-45-45-actual-fullhd.png",
+    "sourceBytes": 927980,
+    "sourceSha256": "e96221b3f6b95b2f8aaf4f6efdae41d70f91cc8ddbd5ee566d01400ae1fa3bac",
+    "archivedBytes": 927980,
+    "archivedSha256": "e96221b3f6b95b2f8aaf4f6efdae41d70f91cc8ddbd5ee566d01400ae1fa3bac"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showca-38e13--and-whole-paused-Save-Load\\whole-paused-after-real-save-load.json",
+    "archived": "showcase-canonical-frames-green/012-whole-paused-after-real-save-load.json",
+    "sourceBytes": 175256,
+    "sourceSha256": "26e9a5fa3799fb2ac94eb29090b735f7d542c429211f9315550bc5e0e6e08f43",
+    "archivedBytes": 175256,
+    "archivedSha256": "26e9a5fa3799fb2ac94eb29090b735f7d542c429211f9315550bc5e0e6e08f43"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showca-38e13--and-whole-paused-Save-Load\\whole-paused-before-camera-and-save.json",
+    "archived": "showcase-canonical-frames-green/013-whole-paused-before-camera-and-save.json",
+    "sourceBytes": 175256,
+    "sourceSha256": "79de0bec318b1500c3749fefaff0d9cb49612df9f117db757b18e77adec6c523",
+    "archivedBytes": 175256,
+    "archivedSha256": "79de0bec318b1500c3749fefaff0d9cb49612df9f117db757b18e77adec6c523"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showca-8efb9-s-06-completed-outdoor-Yard\\actual-completed-whole-paused-snapshot.json",
+    "archived": "showcase-canonical-frames-green/014-actual-completed-whole-paused-snapshot.json",
+    "sourceBytes": 175256,
+    "sourceSha256": "21a2b5cb98a71181f2f99ad11d931a11473245f5860d9a9ffedce75dcccda7db",
+    "archivedBytes": 175256,
+    "archivedSha256": "21a2b5cb98a71181f2f99ad11d931a11473245f5860d9a9ffedce75dcccda7db"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showca-8efb9-s-06-completed-outdoor-Yard\\actual-public-stage-receipt.json",
+    "archived": "showcase-canonical-frames-green/015-actual-public-stage-receipt.json",
+    "sourceBytes": 471196,
+    "sourceSha256": "5f9ee79f01a731c161d011afb7dd5447f31e9470f9be33440c3885e7f728da6f",
+    "archivedBytes": 471196,
+    "archivedSha256": "5f9ee79f01a731c161d011afb7dd5447f31e9470f9be33440c3885e7f728da6f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showca-bb76b-ts-04-completed-Shower-room\\actual-completed-whole-paused-snapshot.json",
+    "archived": "showcase-canonical-frames-green/016-actual-completed-whole-paused-snapshot.json",
+    "sourceBytes": 145178,
+    "sourceSha256": "5be6ad1f9f3b82f8aac76294be4e18be5742bbdf810c199bbff4296c9efd4fdc",
+    "archivedBytes": 145178,
+    "archivedSha256": "5be6ad1f9f3b82f8aac76294be4e18be5742bbdf810c199bbff4296c9efd4fdc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showca-bb76b-ts-04-completed-Shower-room\\actual-public-stage-receipt.json",
+    "archived": "showcase-canonical-frames-green/017-actual-public-stage-receipt.json",
+    "sourceBytes": 443430,
+    "sourceSha256": "2ca2a3be2d7b0dc94855321f7f0e46bddffccf695b478aad4dde8b9acada5ab1",
+    "archivedBytes": 443430,
+    "archivedSha256": "2ca2a3be2d7b0dc94855321f7f0e46bddffccf695b478aad4dde8b9acada5ab1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showca-c851b--wing-and-two-tile-corridor\\actual-completed-whole-paused-snapshot.json",
+    "archived": "showcase-canonical-frames-green/018-actual-completed-whole-paused-snapshot.json",
+    "sourceBytes": 110789,
+    "sourceSha256": "eb5d29ab349dd8602925aa873bb964dd7b0eb12f7ecdbee286e9b5c6b5464522",
+    "archivedBytes": 110789,
+    "archivedSha256": "eb5d29ab349dd8602925aa873bb964dd7b0eb12f7ecdbee286e9b5c6b5464522"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showca-c851b--wing-and-two-tile-corridor\\actual-public-stage-receipt.json",
+    "archived": "showcase-canonical-frames-green/019-actual-public-stage-receipt.json",
+    "sourceBytes": 411704,
+    "sourceSha256": "ffc854fba9829af653518ceb2d060b793c118455cd23673408fe68344f505704",
+    "archivedBytes": 411704,
+    "archivedSha256": "ffc854fba9829af653518ceb2d060b793c118455cd23673408fe68344f505704"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showcase.recipe.ts-03-completed-Kitchen\\actual-completed-whole-paused-snapshot.json",
+    "archived": "showcase-canonical-frames-green/020-actual-completed-whole-paused-snapshot.json",
+    "sourceBytes": 129985,
+    "sourceSha256": "632d784593a03a4c7235843ce5a21fb5bdac7e0e94fb4483d8bebb1cb85a35b6",
+    "archivedBytes": 129985,
+    "archivedSha256": "632d784593a03a4c7235843ce5a21fb5bdac7e0e94fb4483d8bebb1cb85a35b6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showcase.recipe.ts-03-completed-Kitchen\\actual-public-stage-receipt.json",
+    "archived": "showcase-canonical-frames-green/021-actual-public-stage-receipt.json",
+    "sourceBytes": 429297,
+    "sourceSha256": "4157dd1dc70f48045d29a76ba786b29c5d6ac795174f0c425fcd2a3bf7ced9ae",
+    "archivedBytes": 429297,
+    "archivedSha256": "4157dd1dc70f48045d29a76ba786b29c5d6ac795174f0c425fcd2a3bf7ced9ae"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showcase.recipe.ts-05-completed-Canteen\\actual-completed-whole-paused-snapshot.json",
+    "archived": "showcase-canonical-frames-green/022-actual-completed-whole-paused-snapshot.json",
+    "sourceBytes": 173266,
+    "sourceSha256": "6b79b586c6f4167eb0f64a2fff192dc2c94de25e16dab56f0b97239817843141",
+    "archivedBytes": 173266,
+    "archivedSha256": "6b79b586c6f4167eb0f64a2fff192dc2c94de25e16dab56f0b97239817843141"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-canonical-frames-20261003\\native-small-prison-showcase.recipe.ts-05-completed-Canteen\\actual-public-stage-receipt.json",
+    "archived": "showcase-canonical-frames-green/023-actual-public-stage-receipt.json",
+    "sourceBytes": 468884,
+    "sourceSha256": "d8adcb50875b1e9426b26e2f601bd92ba6e561b60a2b25668e7cab5871b122d6",
+    "archivedBytes": 468884,
+    "archivedSha256": "d8adcb50875b1e9426b26e2f601bd92ba6e561b60a2b25668e7cab5871b122d6"
   }
 ]

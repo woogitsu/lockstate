@@ -1,0 +1,38 @@
+node : [2m[WebServer] [22m(node:10252) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:12 char:1
++ node node_modules/@playwright/test/cli.js test --config assets/interm ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 7 tests using 1 worker
+
+(node:31384) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:31384) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\native-small-prison-showcase.recipe.ts:166:3 › 01 public Storage Room and Delivery Bay capacity (43.8s)
+  ok 2 tests\browser\native-small-prison-showcase.recipe.ts:166:3 › 02 horizontal four-cell wing and two-tile corridor (1.1m)
+  ok 3 tests\browser\native-small-prison-showcase.recipe.ts:166:3 › 03 completed Kitchen (39.1s)
+  ok 4 tests\browser\native-small-prison-showcase.recipe.ts:166:3 › 04 completed Shower room (37.0s)
+  ok 5 tests\browser\native-small-prison-showcase.recipe.ts:166:3 › 05 completed Canteen (53.9s)
+  ok 6 tests\browser\native-small-prison-showcase.recipe.ts:166:3 › 06 completed outdoor Yard (26.4s)
+  ok 7 tests\browser\native-small-prison-showcase.recipe.ts:231:1 › 07 same completed prison at three public camera poses and whole paused Save/Load (25.1s)
+
+  7 passed (4.9m)
