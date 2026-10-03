@@ -13,7 +13,7 @@ import { projectObliqueWorldFrame } from '../../src/rendering/camera/oblique-wor
 import { parseObliqueModuleCatalog, selectObliqueModuleFrame } from '../../src/rendering/assets/oblique-module-catalog';
 import { parseObliqueModuleRegistry } from '../../src/rendering/assets/oblique-module-registry';
 
-it.each([0, 1] as const)('buys a separate orientation0 rack inside actual public Laundry q%s, retains both washers and whole V8', turns => {
+it.each([0, 1] as const)('buys a separate orientation0 rack inside actual public Laundry q%s, retains both washers and whole V9', turns => {
   const runtime = createNewSimulationRuntime(73);
   const submit = (command: Parameters<typeof packCommand>[0]): void => {
     const sequence = runtime.kernel.expectedSequence;
@@ -83,11 +83,11 @@ it.each([0, 1] as const)('buys a separate orientation0 rack inside actual public
   expect(selected).toEqual({ yawDegrees: 60, elevationDegrees: 40, image: '/assets/environment/oblique/furniture.laundry.linen-rack-yaw+60-elev40.e2f44421aff0.png', sha256: 'e2f44421aff04ef5dbe7ea36f9c1102bffaa10b88ab498ad02e7a6b74b78dda1' });
   expect(createHash('sha256').update(readFileSync(new URL(selected.image.slice(1), publicRoot))).digest('hex')).toBe(selected.sha256);
   const envelope = createSaveEnvelope({ gameVersion: 'laundry-linen-source-proof', prisonId: `laundry-q${turns}`, revision: 1, createdAt: 0, updatedAt: 1, ...whole });
-  expect(envelope.saveSchemaVersion).toBe(8);
+  expect(envelope.saveSchemaVersion).toBe(9);
   const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope))); expect(decoded.ok).toBe(true);
-  if (!decoded.ok) throw new Error('Actual separately purchased Laundry linen rack V8 refused');
+  if (!decoded.ok) throw new Error('Actual separately purchased Laundry linen rack V9 refused');
   const restored = captureSessionSnapshot(restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime);
   expect(restored).toEqual(whole);
   mkdirSync('assets/intermediate/laundry-linen-rack-public-proof', { recursive: true });
-  writeFileSync(`assets/intermediate/laundry-linen-rack-public-proof/q${turns}.json`, JSON.stringify({ stages, slot, ordinaryObjectOrientation: 0, paidRackMaterialsMinorUnits: 65, ticks, washers, wholeBefore: whole, wholeAfter: restored, wholeV8Exact: true, nativeRun: false }, null, 2));
+  writeFileSync(`assets/intermediate/laundry-linen-rack-public-proof/q${turns}.json`, JSON.stringify({ stages, slot, ordinaryObjectOrientation: 0, paidRackMaterialsMinorUnits: 65, ticks, washers, wholeBefore: whole, wholeAfter: restored, wholeV9Exact: true, nativeRun: false }, null, 2));
 });
