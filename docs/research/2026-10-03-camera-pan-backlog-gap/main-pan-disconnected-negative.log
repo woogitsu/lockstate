@@ -1,0 +1,48 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-build-input-gap-20261003
+
+ ❯ tests/unit/ui-camera-pan-control.test.ts (5 tests | 2 failed) 9ms
+   × actual world host mount gives four labeled buttons and distinct real click callbacks 7ms
+   × actual oblique host mount gives four labeled buttons and distinct real click callbacks 1ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 59 passed (61)
+   Start at  03:40:16
+   Duration  1.49s (transform 574ms, setup 0ms, import 1.76s, tests 25ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-camera-pan-control.test.ts > actual world host mount gives four labeled buttons and distinct real click callbacks
+ FAIL  tests/unit/ui-camera-pan-control.test.ts > actual oblique host mount gives four labeled buttons and distinct real click callbacks
+AssertionError: expected [] to deeply equal [ [ 'left' ], [ 'up' ], …(2) ]
+
+- Expected
++ Received
+
+- [
+-   [
+-     "left",
+-   ],
+-   [
+-     "up",
+-   ],
+-   [
+-     "down",
+-   ],
+-   [
+-     "right",
+-   ],
+- ]
++ []
+
+ ❯ tests/unit/ui-camera-pan-control.test.ts:43:27
+     41|     button.dispatchEvent(new Event('click'));
+     42|   });
+     43|   expect(step.mock.calls).toEqual([['left'], ['up'], ['down'], ['right…
+       |                           ^
+     44| });
+     45| it('omits pan controls when the host provides no active pan capability…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
