@@ -8,7 +8,7 @@ import { routeWaypoints } from '../navigation/route';
 import type { RouteContext } from '../navigation/route-context';
 import type { CarryJobExecutor } from '../operations/carry-executor';
 import type { CarryItemJob } from '../operations/job';
-import { tileCoordinate, type TilePosition } from '../world/coordinates';
+import { tileCoordinate, tileKey, type TilePosition } from '../world/coordinates';
 import { DEFAULT_ACTIONS, type ActionDefinition } from './actions';
 import { INFIRMARY_TREATMENT_ACTION_ID, treatmentTicksFor } from './injury';
 import {
@@ -1963,6 +1963,10 @@ export class ActionSystem implements SystemRegistration {
     // sleeping, eating in cell and using the toilet whatever stands in the
     // room, and why the first bed placed buys three needs rather than one.
     const instance = this.roomInstances.findAvailableForUse(action.target.roomCatalogId, action.requiredObjectCapability);
+    // A registered capacity is not a navigable destination. Use the router's
+    // current graph membership before committing this action, so a blocked
+    // anchor can follow ADR 0041's existing next-candidate fallback.
+    if (instance !== undefined && !this.navigation.getGraph().tileToRegion.has(tileKey(instance.anchorTile))) return undefined;
     return instance === undefined ? undefined : { kind: 'room', instance };
   }
 
