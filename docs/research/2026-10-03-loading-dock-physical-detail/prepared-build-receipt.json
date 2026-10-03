@@ -1,0 +1,19 @@
+{
+  "checkpoint": "compiled dedicated model consumer; native acceptance pending",
+  "builtAtUtc": "2026-10-03T01:27:37.317752+00:00",
+  "buildCommand": [
+    "node",
+    "scripts/cloudflare-task.mjs",
+    "build",
+    "production"
+  ],
+  "buildExitCode": 0,
+  "worker": {
+    "path": "dist/client/assets/worker-DAXVTV5K.js",
+    "bytes": 438431,
+    "sha256": "ffcd267d72a27972d48d0d0d2722ce6f73b7b18069d6e46c423a1feaa9794545"
+  },
+  "nativeBrowserStarted": false,
+  "sourceSha256": "7eeca158b9e5f92abb139ab8164f5dd7a2aa2f2ca47936e4b08e4ea6c79a3aac",
+  "canonicalDescriptorSha256": "c747970e23e5c738571c5ba396f6db2dd29a16600647652d0e46929eee83fc2f"
+}
