@@ -1,13 +1,11 @@
 import { expect, test, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 
-interface Target { kind: 'room-template'; templateId: string; origin: { x: number; y: number }; mirrorX?: boolean; quarterTurns?: 0 | 1 | 2 | 3 }
+interface Target { kind: 'room-template'; templateId: string; origin: { x: number; y: number } }
 interface Probe {
   hold: boolean;
   heldTarget?: Target;
   replies: Array<{ target: Target; ok: boolean }>;
-  requests: Array<{ requestId: string; target: Target }>;
-  delivered: Array<{ requestId: string; target: Target; ok: boolean }>;
   held: Array<{ target: Target; ok: boolean }>;
   commandResults: Array<{ status: string }>;
   release(): void;
@@ -18,7 +16,7 @@ async function observeActualPreflight(page: Page): Promise<void> {
     const targets = new Map<string, Target>();
     const commands = new Set<string>();
     const release: Array<() => void> = [];
-    const probe: Probe = { hold: false, replies: [], requests: [], delivered: [], held: [], commandResults: [], release() {
+    const probe: Probe = { hold: false, replies: [], held: [], commandResults: [], release() {
       probe.hold = false;
       for (const action of release.splice(0)) action();
     } };
@@ -43,7 +41,6 @@ async function observeActualPreflight(page: Page): Promise<void> {
               return;
             }
             probe.replies.push(receipt);
-            probe.delivered.push({ ...receipt, requestId: reply.replyTo! });
           }
         });
       }
@@ -51,7 +48,6 @@ async function observeActualPreflight(page: Page): Promise<void> {
         const request = message as { messageId?: string; kind?: string; payload?: { projectionId?: string; target?: Target; command?: { data?: { type?: string } } } };
         if (request.payload?.projectionId === 'world/room-template-preflight' && request.payload.target !== undefined) {
           targets.set(request.messageId!, request.payload.target);
-          probe.requests.push({ requestId: request.messageId!, target: request.payload.target });
         }
         if (request.kind === 'simulation/submit-command' && request.payload?.command?.data?.type === 'PlaceRoomTemplate') commands.add(request.messageId!);
         if (transfer === undefined) super.postMessage(message);
@@ -97,7 +93,6 @@ for (const initialMode of ['world', 'oblique'] as const) for (const rearm of [fa
     await view.focus(); await page.keyboard.press(initialMode === 'world' ? 'End' : 'Home');
     await expect(view).toHaveValue(initialMode === 'world' ? 'oblique' : 'world');
     await expect(view).toBeEnabled(); await expect(view).toHaveAttribute('aria-busy', 'false');
-    const requestsBeforeRearm = await page.evaluate(() => (Reflect.get(window, 'rendererPlanPreflight') as Probe).requests.length);
     if (rearm) {
       await open.focus(); await page.keyboard.press('Enter');
       await dialog.getByRole('button', { name: 'Yard', exact: true }).focus(); await page.keyboard.press('Enter');
@@ -120,23 +115,8 @@ for (const initialMode of ['world', 'oblique'] as const) for (const rearm of [fa
       await expect(ghost).toHaveAttribute('data-ready', 'clear');
       await expect(ghost.locator('polygon')).toHaveCount(64);
       expect((await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toHaveLength(0);
-      const current = await page.evaluate(start => {
-        const probe = Reflect.get(window, 'rendererPlanPreflight') as Probe;
-        return probe.requests.slice(start).at(-1);
-      }, requestsBeforeRearm);
-      expect(current).toBeDefined();
-      expect(current!.target.kind).toBe('room-template');
-      expect(current!.target.templateId).toBe('yard-basic');
-      expect(current!.target.mirrorX ?? false).toBe(false);
-      expect(current!.target.quarterTurns ?? 0).toBe(0);
-      // Releasing the exact old Cell response can append it after Yard's
-      // valid response. A +2px movement may stay in the same tile and is
-      // legitimately deduplicated. Correlate the latest actual post-rearm
-      // request, including its full origin/mirror/turn target, not reply order.
-      await expect.poll(() => page.evaluate(requestId => {
-        const probe = Reflect.get(window, 'rendererPlanPreflight') as Probe;
-        return probe.delivered.find(reply => reply.requestId === requestId);
-      }, current!.requestId)).toEqual({ ...current!, ok: true });
+      const current = await page.evaluate(() => (Reflect.get(window, 'rendererPlanPreflight') as Probe).replies.at(-1)!);
+      expect(current.target.templateId).toBe('yard-basic'); expect(current.ok).toBe(true);
       await page.keyboard.press('Escape'); await expect(ghost).toBeHidden();
     } else {
       await expect(ghost).toBeHidden(); // original disposed guard reveals a new armed preview here
