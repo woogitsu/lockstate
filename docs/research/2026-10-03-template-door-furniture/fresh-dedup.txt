@@ -1,0 +1,6 @@
+﻿1639	open	Mirrored room plans place multi-tile furniture into wall squares
+1994	open	Generic furniture build order occupies a completed template doorway approach
+1586	open	Build ready-to-place Cell and room templates with full-grid previews
+1980	open	Removed or rebuilt room furniture remains duplicated in snapshot render feed
+2008	open	Blocked room anchor repeatedly wins action selection and starves a housed prisoner
+604	open	HANDOVER 2026-08-29 late — main red three times, five PRs became six, and the design search landed
