@@ -150,10 +150,10 @@ async function exportSaved(page: Page) {
   const path = await (await download).path();
   if (path === null) throw Error('Actual exported save absent');
   const raw: unknown = JSON.parse(await readFile(path, 'utf8'));
-  expect(raw).toMatchObject({ saveSchemaVersion: 9 });
+  expect(raw).toMatchObject({ saveSchemaVersion: 10 });
   const decoded = decodeSaveEnvelope(raw);
   expect(decoded.ok).toBe(true);
-  if (!decoded.ok) throw Error('Actual player-exported V8 must decode');
+  if (!decoded.ok) throw Error('Actual player-exported V10 must decode');
   return { raw, bundle: decoded.value.payload as unknown as SessionSnapshotBundle };
 }
 
@@ -165,7 +165,7 @@ test.afterEach(async ({ page }, info) => {
 });
 
 for (const operation of ['New', 'Load'] as const) {
-  test(`Full HD: public ${operation} replaces a pending preflight and keeps 18 new orders through V8 Save/Load`, async ({ page }, info) => {
+  test(`Full HD: public ${operation} replaces a pending preflight and keeps 18 new orders through V10 Save/Load`, async ({ page }, info) => {
     await observe(page);
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto('/?renderer=oblique');

@@ -31,7 +31,7 @@ async function observeWorker(page: Page): Promise<void> {
         readers.set(id, value => { clearTimeout(timer); resolve(value); });
         latest!.postMessage({ protocolVersion: 1, messageId: id, kind: 'simulation/request-snapshot', payload: { reason: 'consistency-check' } });
       }) as { kind: string; payload: { snapshot: { schemaVersion: number; data: SessionSnapshotBundle } } };
-      if (message.kind !== 'simulation/snapshot' || message.payload.snapshot.schemaVersion !== 3) throw Error('Actual snapshot absent or incompatible');
+      if (message.kind !== 'simulation/snapshot' || message.payload.snapshot.schemaVersion !== 4) throw Error('Actual snapshot absent or incompatible');
       return message.payload.snapshot.data;
     } } satisfies Probe);
   });
