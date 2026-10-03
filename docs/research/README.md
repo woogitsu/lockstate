@@ -100,6 +100,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [World public held-arrow native preparation](./2026-10-03-world-roving-native-prep/README.md) | Can the #1943 World parity fix be checked using held native keys, real Build/Rooms clicks and public minimap geometry? | One opt-in 60 s built-client recipe; actual native producer omission/restoration acceptance remains pending with root. |
 | [World held arrow and catalogue focus](./2026-10-03-world-roving-held-arrow/README.md) | Does World stop an already-held camera arrow when a grouped catalogue radio takes focus? | Source reproduction of missing #1943 World parity; preserve ordinary-button/WASD control without a new layout rule. |
 | [2026-10-03 Classroom desk native preparation](./2026-10-03-classroom-desk-native-preparation/README.md) | Can separately purchased Classroom desks retain exact ownership and whole paused Save/Load state in both room orientations? | Literal free 2 by 1 desk slots in both original Classroom plan rotations; separate paid orientation0 ownership, actual producer RED-to-restore and wholeV8 proof; native pending. |
 | [2026-10-03 current-target renderer preflight receipt](./2026-10-03-renderer-preflight-receipt-identity/README.md) | Can a released stale Cell response be distinguished from the current rearmed Yard receipt? | Exact hosted observer failure and original fixture retained; request-ID/full-target correlation, strict types green, native acceptance pending. |
