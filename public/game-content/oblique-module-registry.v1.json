@@ -241,6 +241,14 @@
                     {
                         "assetId":  "fixture.yard.steel-waste-bin",
                         "manifest":  "/game-content/oblique-fixture.yard-steel-waste-bin.v1.json"
+                    },
+                    {
+                        "assetId":  "fixture.garbage-room.waste-bin",
+                        "manifest":  "/game-content/oblique-fixture.garbage-room-waste-bin.v1.json"
+                    },
+                    {
+                        "assetId":  "furniture.classroom.teacher-desk",
+                        "manifest":  "/game-content/oblique-furniture-classroom-teacher-desk.v1.json"
                     }
                 ]
 }

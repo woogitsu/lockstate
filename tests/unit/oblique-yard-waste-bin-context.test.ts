@@ -31,7 +31,7 @@ describe('existing waste bin gets Yard art only inside an authoritative Yard rec
   it.each([
     { rooms: [room('room.yard', 2, 2, 4, 4)], phase: 'built' as const, expected: 'fixture.yard.steel-waste-bin' },
     { rooms: [room('room.yard', 4, 3, 1, 1)], phase: 'built' as const, expected: 'fixture.cell.waste_bin' },
-    { rooms: [room('room.garbage-room', 2, 2, 4, 4)], phase: 'built' as const, expected: 'fixture.cell.waste_bin' },
+    { rooms: [room('room.garbage-room', 2, 2, 4, 4)], phase: 'built' as const, expected: 'fixture.garbage-room.waste-bin' },
     { rooms: [], phase: 'built' as const, expected: 'fixture.cell.waste_bin' },
     { rooms: [room('room.yard', 2, 2, 4, 4)], phase: 'planned' as const, expected: 'fixture.cell.waste_bin' },
   ])('selects $expected for $phase waste bin with rooms $rooms', ({ rooms, phase, expected }) => {

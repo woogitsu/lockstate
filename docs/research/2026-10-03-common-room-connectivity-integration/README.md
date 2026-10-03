@@ -1,5 +1,13 @@
 # Common Room and physically usable room selection integration — 2026-10-03
 
+## Garbage Room and Classroom integration checkpoint
+
+Both genuine Blender assets now enter the runtime registry and actual completed-object projection: `fixture.garbage-room.waste-bin` only inside Garbage Room and `furniture.classroom.teacher-desk` only when the entire oriented desk footprint fits inside Classroom. The existing Classroom chair, Yard bin and generic desk/bin selections remain intact. Planned objects retain their existing appearance. This is presentation-only; no object price, footprint, template contents or save-format change.
+
+The real projection/registry controls were run before the mapping existed: **9 RED, 2 legal GREEN**. The implemented mapping and surrounding model/context/typed V8 controls pass **49/49 in seven files**, and both application/tooling type checks exit0. Original and corrected outputs are retained in `source-integration-proof/`. Native visual acceptance for these two models remains pending; exported frames and these bounded source checks are not deployment acceptance.
+
+The complete incoming Blender and provenance records remain linked from the research index; Garbage Room has42 connected authored parts and Classroom has133, each with72 canonical renders and retained original materials/geometry. The teacher desk is an ordinary separately purchased object, not a silently added Classroom-template fixture. The correlated preflight observer and unchanged-minimap pixel cache are integrated; no CI latency improvement is claimed without an actual measurement.
+
 ## Current checkpoint
 
 The actual retained Blender upholstered Bench for Common Room is integrated: original33parts/materials become35 with two genuine missing front-arm risers, unchanged2×1footprint and all72canonical camera renders. Default wooden corridor Bench remains unchanged. The source integrity, camera/PNG negative controls and restored source evidence stay in their original research collections.
