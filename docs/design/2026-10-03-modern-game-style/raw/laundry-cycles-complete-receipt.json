@@ -1,0 +1,25 @@
+{
+  "subject": "9f709f293c47228166a09f550ef9867006d7bec6",
+  "typesExit": 0,
+  "suiteExit": 1,
+  "failed": 2,
+  "passed": 8575,
+  "skipped": 2,
+  "files": 729,
+  "durationSeconds": 208.61,
+  "buildReached": false,
+  "logs": [
+    {
+      "file": "laundry-cycles-complete-types.txt",
+      "sourceEncoding": "utf16le",
+      "sourceSHA256": "51fdd64179f3cdff8c4e7b718b12b9d51fe8eba418a0acde07a378e2b1fc0b71",
+      "archiveSHA256": "be589f0007cc0c2bc5b1eeea951214983e2103275ee98263720a225d327c79e3"
+    },
+    {
+      "file": "laundry-cycles-complete-suite.txt",
+      "sourceEncoding": "utf16le",
+      "sourceSHA256": "562e9749d911f0a1bea8bc0fcbc5b3669f956aa9b5299ccda2ae7512fa726dd5",
+      "archiveSHA256": "a691fd04469d02b8ed1db7cf277d3e9d569e6078a1b3f5082e8f932b86c2251b"
+    }
+  ]
+}

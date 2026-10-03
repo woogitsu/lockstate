@@ -61,3 +61,15 @@ refs; no publication guard or allowlist was weakened. Those same three files
 then passed all 47 tests. [Original logs and encoding/hash receipt](./raw/original-complete-receipt.json)
 retain the complete failed gate and corrected bounded result. Fresh combined
 native photos and complete release gates are still required.
+
+## Genuine Laundry Cycles integration and retained source result
+
+The complete72-frame soft-lit Laundry model now selects its actual existing
+runtime context. The complete source gate at9f709f293c retained8575 passes,
+two existing skips and two documentation failures across729 files, with strict
+types exit0; a fresh build was not reached. The exact original logs and hashes
+are in [the receipt](./raw/laundry-cycles-complete-receipt.json).
+One publication check required fetching the already published triage branch;
+the other identified an untyped historical comparison script. Its exact source
+is retained as inert text, without a TypeScript exemption. This does not claim
+the actual Laundry client recipe or the final whole gate has passed.

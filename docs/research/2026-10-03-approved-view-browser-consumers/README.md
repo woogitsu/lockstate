@@ -30,12 +30,17 @@ accounts for the same native SELECT moving from `.hud__corner` to
 Original pixel, cost, owner, whole Save/Load, camera-step, pointer/key and budget
 assertions remain. This is a source proof, not native acceptance.
 
-Reproduce from the repository root:
+The executed command at the original published checkpoint was:
 
 ```powershell
 node docs/research/2026-10-03-approved-view-browser-consumers/guard-preservation.mjs
 pnpm --config.verify-deps-before-run=false typecheck
 ```
+
+The exact historical executable is retained as inert
+[guard-preservation.mjs.txt](./guard-preservation.mjs.txt). It is evidence of the
+49-consumer checkpoint, not an ongoing typed repository tool or a claim that
+later independent consumer edits still match that historical base.
 
 **VERIFIED, executed:** app and tools typecheck exit 0; raw output is retained in
 [typecheck.txt](./typecheck.txt). No browser, build, server or native collection

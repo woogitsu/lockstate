@@ -1,0 +1,65 @@
+pnpm : $ vitest run "--maxWorkers=2"
+At line:10 char:1
++ pnpm --config.verify-deps-before-run=false test --maxWorkers=2 *> ($m ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003
+
+ ❯ tests/foundation/typecheck-coverage-contract.test.ts (4 tests | 1 failed) 42ms
+     × leaves no tracked module file outside every TypeScript project 40ms
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts (8 tests | 1 failed) 28ms
+     × cites only commits this repository publishes, so CI reads the same history a reader can 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-commit-citation-contract.test.ts > a commit sha cited in prose names a commit tha
+t exists > cites only commits this repository publishes, so CI reads the same history a reader can
+AssertionError: these cite a commit that exists on this disk and on no ref this repository publishes, so nobody else ca
+n check them and CI cannot either: `fetch-depth: 0` fetches all history for every published branch and tag and nothing 
+more. The usual cause is a sha read out of an agent's own worktree before the coordinator cherry-picked it, which rewri
+tes it -- `git branch -r --contains <sha>` tells you. Cite the commit as published, or record it in UNPUBLISHED_BY_ORIG
+IN with what it is and why the anchor cannot move: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-approved-view-browser-consumers/README.md:70 -> 796be15055302b3cde5ec720bda0afd62a55ef08"
+,
++ ]
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts:748:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/foundation/typecheck-coverage-contract.test.ts > typecheck coverage contract > leaves no tracked module fi
+le outside every TypeScript project
+AssertionError: a tracked module file is in no tsconfig `include`, so no typechecker reads it. That is how #602 happene
+d: a benchmark kept calling a production signature that had changed, and neither `pnpm typecheck` nor `pnpm test` could
+ see it. Add the path to `tsconfig.json` or to `tsconfig.tools.json`: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-approved-view-browser-consumers/guard-preservation.mjs",
++ ]
+
+ ❯ tests/foundation/typecheck-coverage-contract.test.ts:126:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 727 passed (729)
+      Tests  2 failed | 8575 passed | 2 skipped (8579)
+   Start at  21:39:32
+   Duration  208.61s (transform 10.09s, setup 0ms, import 117.83s, tests 214.92s, environment 35ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
