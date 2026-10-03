@@ -136,3 +136,7 @@ c28d4815844af9081c4d16925bbf498eb3df2ff1. No browser, build or server was starte
 on this branch. **Native acceptance and actual room-context consumer omission
 are pending root execution.** The actual material maximum reports do not stand
 in for those gates.
+
+## Source-family timing correction
+
+[Original grouped timeout, independent family gates and actual qualifier omission/restoration](./family-gates/README.md): all576 wall/door images retain hash/pixel guards and5000ms case budgets. The same eight files now pass53 tests at w4; actual omission1RED/52GREEN then exact restore53GREEN. Classifier/native floors remain unchanged.
