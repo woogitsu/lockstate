@@ -1,0 +1,19 @@
+{
+  "sourceCommit": "5ad68be120b68b2e8c204b83705a054af8902638",
+  "typecheckExitCode": 0,
+  "focusedFinalUnit": {
+    "filesPassed": 3,
+    "testsPassed": 7,
+    "testsSkipped": 1
+  },
+  "productionBuildExitCode": 0,
+  "worker": {
+    "path": "dist/client/assets/worker-BqCf9Yjh.js",
+    "bytes": 438431,
+    "sha256": "1c96fb83f67be8bdce51a031324181eee354ee2f0ff45cdfaab4aae837e65f75"
+  },
+  "sourceSha256": "0a375563958f382d6b1d8dde1a6252ace7ed3883f4994a78d040361a65397ea1",
+  "descriptorSha256": "206255fae281ddd4293e6d12f3f5db62fc5ef01ee55ffc337eb327ef5ea37627",
+  "nativeBrowserStarted": false,
+  "serverStarted": false
+}
