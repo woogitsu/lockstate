@@ -1,0 +1,43 @@
+{
+  "at": "2026-10-03T10:29:26.370Z",
+  "results": [
+    {
+      "search": "template renderer held release",
+      "results": [
+        {
+          "number": 1967,
+          "state": "OPEN",
+          "title": "Native View option navigation pans the old map during renderer preparation",
+          "url": "https://github.com/woogitsu/lockstate/issues/1967"
+        },
+        {
+          "number": 1908,
+          "state": "OPEN",
+          "title": "Room plans remain armed when cursor movement supersedes placement confirmation",
+          "url": "https://github.com/woogitsu/lockstate/issues/1908"
+        },
+        {
+          "number": 116,
+          "state": "CLOSED",
+          "title": "[Continuation prompt] START HERE — complete brief for the next model taking over Lockstate",
+          "url": "https://github.com/woogitsu/lockstate/issues/116"
+        }
+      ]
+    },
+    {
+      "search": "camera renderer roundtrip memory",
+      "results": []
+    },
+    {
+      "search": "plan switch view primary held",
+      "results": [
+        {
+          "number": 604,
+          "state": "OPEN",
+          "title": "HANDOVER 2026-08-29 late — main red three times, five PRs became six, and the design search landed",
+          "url": "https://github.com/woogitsu/lockstate/issues/604"
+        }
+      ]
+    }
+  ]
+}
