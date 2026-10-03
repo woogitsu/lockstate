@@ -1,0 +1,19 @@
+{
+  "sourceCommit": "cf3722bd7b1ee2cdde4e29cfea42cd200ed35361",
+  "typecheckExitCode": 0,
+  "focusedFinalUnit": {
+    "filesPassed": 3,
+    "testsPassed": 6,
+    "testsSkipped": 1
+  },
+  "productionBuildExitCode": 0,
+  "worker": {
+    "path": "dist/client/assets/worker-gHqdLX2G.js",
+    "bytes": 438431,
+    "sha256": "e40549f8ae4293ff7d6e5b3a6667dad1d54f359f1778abd627ae0e853b634896"
+  },
+  "sourceSha256": "2a912331e9c20a35ea417c25d371cf89a5f80092c3f066504c7b792cb1a042a2",
+  "descriptorSha256": "a9cad53a9203bfd4dc4dbf0fad64ecdc7edb871a3b503157539281f516fb5f04",
+  "nativeBrowserStarted": false,
+  "serverStarted": false
+}
