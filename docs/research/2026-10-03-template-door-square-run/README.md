@@ -23,3 +23,7 @@ VERIFIED source opened: main public per-square producer; construction handler ac
 [Initial typed fixture error](./initial-fixture-error.txt) was12schema failures because extra local test labels were spread into PlaceRoomTemplate. Only explicit existing mirrorX/quarterTurns fields were retained before the genuine8RED/4legal baseline. It is not production failure evidence. Actual executed scripts are archived as inert text; no executable scratch is in the repository.
 
 Weakest claim: this browser-free packed kernel sequence does not prove native drag hit geometry or affordability display. Actual source maps the same square intents to these commands, but no browser was run. No producer mutation was performed while production is awaiting lease.
+
+## Bounded ownership and ordinary construction boundary
+
+Additional [9RED/5legal baseline](./expanded-baseline.txt),2.24s execution, adds one accepted legacy-compatible save without optional completed-gesture metadata: the existing retained completed door order still proves template membership, yet its square is admitted. One ordinary standalone door followed by a square wall remains deliberately legal, and separate genuine public gesture IDs keep its Undo from reversing the earlier door purchase. The first control omitted gesture IDs and therefore undid both purchases under existing grouping: [that fixture error](./initial-ordinary-gesture-fixture-error.txt) is retained, not called a new production defect. Application strict TypeScript exits0. Production remains unchanged.
