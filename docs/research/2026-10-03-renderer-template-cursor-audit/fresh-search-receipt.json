@@ -1,0 +1,421 @@
+{
+  "date": "2026-10-03",
+  "repo": "woogitsu/lockstate",
+  "queries": {
+    "open": "renderer OR preflight OR camera",
+    "all": "\"preview\" \"renderer\"",
+    "cursor": "\"cursor\" \"switch\""
+  },
+  "results": {
+    "open": [
+      {
+        "number": 1979,
+        "title": "[Camera] Horizontal-only wheel events unexpectedly zoom both renderer views"
+      },
+      {
+        "number": 1967,
+        "title": "Native View option navigation pans the old map during renderer preparation"
+      },
+      {
+        "number": 1927,
+        "title": "Angled actor renderer ignores independent world headings and stationary facing changes"
+      },
+      {
+        "number": 1951,
+        "title": "Expose live top-down / angled view selection without resetting an unsaved prison"
+      },
+      {
+        "number": 1592,
+        "title": "[Camera] Adjustable angled world view with square-accurate building and cutaway walls"
+      },
+      {
+        "number": 1948,
+        "title": "Oblique camera remains off-map after New prison"
+      },
+      {
+        "number": 1949,
+        "title": "Held camera turn crosses oblique prison Load boundary"
+      },
+      {
+        "number": 1959,
+        "title": "Angled camera ignores two-finger navigation while Build is armed"
+      },
+      {
+        "number": 1946,
+        "title": "Room-plan dialog keeps obsolete readiness and collision marks during a new preflight"
+      },
+      {
+        "number": 1968,
+        "title": "Native non-modal View popup swallows a world-held camera release and keeps the armed plan moving"
+      },
+      {
+        "number": 1921,
+        "title": "Browser: cold Vite optimization consumes wall/angled-camera acceptance timeout"
+      },
+      {
+        "number": 1950,
+        "title": "Middle mouse drag does not pan oblique camera while Build is armed"
+      },
+      {
+        "number": 1918,
+        "title": "Keyboard camera actions remain active behind native room-plan modal buttons"
+      },
+      {
+        "number": 1970,
+        "title": "Native Build Category option navigation also starts a world camera pan"
+      },
+      {
+        "number": 1908,
+        "title": "Room plans remain armed when cursor movement supersedes placement confirmation"
+      },
+      {
+        "number": 1953,
+        "title": "Full HD Build target clips whole-square coordinates and catalogue value"
+      },
+      {
+        "number": 1954,
+        "title": "[Camera] RMB turn allows accidental LMB Build orders on the same pointer"
+      },
+      {
+        "number": 1956,
+        "title": "HUD: live View switch loses native keyboard focus after successful activation"
+      },
+      {
+        "number": 1965,
+        "title": "Room plans: native dialog Escape also cancels the armed world preview"
+      },
+      {
+        "number": 1989,
+        "title": "World minimap viewport names raw camera scroll instead of the visible ground when zoomed"
+      },
+      {
+        "number": 1988,
+        "title": "Zoomed World room-plan ghost uses a different camera origin from its actual ground pick"
+      },
+      {
+        "number": 1982,
+        "title": "Angled camera middle/right drag resumes after leaving canvas through native HUD controls"
+      },
+      {
+        "number": 1969,
+        "title": "Acknowledged native HUD resize arrow also starts a held world camera pan"
+      },
+      {
+        "number": 1952,
+        "title": "Oblique toilet visual crosses its occupied 1×1 square"
+      },
+      {
+        "number": 1923,
+        "title": "Keyboard-only room-plan selection and rearming loses the unchanged map hover"
+      },
+      {
+        "number": 1740,
+        "title": "Room plan preflight accepts doorway opening into unowned land"
+      },
+      {
+        "number": 1996,
+        "title": "Refused occupied template cancellation blocks Undo of a newer independent purchase"
+      },
+      {
+        "number": 1971,
+        "title": "Angled canvas-origin wall drag freezes its preview and quote under the HUD while release orders a longer run"
+      },
+      {
+        "number": 1995,
+        "title": "Canceling a JIT material delivery demolishes an occupied partially furnished room template"
+      },
+      {
+        "number": 1957,
+        "title": "Kitchen oblique stove, counter and fridge escape occupied squares"
+      },
+      {
+        "number": 1661,
+        "title": "Room plan preflight misses an edge wall sealing its doorway approach"
+      },
+      {
+        "number": 1973,
+        "title": "Native View selector loses mouse presses to the armed map in both renderers at Full HD"
+      },
+      {
+        "number": 1821,
+        "title": "Render medical bed and cabinet for adjustable oblique camera"
+      },
+      {
+        "number": 1914,
+        "title": "Angled Build and room-plan ghosts stay on old tile after camera turn"
+      },
+      {
+        "number": 1672,
+        "title": "Room plan preflight misses a full-square wall or furniture outside its doorway"
+      },
+      {
+        "number": 1974,
+        "title": "Keyboard-armed fitted room plan jumps origin on the first stationary map click"
+      },
+      {
+        "number": 1585,
+        "title": "Place walls as whole squares with an unambiguous footprint and height"
+      },
+      {
+        "number": 1966,
+        "title": "Native room-plan rotation popup swallows camera key release and resumes motion after close"
+      },
+      {
+        "number": 1980,
+        "title": "Removed or rebuilt room furniture remains duplicated in snapshot render feed"
+      },
+      {
+        "number": 1479,
+        "title": "Held keys change semantic actions after the input context switches"
+      },
+      {
+        "number": 35,
+        "title": "[Sharing] Add read-only Inspector links, photo mode and public prison showcase"
+      },
+      {
+        "number": 32,
+        "title": "[Assets] Build Blender-to-atlas pipeline and eight-direction character animation contract"
+      },
+      {
+        "number": 1692,
+        "title": "Adjacent room plan can wall off an earlier pending Cell doorway"
+      },
+      {
+        "number": 1606,
+        "title": "Room template placement reply can overwrite a newer world ghost"
+      },
+      {
+        "number": 1703,
+        "title": "Later room plan can wall off a completed Cell doorway"
+      },
+      {
+        "number": 1664,
+        "title": "Reject room template origins whose footprints overflow safe tile coordinates"
+      },
+      {
+        "number": 1930,
+        "title": "Paused snapshot feed drops saved prisoner and guard facing"
+      },
+      {
+        "number": 1646,
+        "title": "Pending room plan leaves its interior falsely clear to another template"
+      },
+      {
+        "number": 1986,
+        "title": "Template Redo ignores later zoning and repurchases orphaned furniture after Load"
+      },
+      {
+        "number": 1845,
+        "title": "Integrate ObliqueWorldScene through production composition root"
+      },
+      {
+        "number": 1658,
+        "title": "Room plan preview omits occupied furniture squares and keeps old mirrored ghost"
+      },
+      {
+        "number": 1700,
+        "title": "Later furniture order can occupy a pending Cell doorway approach"
+      },
+      {
+        "number": 1913,
+        "title": "Oblique view paints actors through full square walls"
+      },
+      {
+        "number": 1654,
+        "title": "Ordinary square wall can occupy a pending room plan interior"
+      },
+      {
+        "number": 1669,
+        "title": "Cancelled room plan remains blocked until Play while the game is paused"
+      },
+      {
+        "number": 1912,
+        "title": "Room plan map quote disappears when advanced coordinates are invalid"
+      },
+      {
+        "number": 1994,
+        "title": "Generic furniture build order occupies a completed template doorway approach"
+      },
+      {
+        "number": 1922,
+        "title": "Oblique actor consumer misses canonical identities published by the real snapshot feed"
+      },
+      {
+        "number": 1934,
+        "title": "Late numeric room-plan placement replies overwrite a newly selected card status"
+      },
+      {
+        "number": 1939,
+        "title": "Keyboard object selection loses active hover to inactive wall-tool withdrawal"
+      },
+      {
+        "number": 1925,
+        "title": "Room-plan construction readout obscures the fitted angled footprint"
+      },
+      {
+        "number": 1947,
+        "title": "Fitted room-plan ghost remains armed across Save/Load and New prison"
+      },
+      {
+        "number": 957,
+        "title": "The room the game's own readout asks for next does not fit on the default screen: the yard needs 8×8, the reachable clear area is 12×11, and all a player gets is three different refusals"
+      },
+      {
+        "number": 1586,
+        "title": "Build ready-to-place Cell and room templates with full-grid previews"
+      },
+      {
+        "number": 1975,
+        "title": "[Owner decision] Exact object source-order ownership and legacy atomic refusal"
+      },
+      {
+        "number": 41,
+        "title": "[Future Discovery] Evaluate Escape mode, seasons, community challenges and asynchronous LLM flavor"
+      },
+      {
+        "number": 641,
+        "title": "Just-in-time materials makes ADR 0075's hard lock reachable by a drag gesture: wall 312 leaves 40"
+      },
+      {
+        "number": 639,
+        "title": "OWNER RULINGS 2026-08-30: four calls on what the game tells the player"
+      },
+      {
+        "number": 37,
+        "title": "[Gameplay] Design and implement Kronikarz dynamic event pacing system"
+      },
+      {
+        "number": 33,
+        "title": "[Presentation] Implement audio, reports, overlays, tutorial, weather and scenario framework"
+      },
+      {
+        "number": 9,
+        "title": "[Roadmap] Execute Lockstate implementation backlog"
+      },
+      {
+        "number": 121,
+        "title": "[Docs] Decide `docs/ISSUE_BACKLOG.md`'s delivery-sequence table: extend it through current work, or reduce the file to its source-of-truth order"
+      },
+      {
+        "number": 604,
+        "title": "HANDOVER 2026-08-29 late — main red three times, five PRs became six, and the design search landed"
+      },
+      {
+        "number": 274,
+        "title": "[ADR] Audit of the whole ADR corpus (0001–0021 + README): status truth, claim truth, cross-ADR contradictions, number hygiene, dangling references and the owner's open-decision queue"
+      }
+    ],
+    "all": [
+      {
+        "number": 1908,
+        "title": "Room plans remain armed when cursor movement supersedes placement confirmation"
+      },
+      {
+        "number": 1965,
+        "title": "Room plans: native dialog Escape also cancels the armed world preview"
+      },
+      {
+        "number": 1947,
+        "title": "Fitted room-plan ghost remains armed across Save/Load and New prison"
+      },
+      {
+        "number": 1586,
+        "title": "Build ready-to-place Cell and room templates with full-grid previews"
+      },
+      {
+        "number": 1912,
+        "title": "Room plan map quote disappears when advanced coordinates are invalid"
+      },
+      {
+        "number": 1585,
+        "title": "Place walls as whole squares with an unambiguous footprint and height"
+      },
+      {
+        "number": 1971,
+        "title": "Angled canvas-origin wall drag freezes its preview and quote under the HUD while release orders a longer run"
+      },
+      {
+        "number": 1988,
+        "title": "Zoomed World room-plan ghost uses a different camera origin from its actual ground pick"
+      },
+      {
+        "number": 1968,
+        "title": "Native non-modal View popup swallows a world-held camera release and keeps the armed plan moving"
+      },
+      {
+        "number": 1160,
+        "title": "Identity stage 4: the build loop against the real simulation"
+      },
+      {
+        "number": 1970,
+        "title": "Native Build Category option navigation also starts a world camera pan"
+      },
+      {
+        "number": 1982,
+        "title": "Angled camera middle/right drag resumes after leaving canvas through native HUD controls"
+      },
+      {
+        "number": 37,
+        "title": "[Gameplay] Design and implement Kronikarz dynamic event pacing system"
+      },
+      {
+        "number": 32,
+        "title": "[Assets] Build Blender-to-atlas pipeline and eight-direction character animation contract"
+      },
+      {
+        "number": 641,
+        "title": "Just-in-time materials makes ADR 0075's hard lock reachable by a drag gesture: wall 312 leaves 40"
+      },
+      {
+        "number": 34,
+        "title": "[Product] Implement multi-device UX, account upgrade and save-slot policy"
+      },
+      {
+        "number": 16,
+        "title": "[Construction] Implement deterministic build commands, jobs, materials and cancellation"
+      },
+      {
+        "number": 4,
+        "title": "[Architecture] Define simulation worker message protocol"
+      },
+      {
+        "number": 604,
+        "title": "HANDOVER 2026-08-29 late — main red three times, five PRs became six, and the design search landed"
+      },
+      {
+        "number": 274,
+        "title": "[ADR] Audit of the whole ADR corpus (0001–0021 + README): status truth, claim truth, cross-ADR contradictions, number hygiene, dangling references and the owner's open-decision queue"
+      },
+      {
+        "number": 115,
+        "title": "[Camera] The build cursor does not match where the wall lands: screenToWorld ignores that Phaser zooms about the viewport centre"
+      },
+      {
+        "number": 138,
+        "title": "[CI] Four gates are weaker than they look: a fork PR satisfies every required check by skipping, and three of four security headers are asserted by nothing"
+      },
+      {
+        "number": 122,
+        "title": "[Docs] DEPLOYMENT.md and CLOUD_SAVE.md each contradict themselves on a point an operator would act on: cache policy, the apex domain, and the service-role key"
+      },
+      {
+        "number": 124,
+        "title": "[Hygiene] Repository sweep findings: docs, ADRs, CI gates, duplicated logic, dead code, archive candidates"
+      },
+      {
+        "number": 116,
+        "title": "[Continuation prompt] START HERE — complete brief for the next model taking over Lockstate"
+      }
+    ],
+    "cursor": [
+      {
+        "number": 1955,
+        "title": "[Camera] Angled wheel zoom moves the Build square beneath a stationary cursor"
+      },
+      {
+        "number": 604,
+        "title": "HANDOVER 2026-08-29 late — main red three times, five PRs became six, and the design search landed"
+      }
+    ]
+  }
+}
