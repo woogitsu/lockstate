@@ -1,0 +1,32 @@
+{
+  "preparedSourceCommit": "5546a64524e28178a33f6a251bf06ffc96678393",
+  "worker": "dist/client/assets/worker-DO2vVdla.js",
+  "workerBytes": 438431,
+  "workerSha256": "ce321dfe2971d77dafa43be135cd84c1845dc91d85684c1b2746606362df5fcf",
+  "canonicalDescriptorSha256": "bdc213968e3aff21f40bc05299f70c12476fb10df0455cf1d86b2bff75ec127c",
+  "sourceSha256": "b1f402e1096c49e1ea65c2e7727df2b6c498a77d09fc485679f1dcf72c95b456",
+  "rearAndSideFrames": [
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-guard-yaw-180-elev45.0c4bb5ba00eb.png",
+      "sha256": "0c4bb5ba00ebeb3deb5417dc69d3288bacd5bd7cf27549fc6609b739657f6a1e"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/actor-guard-yaw+90-elev45.826949d0baef.png",
+      "sha256": "826949d0baeff959b041c5d9510751aca26e18c5415270ac0f29a1f84f0549ca"
+    }
+  ],
+  "appToolsTypeScriptExit": 0,
+  "productionBuildExit": 0,
+  "focusedPass": 9,
+  "optionalBlenderPathSkip": 1,
+  "directPinnedBlender72Passed": true,
+  "sourceActionsCount": 4,
+  "sourceAnimationPosesCount": 8,
+  "nativeAcceptancePerformed": false,
+  "browserStarted": false,
+  "serverStarted": false
+}
