@@ -1,6 +1,6 @@
 # A completed Storage anchor wall strands a paid carry
 
-2026-10-03 browser-free actual source/kernel diagnosis, baseline `5fd3034e5b935a3cadf1e3a43e2f2c0e2f5e9735`, inherited production `986acd75bcf8bae7c761840ec28f5c15555bd40b`. [Issue2009](https://github.com/woogitsu/lockstate/issues/2009). Production unchanged; source lease/policy review pending. No producer-negative/native acceptance claim.
+2026-10-03 browser-free actual source/kernel diagnosis, baseline `5fd3034e5b935a3cadf1e3a43e2f2c0e2f5e9735`, inherited production `986acd75bcf8bae7c761840ec28f5c15555bd40b`. [Issue2009](https://github.com/woogitsu/lockstate/issues/2009). Original diagnosis checkpoint kept production unchanged and source review pending; the accepted correction and subsequent producer proof are recorded below. No native acceptance claim.
 
 ## Exact player/domain sequence
 
@@ -23,7 +23,7 @@ Typed `tests/integration/template-storage-anchor-delivery.test.ts` is2RED/2legal
 
 Fresh successful REST storeroom+anchor and delivery+invalid-destination searches found no matching Issue. Full#811 and actual ADR0093 decision2 were read. #2008 now filters invalid generic room action anchors in ActionSystem; the separate DeliveryBayCarryRoute still selects the first capability-bearing source/destination. #1750 is the already-corrected no-living-carrier bootstrap and is not this case.
 
-Current ADR0093 explicitly fixes source/destination at room anchors and provides graceful direct deposit when an endpoint is missing; current production also excludes unfurnished endpoints/no living carrier. Proposed narrow correction is existing navigation graph destination eligibility at endpoint selection, exact room identity retained and later valid endpoint preferred, then existing fallback if none remains. No arbitrary interior target, per-seat location, full path scan, persistence field, tariff or player wording. This candidate awaits parent scope/policy review before production edits.
+Current ADR0093 explicitly fixes source/destination at room anchors and provides graceful direct deposit when an endpoint is missing; current production also excludes unfurnished endpoints/no living carrier. Proposed narrow correction is existing navigation graph destination eligibility at endpoint selection, exact room identity retained and later valid endpoint preferred, then existing fallback if none remains. No arbitrary interior target, per-seat location, full path scan, persistence field, tariff or player wording. That original candidate awaited parent scope/policy review; the subsequent approved narrow implementation is recorded below.
 
 ## Initial fixture errors, retained
 
@@ -37,3 +37,13 @@ Parent reviewed the existing rule and granted exactly DeliveryBayCarryRoute plus
 Expanded real controls add a later legal Storage at8,13 (destination9,14) after first blocked anchor6,6, and a genuinely removed/rebought dock at13,7 retaining capability while Bay anchor13,6 is blocked. Bay wall13,8 is the adjacent legal control. Live+V8 for each gives [6RED/4legal baseline4.42s](./expanded-baseline.txt), then [10GREEN4.13s](./fixed.txt). The original expanded fixture used colon instead of actual comma tile key, falsely failing2legal controls; [initial source](./initial-expanded-key-fixture.test.ts.txt) and [actual output](./initial-expanded-key-fixture.txt) preserve that fixture mistake distinctly from the final6production failures.
 
 The change applies when a new delivery lands. Already-stranded/failed jobs are not automatically recovered, rerouted, retried or repriced. A navigable graph member is destination eligibility, not a promise of global connectivity or actor-specific permission. Meaningful producer omission/restoration and bounded neighbors remain pending this first fixed checkpoint.
+## Terminal producer proof and bounded gates
+
+The real selection predicate omission restores6RED/4legal; independent removal of the session eligibility wire also restores6RED/4legal. The [actual executed mutation runner](./run-mutations.cjs.txt) restores original file buffers in finally blocks. Both complete source SHA values match before/after in [machine receipt](./mutation-restoration.json); [restored production](./exact-restored.txt) is10GREEN. Source diff against the published fixed checkpoint is0, both process runs terminal; no active scratch exists in the repository.
+
+[Bounded neighbors](./neighbors.txt):47GREEN across6files5.60s, including the new10cases plus actual carry restoration, job restart determinism, carry executor, real production route and no-population bootstrap. Application and tools strict TypeScript commands exit0. Actual source-anchor/quotation documentation gates pass; the first [index gate](./initial-docs.txt) is1RED/19GREEN solely because this new record had not yet been indexed. No budget/allowlist changed or historical citation rewritten.
+
+The working-endpoint rule remains fixed-anchor destination eligibility. It does not prove global reachability or reserve capacity, does not change any already-submitted job and does not automatically retrieve already-stranded goods. Existing direct-deposit pricing/refund/material rules remain unchanged.
+## Final continuous index
+
+The parent granted exactly one new research row. The first insertion accidentally left a blank line before the row and therefore was outside the continuous table; [that1RED/19GREEN preparation result](./initial-own-row-boundary.txt) is retained. Removing only that separating blank line yields exactly one added row and0removed rows. Final [documentation gates](./final-docs.txt) are20GREEN/3files652ms, with source/quotation budgets and all inherited rows preserved. No live source-anchor correction was required by the guard, so none was made.
