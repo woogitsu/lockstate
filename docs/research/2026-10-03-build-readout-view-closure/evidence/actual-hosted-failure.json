@@ -1,0 +1,21 @@
+﻿{
+    "run":  "37138459762",
+    "head":  "30568432f5f4a681849002962a87bfa8134ddc4a",
+    "job":  "111250456875",
+    "rawSha256":  "da630cc1efa23805f86abd9eeee9838a69956c7fd5e8b290258b0680b1a7a2fe",
+    "failure":  {
+                    "header":  "7) tests/browser/build-target-readability.spec.ts:36:40 › 960 CSS-pixel actual square target and catalogue value stay readable without moving controls during a drag",
+                    "error":  "Error: expect(locator).toHaveText(expected) failed",
+                    "expectation":  [
+                                        "Locator: locator(\u0027.hud-build__target-value\u0027)",
+                                        "Expected pattern: /1 whole squares from -?\\d+, -?\\d+ \\| catalogue value 80/",
+                                        "Received string:  \"Point at the world\""
+                                    ],
+                    "assertion":  "\u003e 20 |   await expect(target).toHaveText(/1 whole squares from -?\\d+, -?\\d+ \\| catalogue value 80/);",
+                    "stack":  [
+                                  "at /home/runner/work/lockstate/lockstate/tests/browser/build-target-readability.spec.ts:20:24"
+                              ],
+                    "bootstrap":  false,
+                    "block":  "  7) tests/browser/build-target-readability.spec.ts:36:40 › 960 CSS-pixel actual square target and catalogue value stay readable without moving controls during a drag \n\n    Error: expect(locator).toHaveText(expected) failed\n\n    Locator: locator(\u0027.hud-build__target-value\u0027)\n    Expected pattern: /1 whole squares from -?\\d+, -?\\d+ \\| catalogue value 80/\n    Received string:  \"Point at the world\"\n    Timeout: 10000ms\n\n    Call log:\n      - Expect \"toHaveText\" with timeout 10000ms\n      - waiting for locator(\u0027.hud-build__target-value\u0027)\n        13 × locator resolved to \u003cspan class=\"ui-value hud-build__target-value\"\u003ePoint at the world\u003c/span\u003e\n           - unexpected value \"Point at the world\"\n\n\n      18 |   await page.getByRole(\u0027button\u0027,{name:\u0027Build\u0027,exact:true}).click();await page.locator(\u0027.hud-build__arm\u0027).click();\n      19 |   await page.mouse.move(width===960?370:650,250);const target=page.locator(\u0027.hud-build__target-value\u0027);\n    \u003e 20 |   await expect(target).toHaveText(/1 whole squares from -?\\d+, -?\\d+ \\| catalogue value 80/);\n         |                        ^\n      21 |   await assertReadable(target);\n      22 |   const fallback=page.locator(\u0027.hud-build__arm-hint\u0027);const before=await fallback.boundingBox();\n      23 |   await page.mouse.down();await page.mouse.move(width-460,width===960?430:730,{steps:10});\n        at /home/runner/work/lockstate/lockstate/tests/browser/build-target-readability.spec.ts:20:24\n\n    Error Context: test-results/build-target-readability-9-a1ef5-ving-controls-during-a-drag/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/build-target-readability-9-a1ef5-ving-controls-during-a-drag/trace.zip\n    Usage:\n\n        pnpm exec playwright show-trace test-results/build-target-readability-9-a1ef5-ving-controls-during-a-drag/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n"
+                }
+}

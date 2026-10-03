@@ -1,0 +1,44 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-camera-consumers-20261003
+
+ ❯ tests/unit/build-readout-public-view-consumer.test.ts (4 tests | 3 failed) 33ms
+   × the real 960px readability callback closes View after actual selection and before the original world target 27ms
+   × the real 1920px readability callback closes View after actual selection and before the original world target 2ms
+   × the real 2560px readability callback closes View after actual selection and before the original world target 2ms
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  3 failed | 18 passed (21)
+   Start at  22:01:30
+   Duration  938ms (transform 79ms, setup 0ms, import 239ms, tests 667ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/build-readout-public-view-consumer.test.ts > the real 960px readability callback closes View after actual selection and before the original world target
+ FAIL  tests/unit/build-readout-public-view-consumer.test.ts > the real 1920px readability callback closes View after actual selection and before the original world target
+ FAIL  tests/unit/build-readout-public-view-consumer.test.ts > the real 2560px readability callback closes View after actual selection and before the original world target
+AssertionError: expected AssertionError: world-readout recipe must… { …(4) } to be Error: public map ownership checked; actu… // Object.is equality
+
+- Expected
++ Received
+
+- Error {
+-   "message": "public map ownership checked; actual browser geometry remains separate",
++ AssertionError {
++   "message": "world-readout recipe must release the public View overlay before its original map target: expected true to be false // Object.is equality",
++   "actual": true,
++   "expected": false,
++   "showDiff": true,
++   "operator": "strictEqual",
+  }
+
+ ❯ tests/unit/build-readout-public-view-consumer.test.ts:71:36
+     69|   const callback = [...callbacks].find(([name]) => name.startsWith(`${…
+     70|   expect(callback).toBeDefined();
+     71|   await expect(callback!({ page })).rejects.toBe(stop);
+       |                                    ^
+     72| });
+     73|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
