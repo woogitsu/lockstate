@@ -803,5 +803,70 @@
     "sourceSha256": "e7cf7af29483f551cbc8c336bf54bc81649533c75f1f2b55db6c819bf348bbb2",
     "archivedBytes": 68992,
     "archivedSha256": "e7cf7af29483f551cbc8c336bf54bc81649533c75f1f2b55db6c819bf348bbb2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-door-corrected-20261003.json",
+    "archived": "history-door-original/report.json",
+    "sourceBytes": 13136,
+    "sourceSha256": "3c46dea819010d0259b28bc180a6adf80c86ad39214f72aa49e7db85b903344e",
+    "archivedBytes": 13136,
+    "archivedSha256": "3c46dea819010d0259b28bc180a6adf80c86ad39214f72aa49e7db85b903344e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-door-corrected-20261003.txt",
+    "archived": "history-door-original/console.txt",
+    "sourceBytes": 9476,
+    "sourceSha256": "d90d607c5e9c8e341a749e9bbc57517df86c48de1bc2cdc98428fe4a278db359",
+    "archivedBytes": 4751,
+    "archivedSha256": "34b2ac6b6883c83492067d1e56466b99e9f387cba1af5bb966eace284989e77b",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-door-corrected-20261003\\.last-run.json",
+    "archived": "history-door-original/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "4e05237be5bd7e4dd431f3e5ce8d8206497654f185928ced24145948ae8fa131",
+    "archivedBytes": 96,
+    "archivedSha256": "4e05237be5bd7e4dd431f3e5ce8d8206497654f185928ced24145948ae8fa131"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-door-corrected-20261003\\room-template-history-verd-aa149-ationary-Cell-history-cases\\actual-saved-capacity-fullhd.png",
+    "archived": "history-door-original/002-actual-saved-capacity-fullhd.png",
+    "sourceBytes": 1585846,
+    "sourceSha256": "028e1ef46f727770a3c9805fe8695343d66d6b07a4dd71f1acf33460701350b6",
+    "archivedBytes": 1585846,
+    "archivedSha256": "028e1ef46f727770a3c9805fe8695343d66d6b07a4dd71f1acf33460701350b6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-door-corrected-20261003\\room-template-history-verd-aa149-ationary-Cell-history-cases\\actual-saved-capacity-snapshot.json",
+    "archived": "history-door-original/003-actual-saved-capacity-snapshot.json",
+    "sourceBytes": 42679,
+    "sourceSha256": "18dfb6db47fe6bc2bc70b2e07e2107dc9b728af8b32dea2825273f0fabb9f4c9",
+    "archivedBytes": 42679,
+    "archivedSha256": "18dfb6db47fe6bc2bc70b2e07e2107dc9b728af8b32dea2825273f0fabb9f4c9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-door-corrected-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\error-context.md",
+    "archived": "history-door-original/004-error-context.md",
+    "sourceBytes": 13589,
+    "sourceSha256": "d6611e76c7b298e862ea24966af9f8e1c47d9dd90150fd16a652b94f785ab119",
+    "archivedBytes": 13589,
+    "archivedSha256": "d6611e76c7b298e862ea24966af9f8e1c47d9dd90150fd16a652b94f785ab119"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-door-corrected-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\failed-actual-fullhd.png",
+    "archived": "history-door-original/005-failed-actual-fullhd.png",
+    "sourceBytes": 237486,
+    "sourceSha256": "2a47089d3480b51fc3f15849e568ebeb47dafdfd5eb94931b1dd35bcb9e9edcf",
+    "archivedBytes": 237486,
+    "archivedSha256": "2a47089d3480b51fc3f15849e568ebeb47dafdfd5eb94931b1dd35bcb9e9edcf"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-door-corrected-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\failed-actual-worker-and-input.json",
+    "archived": "history-door-original/006-failed-actual-worker-and-input.json",
+    "sourceBytes": 69000,
+    "sourceSha256": "71affc956fed895f4999613ff4253d532a6a6601d945a12f50cb49a4e3f668d1",
+    "archivedBytes": 69000,
+    "archivedSha256": "71affc956fed895f4999613ff4253d532a6a6601d945a12f50cb49a4e3f668d1"
   }
 ]
