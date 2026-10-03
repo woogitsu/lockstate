@@ -100,6 +100,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [2026-10-03 Garbage Room q0/q1 public native preparation](./2026-10-03-garbage-room-native-preparation/README.md) | Can genuine Garbage Room purchases preserve both bin owners and whole paused Save/Load state? | Literal actual typed builds, square shells/two owners, 4200 total cost, exact whole V8, real q1 producer RED and restore GREEN; opt-in60s native recipe pending root visuals. |
 | [2026-10-03 Dedicated Garbage Room refuse trolley](./2026-10-03-garbage-room-refuse-trolley/README.md) | Does the authored Garbage Room bin retain its original parts on a genuine connected refuse trolley? | Genuine retained twelve-part bin on a 30-part refuse carrier, 72 canonical poses, 33 actual contacts; three producer/export RED controls and exact restored GREEN. |
 | [2026-10-03 Oblique minimap reuse](./2026-10-03-oblique-minimap-reuse/README.md) | Can unchanged physical minimap pixels be retained while the camera viewport stays current? | Actual publisher 2 RED / 3 controls, fixed 5 GREEN; four producer negatives and exact-byte restoration; 51 neighboring controls. No native latency claim. |
 | [2026-10-03 PR2010 UI source2 causal diagnosis](./2026-10-03-ci2010-ui-source2-diagnosis/README.md) | What caused the exact-head actual UI gates to fail under the approved FullHD style? | Actual failed logs/artifacts; label-width occlusion confirmed, remaining UI causes under audit; no native rerun. |

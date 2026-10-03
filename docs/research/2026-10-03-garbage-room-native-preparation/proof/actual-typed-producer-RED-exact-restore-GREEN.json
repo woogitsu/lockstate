@@ -1,0 +1,15 @@
+{
+  "actualProducer": "src/simulation/construction/room-template-build-plan.ts",
+  "actualMutation": "omit object orientation in actual createBuildOrder expansion; public q1 command still builds literal anchors",
+  "redReason": "q1 placed bin owner000 has orientation0; the literal owner oracle requires orientation1",
+  "redExitCode": 1,
+  "q0StillPassed": true,
+  "exactProducerByteRestoration": true,
+  "producerSHA256": "5d84b6fd3162023f4efe7dbbf36f1479db36cf23933c1dc8a49f4733fd855d73",
+  "restoredGreenExitCode": 0,
+  "ordinaryTypedCasesPassed": 2,
+  "wholeV8RoundtripCheckedForBoth": true,
+  "artSourceDescriptor72FramesRegistryMappingUnchanged": true,
+  "browserOrServerStarted": false,
+  "BlenderOrSourceArtMutatorStarted": false
+}
