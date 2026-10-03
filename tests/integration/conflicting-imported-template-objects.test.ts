@@ -74,3 +74,35 @@ it('normal completed imported rows keep real ownership and far-tile removal in e
   expect(reversed.placedObjects.getSnapshot()).toEqual(first.placedObjects.getSnapshot());
   expect(reversed.treasury.snapshot()).toEqual(first.treasury.snapshot());
 });
+
+it('equal type and orientation imported owners retain deterministic old-template cancellation', () => {
+  const original = completed();
+  const oldBed = original.placedObjects.getSnapshot().find(object => object.objectId === 'object.bed')!;
+  send(original, { type: 'RemoveObject', x: 11, y: 12 });
+  expect(original.placedObjects.getSnapshot()).toHaveLength(1);
+  send(original, { type: 'PlaceObject', orderId: 'independent-rebuilt-bed', definitionId: 'bed-wooden', x: 11, y: 11 });
+  for (let tick = 0; tick < 3000 && original.construction.getOrder('independent-rebuilt-bed')?.state !== 'completed'; tick++) original.kernel.step();
+  expect(original.construction.getOrder('independent-rebuilt-bed')?.state).toBe('completed');
+  const rebuiltBed = original.placedObjects.getSnapshot().find(object => object.objectId === 'object.bed')!;
+  expect(rebuiltBed).toMatchObject({ orientation: 0, sourceOrderId: 'independent-rebuilt-bed' });
+  expect(oldBed.orientation).toBe(rebuiltBed.orientation);
+  const toilet = original.placedObjects.getSnapshot().find(object => object.objectId === 'object.toilet')!;
+  // The actual old and new orders are both completed, but only the new Bed is
+  // physical. A conflicting import adds the historical row: it is damaged
+  // data, and array order must not decide which exact owner the loader retains.
+  const first = importRows(original, [oldBed, rebuiltBed, toilet]);
+  const reversed = importRows(original, [rebuiltBed, oldBed, toilet]);
+  const firstBefore = captureSessionSnapshot(first);
+  const reversedBefore = captureSessionSnapshot(reversed);
+  for (const runtime of [first, reversed]) {
+    const wall = runtime.construction.allOrders().find(order => order.definitionId === 'wall-brick')!;
+    send(runtime, { type: 'CancelBuildOrder', orderId: wall.id, expectedRevision: runtime.construction.revisionOf(wall.id)! });
+  }
+  if (process.env['LOCKSTATE_IMPORT_CAPTURE'] === '1') {
+    writeFileSync('.local-import-collision/equal-v8-owner.json', JSON.stringify({ firstBefore, reversedBefore,
+      firstAfter: captureSessionSnapshot(first), reversedAfter: captureSessionSnapshot(reversed) }, null, 2));
+  }
+  expect(reversedBefore.simulation?.objects).toEqual(firstBefore.simulation?.objects);
+  expect(reversed.placedObjects.getSnapshot()).toEqual(first.placedObjects.getSnapshot());
+  expect(reversed.treasury.snapshot()).toEqual(first.treasury.snapshot());
+});
