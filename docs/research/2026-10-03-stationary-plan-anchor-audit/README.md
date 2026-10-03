@@ -1,0 +1,9 @@
+# Bounded stationary plan anchor audit
+
+Verified remote/base `0dc2000231c8318adfbd6cad2e0894222158212b`. Read actual main ground picker/fit installer, World camera matrix, Oblique current inverse, bridge revision/receipt guards and session ownership. Existing eight focused files passed **85/85**, 4.69 s: preview fit, bridge, camera-preflight coherence, session preflight, stationary renderer hover, renderer placement receipt, numeric session controls and history verdict. No new regression, test matrix or producer mutation was invented. This is source verification; no browser/server or native result.
+
+Existing policy explicitly distinguishes an applied full-plan fit (locked until a changed physical point, including same-point down/up) from an already-visible/unfittable preview (not locked). Camera/view revision refits preserve a locked origin; World and current Oblique ground picking refresh unfit previews. Selection/session/history revisions protect obsolete replies and releases. Existing #1974 includes actual retained-hover fit acceptance; its body was freshly read rather than re-reported as a new bug.
+
+Next concrete priority: existing #2019 individual furniture rotation. Its current strict PlaceObject/UI path lacks public orientation, unlike complete plans. The coordinator has now confirmed the owner's separate approval for quarterTurns/objectOrientation 0–3 with older default 0; that supersedes the Issue's earlier no-format authorization boundary for this new feature work. Continue using existing accepted Rotate/Obróć copy and actual typed command/runtime/V8 proof; do not claim this no-finding audit implemented it. Camera #1292 A/B remains pending and unchanged.
+
+Weakest claim: the 85 source cases establish their supplied event/host boundaries, not native pointer/camera acceptance. No full-suite claim.
