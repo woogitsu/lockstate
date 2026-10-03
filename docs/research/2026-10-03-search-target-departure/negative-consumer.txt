@@ -1,0 +1,97 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-next-search-lifecycle-audit-20261003
+
+stdout | tests/integration/search-target-departure.test.ts > standing sweep respects a genuine discharged target: saved=false surface='departed'
+{"saved":false,"surface":"departed","tick":2321,"end":1809,"target":0,"sweep":"contraband.sector-sweep.security-sector.prison.3","metrics":{"itemsDiscovered":0,"itemsMissed":0,"searchesCompleted":1,"searchesCancelled":0,"searchesQueued":0}}
+
+stdout | tests/integration/search-target-departure.test.ts > standing sweep respects a genuine discharged target: saved=false surface='recycled'
+{"saved":false,"surface":"recycled","tick":2321,"end":1809,"target":0,"sweep":"contraband.sector-sweep.security-sector.prison.3","metrics":{"itemsDiscovered":0,"itemsMissed":0,"searchesCompleted":1,"searchesCancelled":0,"searchesQueued":0}}
+
+stdout | tests/integration/search-target-departure.test.ts > standing sweep respects a genuine discharged target: saved=true surface='departed'
+{"saved":true,"surface":"departed","tick":2321,"end":1809,"target":0,"sweep":"contraband.sector-sweep.security-sector.prison.3","metrics":{"itemsDiscovered":0,"itemsMissed":0,"searchesCompleted":1,"searchesCancelled":0,"searchesQueued":0}}
+
+stdout | tests/integration/search-target-departure.test.ts > standing sweep respects a genuine discharged target: saved=true surface='recycled'
+{"saved":true,"surface":"recycled","tick":2321,"end":1809,"target":0,"sweep":"contraband.sector-sweep.security-sector.prison.3","metrics":{"itemsDiscovered":0,"itemsMissed":0,"searchesCompleted":1,"searchesCancelled":0,"searchesQueued":0}}
+
+ ❯ tests/integration/search-target-departure.test.ts (14 tests | 9 failed) 655ms
+   × standing sweep respects a genuine discharged target: saved=false surface='departed' 63ms
+   × standing sweep respects a genuine discharged target: saved=false surface='recycled' 56ms
+   × standing sweep respects a genuine discharged target: saved=true surface='departed' 67ms
+   × standing sweep respects a genuine discharged target: saved=true surface='recycled' 69ms
+   × keeps supported domain target scopes exact: kind='room' missing=true 46ms
+   × keeps supported domain target scopes exact: kind='staff' missing=true 3ms
+   × keeps supported domain target scopes exact: kind='container' missing=true 3ms
+   × domain queued order validates the full recycled ID, saved=false 55ms
+   × domain queued order validates the full recycled ID, saved=true 65ms
+
+ Test Files  1 failed (1)
+      Tests  9 failed | 5 passed (14)
+   Start at  04:22:16
+   Duration  3.12s (transform 881ms, setup 0ms, import 2.33s, tests 655ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/search-target-departure.test.ts > standing sweep respects a genuine discharged target: saved=false surface='departed'
+ FAIL  tests/integration/search-target-departure.test.ts > standing sweep respects a genuine discharged target: saved=false surface='recycled'
+ FAIL  tests/integration/search-target-departure.test.ts > standing sweep respects a genuine discharged target: saved=true surface='departed'
+ FAIL  tests/integration/search-target-departure.test.ts > standing sweep respects a genuine discharged target: saved=true surface='recycled'
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/integration/search-target-departure.test.ts:81:37
+     79|   expect(runtime.placedObjects.getSnapshot()).toEqual(owners);
+     80|   expect(runtime.construction.snapshot()).toEqual(construction);
+     81|   expect(metrics.searchesCompleted).toBe(surface === 'live-target' ? 1…
+       |                                     ^
+     82|   expect(metrics.searchesCancelled).toBe(surface === 'live-target' ? 0…
+     83|   expect(runtime.searchSystem.orderIds()).not.toContain(sweep);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  tests/integration/search-target-departure.test.ts > keeps supported domain target scopes exact: kind='room' missing=true
+ FAIL  tests/integration/search-target-departure.test.ts > keeps supported domain target scopes exact: kind='staff' missing=true
+ FAIL  tests/integration/search-target-departure.test.ts > keeps supported domain target scopes exact: kind='container' missing=true
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/integration/search-target-departure.test.ts:133:62
+    131|     for (let tick = 0; tick < 30; tick++) runtime.kernel.step();
+    132|     if (missing) {
+    133|       expect(runtime.searchSystem.isQueued('domain-target')).toBe(fals…
+       |                                                              ^
+    134|       expect(runtime.searchSystem.getMetrics().searchesCancelled).toBe…
+    135|       expect(runtime.searchSystem.claimedGuardIds()).toHaveLength(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  tests/integration/search-target-departure.test.ts > domain queued order validates the full recycled ID, saved=false
+ FAIL  tests/integration/search-target-departure.test.ts > domain queued order validates the full recycled ID, saved=true
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/integration/search-target-departure.test.ts:168:56
+    166|   if (saved) runtime = reload(runtime);
+    167|   for (let tick = 0; tick < 30; tick++) runtime.kernel.step();
+    168|   expect(runtime.searchSystem.isQueued('stale-owner')).toBe(false);
+       |                                                        ^
+    169|   expect(runtime.searchSystem.isQueued('new-owner')).toBe(true);
+    170|   expect(runtime.searchSystem.getMetrics().searchesCancelled).toBe(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+

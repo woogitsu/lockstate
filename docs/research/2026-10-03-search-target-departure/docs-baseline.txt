@@ -1,0 +1,58 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-next-search-lifecycle-audit-20261003
+
+ ❯ tests/foundation/research-index-contract.test.ts (5 tests | 1 failed) 79ms
+     × names every collection of records that lives in a subdirectory 54ms
+ ❯ tests/foundation/documentation-anchor-quotation-contract.test.ts (12 tests | 1 failed) 9ms
+     × adds no unverified anchor to any document beyond its pinned budget 4ms
+
+ Test Files  2 failed | 6 passed (8)
+      Tests  2 failed | 60 passed (62)
+   Start at  04:23:58
+   Duration  16.80s (transform 184ms, setup 0ms, import 23.84s, tests 7.97s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-anchor-quotation-contract.test.ts > rooted src/ and tests/ anchors in the documentation carry a checkable quoted fragment > adds no unverified anchor to any document beyond its pinned budget
+AssertionError: these documents cite code by a line number nothing can check: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/adr/0042-attaching-consequences-to-the-simulation-loop.md: 50 anchors into src/ or tests/ carry no quoted fragment that occurs within 3 lines of them, against a budget of 49. Quote the code beside the anchor -- `file.ts:123`, `theSymbolOnThatLine` -- rather than raising the budget.",
++ ]
+
+ ❯ tests/foundation/documentation-anchor-quotation-contract.test.ts:984:82
+    982|     }
+    983|
+    984|     expect(over, 'these documents cite code by a line number nothing c…
+       |                                                                                  ^
+    985|   });
+    986|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/foundation/research-index-contract.test.ts > research index contract > names every collection of records that lives in a subdirectory
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-search-target-departure/ holds records the index neither rows nor links to",
++ ]
+
+ ❯ tests/foundation/research-index-contract.test.ts:195:21
+    193|       );
+    194|
+    195|     expect(unnamed).toEqual([]);
+       |                     ^
+    196|   });
+    197|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
