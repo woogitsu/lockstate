@@ -1,0 +1,51 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-construction-next-collision-audit-20261003
+
+ ❯ tests/integration/conflicting-imported-template-objects.test.ts (4 tests | 1 failed) 287ms
+   × equal type and orientation imported owners retain deterministic old-template cancellation 64ms
+node : 
+At line:3 char:1
++ node node_modules/vitest/vitest.mjs run --maxWorkers=2 tests/integrat ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/conflicting-imported-template-objects.test.ts > equal type and orientation imported owners ret
+ain deterministic old-template cancellation
+AssertionError: expected { placedObjects: [ { …(5) }, …(1) ] } to deeply equal { placedObjects: [ { …(5) }, …(1) ] }
+
+- Expected
++ Received
+
+@@ -6,11 +6,11 @@
+          "y": 11,
+        },
+        "objectId": "object.bed",
+        "orientation": 0,
+        "placedObjectId": "object:11:11",
+-       "sourceOrderId": "room-template-000000000000-2-object-000",
++       "sourceOrderId": "independent-rebuilt-bed",
+      },
+      {
+        "anchorTile": {
+          "x": 12,
+          "y": 14,
+
+ ❯ tests/integration/conflicting-imported-template-objects.test.ts:105:46
+    103|       firstAfter: captureSessionSnapshot(first), reversedAfter: captur…
+    104|   }
+    105|   expect(reversedBefore.simulation?.objects).toEqual(firstBefore.simul…
+       |                                              ^
+    106|   expect(reversed.placedObjects.getSnapshot()).toEqual(first.placedObj…
+    107|   expect(reversed.treasury.snapshot()).toEqual(first.treasury.snapshot…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 17 passed (18)
+   Start at  02:18:29
+   Duration  2.38s (transform 847ms, setup 0ms, import 2.23s, tests 291ms, environment 0ms)
+
