@@ -1,0 +1,38 @@
+{
+  "controls": [
+    {
+      "control": "starting-budget",
+      "productionPath": "src/simulation/economy/treasury.ts",
+      "originalSHA256": "05e010dee433bacdc1c97f2aa0565651f6cdfad472a86dd4973c5a1b6420b252",
+      "mutation": {
+        "before": "TREASURY_STARTING_BALANCE_MINOR_UNITS = 25_000",
+        "after": "TREASURY_STARTING_BALANCE_MINOR_UNITS = 24_999"
+      },
+      "redExitCode": 1,
+      "exactRestore": true
+    },
+    {
+      "control": "cell-row-footprint",
+      "productionPath": "src/content/room-template-catalog.ts",
+      "originalSHA256": "cafc0f4ad95fdd6d4037bfd225213e9ca3b790d0b43ff954dd4843582c654f49",
+      "mutation": {
+        "before": "const width = 7;",
+        "after": "const width = 8;"
+      },
+      "redExitCode": 1,
+      "exactRestore": true
+    },
+    {
+      "control": "completed-order-owner",
+      "productionPath": "src/simulation/objects/placed-object-registry.ts",
+      "originalSHA256": "b2270802354ebd39e519dd333ab9d1506f05f23be85a8d166cb679c28815ae4d",
+      "mutation": {
+        "before": "...(sourceOrderId === undefined ? {} : { sourceOrderId })",
+        "after": "...(sourceOrderId === undefined ? {} : {})"
+      },
+      "redExitCode": 1,
+      "exactRestore": true
+    }
+  ],
+  "restoredGreenExitCode": 0
+}
