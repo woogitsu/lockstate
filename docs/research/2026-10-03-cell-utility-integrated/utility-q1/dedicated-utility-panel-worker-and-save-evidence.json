@@ -1,0 +1,86 @@
+{
+  "quarterTurns": 1,
+  "actualBefore": [
+    "object.utility-panel@22,7:orientation=1"
+  ],
+  "actualAfter": [
+    "object.utility-panel@22,7:orientation=1"
+  ],
+  "ownershipBefore": [
+    {
+      "objectId": "object.utility-panel",
+      "sourceOrderId": "room-template-000000000002-2-object-000",
+      "anchorTile": {
+        "x": 22,
+        "y": 7
+      },
+      "orientation": 1,
+      "order": {
+        "id": "room-template-000000000002-2-object-000",
+        "definitionId": "utility-panel-brick",
+        "location": {
+          "x": 22,
+          "y": 7
+        },
+        "objectOrientation": 1,
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 30,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 1
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      }
+    }
+  ],
+  "ownershipAfter": [
+    {
+      "objectId": "object.utility-panel",
+      "sourceOrderId": "room-template-000000000002-2-object-000",
+      "anchorTile": {
+        "x": 22,
+        "y": 7
+      },
+      "orientation": 1,
+      "order": {
+        "id": "room-template-000000000002-2-object-000",
+        "definitionId": "utility-panel-brick",
+        "location": {
+          "x": 22,
+          "y": 7
+        },
+        "objectOrientation": 1,
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 30,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 1
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      }
+    }
+  ],
+  "beforePixels": [
+    945
+  ],
+  "afterPixels": [
+    945
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "utility-room-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      },
+      "quarterTurns": 1
+    }
+  ]
+}

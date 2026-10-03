@@ -1,0 +1,455 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-cell-utility-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-cell-utility-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-cell-utility-combined-results-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-cell-utility-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5420 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-cell-utility-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5420/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "dedicated-cell-toilet-player-build.spec.ts",
+      "file": "dedicated-cell-toilet-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Basic cell",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 44481,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:44:59.067Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d081bde89549044bb2e3-9a6085370814077841cb",
+          "file": "dedicated-cell-toilet-player-build.spec.ts",
+          "line": 184,
+          "column": 1
+        },
+        {
+          "title": "player builds Basic cell at quarterTurns0 and retains toilet palettes and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 38425,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:45:43.619Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-cell-toilet-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-cell-utility-combined-results-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\attachments\\dedicated-cell-toilet-worker-and-save-evidence-874abcae9b30f6a2c1daa4356b6c9a7f1671a0ad.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d081bde89549044bb2e3-263f83d21c4c49af2ef5",
+          "file": "dedicated-cell-toilet-player-build.spec.ts",
+          "line": 247,
+          "column": 3
+        },
+        {
+          "title": "player builds Basic cell at quarterTurns1 and retains toilet palettes and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 37157,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:46:22.054Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-cell-toilet-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-cell-utility-combined-results-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\attachments\\dedicated-cell-toilet-worker-and-save-evidence-16a3dc302af844148c16a3b365a4bbd3be4fb49a.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d081bde89549044bb2e3-ec6af9e33e3331bf873e",
+          "file": "dedicated-cell-toilet-player-build.spec.ts",
+          "line": 247,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "dedicated-utility-panel-player-build.spec.ts",
+      "file": "dedicated-utility-panel-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Utility Room",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 42475,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:46:59.235Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c2b1c7c667e4a85b1a02-7cfdf92dc1fa7fbd0ffb",
+          "file": "dedicated-utility-panel-player-build.spec.ts",
+          "line": 184,
+          "column": 1
+        },
+        {
+          "title": "player builds Utility Room at quarterTurns0 and retains utility panel palettes and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 32204,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:47:41.716Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-utility-panel-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-cell-utility-combined-results-20261003\\dedicated-utility-panel-pl-091c1-and-anchors-after-Save-Load\\attachments\\dedicated-utility-panel-worker-and-save-evidence-e36464806031b8b022d160f113d0c3177db3c093.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c2b1c7c667e4a85b1a02-53351c118e808744b8b4",
+          "file": "dedicated-utility-panel-player-build.spec.ts",
+          "line": 247,
+          "column": 3
+        },
+        {
+          "title": "player builds Utility Room at quarterTurns1 and retains utility panel palettes and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 31879,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:48:13.927Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-utility-panel-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-cell-utility-combined-results-20261003\\dedicated-utility-panel-pl-ce00a-and-anchors-after-Save-Load\\attachments\\dedicated-utility-panel-worker-and-save-evidence-bd3307eeacc8f784aa8893a71ccc9cede77b230d.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c2b1c7c667e4a85b1a02-d38bb061d42378692894",
+          "file": "dedicated-utility-panel-player-build.spec.ts",
+          "line": 247,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "room-template-world-camera-origin.spec.ts",
+      "file": "room-template-world-camera-origin.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "World FullHD 100% zoomed room-plan corners and actual placement share the picked ground",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 4193,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeCloseTo\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m, \u001b[22mprecision\u001b[2m)\u001b[22m\n\nExpected: \u001b[32m380.00128000000007\u001b[39m\nReceived: \u001b[31m380\u001b[39m\n\nExpected precision:    3\nExpected difference: < \u001b[32m0.0005\u001b[39m\nReceived difference:   \u001b[31m0.001280000000065229\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeCloseTo\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m, \u001b[22mprecision\u001b[2m)\u001b[22m\n\nExpected: \u001b[32m380.00128000000007\u001b[39m\nReceived: \u001b[31m380\u001b[39m\n\nExpected precision:    3\nExpected difference: < \u001b[32m0.0005\u001b[39m\nReceived difference:   \u001b[31m0.001280000000065229\u001b[39m\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-cell-utility-integration-20261003\\tests\\browser\\room-template-world-camera-origin.spec.ts:110:26",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-cell-utility-integration-20261003\\tests\\browser\\room-template-world-camera-origin.spec.ts",
+                      "column": 26,
+                      "line": 110
+                    },
+                    "snippet": "  108 |   for (let i = 0; i < 4; i++) {\n  109 |     expect(actual[i]!.x).toBeCloseTo(expected[i]!.x, 3);\n> 110 |     expect(actual[i]!.y).toBeCloseTo(expected[i]!.y, 3);\n      |                          ^\n  111 |   }\n  112 |   expect(cursor.x).toBeGreaterThanOrEqual(measured.first[0]!.x);\n  113 |   expect(cursor.x).toBeLessThan(measured.first[2]!.x);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-cell-utility-integration-20261003\\tests\\browser\\room-template-world-camera-origin.spec.ts",
+                        "column": 26,
+                        "line": 110
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeCloseTo\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m, \u001b[22mprecision\u001b[2m)\u001b[22m\n\nExpected: \u001b[32m380.00128000000007\u001b[39m\nReceived: \u001b[31m380\u001b[39m\n\nExpected precision:    3\nExpected difference: < \u001b[32m0.0005\u001b[39m\nReceived difference:   \u001b[31m0.001280000000065229\u001b[39m\n\n  108 |   for (let i = 0; i < 4; i++) {\n  109 |     expect(actual[i]!.x).toBeCloseTo(expected[i]!.x, 3);\n> 110 |     expect(actual[i]!.y).toBeCloseTo(expected[i]!.y, 3);\n      |                          ^\n  111 |   }\n  112 |   expect(cursor.x).toBeGreaterThanOrEqual(measured.first[0]!.x);\n  113 |   expect(cursor.x).toBeLessThan(measured.first[2]!.x);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-cell-utility-integration-20261003\\tests\\browser\\room-template-world-camera-origin.spec.ts:110:26"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:48:45.834Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-cell-utility-combined-results-20261003\\room-template-world-camera-b152d-ent-share-the-picked-ground\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-cell-utility-integration-20261003\\tests\\browser\\room-template-world-camera-origin.spec.ts",
+                    "column": 26,
+                    "line": 110
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2583aece140198e99ab1-de15a8ce27a320ce3a6c",
+          "file": "room-template-world-camera-origin.spec.ts",
+          "line": 36,
+          "column": 31
+        },
+        {
+          "title": "World FullHD 200% zoomed room-plan corners and actual placement share the picked ground",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 4834,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeCloseTo\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m, \u001b[22mprecision\u001b[2m)\u001b[22m\n\nExpected: \u001b[32m380.00128000000007\u001b[39m\nReceived: \u001b[31m380\u001b[39m\n\nExpected precision:    3\nExpected difference: < \u001b[32m0.0005\u001b[39m\nReceived difference:   \u001b[31m0.001280000000065229\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeCloseTo\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m, \u001b[22mprecision\u001b[2m)\u001b[22m\n\nExpected: \u001b[32m380.00128000000007\u001b[39m\nReceived: \u001b[31m380\u001b[39m\n\nExpected precision:    3\nExpected difference: < \u001b[32m0.0005\u001b[39m\nReceived difference:   \u001b[31m0.001280000000065229\u001b[39m\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-cell-utility-integration-20261003\\tests\\browser\\room-template-world-camera-origin.spec.ts:110:26",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-cell-utility-integration-20261003\\tests\\browser\\room-template-world-camera-origin.spec.ts",
+                      "column": 26,
+                      "line": 110
+                    },
+                    "snippet": "  108 |   for (let i = 0; i < 4; i++) {\n  109 |     expect(actual[i]!.x).toBeCloseTo(expected[i]!.x, 3);\n> 110 |     expect(actual[i]!.y).toBeCloseTo(expected[i]!.y, 3);\n      |                          ^\n  111 |   }\n  112 |   expect(cursor.x).toBeGreaterThanOrEqual(measured.first[0]!.x);\n  113 |   expect(cursor.x).toBeLessThan(measured.first[2]!.x);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-cell-utility-integration-20261003\\tests\\browser\\room-template-world-camera-origin.spec.ts",
+                        "column": 26,
+                        "line": 110
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeCloseTo\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m, \u001b[22mprecision\u001b[2m)\u001b[22m\n\nExpected: \u001b[32m380.00128000000007\u001b[39m\nReceived: \u001b[31m380\u001b[39m\n\nExpected precision:    3\nExpected difference: < \u001b[32m0.0005\u001b[39m\nReceived difference:   \u001b[31m0.001280000000065229\u001b[39m\n\n  108 |   for (let i = 0; i < 4; i++) {\n  109 |     expect(actual[i]!.x).toBeCloseTo(expected[i]!.x, 3);\n> 110 |     expect(actual[i]!.y).toBeCloseTo(expected[i]!.y, 3);\n      |                          ^\n  111 |   }\n  112 |   expect(cursor.x).toBeGreaterThanOrEqual(measured.first[0]!.x);\n  113 |   expect(cursor.x).toBeLessThan(measured.first[2]!.x);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-cell-utility-integration-20261003\\tests\\browser\\room-template-world-camera-origin.spec.ts:110:26"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:48:52.379Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-cell-utility-combined-results-20261003\\room-template-world-camera-58cbe-ent-share-the-picked-ground\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-cell-utility-integration-20261003\\tests\\browser\\room-template-world-camera-origin.spec.ts",
+                    "column": 26,
+                    "line": 110
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2583aece140198e99ab1-88dcaa8d410e79b49d9f",
+          "file": "room-template-world-camera-origin.spec.ts",
+          "line": 36,
+          "column": 31
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-02T23:44:56.471Z",
+    "duration": 244037.579,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}
