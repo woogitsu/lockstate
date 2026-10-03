@@ -88,7 +88,7 @@ test('player completes an existing bench in Yard and keeps it through Save/Load 
   await page.locator('[data-buildable="bench-wooden"]').click();
   await page.locator('.hud-build__arm').click();
   await page.mouse.move(940, 540);
-  await expect(page.locator('.hud-build__target-value')).toHaveText('2 × 1 tiles at 7, 7');
+  await expect(page.locator('.hud-build__target-value')).toHaveText('7, 7');
   await page.mouse.click(940, 540);
   await page.locator('.hud-build__arm').click();
   await page.getByRole('button', { name: 'Fast forward', exact: true }).click();
