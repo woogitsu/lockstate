@@ -1,0 +1,47 @@
+pnpm.cmd : $ pnpm typecheck && pnpm test && node scripts/cloudflare-task.mjs build production
+At line:2 char:600
++ ... +$env:PATH; & pnpm --config.verify-deps-before-run=false verify *> (J ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ pnpm typechec...uild production:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+$ tsc -b --pretty false && tsc -b tsconfig.tools.json --pretty false
+$ vitest run
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-integration-20261003
+
+ ❯ tests/foundation/documentation-links-contract.test.ts (10 tests | 1 failed) 1271ms
+     × resolves every cited path 772ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-links-contract.test.ts > every rooted path cited in the documentation is on disk 
+> resolves every cited path
+AssertionError: these documented paths name a file that does not exist: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-ui-object-preflight-inventory/README.md -> tests/helpers/module-boundaries.test.ts",
++ ]
+
+ ❯ tests/foundation/documentation-links-contract.test.ts:416:80
+    414|       .map(cited);
+    415|
+    416|     expect(dangling, 'these documented paths name a file that does not…
+       |                                                                                ^
+    417|   });
+    418| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 706 passed (707)
+      Tests  1 failed | 8440 passed | 2 skipped (8443)
+   Start at  17:14:19
+   Duration  36.77s (transform 39.26s, setup 0ms, import 218.55s, tests 412.30s, environment 55ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+[ELIFECYCLE] Command failed with exit code 1.

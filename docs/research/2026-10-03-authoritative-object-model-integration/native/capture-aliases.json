@@ -48,5 +48,14 @@
     "sourceSha256": "60107845706dc79627ba826bb2ff4ea7c00ef9e6a289267d72b497ffe1c7b056",
     "archivedBytes": 1714033,
     "archivedSha256": "60107845706dc79627ba826bb2ff4ea7c00ef9e6a289267d72b497ffe1c7b056"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-authoritative-object-model-repaired-verify-20261003.txt",
+    "archived": "first-repair-verify/console.txt",
+    "sourceBytes": 3780,
+    "sourceSha256": "66e67a7db48cd024b1b5802e7646c7d631099561c155315a4e5589d4915c8b1d",
+    "archivedBytes": 1975,
+    "archivedSha256": "b6aaecbdda432014c97490b12de4bd1df339fac645324817199c176e6c842900",
+    "conversion": "UTF16LE console to UTF8"
   }
 ]

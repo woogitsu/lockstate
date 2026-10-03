@@ -20,7 +20,7 @@ Opened actual sources and the neighboring room-template adapter/requester before
 - Corrected inventories: **39 GREEN / 2 files** at the original assertions.
 - Real production negative: change each of the two actual `ObjectPlacementPreflight` import statements to import and reference the runtime `ObjectPlacementService` value. The unchanged gate reports both exact dependencies as `type-only` → `value`: **1 RED / 38 GREEN**. No test expectation is mutated.
 - Both production files restored byte-exact before verification; SHA256 receipts below. `git diff` for the two production files is empty.
-- Restored inventories plus neighboring full HUD-message boundary gate: **52 GREEN / 3 files**. The command also named `tests/helpers/module-boundaries.test.ts`, which does not exist; collection actually ran three files and only those three are claimed. The real scanner is `tests/helpers/module-boundaries.ts` used by the existing gate.
+- Restored inventories plus neighboring full HUD-message boundary gate: **52 GREEN / 3 files**. The command also named a nonexistent helper test, `module-boundaries.test.ts` under the helpers directory; collection actually ran three files and only those three are claimed. The real scanner is `tests/helpers/module-boundaries.ts` used by the existing gate. The original command remains in the raw evidence; this sentence does not cite that missing file as an existing repository path.
 - App and tools TypeScript checks: exit **0**. PowerShell retains the successful command's stderr as `NativeCommandError` text in the raw log; the process exit code was captured separately.
 
 | Restored production source | Exact working-byte SHA256 |
