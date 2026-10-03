@@ -1,4 +1,61 @@
-import { element } from '../primitives/dom';
+import { element, nextUiId } from '../primitives/dom';
+
+export type CameraControlPresentationVariant = 'disclosure' | 'always';
+
+/** UNAPPROVED #1292 presentation draft. Reuses original control nodes/ports. */
+export function createCameraControlsPresentation(options: {
+  readonly variant: CameraControlPresentationVariant;
+  readonly viewLabel: string;
+  readonly hud: HTMLElement;
+  readonly zoom: HTMLElement;
+  readonly select?: HTMLElement;
+  readonly controls: readonly HTMLElement[];
+  readonly onFocus?: () => void;
+}) {
+  const panel = element('section', { className: 'hud-camera-panel', attributes: {
+    id: nextUiId('camera-view'), role: 'region', 'aria-label': options.viewLabel,
+  }, children: [...(options.select === undefined ? [] : [options.select]), ...options.controls] });
+  panel.dataset['presentation'] = options.variant;
+  options.hud.append(panel);
+  const trigger = options.variant === 'disclosure' ? element('button', {
+    className: 'ui-icon-button ui-icon-button--bordered hud-camera-panel__trigger', text: options.viewLabel,
+    attributes: { type: 'button', 'aria-controls': panel.id, 'aria-expanded': 'false' },
+  }) : undefined;
+  panel.hidden = trigger !== undefined;
+  if (trigger !== undefined) {
+    options.zoom.append(trigger);
+    trigger.addEventListener('focus', () => options.onFocus?.());
+    trigger.addEventListener('click', () => {
+      panel.hidden = !panel.hidden; trigger.setAttribute('aria-expanded', String(!panel.hidden));
+      position();
+      if (!panel.hidden) options.select?.focus({ preventScroll: true });
+    });
+    panel.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      event.stopPropagation(); panel.hidden = true; trigger.setAttribute('aria-expanded', 'false');
+      trigger.focus({ preventScroll: true });
+    });
+  }
+  function position() {
+    const tabs = options.hud.querySelector('.hud__tabs')?.getBoundingClientRect();
+    const strip = options.hud.querySelector('.hud-strip')?.getBoundingClientRect();
+    const rail = options.hud.querySelector('.hud__rail')?.getBoundingClientRect();
+    const scale = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ui-scale'));
+    if (tabs === undefined || strip === undefined || rail === undefined || !Number.isFinite(scale)) return;
+    const gap = 12 * scale, left = tabs.right + gap;
+    panel.style.left = `${left}px`; panel.style.top = `${strip.bottom + gap}px`;
+    panel.style.width = `${Math.max(0, Math.min(396 * scale, rail.left - left - gap))}px`;
+  }
+  const observer = new ResizeObserver(position);
+  for (const selector of ['.hud-strip', '.hud__tabs', '.hud__rail']) {
+    const bounds = options.hud.querySelector(selector); if (bounds !== null) observer.observe(bounds);
+  }
+  window.addEventListener('resize', position);
+  position();
+  return { element: panel, trigger, reposition: position, destroy: () => {
+    observer.disconnect(); window.removeEventListener('resize', position); panel.remove(); trigger?.remove();
+  } };
+}
 
 export type HudRendererMode = 'world' | 'oblique';
 export interface RendererSelectionLabels { readonly region: string; readonly world: string; readonly oblique: string; readonly failure: string }

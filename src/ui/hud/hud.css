@@ -7418,6 +7418,48 @@
 .hud-camera-pan [data-camera-pan-direction='right'] .ui-icon { transform: rotate(-90deg); }
 .hud-camera-pose [data-camera-pose-axis='elevation'][data-camera-pose-direction='1'] .ui-icon { transform: rotate(180deg); }
 
+/* UNAPPROVED #1292 A/B source proposal. Camera controls use their own map
+ * region instead of spending minimap/alert height. Existing zoom stays put.
+ * No camera action, text, token or alert row floor is removed. */
+.hud-camera-panel {
+  position: fixed;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  align-items: flex-start;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  padding: var(--space-2);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  color: var(--text-body);
+  pointer-events: auto;
+}
+.hud-camera-panel[hidden] { display: none; }
+.hud-camera-panel > select {
+  max-width: 100%;
+  flex: 0 0 auto;
+  min-height: var(--tap-target);
+}
+.hud-camera-panel > .hud-camera-pan,
+.hud-camera-panel > .hud-camera-pose {
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+.hud-camera-panel__trigger {
+  font: inherit;
+  padding-inline: var(--space-1);
+  flex: none;
+  min-width: var(--tap-target);
+  pointer-events: auto;
+}
+/* Preserve the existing phone camera/corner visibility boundary in this
+ * desktop-only proposal; it does not approve a new mobile camera layout. */
+@media (max-width: 720px) { .hud-camera-panel { display: none; } }
+
 .room-template-world-ghost { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
 .room-template-world-ghost[hidden] { display: none; }
 .room-template-world-ghost svg { width: 100%; height: 100%; }

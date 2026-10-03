@@ -1,4 +1,4 @@
-import { createRendererSelectionControl, type HudRendererMode } from './renderer-selection-control';
+import { createCameraControlsPresentation, createRendererSelectionControl, type HudRendererMode } from './renderer-selection-control';
 import { createCameraPoseControl, type CameraPoseStep } from './camera-pose-control';
 import { createCameraPanControl, type CameraPanStep } from './camera-pan-control';
 import type { LocalizationKey } from '../../content/localization';
@@ -2951,6 +2951,14 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     children: [strip.element, unavailable, refusal, eventNotice, corner, rail, tabBar],
   });
 
+  // UNAPPROVED owner choice A. B uses the same source nodes with variant 'always'.
+  const cameraPresentation = createCameraControlsPresentation({
+    variant: 'disclosure', viewLabel: t(HUD_MESSAGE_KEY.cameraView), hud, zoom: zoomControl,
+    ...(rendererControl === undefined ? {} : { select: rendererControl.element }),
+    controls: [...(panControl === undefined ? [] : [panControl]), ...(poseControl === undefined ? [] : [poseControl])],
+    ...(options.rendererSelection?.focus === undefined ? {} : { onFocus: options.rendererSelection.focus }),
+  });
+
   /**
    * `onChange` reports upward and nothing more: the HUD never writes to
    * storage, so a host that passes no handler gets a layout that works for the
@@ -3509,6 +3517,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     refreshLayout: () => {
       layout.refresh();
       roomsPanel.refreshLayout();
+      cameraPresentation.reposition();
     },
     setLayout: (settings: LayoutSettings) => {
       layout.setSettings(settings);
@@ -3517,6 +3526,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
       applyState(hudShellReducer(state, action));
     },
     destroy: () => {
+      cameraPresentation.destroy();
       fullHdBuild.removeEventListener('change', paintState);
       gate.dispose();
       // Tearing the layout down is also what ends a drag that was still live:
