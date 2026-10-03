@@ -1,0 +1,34 @@
+node : [2m[WebServer] [22m(node:24760) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:2 char:442
++ ... 1003.json'; node node_modules/@playwright/test/cli.js test --config a ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 3 tests using 1 worker
+
+(node:40504) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40504) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\native-reception-room.recipe.ts:122:1 › 01 public Storage Room and Delivery Bay bootstrap for Reception seating (44.0s)
+  ok 2 tests\browser\native-reception-room.recipe.ts:169:29 › Reception Room q0: literal two-chair owners, square shell and whole paused Save/Load (47.0s)
+  ok 3 tests\browser\native-reception-room.recipe.ts:169:29 › Reception Room q1: literal two-chair owners, square shell and whole paused Save/Load (42.7s)
+
+  3 passed (2.3m)

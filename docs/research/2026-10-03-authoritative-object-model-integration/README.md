@@ -40,9 +40,29 @@ Neither repair lowers a pixel floor, relaxes coordinates or changes a timeout.
 This checkpoint is **4/4 actual native GREEN**, not a complete browser suite.
 
 The opt-in stationary ordinary-object recipe and the combined Reception
-desk/chair observer are now imported. Their actual native runs and the fresh
-full combined verification remain the next gates. No native result is inferred
-from their collection/type/build preparation.
+desk/chair observer now execute on the real compiled
+**66fb8df81ce4311437e58191edc11bb89835de17** game:
+
+- **1/1 ordinary-object native GREEN**, 31.9 seconds: stationary `(7,6)` 2x1
+  ghost receives actual allowed then blocked worker verdicts when the secondary
+  square `(8,6)` is purchased without physical mouse movement. Independently
+  measured untouched anchor pixels change red-minus-blue from 30.3850667 to
+  80.2140444. Escape clears the tint without changing the entire paused state.
+  Load/New reject the outgoing held release; real fresh presses require no arm
+  toggle. Exact orders, separate owners, refusal on New's unzoned ground,
+  accepted fresh purchases and complete paused V8 snapshots are checked.
+- **3/3 Reception native GREEN**, 44.0/47.0/42.7 seconds: real capacity bootstrap
+  and public q0/q1 purchases, literal shell/door/chair/desk ownership, balance
+  and whole paused V8 Save/Load. Both real demanded descriptor/PNG responses and
+  successful actual loader Blob decodes verify the new Reception registration
+  desk and retained waiting armchairs. Desk source60/e40 SHA256 begins
+  `bac55a0b3bac`; full hashes and actual responses are in the native receipts.
+
+Raw results, paired FullHD screenshots, commands, actual worker replies and
+whole snapshots are preserved under `native/ordinary-object-green` and
+`native/reception-models-three-green`. The source, compiled game, viewport,
+budget and original preparatory failures remain explicit; these four new
+passes are acceptance of these scenarios, not the whole hosted browser suite.
 
 ## Original combined gate and correction
 
@@ -82,6 +102,14 @@ controls and asserts all four unclipped bounds before deriving coordinates.
 Expected tiles, claims, money, full snapshot comparisons and budgets remain
 unchanged. This original failure is not described as a gameplay defect or as
 a successful stationary-preview acceptance.
+
+The subsequent run reached real stationary allowed/blocked/disarmed acceptance,
+but its fresh-press preparation erroneously demanded a new hover from a move
+to the exact same physical pointer coordinates after Load. Its original output
+and screenshots remain in `native/stationary-before-fresh-expectation`. The
+corrected scenario presses directly at independently measured `(10,8)` and
+retains the exact command, money and whole-state assertions. It then passes
+all Load/New controls without modifying the production source.
 
 ## Consolidated delivery
 
