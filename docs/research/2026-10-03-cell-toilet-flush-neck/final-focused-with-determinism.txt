@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-cell-toilet-physical-connection-20261003
+
+
+ Test Files  4 passed (4)
+      Tests  9 passed | 1 skipped (10)
+   Start at  09:39:31
+   Duration  815ms (transform 194ms, setup 0ms, import 529ms, tests 923ms, environment 0ms)
+
