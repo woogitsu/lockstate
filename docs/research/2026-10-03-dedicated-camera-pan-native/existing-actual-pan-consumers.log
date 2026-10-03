@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-camera-pan-native-fixture-20261003
+
+
+ Test Files  2 passed (2)
+      Tests  61 passed (61)
+   Start at  03:58:35
+   Duration  1.73s (transform 980ms, setup 0ms, import 2.03s, tests 17ms, environment 0ms)
+

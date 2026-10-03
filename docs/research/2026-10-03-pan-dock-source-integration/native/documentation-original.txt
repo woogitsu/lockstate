@@ -1,0 +1,52 @@
+pnpm : $ vitest run "tests/foundation/research-index-contract.test.ts" "tests/foundation/documentation-links-contract.t
+est.ts" "tests/foundation/documentation-version-claim-contract.test.ts" "tests/foundation/documentation-source-anchor-c
+ontract.test.ts" "tests/foundation/documentation-commit-citation-contract.test.ts" "tests/foundation/documentation-clai
+ms-contract.test.ts" "tests/foundation/documentation-anchor-quotation-contract.test.ts" "--maxWorkers=2"
+At line:2 char:970
++ ... _FETCH='1'; pnpm --config.verify-deps-before-run=false test tests/fou ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-pan-dock-integration-20261003
+
+ ❯ tests/foundation/documentation-anchor-quotation-contract.test.ts (12 tests | 1 failed) 9ms
+     × adds no unverified anchor to any document beyond its pinned budget 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-anchor-quotation-contract.test.ts > rooted src/ and tests/ anchors in the documen
+tation carry a checkable quoted fragment > adds no unverified anchor to any document beyond its pinned budget
+AssertionError: these documents cite code by a line number nothing can check: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/adr/0022-room-zoning-surface.md: 29 anchors into src/ or tests/ carry no quoted fragment that occurs within 3
+ lines of them, against a budget of 28. Quote the code beside the anchor -- `file.ts:123`, `theSymbolOnThatLine` -- rat
+her than raising the budget.",
++   "docs/adr/0025-guard-hiring-surface.md: 12 anchors into src/ or tests/ carry no quoted fragment that occurs within 
+3 lines of them, against a budget of 11. Quote the code beside the anchor -- `file.ts:123`, `theSymbolOnThatLine` -- ra
+ther than raising the budget.",
++ ]
+
+ ❯ tests/foundation/documentation-anchor-quotation-contract.test.ts:984:82
+    982|     }
+    983|
+    984|     expect(over, 'these documents cite code by a line number nothing c…
+       |                                                                                  ^
+    985|   });
+    986|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 passed (7)
+      Tests  1 failed | 57 passed (58)
+   Start at  04:17:25
+   Duration  5.76s (transform 84ms, setup 0ms, import 5.38s, tests 2.69s, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

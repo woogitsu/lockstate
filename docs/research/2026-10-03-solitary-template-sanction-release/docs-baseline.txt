@@ -1,0 +1,53 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-navigation-next-audit-20261003
+
+ ❯ tests/foundation/research-index-contract.test.ts (5 tests | 1 failed) 66ms
+     × names every collection of records that lives in a subdirectory 43ms
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts (8 tests | 1 failed) 13ms
+     × cites only commits this repository publishes, so CI reads the same history a reader can 4ms
+
+ Test Files  2 failed | 6 passed (8)
+      Tests  2 failed | 60 passed (62)
+   Start at  04:04:07
+   Duration  5.38s (transform 125ms, setup 0ms, import 4.63s, tests 2.79s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-commit-citation-contract.test.ts > a commit sha cited in prose names a commit that exists > cites only commits this repository publishes, so CI reads the same history a reader can
+AssertionError: these cite a commit that exists on this disk and on no ref this repository publishes, so nobody else can check them and CI cannot either: `fetch-depth: 0` fetches all history for every published branch and tag and nothing more. The usual cause is a sha read out of an agent's own worktree before the coordinator cherry-picked it, which rewrites it -- `git branch -r --contains <sha>` tells you. Cite the commit as published, or record it in UNPUBLISHED_BY_ORIGIN with what it is and why the anchor cannot move: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-solitary-template-sanction-release/README.md:3 -> 4b6a07a06754949de87007606d8c13d4cd08c8a6",
++ ]
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts:748:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/foundation/research-index-contract.test.ts > research index contract > names every collection of records that lives in a subdirectory
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-solitary-template-sanction-release/ holds records the index neither rows nor links to",
++ ]
+
+ ❯ tests/foundation/research-index-contract.test.ts:195:21
+    193|       );
+    194|
+    195|     expect(unnamed).toEqual([]);
+       |                     ^
+    196|   });
+    197|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

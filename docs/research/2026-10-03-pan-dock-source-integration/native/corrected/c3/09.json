@@ -1,0 +1,21 @@
+{
+  "quarterTurns": 1,
+  "actualBefore": [
+    "object.loading-dock-door@13,6:orientation=0",
+    "object.loading-dock-door@24,6:orientation=1"
+  ],
+  "beforePixels": [
+    4565
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "delivery-bay-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      },
+      "quarterTurns": 1
+    }
+  ]
+}

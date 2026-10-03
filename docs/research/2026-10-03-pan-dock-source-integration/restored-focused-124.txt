@@ -1,0 +1,21 @@
+pnpm : $ vitest run "tests/unit/camera-pan-ports.test.ts" "tests/unit/ui-camera-pan-control.test.ts" "tests/unit/obliqu
+e-loading-dock-detail-integrity.test.ts" "tests/integration/occupied-template-refusal-undo-selection.test.ts" "tests/in
+tegration/solitary-template-sanction-release.test.ts" "tests/integration/room-template-occupied-material-cancel.test.ts
+" "tests/foundation/research-index-contract.test.ts" "tests/foundation/documentation-links-contract.test.ts" "tests/fou
+ndation/typecheck-coverage-contract.test.ts" "tests/foundation/browser-suite-partition-contract.test.ts" "--maxWorkers=
+2"
+At line:52 char:449
++ ... +$env:PATH; pnpm --config.verify-deps-before-run=false test tests/uni ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-pan-dock-integration-20261003
+
+
+ Test Files  10 passed (10)
+      Tests  124 passed (124)
+   Start at  04:14:34
+   Duration  7.85s (transform 1.98s, setup 0ms, import 6.31s, tests 7.82s, environment 0ms)
+

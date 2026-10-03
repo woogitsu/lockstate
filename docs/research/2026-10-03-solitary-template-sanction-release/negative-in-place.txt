@@ -1,0 +1,41 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-navigation-next-audit-20261003
+
+stdout | tests/integration/solitary-template-sanction-release.test.ts > releases a valid current home after completed template sanction: saved=false surface='high-risk'
+{"saved":false,"surface":"high-risk","tick":9861,"end":9851,"actualEnd":9851,"home":"room.solitary-cell:6:6","metrics":{"relocatedIntoSolitaryCount":0,"releasedFromSolitaryCount":0,"relocationBacklogTicks":0,"releaseBacklogTicks":2}}
+
+stdout | tests/integration/solitary-template-sanction-release.test.ts > releases a valid current home after completed template sanction: saved=true surface='high-risk'
+{"saved":true,"surface":"high-risk","tick":9861,"end":9851,"actualEnd":9851,"home":"room.solitary-cell:6:6","metrics":{"relocatedIntoSolitaryCount":0,"releasedFromSolitaryCount":0,"relocationBacklogTicks":0,"releaseBacklogTicks":2}}
+
+ ❯ tests/integration/solitary-template-sanction-release.test.ts (6 tests | 2 failed) 825ms
+   × releases a valid current home after completed template sanction: saved=false surface='high-risk' 169ms
+   × releases a valid current home after completed template sanction: saved=true surface='high-risk' 138ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 4 passed (6)
+   Start at  04:02:52
+   Duration  3.16s (transform 825ms, setup 0ms, import 2.21s, tests 825ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/solitary-template-sanction-release.test.ts > releases a valid current home after completed template sanction: saved=false surface='high-risk'
+ FAIL  tests/integration/solitary-template-sanction-release.test.ts > releases a valid current home after completed template sanction: saved=true surface='high-risk'
+AssertionError: expected 9851 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 9851
+
+ ❯ tests/integration/solitary-template-sanction-release.test.ts:77:70
+     75|     expect(runtime.prisoners.sanctionSystem.getMetrics().releaseBacklo…
+     76|   } else {
+     77|     expect(runtime.prisoners.records.solitarySanctionEndTick[index]).t…
+       |                                                                      ^
+     78|     expect(runtime.prisoners.sanctionSystem.getMetrics().releasedFromS…
+     79|     expect(runtime.prisoners.sanctionSystem.getMetrics().releaseBacklo…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+

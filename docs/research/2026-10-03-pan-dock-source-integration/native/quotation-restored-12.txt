@@ -1,0 +1,16 @@
+pnpm : $ vitest run "tests/foundation/documentation-anchor-quotation-contract.test.ts" "--maxWorkers=2"
+At line:6 char:253
++ ... _FETCH='1'; pnpm --config.verify-deps-before-run=false test tests/fou ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-pan-dock-integration-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  04:19:33
+   Duration  378ms (transform 33ms, setup 0ms, import 246ms, tests 6ms, environment 0ms)
+

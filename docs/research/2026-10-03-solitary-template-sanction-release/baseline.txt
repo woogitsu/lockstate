@@ -1,0 +1,41 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-navigation-next-audit-20261003
+
+stdout | tests/integration/solitary-template-sanction-release.test.ts > same completed template release saved=false highRisk=true
+RELEASE {"saved":false,"highRisk":true,"group":1,"tick":9861,"end":9851,"actualEnd":9851,"home":"room.solitary-cell:6:6","current":"room.solitary-cell:6:6","metrics":{"relocatedIntoSolitaryCount":0,"releasedFromSolitaryCount":0,"relocationBacklogTicks":0,"releaseBacklogTicks":2}}
+
+stdout | tests/integration/solitary-template-sanction-release.test.ts > same completed template release saved=true highRisk=true
+RELEASE {"saved":true,"highRisk":true,"group":1,"tick":9861,"end":9851,"actualEnd":9851,"home":"room.solitary-cell:6:6","current":"room.solitary-cell:6:6","metrics":{"relocatedIntoSolitaryCount":0,"releasedFromSolitaryCount":0,"relocationBacklogTicks":0,"releaseBacklogTicks":2}}
+
+ ❯ tests/integration/solitary-template-sanction-release.test.ts (4 tests | 2 failed) 1361ms
+   × same completed template release saved=false highRisk=true 278ms
+   × same completed template release saved=true highRisk=true 248ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  03:59:31
+   Duration  5.90s (transform 2.36s, setup 0ms, import 4.21s, tests 1.36s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/solitary-template-sanction-release.test.ts > same completed template release saved=false highRisk=true
+ FAIL  tests/integration/solitary-template-sanction-release.test.ts > same completed template release saved=true highRisk=true
+AssertionError: expected 9851 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 9851
+
+ ❯ tests/integration/solitary-template-sanction-release.test.ts:27:60
+     25| expect(r.placedObjects.getSnapshot()).toEqual(owners);
+     26| expect(r.construction.snapshot()).toEqual(history);
+     27| expect(r.prisoners.records.solitarySanctionEndTick[index]).toBe(0);
+       |                                                            ^
+     28| expect(r.prisoners.coldState.getAccommodation(id)).toBe(home);
+     29| expect(r.prisoners.roomInstances.totalOccupancy).toBe(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+

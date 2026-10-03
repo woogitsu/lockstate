@@ -1,0 +1,21 @@
+{
+  "controls": [
+    {
+      "control": "original-dock-source-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Loading dock door retained/authored mesh set changed"
+    },
+    {
+      "control": "wrong-dock-Y-fit-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Loading dock declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-dock-target-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Loading dock declared occupied rectangle/source fit/accepted target changed"
+    }
+  ],
+  "wrapperBytesExactlyRestored": true,
+  "exactRestoredNativeVerifyExitCode": 0
+}

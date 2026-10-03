@@ -537,6 +537,21 @@ export class ObliqueWorldScene extends Phaser.Scene {
     this.paintGesturePreview();
   }
 
+  /** Same128CSS-pixel direction as the World HUD, through the ground inverse. */
+  public stepCameraPan(direction: 'up' | 'down' | 'left' | 'right'): void {
+    const displayScale = this.scale.displayScale;
+    const dx = direction === 'right' ? 1 : direction === 'left' ? -1 : 0;
+    const dy = direction === 'down' ? 1 : direction === 'up' ? -1 : 0;
+    this.pose = { ...this.pose, target: screenToGround({
+      x: this.pose.viewport.width / 2 + dx * 128 * displayScale.x,
+      y: this.pose.viewport.height / 2 + dy * 128 * displayScale.y,
+    }, this.pose) };
+    this.poseRevision += 1;
+    this.repaint();
+    this.publishMinimap();
+    this.paintGesturePreview();
+  }
+
   /** Move the angled ground target to a minimap fraction. */
   public navigateToMinimapPoint(fx: number, fy: number): boolean {
     const bounds = this.lastFrame?.world.loadedBounds;

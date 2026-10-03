@@ -217,6 +217,12 @@ const LEAVES_THE_UNDO_HISTORY_CURRENT: ReadonlySet<SimulationCommand['type']> = 
   'Redo',
 ]);
 
+// These reversals may refuse atomically. Their actual success branches mark
+// the newer action; an attempted cancellation is not an accepted change.
+const MARKS_UNDO_ELIGIBILITY_ON_SUCCESS: ReadonlySet<SimulationCommand['type']> = new Set([
+  'CancelBuildOrder', 'CancelMaterialPurchase', 'RemoveObject', 'RemoveWall',
+]);
+
 export function createSessionCommandHandler(
   construction: ConstructionSystem,
   procurement: ProcurementSystem,
@@ -234,7 +240,8 @@ export function createSessionCommandHandler(
 
   return (command, context) => {
     const simCommand = unpackCommand(command.payload as never);
-    if (simCommand !== null && !LEAVES_THE_UNDO_HISTORY_CURRENT.has(simCommand.type)) {
+    if (simCommand !== null && !LEAVES_THE_UNDO_HISTORY_CURRENT.has(simCommand.type) &&
+        !MARKS_UNDO_ELIGIBILITY_ON_SUCCESS.has(simCommand.type)) {
       construction.noteActionThatDoesNotWriteTheUndoStack();
     }
     if (simCommand !== null && simCommand.type === 'PlaceRoomTemplate') {
@@ -673,6 +680,7 @@ export function createSessionCommandHandler(
       if (!outcome.ok) {
         refusals.record(PURCHASE_CANCEL_REFUSAL_REASONS[outcome.reason], context.tick, cancelKey);
       } else {
+        construction.noteActionThatDoesNotWriteTheUndoStack();
         // Issue #492: the one id `CancelMaterialPurchase` carries. A refund
         // of a different order must not silence a standing `not-pending`
         // about this one.
@@ -972,6 +980,7 @@ export function createSessionCommandHandler(
          * notice port: the state travels out on the outcome, which is a fact
          * about what happened rather than a dependency on the events channel.
          */
+        construction.noteActionThatDoesNotWriteTheUndoStack();
         if (outcome.kind === 'order-cancelled') {
           roomTemplates.reconcileCancelledShells();
           events.recordBuildOrderCancelled(outcome.stateAtCancellation, context.tick);
@@ -1015,6 +1024,7 @@ export function createSessionCommandHandler(
       }
       const outcome = objectPlacement.remove({ x: simCommand.x, y: simCommand.y }, context.tick);
       if (outcome.kind !== 'refused') {
+        construction.noteActionThatDoesNotWriteTheUndoStack();
         // The object arm won. Handled exactly as `RemoveObject`'s own branch
         // handles the same two outcomes above -- same supersession key
         // (issue #492: the tile, which is the fact this press changed),
@@ -1067,6 +1077,7 @@ export function createSessionCommandHandler(
       }
       const stateAtCancellation = wallOrder.state;
       construction.cancelOrder(wallOrder.id);
+      construction.noteActionThatDoesNotWriteTheUndoStack();
       roomTemplates.reconcileCancelledShells();
       refusals.supersede(wallKey);
       // The same event `CancelBuildOrder` and `RemoveObject`'s pending-order
@@ -1259,6 +1270,7 @@ export function createSessionCommandHandler(
           return;
         }
         refusals.supersede(key);
+        construction.noteActionThatDoesNotWriteTheUndoStack();
       }
     }
     if (simCommand?.type === 'Redo') {

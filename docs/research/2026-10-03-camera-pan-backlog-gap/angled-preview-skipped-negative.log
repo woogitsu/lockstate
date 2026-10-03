@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-build-input-gap-20261003
+
+ ❯ tests/unit/camera-pan-ports.test.ts (56 tests | 4 failed) 19ms
+   × 'oblique' pan 'up' refreshes the stationary whole-square Build hover without ordering or changing the tool 4ms
+   × 'oblique' pan 'down' refreshes the stationary whole-square Build hover without ordering or changing the tool 1ms
+   × 'oblique' pan 'left' refreshes the stationary whole-square Build hover without ordering or changing the tool 0ms
+   × 'oblique' pan 'right' refreshes the stationary whole-square Build hover without ordering or changing the tool 0ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  4 failed | 57 passed (61)
+   Start at  03:40:31
+   Duration  1.47s (transform 649ms, setup 0ms, import 1.71s, tests 24ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/camera-pan-ports.test.ts > 'oblique' pan 'up' refreshes the stationary whole-square Build hover without ordering or changing the tool
+ FAIL  tests/unit/camera-pan-ports.test.ts > 'oblique' pan 'down' refreshes the stationary whole-square Build hover without ordering or changing the tool
+ FAIL  tests/unit/camera-pan-ports.test.ts > 'oblique' pan 'left' refreshes the stationary whole-square Build hover without ordering or changing the tool
+ FAIL  tests/unit/camera-pan-ports.test.ts > 'oblique' pan 'right' refreshes the stationary whole-square Build hover without ordering or changing the tool
+AssertionError: expected { x: 9, y: -6, segments: 1, …(2) } to not deeply equal { x: 9, y: -6, segments: 1, …(2) }
+
+Compared values have no visual difference.
+
+ ❯ tests/unit/camera-pan-ports.test.ts:134:22
+    132|     pan(scene, direction);
+    133|     const next = targets.at(-1)!;
+    134|     expect(next).not.toEqual(old);
+       |                      ^
+    135|     let ground: { x: number; y: number };
+    136|     if (camera !== undefined) { camera.preRender(); ground = camera.ge…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+

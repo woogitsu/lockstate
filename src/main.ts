@@ -2814,6 +2814,10 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
       if (rendererChanging || liveRendererSelection.current === undefined) return;
       worldScene.stepCameraZoom(direction);
     },
+    onCameraPan: (direction) => {
+      if (rendererChanging || liveRendererSelection.current === undefined) return;
+      worldScene.stepCameraPan(direction);
+    },
     onBuildCategoryKeyboardOwnership: () => {
       if (liveRendererSelection.current !== undefined) worldScene.releaseKeyboardInput();
     },

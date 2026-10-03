@@ -7405,7 +7405,7 @@
 }
 
 /* Existing localized labels accompany compact glyphs in the adjustable renderer. */
-.hud-camera-pose {
+.hud-camera-pose, .hud-camera-pan {
   pointer-events: auto;
   display: flex;
   width: max-content;
@@ -7413,6 +7413,9 @@
   margin-bottom: var(--space-2);
 }
 .hud-camera-pose[hidden] { display: none; }
+.hud-camera-pan [data-camera-pan-direction='left'] .ui-icon { transform: rotate(90deg); }
+.hud-camera-pan [data-camera-pan-direction='up'] .ui-icon { transform: rotate(180deg); }
+.hud-camera-pan [data-camera-pan-direction='right'] .ui-icon { transform: rotate(-90deg); }
 .hud-camera-pose [data-camera-pose-axis='elevation'][data-camera-pose-direction='1'] .ui-icon { transform: rotate(180deg); }
 
 .room-template-world-ghost { position: absolute; inset: 0; pointer-events: none; z-index: 1; }

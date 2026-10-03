@@ -1,0 +1,34 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-occupied-row-history-next-audit-20261003
+
+ ❯ tests/integration/occupied-template-refusal-undo-selection.test.ts (4 tests | 2 failed) 640ms
+   × latest independent purchase still undoes after an occupied template refusal: saved=false refused=true 160ms
+   × latest independent purchase still undoes after an occupied template refusal: saved=true refused=true 147ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  03:37:00
+   Duration  3.01s (transform 827ms, setup 0ms, import 2.23s, tests 640ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/occupied-template-refusal-undo-selection.test.ts > latest independent purchase still undoes after an occupied template refusal: saved=false refused=true
+ FAIL  tests/integration/occupied-template-refusal-undo-selection.test.ts > latest independent purchase still undoes after an occupied template refusal: saved=true refused=true
+AssertionError: expected 'completed' to be 'cancelled' // Object.is equality
+
+Expected: "cancelled"
+Received: "completed"
+
+ ❯ tests/integration/occupied-template-refusal-undo-selection.test.ts:54:77
+     52|     }
+     53|     send(runtime, { type: 'Undo' });
+     54|     expect(runtime.construction.getOrder('latest-independent-wall')?.s…
+       |                                                                             ^
+     55|     expect(runtime.construction.getOrder(bed.id)?.state).toBe('complet…
+     56|     expect(runtime.placedObjects.getSnapshot()).toEqual(objects);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+Exit code: 1

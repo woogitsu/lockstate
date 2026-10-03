@@ -1,0 +1,38 @@
+node : [2m[WebServer] [22m(node:16896) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:48 char:2
++  node --experimental-transform-types --disable-warning=ExperimentalWa ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 7 tests using 1 worker
+
+(node:19424) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:19424) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\dedicated-camera-pan-player.spec.ts:162:3 › world FullHD 100% four physical pan controls and armed room-plan confirmation (8.6s)
+  ok 2 tests\browser\dedicated-camera-pan-player.spec.ts:162:3 › world FullHD 200% four physical pan controls and armed room-plan confirmation (9.2s)
+  ok 3 tests\browser\dedicated-camera-pan-player.spec.ts:162:3 › oblique FullHD 100% four physical pan controls and armed room-plan confirmation (11.1s)
+  ok 4 tests\browser\dedicated-camera-pan-player.spec.ts:162:3 › oblique FullHD 200% four physical pan controls and armed room-plan confirmation (9.9s)
+  ok 5 tests\browser\dedicated-loading-dock-door-player-build.spec.ts:216:1 › player creates actual storage and delivery capacity before dedicated loading dock door Delivery Bay (44.0s)
+  ok 6 tests\browser\dedicated-loading-dock-door-player-build.spec.ts:282:3 › player builds Delivery Bay at quarterTurns0 and retains the authored loading dock door glazing palette and anchors after Save/Load (41.6s)
+  ok 7 tests\browser\dedicated-loading-dock-door-player-build.spec.ts:282:3 › player builds Delivery Bay at quarterTurns1 and retains the authored loading dock door glazing palette and anchors after Save/Load (41.0s)
+
+  7 passed (2.8m)

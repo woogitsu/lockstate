@@ -1,0 +1,198 @@
+{
+  "stats": {
+    "startTime": "2026-10-03T02:40:26.348Z",
+    "duration": 168584.764,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "files": [
+    {
+      "original": "dedicated-camera-pan-playe-333cd-rmed-room-plan-confirmation/actual-room-plan-confirmed.png",
+      "published": "restored/c1/01.png",
+      "sha256": "1c5f6b19e86dde1de778b4c5942934fd7982d11f366285b8ad39148c8a1191e7",
+      "bytes": 262329
+    },
+    {
+      "original": "dedicated-camera-pan-playe-333cd-rmed-room-plan-confirmation/armed-whole-footprint-after-pan.png",
+      "published": "restored/c1/02.png",
+      "sha256": "da545d3dd4064ed925a4650c9e885fad80c1da541cd6954d05cd93ea8c6a245d",
+      "bytes": 339047
+    },
+    {
+      "original": "dedicated-camera-pan-playe-333cd-rmed-room-plan-confirmation/four-physical-pan-controls.png",
+      "published": "restored/c1/03.png",
+      "sha256": "e0aaf8da81757fc190066c5517bd19946087079f749ad123117709ee1e3f3623",
+      "bytes": 241931
+    },
+    {
+      "original": "dedicated-camera-pan-playe-68a5b-rmed-room-plan-confirmation/actual-room-plan-confirmed.png",
+      "published": "restored/c2/01.png",
+      "sha256": "595995a2b7dc6704b65e8fbafac9bd6f1a4a0250eb946dbc386caeb0387b24e8",
+      "bytes": 934801
+    },
+    {
+      "original": "dedicated-camera-pan-playe-68a5b-rmed-room-plan-confirmation/armed-whole-footprint-after-pan.png",
+      "published": "restored/c2/02.png",
+      "sha256": "8ef1fa5a3f934f6c3622beba1608602544decb9a8f697cfcc2378479d1602ceb",
+      "bytes": 853641
+    },
+    {
+      "original": "dedicated-camera-pan-playe-68a5b-rmed-room-plan-confirmation/four-physical-pan-controls.png",
+      "published": "restored/c2/03.png",
+      "sha256": "55c48fd5ac6f2ac1fa2f3c781a980148630a4b25c6c9028a4732737a2c11de2a",
+      "bytes": 896643
+    },
+    {
+      "original": "dedicated-camera-pan-playe-9d92a-rmed-room-plan-confirmation/actual-room-plan-confirmed.png",
+      "published": "restored/c3/01.png",
+      "sha256": "462b21eada6d5ad7a9e10f2d7dfdedcd45ce7ff348ab785f9b28191364825f06",
+      "bytes": 375881
+    },
+    {
+      "original": "dedicated-camera-pan-playe-9d92a-rmed-room-plan-confirmation/armed-whole-footprint-after-pan.png",
+      "published": "restored/c3/02.png",
+      "sha256": "42ce1843f4b0d2145d20324f29b4c08a8aa4c9be0854c60b40b65390313e820a",
+      "bytes": 345652
+    },
+    {
+      "original": "dedicated-camera-pan-playe-9d92a-rmed-room-plan-confirmation/four-physical-pan-controls.png",
+      "published": "restored/c3/03.png",
+      "sha256": "2a2738b514643095cbdeb0806108f84208b34ee4936de888126d3446837889e3",
+      "bytes": 282351
+    },
+    {
+      "original": "dedicated-camera-pan-playe-d0dc2-rmed-room-plan-confirmation/actual-room-plan-confirmed.png",
+      "published": "restored/c4/01.png",
+      "sha256": "fdf2961ef9b4b4c8d015ab96e075aeab689de0773585091da0fd8ad5271fc03f",
+      "bytes": 1678554
+    },
+    {
+      "original": "dedicated-camera-pan-playe-d0dc2-rmed-room-plan-confirmation/armed-whole-footprint-after-pan.png",
+      "published": "restored/c4/02.png",
+      "sha256": "ed7625f4b94b30b51e566ec53112b7d04bc315f6a2e37c607b12dc5288ff8276",
+      "bytes": 1666130
+    },
+    {
+      "original": "dedicated-camera-pan-playe-d0dc2-rmed-room-plan-confirmation/four-physical-pan-controls.png",
+      "published": "restored/c4/03.png",
+      "sha256": "e3b1c90da30327685422f1c70070f2df57e69339327a86037dadff37a92971d8",
+      "bytes": 1578111
+    },
+    {
+      "original": "dedicated-loading-dock-doo-0fe13-ding-dock-door-Delivery-Bay/capacity-completed-worker-snapshot.json",
+      "published": "restored/c5/01.json",
+      "sha256": "4a1066e19ebe1b61525b82bd0f37a6769832b71db61b7f2e5998b1ee159ec47a",
+      "bytes": 54388
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/attachments/dedicated-loading-dock-door-worker-and-save-evidence-115b660f7c36ed166342c556c48526fe9e58c253.json",
+      "published": "restored/c6/01.json",
+      "sha256": "e1f35bc4bc30bf43d8b9b98f98c3448fe481669e78a5908d35eee79377d2f0e8",
+      "bytes": 509
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/capacity-loaded-worker-snapshot.json",
+      "published": "restored/c6/02.json",
+      "sha256": "4fbe35f1d011ef6d48d6cdddee41ab335a7aa418b1f128e17defaac1bbdea08f",
+      "bytes": 54388
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/dedicated-loading-dock-door-completed-worker-snapshot.json",
+      "published": "restored/c6/03.json",
+      "sha256": "e72e046beba679630e3ff9cc6881657f4a98916cbb62d6fc87c94b6f868b58bb",
+      "bytes": 74775
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/dedicated-loading-dock-door-hardware-loaded-fullhd.png",
+      "published": "restored/c6/04.png",
+      "sha256": "fb85c1eee784adfbc42bab03d739f11cf2e69e4e97d3e8301d10504babf2669a",
+      "bytes": 271732
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/dedicated-loading-dock-door-loaded-fullhd.png",
+      "published": "restored/c6/05.png",
+      "sha256": "2ad3ae89e2d3389c0b38b242fd90195cdd065afa3506f6b0bdc61cf47d871529",
+      "bytes": 1395885
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/dedicated-loading-dock-door-loaded-worker-snapshot.json",
+      "published": "restored/c6/06.json",
+      "sha256": "13840ce9bdb27f5adb941e82ea552295d912a58e398451825b32d5af0ca38c97",
+      "bytes": 74775
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/dedicated-loading-dock-door-worker-and-save-evidence.json",
+      "published": "restored/c6/07.json",
+      "sha256": "e1f35bc4bc30bf43d8b9b98f98c3448fe481669e78a5908d35eee79377d2f0e8",
+      "bytes": 509
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/dedicated-loading-dock-door-worker-completed-fullhd.png",
+      "published": "restored/c6/08.png",
+      "sha256": "3eeff74202f29e96ae912fa2b444b1535d8fb67040736570f85d96fbe8e4b953",
+      "bytes": 1427569
+    },
+    {
+      "original": "dedicated-loading-dock-doo-76e24-and-anchors-after-Save-Load/worker-and-completed-save-evidence.json",
+      "published": "restored/c6/09.json",
+      "sha256": "0906813326015978a8d1d0ade23283ded099a27f7046802e3a20a2f76894e3f5",
+      "bytes": 351
+    },
+    {
+      "original": "dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load/attachments/dedicated-loading-dock-door-worker-and-save-evidence-03157b7aad1778f22af4501f5682774c8a4998db.json",
+      "published": "restored/c7/01.json",
+      "sha256": "34ba6f93416403803c3b0de2007a2d55d7f5ec6c3598abab60608c4d8cc954a5",
+      "bytes": 534
+    },
+    {
+      "original": "dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load/capacity-loaded-worker-snapshot.json",
+      "published": "restored/c7/02.json",
+      "sha256": "21d7d5409b40d7958e5e44f557ee48e811e2f5764316ccf418a8efe8ace08ec9",
+      "bytes": 54388
+    },
+    {
+      "original": "dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load/dedicated-loading-dock-door-completed-worker-snapshot.json",
+      "published": "restored/c7/03.json",
+      "sha256": "0a4ae48b51125c151962e4cd5e1f163d5fd8ab3a4fc0a4045661a356079f0830",
+      "bytes": 74536
+    },
+    {
+      "original": "dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load/dedicated-loading-dock-door-hardware-loaded-fullhd.png",
+      "published": "restored/c7/04.png",
+      "sha256": "52b80fd167c2a96c83eee30015e13cedf190ad05704422b0536f6663fa9e52ac",
+      "bytes": 299430
+    },
+    {
+      "original": "dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load/dedicated-loading-dock-door-loaded-fullhd.png",
+      "published": "restored/c7/05.png",
+      "sha256": "7283cf3526c3c195ed90bc2781590f8e08887739d683e6050098ee375a3f7113",
+      "bytes": 1463868
+    },
+    {
+      "original": "dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load/dedicated-loading-dock-door-loaded-worker-snapshot.json",
+      "published": "restored/c7/06.json",
+      "sha256": "7c4042bab01827eae64fff7224c0aef78792a37c3be853bdf8f5cbaabee4437c",
+      "bytes": 74536
+    },
+    {
+      "original": "dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load/dedicated-loading-dock-door-worker-and-save-evidence.json",
+      "published": "restored/c7/07.json",
+      "sha256": "34ba6f93416403803c3b0de2007a2d55d7f5ec6c3598abab60608c4d8cc954a5",
+      "bytes": 534
+    },
+    {
+      "original": "dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load/dedicated-loading-dock-door-worker-completed-fullhd.png",
+      "published": "restored/c7/08.png",
+      "sha256": "149cdb4689c5da840f1003c9d8d5e81609fbaa4c59709e4192a2b18a1f8438a0",
+      "bytes": 1495962
+    },
+    {
+      "original": "dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load/worker-and-completed-save-evidence.json",
+      "published": "restored/c7/09.json",
+      "sha256": "36cdddfc507b69f1170776ab7f79c01f91a685892f7d0c768feeff21588deeaa",
+      "bytes": 376
+    }
+  ]
+}
