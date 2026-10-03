@@ -9,7 +9,7 @@ const readPublic = (path: string): Buffer => readFileSync(new URL(`public${path}
 const sha = (body: Buffer): string => createHash('sha256').update(body).digest('hex');
 
 it('accepts independently pinned real source/descriptor/PNG using the native observer assertions', () => {
-  expect(sha(readFileSync(new URL(STAFF_CHAIR_ART.source, root)))).toBe('47004797588d92173e4140bc307ac3db73ed322ac2e1d2472f99c10475956109');
+  expect(sha(readFileSync(new URL(STAFF_CHAIR_ART.source, root)))).toBe('2dde0a33689685fd067c124c82b7b88b31c606d6c950a0789903e1b0b4b0e934');
   const verified = assertStaffDeliveredArt(readPublic(STAFF_CHAIR_ART.descriptor), readPublic(STAFF_CHAIR_ART.exposedFrame));
   expect(verified.catalog.assetId).toBe('furniture.staff-room.padded-chair');
   expect(verified.catalog.frames).toHaveLength(72);

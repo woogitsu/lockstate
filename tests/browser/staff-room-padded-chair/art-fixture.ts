@@ -2,11 +2,11 @@
 export const STAFF_CHAIR_ART = {
   assetId: 'furniture.staff-room.padded-chair',
   descriptor: '/game-content/oblique-furniture-staff-room-padded-chair.v1.json',
-  descriptorCanonicalTextSha256: '718fda5f4874146a71622a4db9814950acd845fa79aad85c8f935d56f42814c0',
-  source: 'assets/source/blender/furniture.staff-room.padded-chair.blend',
-  sourceSha256: '47004797588d92173e4140bc307ac3db73ed322ac2e1d2472f99c10475956109',
-  exposedFrame: '/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev40.3d0fd0a02317.png',
-  exposedFrameSha256: '3d0fd0a023174ec0a0fa897f33a57d1e07630a5201ec093f394a65634e399646',
+  descriptorCanonicalTextSha256: 'd5d4c3a0db3a371aee7cddadaa7f5ef8f7ea9be86bc251b4947be3cf992d9bd9',
+  source: 'assets/source/blender/furniture.staff-room.padded-chair.soft-light.blend',
+  sourceSha256: '2dde0a33689685fd067c124c82b7b88b31c606d6c950a0789903e1b0b4b0e934',
+  exposedFrame: '/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev40.a200ce9518d2.png',
+  exposedFrameSha256: 'a200ce9518d232a2ef0f6bdac0343738042804f87fb3e57f67c9f648345682f8',
   cameraTarget: [.5, .5, .6600000262260437],
 } as const;
 
