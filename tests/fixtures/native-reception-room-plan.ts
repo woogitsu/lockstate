@@ -38,3 +38,15 @@ export const RECEPTION_ART = {
   exposedFrameSha256: '4e6ee8fdb156be06a9d023f8806d90aede0b12552d048dcdba383c5f68b4cb0d',
   cameraTarget: [.5, .5, .6600000262260437],
 } as const;
+
+/** Independently pinned new desk evidence; the existing room plan/owners are unchanged. */
+export const RECEPTION_REGISTRATION_DESK_ART = {
+  assetId: 'furniture.reception.registration-desk',
+  descriptor: '/game-content/oblique-furniture-reception-registration-desk.v1.json',
+  descriptorCanonicalTextSha256: '95244f4b7b0a244ca7288e5d64bd52b740da307e22b41ba84b0a43cb52c92ea9',
+  source: 'assets/source/blender/furniture.reception.registration-desk.blend',
+  sourceSha256: 'be670aa62316c8f8557a1edbed75f3ac87df3ebe4bc78a3958c1e106347bb0dc',
+  exposedFrame: '/assets/environment/oblique/furniture.reception.registration-desk-yaw+60-elev40.bac55a0b3bac.png',
+  exposedFrameSha256: 'bac55a0b3bacc977eeca707eaf444e58f8661171391a8d1c1d430e521204febe',
+  cameraTarget: [1, .5, .6349999904632568],
+} as const;

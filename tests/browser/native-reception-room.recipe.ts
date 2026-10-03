@@ -146,7 +146,8 @@ for (const turns of [0, 1] as const) test(`Reception Room q${turns}: literal two
     publicLowerCameraClicks: 3, publicRaiseCameraClicks: 2,
     intendedSourcePose: [60, 40], fixtureOwners: RECEPTION_CASES[turns].chairs,
     perChairVisualCalibrationComplete: false, visualAcceptancePending: true,
-    rootMustReview: 'Calibrate separate disjoint regions for both actual chairs before/after Load and test the consumer omission; network/image decoding alone is not gameplay visual acceptance.' }, null, 2));
+    registrationDeskVisualCalibrationComplete: false,
+    rootMustReview: 'Calibrate separate disjoint regions for both actual chairs and the registration desk before/after Load and test consumer omissions; network/image decoding alone is not gameplay visual acceptance.' }, null, 2));
 });
 
 test.afterEach(async ({ page }, info) => {
