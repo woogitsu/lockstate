@@ -38,3 +38,15 @@ Notice read omission was actually executed on the corrected producer:2RED; exact
 ## B source variant
 
 `codex/camera-controls-b-always-source-draft-20261003` mounts variant`always`; A published head`85cff605f5888ae930b80aeb56d1ec5774b4f985` mounts`disclosure`. Their source difference is the single variant plus its comment. The original control instances, bounds/notice correction, labels and CSS are identical. B23 focused testsG; app/tools types0. [Exact B source patch](./evidence/variant-b-source.patch). No new native/build ran for either variant, and no PR was created.
+
+## Focused public native preparation
+
+[Exact execution recipe and limits](./NATIVE_RECIPE.md): one actual built-client
+English UI100 case per variant,1920×1080,1worker/0retries/60s/expect10s.
+Public RemoveWall obtains a genuine simulation refusal/status and complete
+alert row; public View, all pan/pose/Zoom controls retain44px physical hits.
+Camera movements use independently published minimap geometry, and complete
+paused worker snapshots before/after must remain exactly equal. Concrete
+screenshots and the public DOM geometry reader are part of the test output.
+Both strict app/tools checks and collection are recorded. No browser, server
+or build was run; collection is not native acceptance or owner approval.
