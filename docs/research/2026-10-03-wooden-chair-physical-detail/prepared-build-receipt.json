@@ -1,0 +1,19 @@
+{
+  "sourceCommit": "7e6e1567eb4e07fe691ee8310c3f7496f02b38e6",
+  "typecheckExitCode": 0,
+  "focusedFinalUnit": {
+    "filesPassed": 3,
+    "testsPassed": 7,
+    "testsSkipped": 1
+  },
+  "productionBuildExitCode": 0,
+  "worker": {
+    "path": "dist/client/assets/worker-B_EgwjiG.js",
+    "bytes": 438431,
+    "sha256": "457ec633efca916541b37e560e03c72b9dad0639a2199ee1dc6686de23ec8391"
+  },
+  "sourceSha256": "acd0e9decb3bb451b44e8354e797fb5656825f4748bbed832bab61659f06cd88",
+  "descriptorSha256": "8e3a18f1e651f998294fc6fe032a4cdc45a437fd361aac90a27d9765afa24724",
+  "nativeBrowserStarted": false,
+  "serverStarted": false
+}
