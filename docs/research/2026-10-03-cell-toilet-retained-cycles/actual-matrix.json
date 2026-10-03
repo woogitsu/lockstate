@@ -1,46 +1,21 @@
 {
-  "schemaVersion": 1,
-  "assetId": "fixture.cell.toilet_sink",
-  "source": "assets/source/blender/fixture.cell.toilet_sink.soft-light.blend",
+  "genuineBlenderVersion": [
+    5,
+    2,
+    1
+  ],
+  "engine": "CYCLES",
+  "device": "CPU",
+  "threads": 1,
+  "samples": 64,
+  "seed": 0,
+  "adaptiveSampling": false,
+  "denoising": false,
+  "viewTransform": "AgX",
+  "actualExportSeconds": 158.05005129997153,
+  "realRenderCount": 72,
   "sourceSha256": "1aa9169f65ea498fd1bfe6a2ee600f058c41f1a76685a0109a17da92db398ad5",
-  "sourceDependencies": [],
-  "resolutionPx": [
-    512,
-    512
-  ],
-  "nominalPixelsPerTile": 64,
-  "pivotPx": [
-    256,
-    256
-  ],
-  "cameraTargetTiles": [
-    0.5,
-    0.5,
-    0.5537500381469727
-  ],
-  "projection": "orthographic",
-  "yawDegrees": [
-    -165,
-    -135,
-    -105,
-    -75,
-    -45,
-    -15,
-    15,
-    45,
-    75,
-    105,
-    135,
-    165
-  ],
-  "elevationDegrees": [
-    20,
-    30,
-    40,
-    50,
-    60,
-    70
-  ],
+  "descriptorSha256": "a4c23422ef4c3225237ebf6669a042429256e9a0f333afeb4afe534b5111bb5c",
   "frames": [
     {
       "yawDegrees": -165,
@@ -474,5 +449,7 @@
       "image": "/assets/environment/oblique/cell-toilet-yaw+165-elev70.f74d2411ecbf.png",
       "sha256": "f74d2411ecbf3a051da41373e0d49c0ad3acf81c469fd383ba4e9cf502b0b1ba"
     }
-  ]
+  ],
+  "groundPlaneAdded": false,
+  "nativeAcceptance": false
 }
