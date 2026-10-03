@@ -5568,7 +5568,7 @@
   ],
   "manifest": [
     {
-      "path": "native/original/error-context.md",
+      "path": "native/original/pl-error-context.md",
       "bytes": 9299,
       "sha256": "f7fcb539ba5017a5072620adebdd4154afad8206644add7c24c89e64385851e1"
     },
@@ -5808,7 +5808,7 @@
       "sha256": "bf90d9450051910d68ad0b96cfa58e14b762f1130957da99accbec8740ee2eff"
     },
     {
-      "path": "native/original/error-context.md",
+      "path": "native/original/en-error-context.md",
       "bytes": 8895,
       "sha256": "f113c2f0614f1ec65895d932ae098a7d6415cc0386b51038f6f00fb42f4e4bc1"
     },
@@ -5863,7 +5863,7 @@
       "sha256": "81bffc2bb9d8148dae61ddd0d5adb439c3effb5a46968891d401be89fa4b9627"
     },
     {
-      "path": "native/negative/error-context.md",
+      "path": "native/negative/en-error-context.md",
       "bytes": 13560,
       "sha256": "a4d055486c9c257d2131545a0219df10550faef8fc9bd2c52f97816a50aaca27"
     },
@@ -5873,7 +5873,7 @@
       "sha256": "0ea2f4fe061c0435c2a762760e749e0d9489ea7ed75875fd12a93a73a8000559"
     },
     {
-      "path": "native/restored/error-context.md",
+      "path": "native/restored/pl-error-context.md",
       "bytes": 9299,
       "sha256": "f7fcb539ba5017a5072620adebdd4154afad8206644add7c24c89e64385851e1"
     },
@@ -6113,7 +6113,7 @@
       "sha256": "bf90d9450051910d68ad0b96cfa58e14b762f1130957da99accbec8740ee2eff"
     },
     {
-      "path": "native/restored/error-context.md",
+      "path": "native/restored/en-error-context.md",
       "bytes": 8895,
       "sha256": "f113c2f0614f1ec65895d932ae098a7d6415cc0386b51038f6f00fb42f4e4bc1"
     },

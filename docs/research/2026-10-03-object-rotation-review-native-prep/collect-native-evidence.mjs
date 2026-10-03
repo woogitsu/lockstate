@@ -15,11 +15,13 @@ for (const stage of ['original', 'negative', 'restored']) {
   for (const entry of fs.readdirSync(input, { withFileTypes: true })) {
     if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
     const dir = path.join(input, entry.name);
+    const locale = fs.readdirSync(dir).some(name => name.startsWith('en-')) ? 'en' : 'pl';
     for (const name of fs.readdirSync(dir)) {
       const selected = name.endsWith('.json') || name.endsWith('armed-q1-fullhd.png') || /q[01]-secondary\d\.png$/.test(name) || name === 'error-context.md';
       if (!selected) continue;
-      const bytes = fs.readFileSync(path.join(dir, name)), relative = `native/${stage}/${name}`;
-      fs.writeFileSync(path.join(output, name), bytes);
+      const outputName = name === 'error-context.md' ? `${locale}-error-context.md` : name;
+      const bytes = fs.readFileSync(path.join(dir, name)), relative = `native/${stage}/${outputName}`;
+      fs.writeFileSync(path.join(output, outputName), bytes);
       manifest.push({ path: relative, bytes: bytes.length, sha256: hash(bytes) });
       if (!name.endsWith('.json')) continue;
       const value = JSON.parse(bytes);
