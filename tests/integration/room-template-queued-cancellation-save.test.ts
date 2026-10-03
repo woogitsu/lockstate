@@ -41,6 +41,7 @@ it.each([false, true])('the same genuine queued cancellation must retain its unc
   const savedCommands = captureSessionSnapshot(pair.runtime).kernel.commands;
   const loaded = reload(pair.runtime);
   const restoredRevision = loaded.construction.revisionOf(pair.orderId);
+  expect(captureSessionSnapshot(loaded)).toEqual(captureSessionSnapshot(pair.runtime));
   expect(captureSessionSnapshot(loaded).kernel.commands).toEqual(captureSessionSnapshot(pair.runtime).kernel.commands);
   expect(loaded.construction.getOrder(pair.orderId)).toEqual(pair.runtime.construction.getOrder(pair.orderId));
   const funds = loaded.treasury.balanceMinorUnits;
@@ -59,8 +60,9 @@ it.each([false, true])('the same genuine queued cancellation must retain its unc
   expect(loaded.treasury.balanceMinorUnits).toBe(pair.runtime.treasury.balanceMinorUnits);
 });
 
-it.each([false, true])('a genuinely stale live token still refuses without cancelling, mirror=%s', mirrorX => {
-  const pair = pending(mirrorX);
+it.each([false, true].flatMap(mirrorX => [false, true].map(load => ({ mirrorX, load }))))('a genuinely stale token still refuses without cancelling, mirror=$mirrorX load=$load', ({ mirrorX, load }) => {
+  const original = pending(mirrorX);
+  const pair = { ...original, runtime: load ? reload(original.runtime) : original.runtime };
   const before = captureSessionSnapshot(pair.runtime), funds = pair.runtime.treasury.balanceMinorUnits;
   send(pair.runtime, { type: 'CancelBuildOrder', orderId: pair.orderId, expectedRevision: 0 });
   expect(pair.runtime.refusals.last?.reason).toBe('cancel-build-order.stale-cancellation');
