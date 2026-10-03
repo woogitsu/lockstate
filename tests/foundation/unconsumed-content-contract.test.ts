@@ -573,7 +573,7 @@ describe('every unconsumed content id is accounted for', () => {
       // `room.holding-cell`, `room.infirmary`, `room.reception` and
       // `room.security-office`. Every other room already had a `src/` reader
       // before this change, which is why the fall is seven and not eighteen.
-    }).toEqual({ declared: 62, unconsumedBySrcAndTests: 0, unconsumedBySrcOnly: 20 });
+    }).toEqual({ declared: 63, unconsumedBySrcAndTests: 0, unconsumedBySrcOnly: 20 });
   });
 
   it('scans a non-trivial catalog and a non-trivial consumer set, so this cannot pass vacuously', () => {

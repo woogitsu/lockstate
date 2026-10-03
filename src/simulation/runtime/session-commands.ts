@@ -34,7 +34,7 @@ import {
   zoneSupersessionKey,
   type RefusalLog,
 } from '../refusals';
-import type { ConstructionSystem } from '../construction/system';
+import { isCancellable, type ConstructionSystem } from '../construction/system';
 import type { RoomTemplateCoordinator } from '../construction/room-template-coordinator';
 import type { ObjectPlacementService } from '../objects';
 import type { PrisonerOperationsRuntime } from '../prisoners/prisoner-operations-runtime';
@@ -237,11 +237,12 @@ export function createSessionCommandHandler(
       construction.noteActionThatDoesNotWriteTheUndoStack();
     }
     if (simCommand !== null && simCommand.type === 'PlaceRoomTemplate') {
-      const key = `room-template:${simCommand.templateId}:${simCommand.origin.x}:${simCommand.origin.y}:${simCommand.mirrorX ?? false}`;
+      const key = `room-template:${simCommand.templateId}:${simCommand.origin.x}:${simCommand.origin.y}:${simCommand.mirrorX ?? false}:${simCommand.quarterTurns ?? 0}`;
       const verdict = roomTemplates.place({
         templateId: simCommand.templateId,
         origin: simCommand.origin,
         mirrorX: simCommand.mirrorX ?? false,
+        ...(simCommand.quarterTurns === undefined ? {} : { quarterTurns: simCommand.quarterTurns }),
         sequence: command.sequence,
       });
       if (!verdict.ok) {
@@ -656,6 +657,7 @@ export function createSessionCommandHandler(
         // `cancel` splices the record out and answers only what it refunded,
         // and the item is what decides which orders were waiting on it.
         construction.withdrawOrdersAwaitingMaterial(cancelledItemId);
+        roomTemplates.reconcileCancelledShells();
       }
       const cancelKey = purchaseCancelSupersessionKey(simCommand.orderId);
       if (!outcome.ok) {
@@ -1022,6 +1024,7 @@ export function createSessionCommandHandler(
       // onto the order before this branch could read the distinction back.
       const stateAtCancellation = wallOrder.state;
       construction.cancelOrder(wallOrder.id);
+      roomTemplates.reconcileCancelledShells();
       refusals.supersede(wallKey);
       // The same event `CancelBuildOrder` and `RemoveObject`'s pending-order
       // arm already record, reused rather than a new sentence: the state this
@@ -1200,6 +1203,26 @@ export function createSessionCommandHandler(
       return;
     }
 
+    if (simCommand?.type === 'CancelBuildOrder') {
+      const order = construction.getOrder(simCommand.orderId);
+      // Unknown, terminal and stale presses retain the construction handler's
+      // existing result. In particular, stale cancellation cannot relocate.
+      if (order !== undefined && isCancellable(order.state) &&
+          construction.revisionOf(order.id) === simCommand.expectedRevision) {
+        const key = `room-template-cancel:${order.id}`;
+        const refusal = roomTemplates.prepareCancellation(order.id, context.tick);
+        if (refusal !== undefined) {
+          refusals.record(UNZONE_REFUSAL_REASONS[refusal.reason], context.tick, key);
+          return;
+        }
+        refusals.supersede(key);
+      }
+    }
     constructionCommands(command, context);
+    if (simCommand?.type === 'CancelBuildOrder' || simCommand?.type === 'Undo') {
+      roomTemplates.reconcileCancelledShells();
+    } else if (simCommand?.type === 'Redo') {
+      roomTemplates.reconcileRedoneShells();
+    }
   };
 }

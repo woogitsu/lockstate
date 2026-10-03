@@ -1,0 +1,457 @@
+{
+  "schemaVersion": 1,
+  "originalSource": "assets/source/blender/environment.mvp.catalog.blend",
+  "originalSourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+  "collection": "furniture.storage.rack.wooden",
+  "source": "assets/source/blender/furniture.storage.rack.wooden.blend",
+  "sourceSha256": "3806d996ce473e166aaa00bef379655aac2c41ef4d45f7f32b48a893ff4b4eed",
+  "footprintTiles": [
+    1,
+    1
+  ],
+  "sourceAlignmentTranslation": [
+    0,
+    0,
+    0
+  ],
+  "minimum": [
+    -0.49500030279159546,
+    -0.4549993872642517,
+    0.0
+  ],
+  "maximum": [
+    0.49500030279159546,
+    0.4549993872642517,
+    1.4079999923706055
+  ],
+  "meshes": [
+    {
+      "name": "Corner bolt.-0.43.-0.39",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Corner bolt.-0.43.0.39",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Corner bolt.0.43.-0.39",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Corner bolt.0.43.0.39",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Corner post.-0.43.-0.39",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Corner post.-0.43.0.39",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Corner post.0.43.-0.39",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Corner post.0.43.0.39",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Middle steel toolbox",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "North bundle strap",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "North crate handle",
+      "evaluatedVertices": 8,
+      "modifiers": []
+    },
+    {
+      "name": "North folded blanket.0",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "North folded blanket.1",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "North wooden crate",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Rack refinement.canvas hem 0.267",
+      "evaluatedVertices": 8,
+      "modifiers": []
+    },
+    {
+      "name": "Rack refinement.canvas hem 0.315",
+      "evaluatedVertices": 8,
+      "modifiers": []
+    },
+    {
+      "name": "Rack refinement.canvas packet 0.267",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Rack refinement.canvas packet 0.315",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Rack refinement.canvas tie",
+      "evaluatedVertices": 8,
+      "modifiers": []
+    },
+    {
+      "name": "Rack refinement.middle carton",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Rack refinement.middle carton central seam",
+      "evaluatedVertices": 8,
+      "modifiers": []
+    },
+    {
+      "name": "Rack refinement.middle carton label",
+      "evaluatedVertices": 8,
+      "modifiers": []
+    },
+    {
+      "name": "Rack refinement.middle carton mark",
+      "evaluatedVertices": 8,
+      "modifiers": []
+    },
+    {
+      "name": "Rack refinement.north crate lid inset",
+      "evaluatedVertices": 8,
+      "modifiers": []
+    },
+    {
+      "name": "Rack refinement.north crate lid slat -0.105",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Rack refinement.north crate lid slat -0.275",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Rack refinement.recess 0",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Rack refinement.recess 1",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Rack refinement.recess 2",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Rack refinement.south crate edge -0.066",
+      "evaluatedVertices": 8,
+      "modifiers": []
+    },
+    {
+      "name": "Rack refinement.south crate edge -0.294",
+      "evaluatedVertices": 8,
+      "modifiers": []
+    },
+    {
+      "name": "Rack refinement.south crate printed band",
+      "evaluatedVertices": 8,
+      "modifiers": []
+    },
+    {
+      "name": "Rack refinement.south supply crate",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Rack refinement.steel rail 0",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Rack refinement.steel rail 1",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Rack refinement.steel rail 2",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Rear brace",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Shelf lip.0",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Shelf lip.1",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Shelf lip.2",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Steel corner cap.-0.43.-0.39",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Steel corner cap.-0.43.0.39",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Steel corner cap.0.43.-0.39",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Steel corner cap.0.43.0.39",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Toolbox clasp",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Worn shelf.0",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Worn shelf.1",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Worn shelf.2",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "Canteen textured tabletop",
+      "diffuseRGBA": [
+        0.44999998807907104,
+        0.27000001072883606,
+        0.11999999731779099,
+        1.0
+      ]
+    },
+    {
+      "name": "Canteen worn steel",
+      "diffuseRGBA": [
+        0.23999999463558197,
+        0.25999999046325684,
+        0.27000001072883606,
+        1.0
+      ]
+    },
+    {
+      "name": "Rack canvas fold shadow",
+      "diffuseRGBA": [
+        0.07000000029802322,
+        0.12999999523162842,
+        0.15000000596046448,
+        1.0
+      ]
+    },
+    {
+      "name": "Rack cardboard edge",
+      "diffuseRGBA": [
+        0.27000001072883606,
+        0.1599999964237213,
+        0.07999999821186066,
+        1.0
+      ]
+    },
+    {
+      "name": "Rack ivory inventory label",
+      "diffuseRGBA": [
+        0.7300000190734863,
+        0.7300000190734863,
+        0.6399999856948853,
+        1.0
+      ]
+    },
+    {
+      "name": "Rack kraft cardboard",
+      "diffuseRGBA": [
+        0.49000000953674316,
+        0.3199999928474426,
+        0.1599999964237213,
+        1.0
+      ]
+    },
+    {
+      "name": "Rack muted blue canvas",
+      "diffuseRGBA": [
+        0.18000000715255737,
+        0.2800000011920929,
+        0.3100000023841858,
+        1.0
+      ]
+    },
+    {
+      "name": "Rack red stock mark",
+      "diffuseRGBA": [
+        0.4300000071525574,
+        0.1599999964237213,
+        0.11999999731779099,
+        1.0
+      ]
+    },
+    {
+      "name": "Rack under-shelf shadow",
+      "diffuseRGBA": [
+        0.054999999701976776,
+        0.04500000178813934,
+        0.035999998450279236,
+        1.0
+      ]
+    },
+    {
+      "name": "green",
+      "diffuseRGBA": [
+        0.11999999731779099,
+        0.20000000298023224,
+        0.14000000059604645,
+        1.0
+      ]
+    },
+    {
+      "name": "light",
+      "diffuseRGBA": [
+        0.8999999761581421,
+        0.9200000166893005,
+        0.8199999928474426,
+        1.0
+      ]
+    },
+    {
+      "name": "shade",
+      "diffuseRGBA": [
+        0.03500000014901161,
+        0.03999999910593033,
+        0.04500000178813934,
+        1.0
+      ]
+    }
+  ]
+}

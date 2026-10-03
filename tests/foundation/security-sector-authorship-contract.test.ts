@@ -88,7 +88,7 @@ function propertyPositionSites(field: string): ReadonlyMap<string, number> {
   for (const file of sourceFiles(SOURCE_ROOT)) {
     const matches = readFileSync(file, 'utf8').match(pattern);
     if (matches === null) continue;
-    sites.set(relative(REPOSITORY_ROOT, file), matches.length);
+    sites.set(relative(REPOSITORY_ROOT, file).replace(/\\/g, '/'), matches.length);
   }
   return sites;
 }
@@ -105,7 +105,7 @@ function countedReads(field: string): readonly string[] {
   for (const file of sourceFiles(SOURCE_ROOT)) {
     const matches = readFileSync(file, 'utf8').match(pattern);
     if (matches === null) continue;
-    reads.push(`${relative(REPOSITORY_ROOT, file)} x${matches.length}`);
+    reads.push(`${relative(REPOSITORY_ROOT, file).replace(/\\/g, '/')} x${matches.length}`);
   }
   return reads.sort();
 }

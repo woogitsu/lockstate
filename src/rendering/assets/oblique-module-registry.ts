@@ -36,13 +36,14 @@ export async function fetchObliqueModuleSet(
   url = '/game-content/oblique-module-registry.v1.json',
   options: ObliqueModuleLoadOptions = {},
 ): Promise<Map<string, ObliqueModuleCatalog>> {
-  const cached = moduleSetCache.get(url);
-  if (cached) return new Map(await cached);
-  const load = loadObliqueModuleSet(url);
-  moduleSetCache.set(url, load);
+  let load = moduleSetCache.get(url);
+  if (!load) {
+    load = loadObliqueModuleSet(url);
+    moduleSetCache.set(url, load);
+  }
   try { return new Map(await load); }
   catch (error) {
-    moduleSetCache.delete(url);
+    if (moduleSetCache.get(url) === load) moduleSetCache.delete(url);
     if (options.fallback) return new Map(options.fallback);
     throw error;
   }

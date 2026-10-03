@@ -124,6 +124,28 @@ describe('BuildTool', () => {
 
     expect(orders[0]?.definitionId).toBe('door-wooden');
   });
+
+  it('reports a whole-square wall drag as one deduplicated order', () => {
+    const { tool, orders } = armedTool();
+    tool.setArmed(true, 'wall-brick', true);
+    expect(tool.usesSquareFootprint()).toBe(true);
+
+    tool.placeSquares([{ x: 4, y: 7 }, { x: 5, y: 7 }, { x: 4, y: 7 }]);
+
+    expect(orders).toEqual([{
+      definitionId: 'wall-brick',
+      edges: [],
+      squares: [{ x: 4, y: 7 }, { x: 5, y: 7 }],
+    }]);
+  });
+
+  it('does not place whole-square walls while disarmed or with an empty drag', () => {
+    const { tool, orders } = armedTool();
+    tool.placeSquares([]);
+    tool.setArmed(false);
+    tool.placeSquares([{ x: 4, y: 7 }]);
+    expect(orders).toEqual([]);
+  });
 });
 
 /**

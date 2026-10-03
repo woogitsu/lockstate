@@ -1,3 +1,4 @@
+import { projectRoomTemplateCost } from '../presentation/room-template-cost';
 import type { JsonValue } from '../../shared/json';
 import {
   HUD_VIEW_MODEL_SCHEMA_VERSION,
@@ -490,6 +491,13 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     target: 'none',
     project: (runtime) => ({ view: projectWorldForRendering(runtime.world) as unknown as JsonValue }),
   },
+  'world/room-template-cost': {
+    schemaId: 'room-template-cost', schemaVersion: 1, paged: false, target: 'room-template',
+    project: (_runtime, _tick, request) => {
+      if (request.target?.kind !== 'room-template') throw new Error('Room template target required');
+      return { view: projectRoomTemplateCost(request.target.templateId) as unknown as JsonValue };
+    },
+  },
   'world/room-template-preflight': {
     schemaId: 'room-template-placement',
     schemaVersion: 1,
@@ -498,7 +506,7 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
     project: (runtime, _tick, request) => {
       const target = request.target;
       if (target?.kind !== 'room-template') throw new Error('Room template target required');
-      return { view: projectRoomTemplatePreflight(runtime.roomTemplates, target.templateId, target.origin, target.mirrorX) as unknown as JsonValue };
+      return { view: projectRoomTemplatePreflight(runtime.roomTemplates, target.templateId, target.origin, target.mirrorX, target.quarterTurns) as unknown as JsonValue };
     },
   },
 };

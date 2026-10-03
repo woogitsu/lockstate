@@ -1,0 +1,334 @@
+{
+  "sourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+  "source": "assets/source/blender/environment.mvp.catalog.blend",
+  "originWorld": [
+    21.0,
+    28.0,
+    0.0
+  ],
+  "meshCount": 16,
+  "minimum": [
+    -0.3859996795654297,
+    -0.5024994611740112,
+    0.0
+  ],
+  "maximum": [
+    0.3859996795654297,
+    0.4680006802082062,
+    1.3200000524520874
+  ],
+  "meshes": [
+    {
+      "name": "Chair refinement.back bracket -0.32",
+      "vertices": 56,
+      "materials": [
+        "Canteen worn steel"
+      ],
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ],
+      "minimum": [
+        -0.34749969840049744,
+        -0.42549994587898254,
+        0.7625000476837158
+      ],
+      "maximum": [
+        -0.29249969124794006,
+        -0.22049996256828308,
+        0.8174999952316284
+      ]
+    },
+    {
+      "name": "Chair refinement.back bracket 0.32",
+      "vertices": 56,
+      "materials": [
+        "Canteen worn steel"
+      ],
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ],
+      "minimum": [
+        0.29249969124794006,
+        -0.42549994587898254,
+        0.7625000476837158
+      ],
+      "maximum": [
+        0.34749969840049744,
+        -0.22049996256828308,
+        0.8174999952316284
+      ]
+    },
+    {
+      "name": "Chair refinement.back edge highlight",
+      "vertices": 56,
+      "materials": [
+        "Canteen worn steel"
+      ],
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ],
+      "minimum": [
+        -0.2750000059604645,
+        -0.4940008819103241,
+        1.1365000009536743
+      ],
+      "maximum": [
+        0.2750000059604645,
+        -0.48200085759162903,
+        1.1434999704360962
+      ]
+    },
+    {
+      "name": "Chair refinement.dark back inset",
+      "vertices": 56,
+      "materials": [
+        "shade"
+      ],
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ],
+      "minimum": [
+        -0.3149999976158142,
+        -0.5024994611740112,
+        0.9699999690055847
+      ],
+      "maximum": [
+        0.3149999976158142,
+        -0.3674994707107544,
+        1.0699999332427979
+      ]
+    },
+    {
+      "name": "Chair refinement.front foot -0.32",
+      "vertices": 32,
+      "materials": [
+        "shade"
+      ],
+      "modifiers": [],
+      "minimum": [
+        -0.3829996883869171,
+        0.34200069308280945,
+        0.0
+      ],
+      "maximum": [
+        -0.2569997012615204,
+        0.4680006802082062,
+        0.07000000029802322
+      ]
+    },
+    {
+      "name": "Chair refinement.front foot 0.32",
+      "vertices": 32,
+      "materials": [
+        "shade"
+      ],
+      "modifiers": [],
+      "minimum": [
+        0.2569997012615204,
+        0.34200069308280945,
+        0.0
+      ],
+      "maximum": [
+        0.3829996883869171,
+        0.4680006802082062,
+        0.07000000029802322
+      ]
+    },
+    {
+      "name": "Chair refinement.front leg -0.32",
+      "vertices": 32,
+      "materials": [
+        "Canteen worn steel"
+      ],
+      "modifiers": [],
+      "minimum": [
+        -0.3609997034072876,
+        0.36400067806243896,
+        0.0
+      ],
+      "maximum": [
+        -0.2789996862411499,
+        0.44600069522857666,
+        0.5299999713897705
+      ]
+    },
+    {
+      "name": "Chair refinement.front leg 0.32",
+      "vertices": 32,
+      "materials": [
+        "Canteen worn steel"
+      ],
+      "modifiers": [],
+      "minimum": [
+        0.2789996862411499,
+        0.36400067806243896,
+        0.0
+      ],
+      "maximum": [
+        0.3609997034072876,
+        0.44600069522857666,
+        0.5299999713897705
+      ]
+    },
+    {
+      "name": "Chair refinement.front seat edge",
+      "vertices": 56,
+      "materials": [
+        "Canteen worn steel"
+      ],
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ],
+      "minimum": [
+        -0.2800000011920929,
+        0.3314998745918274,
+        0.5410000085830688
+      ],
+      "maximum": [
+        0.2800000011920929,
+        0.3564998507499695,
+        0.5989999771118164
+      ]
+    },
+    {
+      "name": "Chair refinement.rear foot -0.32",
+      "vertices": 32,
+      "materials": [
+        "shade"
+      ],
+      "modifiers": [],
+      "minimum": [
+        -0.3859996795654297,
+        -0.4960002899169922,
+        0.0
+      ],
+      "maximum": [
+        -0.2539997100830078,
+        -0.3640003204345703,
+        0.07000000029802322
+      ]
+    },
+    {
+      "name": "Chair refinement.rear foot 0.32",
+      "vertices": 32,
+      "materials": [
+        "shade"
+      ],
+      "modifiers": [],
+      "minimum": [
+        0.2539997100830078,
+        -0.4960002899169922,
+        0.0
+      ],
+      "maximum": [
+        0.3859996795654297,
+        -0.3640003204345703,
+        0.07000000029802322
+      ]
+    },
+    {
+      "name": "Chair refinement.rear post -0.32",
+      "vertices": 32,
+      "materials": [
+        "Canteen worn steel"
+      ],
+      "modifiers": [],
+      "minimum": [
+        -0.35899969935417175,
+        -0.46900030970573425,
+        0.0
+      ],
+      "maximum": [
+        -0.28099969029426575,
+        -0.39100030064582825,
+        1.3200000524520874
+      ]
+    },
+    {
+      "name": "Chair refinement.rear post 0.32",
+      "vertices": 32,
+      "materials": [
+        "Canteen worn steel"
+      ],
+      "modifiers": [],
+      "minimum": [
+        0.28099969029426575,
+        -0.46900030970573425,
+        0.0
+      ],
+      "maximum": [
+        0.35899969935417175,
+        -0.39100030064582825,
+        1.3200000524520874
+      ]
+    },
+    {
+      "name": "Chair refinement.seat underframe",
+      "vertices": 56,
+      "materials": [
+        "Canteen worn steel"
+      ],
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ],
+      "minimum": [
+        -0.32499998807907104,
+        -0.20499923825263977,
+        0.45250001549720764
+      ],
+      "maximum": [
+        0.32499998807907104,
+        0.355000764131546,
+        0.5275000333786011
+      ]
+    },
+    {
+      "name": "Chair refinement.walnut back rail",
+      "vertices": 56,
+      "materials": [
+        "Corridor bench worn wood plank 1"
+      ],
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ],
+      "minimum": [
+        -0.3050000071525574,
+        -0.4949994683265686,
+        1.040000081062317
+      ],
+      "maximum": [
+        0.3050000071525574,
+        -0.374999463558197,
+        1.1299999952316284
+      ]
+    },
+    {
+      "name": "Chair refinement.wooden seat",
+      "vertices": 56,
+      "materials": [
+        "Corridor bench worn wood plank 0"
+      ],
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ],
+      "minimum": [
+        -0.29499998688697815,
+        -0.1849992275238037,
+        0.527999997138977
+      ],
+      "maximum": [
+        0.29499998688697815,
+        0.33500075340270996,
+        0.6080000400543213
+      ]
+    }
+  ]
+}

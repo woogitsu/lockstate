@@ -1,11 +1,13 @@
 import { decodeEntityStoreSnapshot, type EncodedEntityStoreSnapshot } from '../../simulation/entity/entity-codec';
 import { packEntityId } from '../../simulation/entity/entity-store';
+import { LOCOMOTION_SUBTILE_UNITS, type LocomotionSnapshot } from '../../simulation/locomotion';
 import {
   composeRenderActorId,
   RENDER_ACTOR_POPULATION_GUARD,
   RENDER_ACTOR_POPULATION_PRISONER,
 } from '../../simulation/protocol/render-actors-payload';
 import type { EncodedSessionSystems } from '../../simulation/runtime/session-systems';
+import { DEFAULT_FACING, directionFromMovement } from '../assets/direction';
 import type { RenderActor } from './render-feed';
 
 /**
@@ -32,21 +34,23 @@ import type { RenderActor } from './render-feed';
  * bundle it cannot read actors from is to draw the world without them rather
  * than to draw nothing.
  *
- * ### What the snapshot does not carry
+ * ### Motion and heading
  *
- * A snapshot is a set of positions at one instant. It carries no velocity, no
- * facing and no asset id, and this function invents none of them:
+ * A snapshot is a set of positions at one instant. Its optional `inFlight`
+ * section carries the simulation's saved headings, including the last heading
+ * of a standing actor. It does not supply a wall-clock velocity, so this
+ * projection invents none:
  *
+ * - `tileX`/`tileY` include the optional saved walk's fixed-point progress,
+ *   just as the live delta does. The component/roster tile remains the last
+ *   crossed waypoint; reading only it would move a paused mid-stride actor
+ *   back to the tile boundary after Load.
  * - `deltaX`/`deltaY` are `0`, which makes `selectActorPose` choose the idle
- *   clip for every prisoner. That is a statement about the snapshot, not about
- *   the prisoner: a prisoner walking across the yard is still drawn standing,
- *   because nothing in the bundle says which way they are going. Differencing
- *   two snapshots would not fix it either -- they are seconds apart, so the
- *   result would be a renderer-side movement model rather than simulation
- *   state.
- * - `facing` is left unset, so `actor-pose.ts` applies its documented
- *   `DEFAULT_FACING`. An omitted field says "no facing was published"; a
- *   written one would say the simulation chose south.
+ *   clip. Saved progress says where the actor is, without advancing it against
+ *   wall time or inventing a publication interval.
+ * - `facing` comes from `inFlight` when present and nonzero. Older saves
+ *   without it leave the field unset, so `actor-pose.ts` uses its documented
+ *   `DEFAULT_FACING` rather than claiming a direction the save never gave.
  * - `assetId` is a renderer-side decision about which authored art draws the
  *   prisoner population. It is the constant below, resolved through the
  *   generated manifest like every other logical asset id (ADR-0014).
@@ -68,14 +72,11 @@ import type { RenderActor } from './render-feed';
  *   correct now; it stops being correct the day a guard can be destroyed, and
  *   whichever change adds that inherits updating this comment and this
  *   function together, the same pairing prisoners already have.
- * - **No motion.** `deltaX`/`deltaY` are `0` for a guard for the same reason
- *   they are `0` for a prisoner read from a snapshot: this is one instant, and
- *   guards additionally have no continuous position to publish even on the
- *   delta channel -- ADR 0059 gave prisoners a locomotion store between two
- *   tiles and left guards on the "position updates only on arrival"
- *   convention it documents guards still follow. Composing a walk from two
- *   snapshots seconds apart is the renderer-side movement model this module
- *   already refuses to invent.
+ * - **No wall-clock motion from a snapshot.** `deltaX`/`deltaY` are `0` for a
+ *   guard for the same reason they are `0` for a prisoner here: one instant
+ *   does not provide a publication interval. The delta channel publishes
+ *   each population's continuous position and velocity separately. A saved
+ *   heading is enough to face a paused guard without inventing a walk.
  *
  * `docs/research/2026-08-28-drawing-guards.md` is the record of the one
  * decision this needed that no ADR had taken: ADR 0059 open question 4 leaves
@@ -113,6 +114,14 @@ export const PRISONER_ACTOR_ASSET_ID = 'actor.prisoner.base';
  */
 export const GUARD_ACTOR_ASSET_ID = 'actor.guard.base';
 
+/** Read existing saved sub-tile offsets without constructing or stepping a simulation store. */
+function savedOffsets(locomotion: LocomotionSnapshot | undefined): ReadonlyMap<number, readonly [number, number]> {
+  return new Map(locomotion?.walks.map((walk) => [
+    walk.key,
+    [walk.headingX * walk.progress / LOCOMOTION_SUBTILE_UNITS, walk.headingY * walk.progress / LOCOMOTION_SUBTILE_UNITS] as const,
+  ]));
+}
+
 export function actorsFromSnapshot(
   simulation: EncodedSessionSystems | undefined,
   entities: EncodedEntityStoreSnapshot | undefined,
@@ -121,6 +130,15 @@ export function actorsFromSnapshot(
 
   const components = simulation.prisoners.components;
   const store = decodeEntityStoreSnapshot(entities);
+  const prisonerHeadings = new Map(simulation.inFlight?.prisoners.locomotion.headings.map(([key, x, y]) => [key, [x, y] as const]));
+  const guardHeadings = new Map(simulation.inFlight?.guards.locomotion.headings.map(([key, x, y]) => [key, [x, y] as const]));
+  const prisonerOffsets = savedOffsets(simulation.inFlight?.prisoners.locomotion);
+  const guardOffsets = savedOffsets(simulation.inFlight?.guards.locomotion);
+  const facingOf = (headings: ReadonlyMap<number, readonly [number, number]>, key: number) => {
+    const heading = headings.get(key);
+    return heading === undefined || (heading[0] === 0 && heading[1] === 0)
+      ? undefined : directionFromMovement(heading[0], heading[1], DEFAULT_FACING);
+  };
 
   // Both bounds come from the same capture of the same store, so they agree:
   // `activeLength` is written as `maxActiveIndex + 1`. Taking the smaller of
@@ -131,6 +149,8 @@ export function actorsFromSnapshot(
   const actors: RenderActor[] = [];
   for (let index = 0; index <= lastIndex; index += 1) {
     if (store.alive[index] !== 1) continue;
+    const facing = facingOf(prisonerHeadings, index);
+    const offset = prisonerOffsets.get(index);
     actors.push({
       // The packed `EntityId`, not the slot index: a recycled slot must not
       // inherit the pooled sprite of the prisoner that used to occupy it.
@@ -138,24 +158,28 @@ export function actorsFromSnapshot(
       // collide with a guard at the same raw index -- see its own comment.
       id: composeRenderActorId(RENDER_ACTOR_POPULATION_PRISONER, packEntityId(index, store.generations[index]!)),
       assetId: PRISONER_ACTOR_ASSET_ID,
-      tileX: components.tileX[index]!,
-      tileY: components.tileY[index]!,
+      tileX: components.tileX[index]! + (offset?.[0] ?? 0),
+      tileY: components.tileY[index]! + (offset?.[1] ?? 0),
       // Defaults, not simulation state -- see the note above.
       deltaX: 0,
       deltaY: 0,
+      ...(facing === undefined ? {} : { facing }),
     });
   }
 
   // Guards: see "### Guards" above for why `records` needs no liveness join
   // today and why there is no motion to publish.
   for (const [entityId, record] of simulation.security.guards.records) {
+    const facing = facingOf(guardHeadings, entityId);
+    const offset = guardOffsets.get(entityId);
     actors.push({
       id: composeRenderActorId(RENDER_ACTOR_POPULATION_GUARD, entityId),
       assetId: GUARD_ACTOR_ASSET_ID,
-      tileX: record.tileX,
-      tileY: record.tileY,
+      tileX: record.tileX + (offset?.[0] ?? 0),
+      tileY: record.tileY + (offset?.[1] ?? 0),
       deltaX: 0,
       deltaY: 0,
+      ...(facing === undefined ? {} : { facing }),
     });
   }
   // Prisoners in ascending entity index (the canonical order

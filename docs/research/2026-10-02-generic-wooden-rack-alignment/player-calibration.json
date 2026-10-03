@@ -1,0 +1,141 @@
+{
+  "artifactHead": "b61518d4e1",
+  "nativeCases": 3,
+  "durationsSeconds": [
+    43.0,
+    48.5,
+    41.4
+  ],
+  "publicLfsHydrated": true,
+  "individualRotationBoundary": "PlaceObject orientation0 only; orientation1 is genuine rotated template followed by native UnzoneRoom, never an individual rotated UI claim",
+  "records": [
+    {
+      "quarterTurns": 1,
+      "actualBefore": [
+        "object.storage-rack@23,6:orientation=1",
+        "object.storage-rack@23,8:orientation=1"
+      ],
+      "actualAfter": [
+        "object.storage-rack@23,6:orientation=1",
+        "object.storage-rack@23,8:orientation=1"
+      ],
+      "commands": [
+        {
+          "type": "PlaceRoomTemplate",
+          "templateId": "storage-room-basic",
+          "origin": {
+            "x": 20,
+            "y": 5
+          },
+          "quarterTurns": 1
+        },
+        {
+          "type": "UnzoneRoom",
+          "x": 20,
+          "y": 5,
+          "width": 5,
+          "height": 5
+        }
+      ],
+      "initialSourceCandidateCounts": [
+        376,
+        93
+      ],
+      "isolatedRects": [
+        [
+          820,
+          300,
+          110,
+          190
+        ],
+        [
+          935,
+          400,
+          90,
+          100
+        ]
+      ],
+      "nativeTimberRgb": [
+        117,
+        88,
+        55
+      ],
+      "completedCounts": [
+        362,
+        93
+      ],
+      "loadedCounts": [
+        362,
+        93
+      ],
+      "thresholdExclusive": 70
+    },
+    {
+      "quarterTurns": 0,
+      "actualBefore": [
+        "object.storage-rack@23,6:orientation=0",
+        "object.storage-rack@24,7:orientation=0"
+      ],
+      "actualAfter": [
+        "object.storage-rack@23,6:orientation=0",
+        "object.storage-rack@24,7:orientation=0"
+      ],
+      "commands": [
+        {
+          "type": "PlaceRoomTemplate",
+          "templateId": "staff-room-basic",
+          "origin": {
+            "x": 20,
+            "y": 5
+          }
+        },
+        {
+          "type": "PlaceObject",
+          "orderId": "object-0f910666-4133-420e-8642-c3a3360b9698",
+          "definitionId": "storage-rack-wooden",
+          "x": 23,
+          "y": 6
+        },
+        {
+          "type": "PlaceObject",
+          "orderId": "object-a2edabcb-67da-421e-929f-b1f6b99b672f",
+          "definitionId": "storage-rack-wooden",
+          "x": 24,
+          "y": 7
+        }
+      ],
+      "initialSourceCandidateCounts": [
+        0,
+        0
+      ],
+      "isolatedRects": [
+        [
+          820,
+          330,
+          110,
+          160
+        ],
+        [
+          935,
+          330,
+          110,
+          160
+        ]
+      ],
+      "nativeTimberRgb": [
+        93,
+        69,
+        42
+      ],
+      "completedCounts": [
+        275,
+        339
+      ],
+      "loadedCounts": [
+        275,
+        339
+      ],
+      "thresholdExclusive": 200
+    }
+  ]
+}

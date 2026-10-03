@@ -1,0 +1,46 @@
+{
+  "repeatFiles": 73,
+  "allBytesEqual": true,
+  "manifestSha256": "d736f8bab54d65c396bd3cb55125ddb1f38fa99a5128bb389828e45f6524eaf7",
+  "sourceSha256": "87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b",
+  "wrapperSha256": "0fae4516907e0552c60d7c47d60984ca0f5f5555d925bf084c47222d113a5e33",
+  "nativeMutations": [
+    {
+      "mutation": "omit-desktop",
+      "exitCode": 1,
+      "failure": [
+        "ValueError: Retained desk authored mesh set changed"
+      ]
+    },
+    {
+      "mutation": "shift-source",
+      "exitCode": 1,
+      "failure": [
+        "ValueError: Retained desk evaluated source bounds changed"
+      ]
+    },
+    {
+      "mutation": "wrong-camera-scale",
+      "exitCode": 1,
+      "failure": [
+        "ValueError: Generic office desk actual camera scale is not 64 pixels per tile"
+      ]
+    },
+    {
+      "mutation": "wrong-camera-position",
+      "exitCode": 1,
+      "failure": [
+        "ValueError: Generic office desk actual camera target/yaw basis differs from declared square pose"
+      ]
+    }
+  ],
+  "exactRestoredExitCode": 0,
+  "exactRestoredWrapperBytes": true,
+  "contactSheetSha256": "257fe47ea74546e25f64adfa342173859ab369d8ac34ec26d40f06ea06692b43",
+  "pngMutation": {
+    "image": "/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev20.da4c223f70ae.png",
+    "negativeExitCode": 1,
+    "restoredExitCode": 0,
+    "restoredBytesEqual": true
+  }
+}

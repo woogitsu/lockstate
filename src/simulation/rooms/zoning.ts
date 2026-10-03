@@ -509,6 +509,8 @@ export class RoomZoningService {
      * a separate authored number, so a future room could ask for 6 tiles in
      * any 2x4 shape and this has to be the check that says so rather than one
      * that assumes the product.
+     * The owner-approved template rotation rule accepts the two side minima in
+     * either orientation. The separate minTiles floor still applies to both.
      *
      * Ahead of every per-tile check, and that ordering is deliberate: a
      * canteen dragged 1x1 over land the player does not own is refused for
@@ -525,8 +527,8 @@ export class RoomZoningService {
     const minimum = minimumSizeRequirement(definition);
     if (
       minimum !== undefined &&
-      (request.width < minimum.minWidth ||
-        request.height < minimum.minHeight ||
+      (((request.width < minimum.minWidth || request.height < minimum.minHeight) &&
+        (request.width < minimum.minHeight || request.height < minimum.minWidth)) ||
         request.width * request.height < minimum.minTiles)
     ) {
       return this.refuse('below-minimum-size', request, tick);
@@ -796,13 +798,22 @@ export class RoomZoningService {
    * whatever their group's accommodation policy prefers.
    */
   public unzone(request: UnzoneRoomRequest, tick: number): UnzoneRoomOutcome {
-    if (
-      request.width < 1 ||
-      request.height < 1 ||
-      request.width > MAX_ZONE_DIMENSION_TILES ||
-      request.height > MAX_ZONE_DIMENSION_TILES
-    ) {
-      return { kind: 'refused', reason: 'invalid-area', request: { ...request }, tick };
+    return this.unzoneTogether([request], tick);
+  }
+
+  /** A grouped room gesture must exclude every removed room from relocation. */
+  public unzoneTogether(requests: readonly UnzoneRoomRequest[], tick: number): UnzoneRoomOutcome {
+    const request = requests[0] ?? { x: 0, y: 0, width: 0, height: 0 };
+    if (requests.length === 0) return { kind: 'refused', reason: 'invalid-area', request, tick };
+    for (const area of requests) {
+      if (
+        area.width < 1 ||
+        area.height < 1 ||
+        area.width > MAX_ZONE_DIMENSION_TILES ||
+        area.height > MAX_ZONE_DIMENSION_TILES
+      ) {
+        return { kind: 'refused', reason: 'invalid-area', request: { ...area }, tick };
+      }
     }
 
     // Every tile is collected before any is cleared, for the reason `zone`
@@ -810,18 +821,19 @@ export class RoomZoningService {
     // plane and the registry disagreeing, and the occupancy check below can
     // only be made once the whole set of affected instances is known.
     const tiles = new Map<string, TilePosition>();
-    for (let offsetY = 0; offsetY < request.height; offsetY += 1) {
-      for (let offsetX = 0; offsetX < request.width; offsetX += 1) {
-        const tile: TilePosition = {
-          x: tileCoordinate(request.x + offsetX),
-          y: tileCoordinate(request.y + offsetY),
-        };
-        // A tile already collected is a tile whose room is already going, so
-        // it needs no second resolution. This is what keeps the cost of a
-        // 64x64 drag proportional to the *rooms* it covers rather than to its
-        // area times the registry.
-        if (tiles.has(tileKeyOf(tile))) continue;
-        this.collectRemovableRegion(tile, tiles);
+    for (const area of requests) {
+      for (let offsetY = 0; offsetY < area.height; offsetY += 1) {
+        for (let offsetX = 0; offsetX < area.width; offsetX += 1) {
+          const tile: TilePosition = {
+            x: tileCoordinate(area.x + offsetX),
+            y: tileCoordinate(area.y + offsetY),
+          };
+          // A tile already collected is a tile whose room is already going, so
+          // it needs no second resolution. This keeps the cost proportional
+          // to the rooms rather than area times the registry.
+          if (tiles.has(tileKeyOf(tile))) continue;
+          this.collectRemovableRegion(tile, tiles);
+        }
       }
     }
 
@@ -885,12 +897,12 @@ export class RoomZoningService {
     }
 
     if (occupiedInstanceIds.length > 0) {
-      // Sorted -- code-unit order, never `localeCompare`
-      // (`docs/DETERMINISM.md`) -- so the set handed to the port does not
-      // depend on the anchor-tile scan order above, only on which instances
-      // this removal affects.
-      occupiedInstanceIds.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
-      const outcome = this.residentRelocation?.relocateResidentsOutOf(occupiedInstanceIds);
+      // Exclude every removed room, including empty ones: they are not valid
+      // relocation destinations. The existing port moves residents only from
+      // occupied members, but its exclusion set must cover the whole gesture.
+      const excludedInstanceIds = removed.map((instance) => instance.instanceId)
+        .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+      const outcome = this.residentRelocation?.relocateResidentsOutOf(excludedInstanceIds);
       if (outcome !== 'relocated') {
         // Either no port is wired (the original, unconditional refusal every
         // existing fixture still gets) or it tried and found nowhere to put

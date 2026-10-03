@@ -1,0 +1,17 @@
+[
+  {
+    "mutation": "foreign-bed-inclusion",
+    "exit": 1,
+    "guard": "escapes its 1 x 1 occupied footprint"
+  },
+  {
+    "mutation": "camera-origin-target",
+    "exit": 1,
+    "guard": "does not use the declared target and yaw basis"
+  },
+  {
+    "mutation": "camera-double-nominal-scale",
+    "exit": 1,
+    "guard": "actual orthographic camera scale is not 64 pixels per tile"
+  }
+]

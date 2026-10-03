@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { EdgeTarget } from '../build/edge-picking';
+import type { SquareTarget } from '../build/square-picking';
 import { TILE_SIZE_PX } from '../tile-metrics';
 import { EDGE_WALL_APPEARANCE, EDGE_WALL_THICKNESS_TILES, PLANNED_ALPHA } from '../world/appearance';
 
@@ -51,6 +52,19 @@ export class BuildOverlay {
       const height = segment.edge === 'north' ? thickness : TILE_SIZE_PX;
       this.graphics.fillRect(left, top, width, height);
       this.graphics.strokeRect(left, top, width, height);
+    }
+  }
+
+  /** Fill every occupied tile. The raised wall art must never define its footprint. */
+  public updateSquares(squares: readonly SquareTarget[]): void {
+    this.graphics.clear();
+    this.graphics.fillStyle(EDGE_WALL_APPEARANCE.topFill, PLANNED_ALPHA);
+    this.graphics.lineStyle(2, EDGE_WALL_APPEARANCE.outline, 1);
+    for (const square of squares) {
+      const left = square.x * TILE_SIZE_PX;
+      const top = square.y * TILE_SIZE_PX;
+      this.graphics.fillRect(left, top, TILE_SIZE_PX, TILE_SIZE_PX);
+      this.graphics.strokeRect(left, top, TILE_SIZE_PX, TILE_SIZE_PX);
     }
   }
 

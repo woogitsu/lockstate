@@ -43,14 +43,14 @@ import type { HudBuildableViewModel } from '../../src/ui/hud/view-model';
  *  3. **Nothing pinned the divergence condition.** `placement-cost.ts` states
  *     that the retired panel formula and the simulation's agree today and stop
  *     agreeing the moment a row names two materials. That was an unguarded
- *     claim about 21 rows; the last test here is its guard.
+ *     claim about 22 rows; the last test here is its guard.
  *
  * ## What this file adds that `object-buildable-cost-contract.test.ts` does not
  *
  * That file pins the *rule* a row's materials follow -- one material, 30 work
  * per place it provides -- over the 19 object rows. It never converts a row
  * into money and never looks at what the player is shown. This one starts from
- * the same registry and ends at the **rendered sentence**, over all 21 rows
+ * the same registry and ends at the **rendered sentence**, over all 22 rows
  * including the two that place no object, which is the other half and the half
  * the criterion actually asks about.
  *
@@ -91,7 +91,7 @@ function expectedTotalMinorUnits(definition: BuildableDefinition): number | unde
  * makes it worth having anyway is the `continue` the rule feeds: a buildable
  * whose label key is `undefined` is **silently dropped** from the catalogue,
  * so "reachable" and "labelled" are the same question, and nothing before this
- * file asked it of all 21.
+ * file asked it of all 22.
  */
 const UNPLACING_ROW_LABEL: Readonly<Record<string, string>> = {
   'wall-brick': HUD_MESSAGE_KEY.buildableWallBrick,
@@ -125,11 +125,11 @@ describe('every buildable states the price the simulation reports (#1160 exit cr
   it('walks every buildable there is, so this cannot pass vacuously', () => {
     // The count is the guard on the whole file: a 22nd row added without a
     // price, a label or a catalogue entry fails here first and says so.
-    expect(BUILDABLE_REGISTRY.size).toBe(21);
-    expect(buildables.length).toBe(21);
+    expect(BUILDABLE_REGISTRY.size).toBe(22);
+    expect(buildables.length).toBe(22);
   });
 
-  it('reaches every one of them: the label rule answers for all 21, so the catalogue drops none', () => {
+  it('reaches every one of them: the label rule answers for all 22, so the catalogue drops none', () => {
     const unlabelled = buildables.filter((definition) => labelKeyFor(definition) === undefined);
     expect(unlabelled.map((definition) => definition.id)).toEqual([]);
   });
@@ -176,7 +176,7 @@ describe('every buildable states the price the simulation reports (#1160 exit cr
       expect(rendered, `${definition.id} states the wrong price`).toBe(expected);
       sentences.push(`${definition.id}\t${rendered}`);
     }
-    expect(sentences.length).toBe(21);
+    expect(sentences.length).toBe(22);
   });
 
   it('says "per segment" on exactly the rows a single drag can multiply', () => {
@@ -199,7 +199,7 @@ describe('every buildable states the price the simulation reports (#1160 exit cr
      * docblock says the two agree today to the minor unit, and that they stop
      * agreeing the moment a row names two materials or an unpriced one.
      *
-     * That sentence is an unguarded claim about 21 rows, so this is the guard.
+     * That sentence is an unguarded claim about 22 rows, so this is the guard.
      * It fails the day a row gains a second material -- which is not a defect
      * in that row, it is the day someone has to check that the *composition
      * root* still sums all of them.

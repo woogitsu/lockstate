@@ -186,6 +186,8 @@ const buildOrderSchema = z
      */
     edge: z.enum(['north', 'west']).optional(),
     footprint: z.literal('square').optional(),
+    // Owner-approved additive state: older queued objects retain orientation 0.
+    objectOrientation: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).optional(),
     /**
      * Where the order sits in the sequence of gestures the player made
      * ([ADR 0082](../../docs/adr/0082-what-order-build-orders-are-carried-out-in.md),
@@ -1646,6 +1648,13 @@ const contrabandSectionV7Schema = contrabandSectionSchema.extend({
     ])),
   }).strict(),
 }).strict();
+const roomTemplateRequestV7Schema = z.object({
+  templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four', 'holding-cell-basic', 'solitary-cell-basic', 'reception-basic', 'laundry-basic', 'yard-basic', 'common-room-basic', 'classroom-basic', 'infirmary-basic', 'security-office-basic', 'staff-room-basic', 'storage-room-basic', 'delivery-bay-basic', 'garbage-room-basic', 'utility-room-basic']),
+  origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
+  mirrorX: z.boolean(),
+  quarterTurns: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).optional(),
+  sequence: z.number().int().nonnegative(),
+}).strict();
 const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({
   prisoners: prisonersSectionV7Schema,
   navigation: navigationSectionSchema.omit({ work: true }),
@@ -1656,12 +1665,10 @@ const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({
   // planner to migrate its own queue contract without changing that meaning.
   roomTemplates: z.object({
     version: z.literal(1),
-    pending: z.array(z.object({
-      templateId: z.enum(['cell-basic', 'cell-large', 'shower-room']),
-      origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
-      mirrorX: z.boolean(),
-      sequence: z.number().int().nonnegative(),
-    }).strict()),
+    pending: z.array(roomTemplateRequestV7Schema),
+    // Optional additive state; earlier saves had no room-plan undo metadata.
+    undone: z.array(roomTemplateRequestV7Schema).optional(),
+    completed: z.array(roomTemplateRequestV7Schema).optional(),
   }).strict().optional(),
 }).strict();
 

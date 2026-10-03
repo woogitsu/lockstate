@@ -41,7 +41,7 @@ import { InsolvencyRungSystem, JustInTimeMaterialsService, LoanBook, PayrollSyst
 import { SimulationEventLog } from '../events';
 import { createIntakeHousedNotice } from '../events/intake-housed-notice';
 import { createResidentRelocationNotice } from '../events/resident-relocation-notice';
-import { RefusalLog, materialsFundingSupersessionKey } from '../refusals';
+import { RefusalLog, UNZONE_REFUSAL_REASONS, materialsFundingSupersessionKey } from '../refusals';
 import { StaffDismissalService, StaffHiringService } from '../staff';
 import { createSessionCommandHandler } from './session-commands';
 import { ACTOR_IDENTITY_RNG_STREAM, ActorIdentityRegistry } from '../identity';
@@ -835,7 +835,13 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * already draws from, so **nothing about either binding is persisted** and
    * `ContainerMaterialsProvider` and `ConstructionSystem` are untouched.
    */
-  const deliveryCarryRoute = new DeliveryBayCarryRoute(prisoners.roomInstances, containers, jobs, CONSTRUCTION_MATERIALS_CONTAINER_ID);
+  const deliveryCarryRoute = new DeliveryBayCarryRoute(prisoners.roomInstances, containers, jobs,
+    CONSTRUCTION_MATERIALS_CONTAINER_ID, () => {
+      for (let index = 0; index <= prisoners.entityStore.maxActiveIndex; index += 1) {
+        if (prisoners.entityStore.isIndexAlive(index)) return true;
+      }
+      return false;
+    });
   const procurement = new ProcurementSystem(treasury, constructionMaterials, deliveryCarryRoute);
   /*
    * The treasury is the third argument since #703 ruling 12: an order is funded
@@ -848,7 +854,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     world,
     new ContainerMaterialsProvider(constructionMaterials),
     {
-      onOrderCompleted: (objectId, anchor) => objectPlacement?.onOrderCompleted(objectId, anchor) ?? false,
+      onOrderCompleted: (objectId, anchor, orientation) => objectPlacement?.onOrderCompleted(objectId, anchor, orientation) ?? false,
       onOrderReverted: (objectId, anchor) => objectPlacement?.onOrderReverted(objectId, anchor) ?? false,
     },
     doorConstruction,
@@ -1619,6 +1625,20 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
 
   kernel.registerSystem(construction);
   const roomTemplates = new RoomTemplateCoordinator(world, construction, roomZoning, placedObjects, objectPlacement);
+  construction.setPendingRoomTemplateClaims((tile, sequence) => roomTemplates.claimsPendingFootprint(tile, sequence));
+  construction.setPendingRoomTemplateDoorApproachClaims((order) => roomTemplates.claimsRoomDoorApproach(order));
+  construction.setObjectFootprintClaims(objectPlacement.claimsObjectFootprint.bind(objectPlacement));
+  objectPlacement.setPendingRoomDoorApproachClaim((tile) => roomTemplates.claimsRoomDoorApproachTile(tile));
+  construction.setUndoPreparation((orderIds) => {
+    const key = 'room-template-undo';
+    const refusal = roomTemplates.prepareUndo(orderIds, kernel.tick);
+    if (refusal !== undefined) {
+      refusals.record(UNZONE_REFUSAL_REASONS[refusal.reason], kernel.tick, key);
+      return false;
+    }
+    refusals.supersede(key);
+    return true;
+  });
   kernel.registerSystem(roomTemplates);
   kernel.registerSystem(procurement);
   kernel.registerSystem(stateIncome);

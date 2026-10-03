@@ -298,7 +298,7 @@ describe("#1022's pixel measurement, taken rather than quoted", () => {
   });
 
   it('is checked against the map the research record itself prints, not only against its own decode', () => {
-    const record = readFileSync(RESEARCH_RECORD, 'utf8');
+    const record = readFileSync(RESEARCH_RECORD, 'utf8').replace(/\r\n/g, '\n');
     const block = /y12:\s*([\s\S]*?)y17:[^\n]*\n/.exec(record);
     expect(block, 'the per-tile map is still a fenced block in §4 of the record').not.toBeNull();
 

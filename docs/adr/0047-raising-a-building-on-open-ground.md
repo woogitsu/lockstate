@@ -268,9 +268,24 @@ feature with a reader and no producer.
   (`src/simulation/construction/definition.ts:6`). `wall-brick` is the only
   `'wall'`; a door is an `'object'` row carrying `placesDoor`.
 - Cancelling a `completed` order reverses its geometry
-  (`src/simulation/construction/system.ts:1044`, `revertConstruction`–`:1046`, `revertConstruction` at
-  `:1966`), rewriting the edge from any other completed order that still claims
+  (`src/simulation/construction/system.ts:1141`, `revertConstruction`, defined at
+  `:2113`), rewriting the edge from any other completed order that still claims
   it rather than clearing it.
+- **2026-10-02 source amendment.** The earlier `system.ts:1044` through `:1046`
+  and `:1966` coordinates are historical indications, retained here rather than
+  erased. The current cancellation call is `revertConstruction` above; its
+  implementation is `private revertConstruction` at
+  `src/simulation/construction/system.ts:2113`. The earlier numbered span had
+  already drifted into a comment, so the amended anchor names the actual call.
+  **Occupied-template source amendment at checkpoint 322cb5e5a4:** the previous
+  `system.ts:1120` and `:2092` coordinates remain historical indications before
+  the before-Undo preparation port; the current fragments above name the same
+  cancellation call and geometry reversal.
+  **Whole-square furniture source amendment at checkpoint 2e2d058870:** the
+  preceding `system.ts:1128` and `:2100` coordinates remain historical before
+  the square-only object-footprint reader. The live fragments above still name
+  `revertConstruction` and `private revertConstruction`; this changes no
+  cancellation or geometry-reversal rule.
 - **The crew is one.** `ConstructionSystem.update` runs on
   `intervalTicks: 10` (`:347`), advances a single in-progress order by `+10` per
   scheduled update, and `crewBusy` lets exactly one order be in progress at a
@@ -285,7 +300,7 @@ feature with a reader and no producer.
   rectangle's own perimeter, with the south and east sides read off neighbouring
   tiles.
 - Objects already require a room: `PlaceObject` refuses `outside-room`
-  (`src/simulation/objects/object-placement-service.ts:540`).
+  (`src/simulation/objects/object-placement-service.ts:549`, `this.refuse('outside-room'`; previously `:544` before the pending entrance claim reader).
 
 ### Rendering
 
@@ -859,6 +874,6 @@ not to write a third flood fill.
 defect is caused by one asymmetric predicate and fixed by widening it. I did not
 enumerate every caller that could reproduce the asymmetry elsewhere:
 `ObjectPlacementService` and `RoomZoningService` also call `canBuildAt`
-(`src/simulation/objects/object-placement-service.ts:526`,
+(`src/simulation/objects/object-placement-service.ts:535`,
 `src/simulation/rooms/zoning.ts:555`), and neither is an edge order, so neither
 should change — but "should not" is an argument and not a check.

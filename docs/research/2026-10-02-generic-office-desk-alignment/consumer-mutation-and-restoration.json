@@ -1,0 +1,66 @@
+{
+  "testedHead": "781d9dbf8f7e7e4eb1e0f479236d36ba21b24975",
+  "mutation": "remove only default object.desk generic mapping",
+  "StaffRoomOverridePreserved": true,
+  "nativeNegativeRuns": [
+    {
+      "quarterTurns": 0,
+      "actualExitCode": 1,
+      "expectedPixelFailures": 4,
+      "caseSeconds": [
+        44.2,
+        39.7
+      ],
+      "beforePixels": [
+        0,
+        0
+      ],
+      "afterPixels": [
+        0,
+        0
+      ],
+      "actualWorkerAndSaveLoad": "passed",
+      "loadedImageOpened": true
+    },
+    {
+      "quarterTurns": 1,
+      "actualExitCode": 1,
+      "expectedPixelFailures": 4,
+      "caseSeconds": [
+        43.9,
+        39.5
+      ],
+      "beforePixels": [
+        0,
+        0
+      ],
+      "afterPixels": [
+        0,
+        0
+      ],
+      "actualWorkerAndSaveLoad": "passed",
+      "loadedImageOpened": true
+    }
+  ],
+  "exactMappingBytesRestored": true,
+  "mappingSha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+  "originalBlendBytesUnchanged": true,
+  "sourceSha256": "87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b",
+  "baselineMutatedRestoredWorkerDirectByteEquality": true,
+  "workerBytes": 430480,
+  "workerSha256": "a49b10a378d7501a0745b0e968d3c88be30e2936441c3f0e8634ddec8feec72b",
+  "productionBuildExitCodes": {
+    "baseline": 0,
+    "mutation": 0,
+    "exactRestoration": 0
+  },
+  "finalPlayerRestoration": {
+    "actualExitCode": 0,
+    "casesPassed": 3,
+    "caseSeconds": [
+      45.8,
+      38.9,
+      38.9
+    ]
+  }
+}

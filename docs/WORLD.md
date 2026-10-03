@@ -115,9 +115,9 @@ pricing, selection and UI; it is not the ownership test.
 - Checks terrain properties (e.g. `requiresBuildableTerrain`, `allowWater`).
 
 It has three production callers, each supplying its own requirement set:
-`ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:587`,
+`ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:675`,
 inside `admits`, with `SUBMISSION_REQUIREMENT`), `ObjectPlacementService`
-(`src/simulation/objects/object-placement-service.ts:526`,
+(`src/simulation/objects/object-placement-service.ts:535`,
 `PLACEMENT_REQUIREMENT`) and room zoning (`src/simulation/rooms/zoning.ts:555`,
 `ZONING_REQUIREMENT`). **This document said "its one production caller" from
 `f1d5c30` until this correction**; the second arrived at `041a379` (#269) and
@@ -144,12 +144,24 @@ of both and satisfied by either. The world keeps one slot per edge and keeps it
 on the north and west side, so the south face of owned land is addressed as the
 north edge of the first unowned row and its east face as the west edge of the
 first unowned column; `ConstructionSystem.submitOrder`
-(`src/simulation/construction/system.ts:540`) asks `admits` (`:583`) about the
+(`src/simulation/construction/system.ts:592`, `public submitOrder`) asks `admits` (`:671`) about the
 order's own tile and, only if that refuses, about the tile across the named
 edge. Non-edge buildables are unaffected — an object is addressed by a tile and
 has no far side, which is what `occupiesTileEdge` decides — and the refusal the
 player is told about is still the order's own tile's, because that is the tile
 they named.
+
+**2026-10-02 source amendment.** The earlier `system.ts:580` and `:651`
+coordinates are retained here as historical references from before the pending
+entrance reader was wired. The current `public submitOrder` and `admits`
+anchors above were checked against the source after that integration.
+
+**Whole-square furniture source amendment at checkpoint 2e2d058870.** The
+previous `system.ts:655`, `:585` and `:657` coordinates are retained as
+historical references before the square-only object-footprint reader. The
+live ownership call and entry point above still quote `SUBMISSION_REQUIREMENT`
+and `public submitOrder`; the new reader changes physical square occupancy,
+not the symmetric edge ownership rule.
 
 **This paragraph said the opposite until issue #448, and the reason it did is
 the durable half.** It read:

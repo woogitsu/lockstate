@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { instantiateRoomTemplate } from '../../src/content/room-template-catalog';
 
 describe('the first Cell template (#1586)', () => {
+  it('rejects origins whose complete footprint exceeds safe tile coordinates', () => {
+    expect(() => instantiateRoomTemplate('cell-basic', { x: Number.MAX_SAFE_INTEGER, y: 10 })).toThrow(RangeError);
+    expect(() => instantiateRoomTemplate('cell-row-four', { x: 10, y: Number.MAX_SAFE_INTEGER })).toThrow(RangeError);
+  });
   it('occupies an exact 4×7 square footprint around a 2×5 interior', () => {
     const plan = instantiateRoomTemplate('cell-basic', { x: 10, y: 20 });
     expect(plan.width).toBe(4);

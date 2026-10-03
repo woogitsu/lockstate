@@ -5,9 +5,12 @@ import {
   visibleGroundBounds,
   changeObliquePoseAtScreenPoint,
   zoomObliqueAtScreenPoint,
+  panObliqueGroundAnchorToScreen,
   obliqueFromTopDown,
   type ObliqueCameraState,
 } from '../../src/rendering/camera/oblique-projection';
+import { pickTileAtWorld } from '../../src/rendering/build/area-picking';
+import { TILE_SIZE_PX } from '../../src/rendering/tile-metrics';
 
 describe('oblique ground-plane projection', () => {
   const camera: ObliqueCameraState = {
@@ -33,6 +36,34 @@ describe('oblique ground-plane projection', () => {
     const ground = screenToGround(screen, rotated);
     expect(ground.x).toBeCloseTo(110, 9);
     expect(ground.y).toBeCloseTo(220, 9);
+  });
+
+  it('returns the authored square for projected interior picks at shallow intermediate angles', () => {
+    // Camera dragging can stop between the 10-degree HUD steps. At the lowest
+    // legal elevation a screen pixel covers more ground depth, so this is the
+    // highest-risk range for a ghost and a command disagreeing on a square.
+    for (const yawDegrees of [37, 143, 217, 323]) {
+      for (const elevationDegrees of [20, 25, 65]) {
+        const angled = {
+          ...camera,
+          target: { x: 16 * TILE_SIZE_PX, y: 16 * TILE_SIZE_PX },
+          zoom: 1.25,
+          yawRadians: yawDegrees * Math.PI / 180,
+          elevationRadians: elevationDegrees * Math.PI / 180,
+        };
+        for (const tileX of [-1, 0, 15, 31, 32]) {
+          for (const tileY of [-1, 0, 15, 31, 32]) {
+            for (const inset of [0.001, TILE_SIZE_PX / 2, TILE_SIZE_PX - 0.001]) {
+              const world = { x: tileX * TILE_SIZE_PX + inset, y: tileY * TILE_SIZE_PX + inset };
+              const screen = groundToScreen(world, angled);
+              expect(pickTileAtWorld(screenToGround(screen, angled))).toEqual({
+                tileX, tileY, width: 1, height: 1,
+              });
+            }
+          }
+        }
+      }
+    }
   });
 
   it('anchors the same ground position below an off-centre cursor when changing yaw and elevation', () => {
@@ -72,6 +103,21 @@ describe('oblique ground-plane projection', () => {
     const zoomed = zoomObliqueAtScreenPoint(camera, centre, camera.zoom / 1.25);
     expect(zoomed.target.x).toBeCloseTo(camera.target.x, 9);
     expect(zoomed.target.y).toBeCloseTo(camera.target.y, 9);
+  });
+
+  it('keeps the grabbed ground point beneath a middle-drag cursor at low and high angles', () => {
+    for (const yawRadians of [0, Math.PI / 4, Math.PI]) {
+      for (const elevationRadians of [Math.PI / 9, Math.PI / 3]) {
+        const angled = { ...camera, yawRadians, elevationRadians };
+        const anchor = screenToGround({ x: 720, y: 480 }, angled);
+        const panned = panObliqueGroundAnchorToScreen(angled, anchor, { x: 900, y: 560 });
+        const projected = groundToScreen(anchor, panned);
+        expect(projected.x).toBeCloseTo(900, 8);
+        expect(projected.y).toBeCloseTo(560, 8);
+        expect(panned.yawRadians).toBe(yawRadians);
+        expect(panned.elevationRadians).toBe(elevationRadians);
+      }
+    }
   });
 
   it('culls by the inverse projection of all four viewport corners', () => {

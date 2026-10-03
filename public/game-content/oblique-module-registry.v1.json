@@ -1,6 +1,11 @@
-﻿{
+{
     "schemaVersion":  1,
     "entries":  [
+                    {"assetId": "furniture.yard.exercise-station", "manifest": "/game-content/oblique-furniture.yard-exercise-station.v1.json"},
+                    {"assetId": "furniture.common-room.upholstered-bench", "manifest": "/game-content/oblique-furniture.common-room-bench.v1.json"},
+                    {"assetId": "furniture.classroom.school-chair", "manifest": "/game-content/oblique-furniture.classroom-chair.v1.json"},
+                    {"assetId": "furniture.cell.cot.single", "manifest": "/game-content/oblique-furniture.cell-cot.v1.json"},
+                    {"assetId": "furniture.storage-room.timber-rack", "manifest": "/game-content/oblique-furniture.storage-room-rack.v1.json"},
                     {
                         "assetId":  "wall.interior.module.full",
                         "manifest":  "/game-content/oblique-modules.v1.json"
@@ -68,6 +73,18 @@
                     {
                         "assetId":  "actor.guard.base",
                         "manifest":  "/game-content/oblique-actor-guard.v1.json"
+                    },
+                    {
+                        "assetId":  "actor.cook.base",
+                        "manifest":  "/game-content/oblique-actor-cook.v1.json"
+                    },
+                    {
+                        "assetId":  "actor.medic.base",
+                        "manifest":  "/game-content/oblique-actor-medic.v1.json"
+                    },
+                    {
+                        "assetId":  "actor.staff.base",
+                        "manifest":  "/game-content/oblique-actor-staff.v1.json"
                     },
                     {
                         "assetId":  "wall.interior.corner.inner.north-west.full",
@@ -142,12 +159,16 @@
                         "manifest":  "/game-content/oblique-wall-junction-t-west-cutaway.v1.json"
                     },
                     {
+                        "assetId":  "wall.square.brick.full",
+                        "manifest":  "/game-content/oblique-square-brick-full-wall.v1.json"
+                    },
+                    {
                         "assetId":  "wall.square.brick.low",
                         "manifest":  "/game-content/oblique-square-brick-low-wall.v1.json"
                     },
                     {
                         "assetId":  "furniture.dining.table.wooden",
-                        "manifest":  "/game-content/oblique-canteen-dining-table.v1.json"
+                        "manifest":  "/game-content/oblique-furniture.canteen-dining-table.v1.json"
                     },
                     {
                         "assetId":  "furniture.corridor.bench.variants",
@@ -180,6 +201,49 @@
                     {
                         "assetId":  "utility.utility-panel.variants",
                         "manifest":  "/game-content/oblique-utility.utility-panel.v1.json"
+                    },
+                    {
+                        "assetId":  "furniture.library.bookshelf.variants",
+                        "manifest":  "/game-content/oblique-furniture.library-bookshelf.v1.json"
+                    },
+                    {
+                        "assetId":  "furniture.kitchen.stove.variants",
+                        "manifest":  "/game-content/oblique-furniture.kitchen-stove.v1.json"
+                    },
+                    {
+                        "assetId":  "furniture.kitchen.prep-counter.variants",
+                        "manifest":  "/game-content/oblique-furniture.kitchen-prep-counter.v1.json"
+                    },
+                    {
+                        "assetId":  "furniture.kitchen.fridge.variants",
+                        "manifest":  "/game-content/oblique-furniture.kitchen-fridge.v1.json"
+                    },
+                    {
+                        "assetId":  "utility.washing-machine.variants",
+                        "manifest":  "/game-content/oblique-utility.washing-machine.v1.json"
+                    },
+                    {
+                        "assetId":  "fixture.cell.waste_bin",
+                        "manifest":  "/game-content/oblique-fixture-cell-waste-bin.v1.json"
+                    },
+                    {
+                        "assetId":  "furniture.office.desk.generic",
+                        "manifest":  "/game-content/oblique-furniture-office-desk-generic.v1.json"
+                    },
+                    {
+                        "assetId":  "fixture.cell.sink.handwash",
+                        "manifest":  "/game-content/oblique-fixture-cell-sink-handwash.v1.json"
+                    },
+                    {
+                        "assetId":  "furniture.yard.steel-bench",
+                        "manifest":  "/game-content/oblique-furniture.yard-steel-bench.v1.json"
+                    },
+                    {
+                        "assetId":  "fixture.yard.steel-waste-bin",
+                        "manifest":  "/game-content/oblique-fixture.yard-steel-waste-bin.v1.json"
                     }
                 ]
 }
+
+
+

@@ -1,0 +1,36 @@
+{
+  "sourceSha256": "87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b",
+  "sourceBytesIdentical": true,
+  "meshCount": 21,
+  "evaluatedVerticesCompared": 1176,
+  "unchangedMaterialsAndModifiers": true,
+  "onlyWorldTranslation": [
+    1,
+    0.5,
+    0
+  ],
+  "maximumTranslationError": 1.1920928955078125e-07,
+  "sourceMeshNames": [
+    "dark desktop edge",
+    "document stack",
+    "document top",
+    "drawer face 0.16",
+    "drawer face 0.34",
+    "drawer face 0.52",
+    "drawer pull 0.16",
+    "drawer pull 0.34",
+    "drawer pull 0.52",
+    "front leg -0.78",
+    "front leg 0.78",
+    "keyboard",
+    "laminate desktop",
+    "monitor base",
+    "monitor casing",
+    "monitor neck",
+    "monitor screen",
+    "rear stretcher",
+    "steel leg -0.78",
+    "steel leg 0.78",
+    "three-drawer pedestal"
+  ]
+}

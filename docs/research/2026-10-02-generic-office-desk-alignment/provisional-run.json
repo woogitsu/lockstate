@@ -1,0 +1,53 @@
+{
+  "head": "0fc5867912f95339269fa613a1c0155f4dfdbb86",
+  "capacitySeconds": 45.7,
+  "q0Seconds": 53.5,
+  "actualQueueProgressAndSaveLoad": "passed",
+  "q0PixelFailures": 2,
+  "provisionalRGB": [
+    143,
+    116,
+    87
+  ],
+  "provisionalRectangle": [
+    800,
+    350,
+    240,
+    150
+  ],
+  "provisionalBeforeAfterOakPixels": 23,
+  "provisionalExpectedGreaterThan": 40,
+  "q1": "not run due serial q0 pixel failure",
+  "nativeImageOpened": true,
+  "nativeCalibratedRegions": {
+    "oakDesktop": {
+      "RGB": [
+        143,
+        116,
+        86
+      ],
+      "rectangle": [
+        815,
+        450,
+        25,
+        35
+      ],
+      "measuredPixels": 339
+    },
+    "tealDocument": {
+      "RGB": [
+        91,
+        148,
+        149
+      ],
+      "rectangle": [
+        780,
+        420,
+        35,
+        32
+      ],
+      "measuredPixels": 111
+    }
+  },
+  "acceptance": "provisional failure honestly retained; final browser confirmation pending"
+}

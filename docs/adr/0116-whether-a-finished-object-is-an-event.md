@@ -327,7 +327,7 @@ stronger reading.
 The completion site is inside `ConstructionSystem.update`, which the kernel
 dispatches on the schedule the system declares
 (`src/simulation/construction/system.ts:347`, `intervalTicks: 10`,
-`phaseTicks: 0`; `src/simulation/kernel/kernel.ts:202` is the dispatch). So:
+`phaseTicks: 0`; `src/simulation/kernel/kernel.ts:202` is the `system.update(context)` dispatch). So:
 
 - **`tick` is in hand** — it is the tick being executed, never a clock reading.
   `docs/DETERMINISM.md:12` reserves wall-clock to `FixedStepClock`'s pacing and
@@ -459,7 +459,7 @@ Against the two surfaces:
 affordable.** `simulationEventIdentity` (`src/simulation/protocol/event-identity.ts:49-52`)
 drops `sequence` and `tick` and canonicalises the rest, and the alerts list
 groups rows by it into `HudAlertOccurrencesViewModel`. The consequence is
-stated at `src/ui/simulation-events.ts:448-451`:
+stated for `simulationEventIdentity` at `src/ui/simulation-events.ts:448-451`:
 
 > with the payload being the room type alone (see the schema), a run of
 > designations of *one* type does not spend rows at all —

@@ -1,0 +1,34 @@
+{
+  "scenarios": [
+    {
+      "scenario": "actual meshes shifted outside 2x1",
+      "exitCode": 1,
+      "failures": [
+        "ValueError: Evaluated wooden bench geometry escapes grounded 2x1: [-0.4679994583129883, 0.025000154972076416, 0.0] to [1.4679994583129883, 0.9749998450279236, 0.8865000009536743]"
+      ]
+    },
+    {
+      "scenario": "actual camera span halved",
+      "exitCode": 1,
+      "failures": [
+        "ValueError: Wooden bench actual camera scale is not64 pixels per tile"
+      ]
+    },
+    {
+      "scenario": "actual camera origin shifted",
+      "exitCode": 1,
+      "failures": [
+        "ValueError: Wooden bench actual camera target/yaw basis differs from declared square pose"
+      ]
+    },
+    {
+      "scenario": "authored timber slat omitted",
+      "exitCode": 1,
+      "failures": [
+        "ValueError: Retained bench authored mesh set changed"
+      ]
+    }
+  ],
+  "restoredExitCode": 0,
+  "restoredWrapperSha256": "b6debe3ae8808bd9742ebe0a62ad092a494e8583579566fdb31dc2d840bc4184"
+}

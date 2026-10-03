@@ -121,6 +121,22 @@ export function zoomObliqueAtScreenPoint(
   };
 }
 
+/** Translate the camera so the grabbed ground point follows a middle drag. */
+export function panObliqueGroundAnchorToScreen(
+  camera: ObliqueCameraState,
+  groundAnchor: Point,
+  screen: Point,
+): ObliqueCameraState {
+  const underPointer = screenToGround(screen, camera);
+  return {
+    ...camera,
+    target: {
+      x: camera.target.x + groundAnchor.x - underPointer.x,
+      y: camera.target.y + groundAnchor.y - underPointer.y,
+    },
+  };
+}
+
 /** Preserve the exact top-down framing when the oblique renderer first mounts. */
 export function obliqueFromTopDown(camera: CameraState): ObliqueCameraState {
   return {

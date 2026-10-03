@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { execPath } from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from '@playwright/test';
+import { BROWSER_SERVER_STARTUP_TIMEOUT_MS } from './browser-startup-budget';
 
 const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
 
@@ -91,6 +92,10 @@ export default defineConfig({
   testDir: fileURLToPath(new URL('.', import.meta.url)),
   testMatch: /.*\.spec\.ts$/,
   /*
+   * Current exclusion includes the rotated fixture's built-client acceptance.
+   * The one-spec account below records the original production-artifact bug.
+   * Both current artifact specs use the existing wrapper/preview gate.
+   *
    * ONE SPEC IN THIS DIRECTORY IS NOT ABOUT THIS SERVER, AND LEAVING IT IN
    * REPORTED ON THE WRONG SUBJECT ENTIRELY.
    *
@@ -127,7 +132,11 @@ export default defineConfig({
    * the pair honest from here: it fails when any spec in this directory would
    * be collected by both configs or by neither.
    */
-  testIgnore: /production-artifact\.spec\.ts$/,
+  testIgnore: /(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud)\.spec\.ts$/,
+  // The webServer readiness URL is static HTML. Warm the assembled app's Vite
+  // module graph before Playwright starts any test's 60-second clock; a fresh
+  // worktree otherwise spends ~40 seconds optimizing on its first page.goto.
+  globalSetup: fileURLToPath(new URL('./prewarm-production-page.ts', import.meta.url)),
   fullyParallel: false,
   workers: 1,
   forbidOnly: process.env['CI'] !== undefined,
@@ -271,6 +280,6 @@ export default defineConfig({
      * server thought it was doing.
      */
     stdout: 'pipe',
-    timeout: 120_000,
+    timeout: BROWSER_SERVER_STARTUP_TIMEOUT_MS,
   },
 });

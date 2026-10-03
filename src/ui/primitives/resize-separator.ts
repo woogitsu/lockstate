@@ -578,6 +578,7 @@ export function createResizeSeparator(options: ResizeSeparatorOptions): ResizeSe
     // Only once the press meant something here: an unhandled arrow must still
     // reach whatever else wanted it.
     event.preventDefault();
+    event.stopPropagation();
     report(outcome);
     settleGesture('abandoned');
   };

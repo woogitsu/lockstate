@@ -116,6 +116,10 @@ export interface PlaceObjectRequest {
   /** Anchor tile: the footprint's top-left corner. */
   readonly x: number;
   readonly y: number;
+  /** Internal authored-plan grouping; ordinary placements retain their own order ID. */
+  readonly transactionId?: string;
+  /** Authored template facing; ordinary object commands retain absent=0. */
+  readonly objectOrientation?: ObjectOrientation;
 }
 
 /**
@@ -457,6 +461,11 @@ export class ObjectPlacementService {
   private readonly refusals: PlaceObjectRefusal[] = [];
   /** The same window for the other gesture; see `recentRemovalRefusals`. */
   private readonly removalRefusals: RemoveObjectRefusal[] = [];
+  private pendingRoomDoorApproachClaim?: (tile: TilePosition) => boolean;
+
+  public setPendingRoomDoorApproachClaim(reader: (tile: TilePosition) => boolean): void {
+    this.pendingRoomDoorApproachClaim = reader;
+  }
 
   public constructor(
     private readonly world: SparseWorld,
@@ -517,7 +526,7 @@ export class ObjectPlacementService {
     }
 
     const anchor: TilePosition = { x: tileCoordinate(request.x), y: tileCoordinate(request.y) };
-    const footprint = objectFootprintTiles(objectDefinition, anchor, DEFAULT_PLACEMENT_ORIENTATION);
+    const footprint = objectFootprintTiles(objectDefinition, anchor, request.objectOrientation ?? DEFAULT_PLACEMENT_ORIENTATION);
     const claimed = this.tilesClaimedByOrdersInFlight();
 
     for (const tile of footprint) {
@@ -526,7 +535,7 @@ export class ObjectPlacementService {
       if (!canBuildAt(this.world, tile, PLACEMENT_REQUIREMENT).buildable) {
         return this.refuse('unowned-land', request, tick, tile);
       }
-      if (this.placedObjects.isTileOccupied(tile) || claimed.has(tileKey(tile))) {
+      if (this.placedObjects.isTileOccupied(tile) || claimed.has(tileKey(tile)) || this.pendingRoomDoorApproachClaim?.(tile) === true) {
         return this.refuse('tile-occupied', request, tick, tile);
       }
     }
@@ -544,7 +553,8 @@ export class ObjectPlacementService {
     // the build queue (ADR 0082, #722) -- a bed placed after three hundred
     // walls waits for the three hundred, which is decision 1 read literally
     // over *every* build order rather than over walls alone.
-    this.orders.submitOrder(createBuildOrder(request.orderId, definition.id, anchor, undefined, placementSequence));
+    this.orders.submitOrder(createBuildOrder(request.orderId, definition.id, anchor, undefined, placementSequence,
+      undefined, request.objectOrientation));
     /*
      * One press, one undo step -- and the transaction id has to be *given* for
      * that to be true.
@@ -563,7 +573,7 @@ export class ObjectPlacementService {
      * be a field with no reader. A gesture that placed several objects at once
      * would need one, and decision 5 refuses that gesture.
      */
-    this.orders.registerTransactionOrder(request.orderId, request.orderId);
+    this.orders.registerTransactionOrder(request.orderId, request.transactionId ?? request.orderId);
 
     return { kind: 'ordered', orderId: request.orderId, objectId, anchorTile: anchor, roomInstanceId: room.instanceId };
   }
@@ -795,8 +805,8 @@ export class ObjectPlacementService {
    * room resolves nothing, which is the same statement `place` refuses to let a
    * player make.
    */
-  public onOrderCompleted(objectId: string, anchor: TilePosition): boolean {
-    if (!this.placedObjects.place(placedObjectAt(objectId, anchor, DEFAULT_PLACEMENT_ORIENTATION))) return false;
+  public onOrderCompleted(objectId: string, anchor: TilePosition, orientation: ObjectOrientation = DEFAULT_PLACEMENT_ORIENTATION): boolean {
+    if (!this.placedObjects.place(placedObjectAt(objectId, anchor, orientation))) return false;
     this.resolver.resolveContaining(anchor);
     return true;
   }
@@ -882,6 +892,15 @@ export class ObjectPlacementService {
     this.relocationNotice?.announceRelocations(outcome.relocated);
   }
 
+  /** Shared physical occupancy for later whole-square wall orders (#1705). */
+  public claimsObjectFootprint(tile: TilePosition): boolean {
+    if (this.placedObjects.isTileOccupied(tile)) return true;
+    for (const entry of this.ordersBuildingObjects()) {
+      if (entry.tiles.some(claim => claim.x === tile.x && claim.y === tile.y)) return true;
+    }
+    return false;
+  }
+
   /**
    * Every tile claimed by an object order that has not finished and has not
    * been given up on.
@@ -929,7 +948,7 @@ export class ObjectPlacementService {
       if (objectId === undefined) continue;
       const objectDefinition = this.placedObjects.definitionOf(objectId);
       if (objectDefinition === undefined) continue;
-      yield { order, objectId, tiles: objectFootprintTiles(objectDefinition, order.location, DEFAULT_PLACEMENT_ORIENTATION) };
+      yield { order, objectId, tiles: objectFootprintTiles(objectDefinition, order.location, order.objectOrientation ?? DEFAULT_PLACEMENT_ORIENTATION) };
     }
   }
 

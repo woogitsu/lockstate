@@ -280,7 +280,7 @@ async function collectResolutions(): Promise<{
       enumerationsSeen += 1;
       const members = (match[1] ?? '').split(', ').sort();
       const outcome = resolveEnumeration(
-        { file: path.relative(repositoryRoot, file), members },
+        { file: path.relative(repositoryRoot, file).split('\\').join('/'), members },
         shapes,
       );
       if (outcome.ambiguous !== undefined) ambiguous.push(outcome.ambiguous);

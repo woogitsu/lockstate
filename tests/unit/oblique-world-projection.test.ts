@@ -5,6 +5,7 @@ import { projectObliqueWorldFrame } from '../../src/rendering/camera/oblique-wor
 import type { ObliqueCameraState } from '../../src/rendering/camera/oblique-projection';
 import type { RenderFrame } from '../../src/rendering/feed/render-feed';
 import { WorldRenderView } from '../../src/rendering/world/world-view';
+import { instantiateRoomTemplate } from '../../src/content/room-template-catalog';
 
 const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
 
@@ -39,6 +40,93 @@ const pose: ObliqueCameraState = {
 };
 
 describe('oblique projection of an actual simulation snapshot', () => {
+  it.each(['kitchen-basic', 'laundry-basic'] as const)('opens furnishing-blocking near walls in %s', (preset) => {
+    const plan = instantiateRoomTemplate(preset, { x: 4, y: 4 });
+    const world = new SparseWorld(32);
+    const origin = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
+    world.load(origin);
+    world.setOwned(origin, true);
+    for (const square of plan.wallSquares) world.setSquareStructure(tile(square.x, square.y), 1);
+    for (const zone of plan.zones) for (let y = zone.y; y < zone.y + zone.height; y += 1)
+      for (let x = zone.x; x < zone.x + zone.width; x += 1) world.setZoning(tile(x, y), 1);
+    const furnished: RenderFrame = {
+      revision: 1, world: WorldRenderView.fromSnapshot(world.snapshot()),
+      structures: plan.objects.map((object, index) => ({
+        id: `fixture-${index}`, definitionId: object.buildableId,
+        tileX: object.x, tileY: object.y, phase: 'built' as const,
+      })),
+      actors: [], rooms: [], roomConditions: [],
+    };
+    const raised = projectObliqueWorldFrame(furnished, { ...pose, yawRadians: Math.PI / 4 }).raised;
+    const visible = new Set(raised.filter(item => item.kind === 'structure').map(item => item.id));
+    const hidden = plan.wallSquares.filter(wall => !visible.has(`square-wall:${wall.x}:${wall.y}`));
+    expect(hidden, 'only near wall squares obscuring the sink or right-hand machine should disappear')
+      .toEqual([{ x: 9, y: 5 }, { x: 9, y: 6 }]);
+    expect(visible.has('square-wall:4:5'), 'far perimeter remains visible').toBe(true);
+    expect(visible.has('square-wall:9:8'), 'near wall without a fixture stays low').toBe(true);
+    expect(raised.filter(item => item.kind === 'structure' && item.assetId === 'wall.square.brick.low').length)
+      .toBeGreaterThan(0);
+    for (const wall of hidden) expect(world.getSquareStructure(tile(wall.x, wall.y))).toBe(1);
+  });
+  it('lowers only the near perimeter wall of a furnished cell as yaw reverses', () => {
+    const cell = new SparseWorld(8);
+    const origin = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
+    cell.load(origin);
+    cell.setOwned(origin, true);
+    cell.setSquareStructure(tile(3, 2), 1);
+    cell.setSquareStructure(tile(3, 4), 1);
+    cell.setSquareStructure(tile(4, 4), 1);
+    const furnished: RenderFrame = {
+      revision: 1,
+      world: WorldRenderView.fromSnapshot(cell.snapshot()),
+      structures: [
+        { id: 'bed', definitionId: 'bed-wooden', tileX: 2, tileY: 3, phase: 'built' },
+        { id: 'toilet', definitionId: 'object.toilet', tileX: 4, tileY: 3, phase: 'built' },
+      ],
+      actors: [],
+      rooms: [{ instanceId: 'cell:3:3', roomCatalogId: 'room.cell', anchorTileX: 3, anchorTileY: 3, width: 1, height: 1 }],
+      roomConditions: [],
+    };
+    const solid = (yawRadians: number, id: string) => {
+      const raised = projectObliqueWorldFrame(furnished, { ...pose, yawRadians }).raised;
+      const found = raised.find((item) => item.kind === 'structure' && item.id === id);
+      if (found?.kind !== 'structure') throw new Error(`Missing ${id}`);
+      return found;
+    };
+    const near = solid(0, 'square-wall:3:4');
+    const far = solid(0, 'square-wall:3:2');
+    expect(near.assetId).toBe('wall.square.brick.low');
+    expect(far.assetId).toBe('wall.square.brick.full');
+    const rise = (wall: typeof near) => Math.abs(wall.top[0].y - wall.footprint[0].y);
+    expect(rise(near)).toBeCloseTo(0.34 * 64 * Math.cos(pose.elevationRadians) * pose.zoom, 5);
+    expect(rise(far)).toBeCloseTo(0.75 * 64 * Math.cos(pose.elevationRadians) * pose.zoom, 5);
+    expect(solid(Math.PI, 'square-wall:3:4').assetId).toBe('wall.square.brick.full');
+    expect(solid(Math.PI, 'square-wall:3:2').assetId).toBe('wall.square.brick.low');
+    expect(solid(0, 'square-wall:4:4').assetId).toBe('wall.square.brick.low');
+    expect(solid(Math.PI, 'square-wall:4:4').assetId).toBe('wall.square.brick.full');
+    expect(solid(0, 'bed')).toHaveProperty('kind', 'structure');
+    expect(solid(0, 'toilet')).toHaveProperty('kind', 'structure');
+  });
+  it('cuts a legacy near wall while keeping the adjacent door at full height', () => {
+    const cell = new SparseWorld(8);
+    const origin = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
+    cell.load(origin);
+    cell.setOwned(origin, true);
+    cell.setTopEdge(tile(3, 4), 1);
+    cell.setTopEdge(tile(4, 4), 2);
+    const interior: RenderFrame = {
+      revision: 1,
+      world: WorldRenderView.fromSnapshot(cell.snapshot()),
+      structures: [], actors: [], roomConditions: [],
+      rooms: [{ instanceId: 'cell:3:3', roomCatalogId: 'room.cell', anchorTileX: 3, anchorTileY: 3, width: 2, height: 1 }],
+    };
+    const projected = projectObliqueWorldFrame(interior, pose);
+    const wall = projected.raised.find((item) => item.kind === 'north-edge' && item.id === 'north-edge:3:4');
+    const door = projected.raised.find((item) => item.kind === 'north-edge' && item.id === 'north-edge:4:4');
+    if (wall?.kind !== 'north-edge' || door?.kind !== 'north-edge') throw new Error('Missing wall or door');
+    expect(wall.assetId).toBe('wall.interior.module.cutaway');
+    expect(door.assetId).toBe('door.interior.open.full');
+  });
   it('reads loaded ground, distinct wall and door edges, a whole bed, and the actor without duplicating a finished wall', () => {
     const projected = projectObliqueWorldFrame(frame(), pose);
     expect(projected.loadedTilesVisited).toBe(64);

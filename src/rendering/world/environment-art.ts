@@ -282,6 +282,8 @@ export const TERRAIN_ON_COLOUR_FALLBACK: readonly string[] = ['water'];
  * guarded switch to the overhead view, so it no longer needs a coloured slab.
  */
 export const OBJECTS_ON_COLOUR_FALLBACK: readonly string[] = [
+  // Its Blender poses serve the angled renderer; no overhead sprite exists yet.
+  'object.exercise-station',
   'object.sink',
 ];
 

@@ -94,7 +94,7 @@ interface Link {
  * same document and names no file.
  */
 function relativeLinks(path: string): readonly Link[] {
-  const source = relative(ROOT, path);
+  const source = relative(ROOT, path).replaceAll('\\', '/');
   const links: Link[] = [];
   for (const match of readFileSync(path, 'utf8').matchAll(/\[[^\]]*\]\(([^)\s]+)\)/g)) {
     const target = match[1]!;
@@ -397,7 +397,7 @@ function rootedPathCitations(source: string, content: string): readonly Citation
   return citations;
 }
 
-const citations = markdownFiles.flatMap((file) => rootedPathCitations(relative(ROOT, file), readFileSync(file, 'utf8')));
+const citations = markdownFiles.flatMap((file) => rootedPathCitations(relative(ROOT, file).replaceAll('\\', '/'), readFileSync(file, 'utf8')));
 
 describe('every rooted path cited in the documentation is on disk', () => {
   it('finds citations to check, so this cannot pass vacuously', () => {
@@ -600,7 +600,7 @@ function commentsOf(source: string): string {
 }
 
 const sourceCitations = sourceFiles.flatMap((file) =>
-  rootedPathCitations(relative(ROOT, file), commentsOf(readFileSync(file, 'utf8'))),
+  rootedPathCitations(relative(ROOT, file).replaceAll('\\', '/'), commentsOf(readFileSync(file, 'utf8'))),
 );
 
 describe('every rooted path cited in a source comment is on disk', () => {

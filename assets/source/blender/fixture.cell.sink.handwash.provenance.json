@@ -1,0 +1,128 @@
+{
+  "sourceSha256": "ffcf0973794e39e59b5ee65e259d7149daf616bd0518a1c78a1c5f5a9b502158",
+  "meshes": [
+    {
+      "name": "basin inset",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "blue handle -0.2",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "blue handle 0.2",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "ceramic washstand",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "faucet neck",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "faucet spout",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "faucet stem",
+      "evaluatedVertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "front lip",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "pedestal foot",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "plumbing drain",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "porcelain pedestal",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "rear rim",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "side lip -0.35",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "side lip 0.35",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "valve -0.2",
+      "evaluatedVertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "valve 0.2",
+      "evaluatedVertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "wall backsplash",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    }
+  ],
+  "minimum": [
+    -0.3799999952316284,
+    -0.38999998569488525,
+    0.0
+  ],
+  "maximum": [
+    0.3799999952316284,
+    0.33000001311302185,
+    1.0099999904632568
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "comparedOriginalCatalogAndCommittedStandaloneSource": true,
+  "expectedOnlyAssemblyTranslation": [
+    0,
+    0.017249390482902527,
+    0
+  ],
+  "meshCount": 16,
+  "meshes": [
+    {
+      "mesh": "Chair refinement.back bracket -0.32",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Chair refinement.back bracket 0.32",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Chair refinement.back edge highlight",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Chair refinement.dark back inset",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Chair refinement.front foot -0.32",
+      "evaluatedVertices": 32,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Chair refinement.front foot 0.32",
+      "evaluatedVertices": 32,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Chair refinement.front leg -0.32",
+      "evaluatedVertices": 32,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Chair refinement.front leg 0.32",
+      "evaluatedVertices": 32,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Chair refinement.front seat edge",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Chair refinement.rear foot -0.32",
+      "evaluatedVertices": 32,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Chair refinement.rear foot 0.32",
+      "evaluatedVertices": 32,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Chair refinement.rear post -0.32",
+      "evaluatedVertices": 32,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Chair refinement.rear post 0.32",
+      "evaluatedVertices": 32,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Chair refinement.seat underframe",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Chair refinement.walnut back rail",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Chair refinement.wooden seat",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    }
+  ]
+}

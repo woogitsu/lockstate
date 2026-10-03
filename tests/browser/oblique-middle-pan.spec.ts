@@ -1,0 +1,50 @@
+import { expect, test } from './network-changed-fixture';
+
+test('middle drag pans the angled world while Build stays armed', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/?renderer=oblique');
+  await page.getByRole('button', { name: 'New prison', exact: true }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.locator('.hud-build__arm').click();
+  await expect(page.locator('.hud-build__arm')).toHaveText('Stop placing');
+  await page.getByRole('region', { name: 'Minimap' }).getByRole('button', { name: 'Expand' }).click();
+  const viewport = page.locator('.hud-minimap__viewport');
+  await expect(viewport).toBeVisible();
+  const before = await viewport.getAttribute('style');
+  const start = { x: 950, y: 500 };
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down({ button: 'middle' });
+  await page.mouse.move(start.x + 180, start.y + 80, { steps: 8 });
+  await page.waitForTimeout(250);
+  const after = await viewport.getAttribute('style');
+  await page.screenshot({ path: testInfo.outputPath('middle-pan-build-fullhd.png') });
+  expect(after, 'middle drag did not move the angled camera').not.toBe(before);
+  expect(await page.evaluate(() => ({ x: scrollX, y: scrollY }))).toEqual({ x: 0, y: 0 });
+  await page.mouse.up({ button: 'middle' });
+  await expect(page.locator('.hud-build__arm')).toHaveText('Stop placing');
+});
+
+test('Load ends a held middle drag before it can pan the replacement prison', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/?renderer=oblique');
+  await page.getByRole('button', { name: 'New prison', exact: true }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await page.getByRole('button', { name: 'Save now', exact: true }).click();
+  await expect(page.locator('.save-panel__status')).toContainText('Saved');
+  const viewport = page.locator('.hud-minimap__viewport');
+  await expect(viewport).toBeVisible();
+  await page.mouse.move(950, 500);
+  await page.mouse.down({ button: 'middle' });
+  await page.mouse.move(1030, 530, { steps: 4 });
+  await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+  const before = await viewport.getAttribute('style');
+  await page.mouse.move(1170, 620, { steps: 4 });
+  await page.waitForTimeout(250);
+  expect(await viewport.getAttribute('style')).toBe(before);
+  await page.mouse.up({ button: 'middle' });
+});

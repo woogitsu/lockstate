@@ -1,0 +1,272 @@
+{
+  "schemaVersion": 1,
+  "originalSource": "assets/source/blender/environment.mvp.catalog.blend",
+  "originalSourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+  "collection": "furniture.corridor.bench.variants",
+  "source": "assets/source/blender/furniture.corridor.bench.blend",
+  "sourceSha256": "3c07ae8916f36090803b05e09addb26458a704a674431ba786ccddee5e78b867",
+  "footprintTiles": [
+    2,
+    1
+  ],
+  "minimum": [
+    -0.9679994583129883,
+    -0.4749998450279236,
+    0.0
+  ],
+  "maximum": [
+    0.9679994583129883,
+    0.4749998450279236,
+    0.8865000009536743
+  ],
+  "meshes": [
+    {
+      "name": "Anchor bolt.-0.7.-0.41",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Anchor bolt.-0.7.0.41",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Anchor bolt.0.7.-0.41",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Anchor bolt.0.7.0.41",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Anchor plate.-0.7.-0.41",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Anchor plate.-0.7.0.41",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Anchor plate.0.7.-0.41",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Anchor plate.0.7.0.41",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Angled support.-0.7.-0.41",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Angled support.-0.7.0.41",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Angled support.0.7.-0.41",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Angled support.0.7.0.41",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Back-to-seat shadow reveal",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Crowned wood edge.0",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Crowned wood edge.1",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Crowned wood edge.2",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Crowned wood edge.3",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "End bracket rivet.-0.935.-0.29",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "End bracket rivet.-0.935.0.29",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "End bracket rivet.0.935.-0.29",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "End bracket rivet.0.935.0.29",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Exposed steel end bracket.-0.935",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Exposed steel end bracket.0.935",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Lower steel tie",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Raised back upright.-0.7",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Raised back upright.0.7",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Recessed seat bolt.0.-0.79",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed seat bolt.0.0.79",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed seat bolt.1.-0.79",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed seat bolt.1.0.79",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed seat bolt.2.-0.79",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed seat bolt.2.0.79",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed seat bolt.3.-0.79",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed seat bolt.3.0.79",
+      "evaluatedVertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Steel seat bearer.-0.7",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Steel seat bearer.0.7",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Worn timber slat.0",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Worn timber slat.1",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Worn timber slat.2",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Worn timber slat.3",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    }
+  ]
+}

@@ -1,15 +1,15 @@
 import { defaultObjectRegistry } from '../../content/object-catalog';
 import { BUILDABLE_REGISTRY, occupiesTileEdge } from '../../simulation/construction/definition';
 import type { ConstructionSnapshot } from '../../simulation/construction/system';
+import type { ObjectOrientation, PlacedObject } from '../../simulation/objects/placed-object';
 
 /**
  * The renderer's view of things built or being built.
  *
- * Construction is the only source of walls, doors and objects the simulation
- * currently exposes across the worker boundary, so this is a projection of
- * `ConstructionSnapshot` -- not a second copy of it. It drops the order
- * lifecycle detail the renderer must not act on (materials, worker
- * assignment) and keeps only what changes a pixel.
+ * Construction exposes walls, doors and pending objects. Completed placed
+ * objects carry authoritative orientation and survive without order history.
+ * This joins those worker snapshots, drops lifecycle detail (materials and
+ * worker assignment), and keeps only what changes a pixel.
  */
 
 /** What a build order looks like on screen, collapsed from its eight lifecycle states. */
@@ -22,6 +22,7 @@ export interface RenderStructure {
   readonly tileY: number;
   readonly phase: StructurePhase;
   readonly footprint?: 'square';
+  readonly orientation?: ObjectOrientation;
 }
 
 function phaseOf(state: string): StructurePhase | undefined {
@@ -96,12 +97,17 @@ export function catalogueObjectId(definitionId: string): string | undefined {
  * the same tile is drawn last, and a projection that depended on `Map`
  * insertion order would draw differently after a save/restore round trip.
  */
-export function structuresFromConstruction(snapshot: ConstructionSnapshot): readonly RenderStructure[] {
+export function structuresFromConstruction(snapshot: ConstructionSnapshot, placedObjects: readonly PlacedObject[] = []): readonly RenderStructure[] {
   const structures: RenderStructure[] = [];
+  const placedByAnchor = new Map(placedObjects.map(object => [`${object.objectId}:${object.anchorTile.x}:${object.anchorTile.y}`, object]));
 
   for (const order of snapshot.orders) {
     const phase = phaseOf(order.state);
     if (phase === undefined) continue;
+    const key = `${catalogueObjectId(order.definitionId)}:${order.location.x}:${order.location.y}`;
+    const placed = phase === 'built' ? placedByAnchor.get(key) : undefined;
+    if (placed !== undefined) placedByAnchor.delete(key);
+    const orientation = placed?.orientation ?? order.objectOrientation ?? 0;
     structures.push({
       id: order.id,
       definitionId: order.definitionId,
@@ -109,8 +115,17 @@ export function structuresFromConstruction(snapshot: ConstructionSnapshot): read
       tileY: order.location.y,
       phase,
       ...(order.footprint === undefined ? {} : { footprint: order.footprint }),
+      ...(orientation === 0 ? {} : { orientation }),
     });
   }
+
+  // Completed placed objects remain authoritative even when their old build
+  // history is absent. Reuse the same solid representation and avoid duplicates.
+  for (const object of placedByAnchor.values()) structures.push({
+    id: object.placedObjectId, definitionId: object.objectId,
+    tileX: object.anchorTile.x, tileY: object.anchorTile.y, phase: 'built',
+    ...(object.orientation === 0 ? {} : { orientation: object.orientation }),
+  });
 
   structures.sort(
     (left, right) =>

@@ -1,3 +1,8 @@
+import type { RendererCameraView } from './rendering/camera/renderer-view-memory';
+import { LiveRendererSelection } from './rendering/scene/live-renderer-selection';
+import { computeObliqueFit } from './rendering/camera/oblique-fit';
+import { RoomTemplatePreviewFitController } from './ui/room-template-preview-fit';
+import { formatRoomTemplateQuote } from './ui/hud/room-template-quote';
 import Phaser from 'phaser';
 import {
   loadAccessibilitySettings,
@@ -36,17 +41,24 @@ import { SimulationSnapshotFeed } from './rendering/feed/simulation-snapshot-fee
 import { WorldScene } from './rendering/scene/world-scene';
 import { ObliqueWorldScene } from './rendering/scene/oblique-world-scene';
 import {
+  cacheVerifiedObliqueCatalogs,
   prepareProductionRenderScene,
   productionRenderMode,
   renderProductionRenderFailure,
   type PreparedProductionRenderScene,
 } from './rendering/scene/production-render-bootstrap';
 import { fetchObliqueModuleSet } from './rendering/assets/oblique-module-registry';
+import type { ObliqueModuleCatalog } from './rendering/assets/oblique-module-catalog';
+import { buildCatalogueThumbnail } from './rendering/assets/build-catalogue-thumbnail';
 import { VOID_COLOR } from './rendering/world/appearance';
 import { applyAccessibilitySettings, createDisplayScaleControl } from './ui/display-scale';
 import { createThemeControl, createThemeController, resolveSystemThemeQuery } from './ui/theme';
 import { SavePanel } from './ui/save-panel';
-import { createSimulationRoomTemplatePreflight } from './ui/simulation-room-template-port';
+import { RoomTemplateTool } from './ui/room-template-tool';
+import { installRoomTemplateWorldBridge } from './ui/room-template-world-bridge';
+import { TILE_SIZE_PX } from './rendering/tile-metrics';
+import { groundToScreen, screenToGround } from './rendering/camera/oblique-projection';
+import { createSimulationRoomTemplateQuote, createSimulationRoomTemplatePreflight } from './ui/simulation-room-template-port';
 import { ManageSavesPanel } from './ui/account/manage-saves-panel';
 import {
   EMPTY_HUD_VIEW_MODEL,
@@ -132,6 +144,7 @@ import {
   MAX_PURCHASE_QUANTITY,
   TREASURY_OVERDRAFT_FLOOR_MINOR_UNITS,
   placementCostMinorUnits,
+  placementRunCatalogueCostMinorUnits,
   staffDailyWageMinorUnits,
 } from './simulation/economy';
 import { staffHireCostMinorUnits } from './simulation/staff';
@@ -396,6 +409,14 @@ const objectTool = commandSender === undefined ? undefined : new ObjectTool();
 const roomTemplatePreflight = simulation === undefined || commandSender === undefined
   ? undefined
   : createSimulationRoomTemplatePreflight(simulation);
+const roomTemplateTool = roomTemplatePreflight === undefined || simulation === undefined || commandSender === undefined ? undefined : new RoomTemplateTool({
+  preflight: roomTemplatePreflight,
+  quote: createSimulationRoomTemplateQuote(simulation),
+  objectFootprint: objectFootprintOf,
+  onArm: () => { buildTool?.standDown(); roomTool?.setArmed(false); objectTool?.setArmed(false); },
+  place: async request => { commandSender.submit({ type: 'PlaceRoomTemplate', ...request }); },
+});
+
 
 /**
  * The footprint of the object a buildable places, in tiles, or `undefined` for
@@ -409,9 +430,8 @@ const roomTemplatePreflight = simulation === undefined || commandSender === unde
  * neither (`AGENTS.md` boundary 1), so the two numbers travel to both as plain
  * integers.
  *
- * The **authored** footprint, not a rotated one: nothing in the application can
- * express a rotation yet (see `ObjectOrientation`), so the preview draws what a
- * placement will actually claim.
+ * Returns the authored footprint. The room-template geometry adapter applies
+ * its selected quarter turn once, before the HUD draws the occupied rectangle.
  */
 function objectFootprintOf(definitionId: string): { readonly width: number; readonly height: number } | undefined {
   const objectId = BUILDABLE_REGISTRY.get(definitionId)?.placesObjectId;
@@ -611,8 +631,9 @@ document.documentElement.lang = startupLocale.locale;
 // `resolveBrowserKeyValueStore()` never throws and never returns undefined: a
 // browser that refuses storage gets an in-memory stand-in, so settings work for
 // the rest of the page load and simply are not remembered.
+let activeRenderFeed: RenderFeed = renderFeed;
 const createTopDownWorldScene = (): WorldScene => new WorldScene({
-  feed: renderFeed,
+  feed: activeRenderFeed,
   loadAtlasLibrary: () => atlasLibrary,
   keyValueStore: resolveBrowserKeyValueStore(),
   // The same object under both ports: the tool is where a gesture leaves the
@@ -694,26 +715,27 @@ const createTopDownWorldScene = (): WorldScene => new WorldScene({
  * Phaser game exists, and the scene lifecycle is awaited immediately after
  * Phaser starts it.
  */
-let productionSceneSelection: PreparedProductionRenderScene<WorldScene, ObliqueWorldScene>;
-try {
-  productionSceneSelection = await prepareProductionRenderScene({
-    mode: productionRenderMode(window.location.search),
-    loadObliqueCatalogs: () => fetchObliqueModuleSet(),
-    createWorld: createTopDownWorldScene,
-    createOblique: (catalogs) => new ObliqueWorldScene({
-      feed: renderFeed,
-      keyValueStore: resolveBrowserKeyValueStore(),
-      catalogs,
-      ...(buildTool === undefined ? {} : { buildTool, editHistory: buildTool, toolStandDown: buildTool }),
-      ...(roomTool === undefined ? {} : { roomTool }),
-      ...(objectTool === undefined ? {} : { objectTool }),
-    }),
+let hudThumbnailCatalogs: ReadonlyMap<string, ObliqueModuleCatalog> = new Map();
+const loadLiveObliqueCatalogs = cacheVerifiedObliqueCatalogs(() => fetchObliqueModuleSet());
+const createLiveObliqueScene = (catalogs: ReadonlyMap<string, ObliqueModuleCatalog>): ObliqueWorldScene => {
+  hudThumbnailCatalogs = catalogs;
+  return new ObliqueWorldScene({ feed: activeRenderFeed, keyValueStore: resolveBrowserKeyValueStore(), catalogs,
+    ...(buildTool === undefined ? {} : { buildTool, editHistory: buildTool, toolStandDown: buildTool }),
+    ...(roomTool === undefined ? {} : { roomTool }), ...(objectTool === undefined ? {} : { objectTool }),
   });
-} catch (error) {
-  renderProductionRenderFailure(error);
-  throw error;
-}
-const worldScene = productionSceneSelection.scene;
+};
+let productionSceneSelection: PreparedProductionRenderScene<WorldScene | ObliqueWorldScene, WorldScene | ObliqueWorldScene>;
+try {
+  productionSceneSelection = await prepareProductionRenderScene({ mode: productionRenderMode(window.location.search),
+    loadObliqueCatalogs: loadLiveObliqueCatalogs, createWorld: createTopDownWorldScene, createOblique: createLiveObliqueScene });
+} catch (error) { renderProductionRenderFailure(error); throw error; }
+let worldScene = productionSceneSelection.scene;
+let rendererHudChanged: () => void = () => undefined;
+let reinstallPlanGhost: () => void = () => undefined;
+let withdrawPlanGhost: () => void = () => undefined;
+let rendererChanging = false;
+let logicalViewCentre: { x: number; y: number } | undefined;
+const rendererViewMemory = new Map<'world' | 'oblique', RendererCameraView>();
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -738,10 +760,45 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
   },
 };
 
-new Phaser.Game(gameConfig);
+const phaserGame = new Phaser.Game(gameConfig);
 if (productionSceneSelection.mode === 'oblique' && worldScene instanceof ObliqueWorldScene) {
   await worldScene.ready();
 }
+
+const liveRendererSelection = new LiveRendererSelection<WorldScene | ObliqueWorldScene>(productionSceneSelection, {
+  prepare: mode => mode === 'world' ? Promise.resolve(createTopDownWorldScene()) : loadLiveObliqueCatalogs().then(createLiveObliqueScene),
+  deactivate: scene => {
+    // Preserve only renderer memory; the worker/feed and unsaved session stay alive.
+    if (scene === worldScene && scene.sys.isActive()) {
+      const view = scene.captureCameraView();
+      logicalViewCentre = view.centre;
+      rendererViewMemory.set(scene instanceof ObliqueWorldScene ? 'oblique' : 'world',view);
+      withdrawPlanGhost();
+      if (scene instanceof ObliqueWorldScene) scene.releaseSessionInput();
+    }
+    phaserGame.scene.stop(scene.sys.settings.key);
+    phaserGame.scene.remove(scene.sys.settings.key);
+  },
+  activate: async scene => {
+    phaserGame.scene.add(scene.sys.settings.key, scene, false);
+    const created = new Promise<void>(resolve => scene.events.once(Phaser.Scenes.Events.CREATE, resolve));
+    phaserGame.scene.start(scene.sys.settings.key);
+    await created;
+    if (scene instanceof ObliqueWorldScene) await scene.ready();
+    if (logicalViewCentre !== undefined) {
+      const mode = scene instanceof ObliqueWorldScene ? 'oblique' : 'world';
+      const remembered = rendererViewMemory.get(mode) ?? scene.captureCameraView();
+      scene.restoreCameraView({...remembered,centre:logicalViewCentre});
+    }
+  },
+  changed: selection => {
+    productionSceneSelection = selection;
+    worldScene = selection.scene;
+    rendererHudChanged();
+    reinstallPlanGhost();
+  },
+  unavailable: error => { console.warn('Live renderer unavailable; choose a view to retry', error); },
+});
 
 /**
  * `?actors=demo` puts scripted actors on screen.
@@ -759,7 +816,8 @@ if (productionSceneSelection.mode === 'oblique' && worldScene instanceof Oblique
 if (isDemoActorsRequested(window.location.search)) {
   void atlasLibrary
     .then((library) => {
-      worldScene.setFeed(new DemoActorFeed(renderFeed, { assetIds: library.assetIds() }));
+      activeRenderFeed = new DemoActorFeed(renderFeed, { assetIds: library.assetIds() });
+      worldScene.setFeed(activeRenderFeed);
     })
     .catch((error: unknown) => {
       console.warn('Actor demonstration unavailable: the atlas batch did not load.', error);
@@ -1036,8 +1094,11 @@ function buildCatalogue(): HudBuildViewModel {
     if (labelKey === undefined) continue;
     const material = purchasableMaterialFor(definition.materialsRequired);
     const placementCost = placementCostMinorUnits(definition.materialsRequired);
+    const objectFootprint = objectFootprintOf(definition.id);
+    const thumbnailUrl = buildCatalogueThumbnail(definition.placesObjectId, hudThumbnailCatalogs);
     buildables.push({
       definitionId: definition.id,
+      ...(thumbnailUrl === undefined ? {} : { thumbnailUrl }),
       labelKey,
       // The simulation's own predicate, called rather than re-derived. This
       // read `definition.category === 'wall'`, which is the same answer for
@@ -1050,6 +1111,7 @@ function buildCatalogue(): HudBuildViewModel {
       // the rule is written, which is what `submitOrder` already calls and
       // what `docs/NAVIGATION.md` said this surface was owed.
       occupiesEdge: occupiesTileEdge(definition),
+      squareFootprint: definition.category === 'wall',
       // Which group the catalogue's filter puts this row in, and what that
       // group is called (ADR 0035). Both are answers only this layer can give:
       // the id is simulation content and the key is a localization key, and the
@@ -1060,6 +1122,7 @@ function buildCatalogue(): HudBuildViewModel {
       // `occupiesEdge` above it, because what a buildable places is simulation
       // content the interface may not read.
       placesObject: definition.placesObjectId !== undefined,
+      ...(objectFootprint === undefined ? {} : { objectFootprint }),
       // Spread rather than passed as `undefined`: `exactOptionalPropertyTypes`
       // is on, so a buildable made of nothing purchasable has to have no
       // property at all -- which is what makes the panel hide its buy control
@@ -2650,6 +2713,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   hud = mountHud(app, {
     localizer,
     ...(roomTemplatePreflight === undefined ? {} : { roomTemplatePreflight }),
+    ...(roomTemplateTool === undefined ? {} : { roomTemplateTool }),
     layout: loadLayoutSettings(layoutStore),
     // Persisted first and painted second, exactly as the interface scale is:
     // `saveLayoutSettings` swallows a refusal by design, so the write cannot
@@ -2732,7 +2796,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * unconditionally -- it exists from the top of this module regardless of
      * whether a worker started, exactly like every other camera control.
      */
-    onMinimapNavigate: (point) => worldScene.navigateToMinimapPoint(point.fx, point.fy),
+    onMinimapNavigate: (point) => rendererChanging || liveRendererSelection.current === undefined ? false : worldScene.navigateToMinimapPoint(point.fx, point.fy),
     /*
      * And the HUD's zoom pair, joined to the same camera on the same terms
      * (issue #1023). `ZOOM_BOUNDS` has allowed a fifteen-fold range since the
@@ -2747,10 +2811,21 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
      * the simulation could refuse.
      */
     onCameraZoom: (direction) => {
+      if (rendererChanging || liveRendererSelection.current === undefined) return;
       worldScene.stepCameraZoom(direction);
     },
-    ...(worldScene instanceof ObliqueWorldScene ? {
+    onBuildCategoryKeyboardOwnership: () => {
+      if (liveRendererSelection.current !== undefined) worldScene.releaseKeyboardInput();
+    },
+    rendererSelection: { mode: productionSceneSelection.mode, focus: () => {
+      if (liveRendererSelection.current !== undefined) worldScene.releaseKeyboardInput();
+    }, select: async mode => {
+      rendererChanging = true;
+      try { await liveRendererSelection.select(mode); } finally { rendererChanging = false; }
+    } },
+    ...{
       onCameraPoseStep: (axis: 'yaw' | 'elevation', direction: -1 | 1): void => {
+        if (rendererChanging || liveRendererSelection.current === undefined || !(worldScene instanceof ObliqueWorldScene)) return;
         const pose = worldScene.cameraPose;
         // A button press advances a legible fixed angle; the mouse and held
         // remappable keys use the same setPoseRadians camera transform.
@@ -2760,7 +2835,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           pose.elevationRadians + (axis === 'elevation' ? direction * step : 0),
         );
       },
-    } : {}),
+    },
     onIntent: (intent: HudIntent) => {
       switch (intent.kind) {
         case 'place-room-template':
@@ -2769,6 +2844,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             templateId: intent.templateId,
             origin: intent.origin,
             ...(intent.mirrorX === undefined ? {} : { mirrorX: intent.mirrorX }),
+            ...(intent.quarterTurns === undefined ? {} : { quarterTurns: intent.quarterTurns }),
           });
           return;
         /*
@@ -2925,6 +3001,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
           return;
 
         case 'arm-build-tool': {
+          roomTemplateTool?.standDown();
           /*
            * Also chrome, but it has a second half outside the HUD: it decides
            * whether a click on the *world* builds or moves the camera -- and,
@@ -2972,11 +3049,13 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
             return;
           }
           objects?.setArmed(false, { removing: false });
-          tool?.setArmed(intent.armed, intent.definitionId);
+          tool?.setArmed(intent.armed, intent.definitionId,
+            BUILDABLE_REGISTRY.get(intent.definitionId ?? '')?.category === 'wall');
           return;
         }
 
         case 'arm-room-tool':
+          roomTemplateTool?.standDown();
           // The same, one tool over. Arming the room tool does *not* disarm the
           // build tool here, and it does not need to: the two panels are on
           // different tabs and `setVisible(false)` disarms the panel's tool as
@@ -3283,7 +3362,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
          * message for it would be a sentence with no state behind it.
          */
         case 'show-alert-place':
-          worldScene.navigateToTile(intent.tile.x, intent.tile.y);
+          if (!rendererChanging && liveRendererSelection.current !== undefined) worldScene.navigateToTile(intent.tile.x, intent.tile.y);
           return;
 
         case 'place-build-order': {
@@ -3307,6 +3386,9 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
            * and is now one transaction.
            */
           const transactionId = `build-${crypto.randomUUID()}`;
+          if (intent.squares !== undefined && intent.edges.length > 0) {
+            throw new Error('A build gesture cannot name edges and occupied squares together.');
+          }
           for (const edge of intent.edges) {
             // A throw ends the run here rather than firing eleven more doomed
             // commands at a worker that has already said no -- and it is the
@@ -3321,6 +3403,17 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
               x: edge.x,
               y: edge.y,
               edge: edge.edge,
+              transactionId,
+            });
+          }
+          for (const square of intent.squares ?? []) {
+            sender.submit({
+              type: 'PlaceBuildOrder',
+              orderId: `order-${crypto.randomUUID()}`,
+              definitionId: intent.definitionId,
+              x: square.x,
+              y: square.y,
+              footprint: 'square',
               transactionId,
             });
           }
@@ -3914,7 +4007,11 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
     onError: (failure) => console.warn('HUD action failed', failure),
   });
   // The renderer owns the projection and camera; the HUD only paints it.
-  worldScene.setMinimapSink((view) => hud?.updateMinimap(view));
+  rendererHudChanged = () => {
+    hud?.setRendererMode(productionSceneSelection.mode);
+    worldScene.setMinimapSink(view => hud?.updateMinimap(view));
+  };
+  rendererHudChanged();
 
   /*
    * The build identity, in the corner, from first paint.
@@ -4218,7 +4315,17 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
   observeChromeRowOverflow(chromeRow, [displayScale.element, themeControl.element]);
   hud.preferencesSlot.append(languageControl.element);
 
-  tool?.attachReadout((target) => hud?.setBuildTarget(target));
+  tool?.attachReadout((target) => {
+    if (target?.squareRun !== true || target.definitionId === undefined) {
+      hud?.setBuildTarget(target);
+      return;
+    }
+    const definition = BUILDABLE_REGISTRY.get(target.definitionId);
+    const catalogueCostMinorUnits = definition === undefined
+      ? undefined
+      : placementRunCatalogueCostMinorUnits(definition.materialsRequired, target.segments ?? 1);
+    hud?.setBuildTarget(catalogueCostMinorUnits === undefined ? target : { ...target, catalogueCostMinorUnits });
+  });
   return hud;
 }
 
@@ -4479,6 +4586,18 @@ async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle)
        * line and costs no save generation.
        */
       onWorkerAvailability: (available) => {
+        // A new worker is a new prison session, including Load of the same
+        // slot; a failed claim leaves no active session at all. In either
+        // case, a plan armed against the outgoing worker must not retain its
+        // fitted camera origin or submit into a replacement session.
+        roomTemplateTool?.standDown();
+        // This page keeps one renderer and one feed across prisons. Wait for
+        // the replacement worker's first snapshot before centering its map;
+        // the feed may still expose the outgoing world's last frame meanwhile.
+        if (worldScene instanceof ObliqueWorldScene) {
+          worldScene.releaseSessionInput();
+          if (available) worldScene.reframeForNextSession();
+        }
         hud.setUnavailable(available ? undefined : SIMULATION_UNAVAILABLE_NOTICE);
         // The existing report route, read a second time. `WorkerPerSessionHost`
         // already tells this file every time it fails to obtain a worker, so
@@ -4590,6 +4709,89 @@ const mountedHud =
         ...(objectTool === undefined ? {} : { objects: objectTool }),
       });
 mountedHud?.setMinimapSessionActive(false);
+if (roomTemplateTool !== undefined) {
+  let disposePlanGhost: (() => void) | undefined;
+  withdrawPlanGhost = () => { disposePlanGhost?.(); disposePlanGhost = undefined; };
+  const installPlanGhost = (): void => {
+    disposePlanGhost?.();
+    disposePlanGhost = undefined;
+    const canvas = appRoot?.querySelector('canvas');
+    if (canvas === null || canvas === undefined) return;
+    const pickTemplateSquare = (point: { x: number; y: number }): { x: number; y: number } => {
+      const world = worldScene instanceof ObliqueWorldScene ? screenToGround(point, worldScene.cameraPose) : worldScene.cameras.main.getWorldPoint(point.x, point.y);
+      return { x: Math.floor(world.x / TILE_SIZE_PX), y: Math.floor(world.y / TILE_SIZE_PX) };
+    };
+    const fitController = worldScene instanceof ObliqueWorldScene ? new RoomTemplatePreviewFitController({
+      pick: pickTemplateSquare,
+      size: () => roomTemplateTool.planAt({ x: 0, y: 0 }),
+      revision: () => roomTemplateTool.revision,
+      viewRevision: () => {
+        const selectors = ['.hud__tabs', '.hud__corner', '.hud__rail', '.hud-strip'];
+        return JSON.stringify([worldScene instanceof ObliqueWorldScene ? worldScene.cameraPose : undefined, canvas.width, canvas.height,
+          ...selectors.map(selector => { const r = appRoot?.querySelector(selector)?.getBoundingClientRect(); return r === undefined ? null : [r.left, r.right, r.top, r.bottom]; })]);
+      },
+      fit: (origin, size, cursorScreen) => {
+        if (!(worldScene instanceof ObliqueWorldScene)) return false;
+        const rect = canvas.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0) return false;
+        const bounds = (selector: string) => appRoot?.querySelector(selector)?.getBoundingClientRect();
+        const left = Math.max(bounds('.hud__tabs')?.right ?? rect.left, bounds('.hud__corner')?.right ?? rect.left);
+        const right = bounds('.hud__rail')?.left ?? rect.right;
+        const top = bounds('.hud-strip')?.bottom ?? rect.top;
+        const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
+        const safeScreenBounds = { left: (left - rect.left) * sx + 8, right: (right - rect.left) * sx - 8, top: (top - rect.top) * sy + 8, bottom: canvas.height - 8 };
+        if (safeScreenBounds.right <= safeScreenBounds.left || safeScreenBounds.bottom <= safeScreenBounds.top) return false;
+        const groundBounds = { left: origin.x * TILE_SIZE_PX, top: origin.y * TILE_SIZE_PX, right: (origin.x + size.width) * TILE_SIZE_PX, bottom: (origin.y + size.height) * TILE_SIZE_PX };
+        const pose = worldScene.cameraPose;
+        const projected = [
+          { x: groundBounds.left, y: groundBounds.top }, { x: groundBounds.right, y: groundBounds.top },
+          { x: groundBounds.right, y: groundBounds.bottom }, { x: groundBounds.left, y: groundBounds.bottom },
+        ].map(point => groundToScreen(point, pose));
+        if (projected.every(point => point.x >= safeScreenBounds.left && point.x <= safeScreenBounds.right && point.y >= safeScreenBounds.top && point.y <= safeScreenBounds.bottom)) return false;
+        const fit = computeObliqueFit({ camera: worldScene.cameraPose, groundBounds, safeScreenBounds, cursorScreen, mode: 'pan-locked' });
+        return worldScene.applyCameraFit(fit);
+      },
+    }) : undefined;
+    disposePlanGhost = installRoomTemplateWorldBridge(canvas, roomTemplateTool, {
+      tileSize: TILE_SIZE_PX,
+      labelSafeBounds: () => {
+        const rect = canvas.getBoundingClientRect();
+        const bounds = (selector: string) => appRoot?.querySelector(selector)?.getBoundingClientRect();
+        const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
+        return { left: (Math.max(bounds('.hud__tabs')?.right ?? rect.left, bounds('.hud__corner')?.right ?? rect.left) - rect.left) * sx + 8,
+          right: ((bounds('.hud__rail')?.left ?? rect.right) - rect.left) * sx - 8,
+          top: ((bounds('.hud-strip')?.bottom ?? rect.top) - rect.top) * sy + 8, bottom: canvas.height - 8 };
+      },
+      objectFootprint: objectFootprintOf,
+      ...(fitController === undefined ? {} : {
+        preparePreview: (point, physicalMove) => fitController.prepare(point, physicalMove),
+        resetPreview: () => fitController.reset(),
+      }),
+      pick: point => fitController?.pick(point) ?? pickTemplateSquare(point),
+      project: point => {
+        if (worldScene instanceof ObliqueWorldScene) return groundToScreen(point, worldScene.cameraPose);
+        const camera = worldScene.cameras.main;
+        return { x: (point.x - camera.scrollX) * camera.zoom + camera.x, y: (point.y - camera.scrollY) * camera.zoom + camera.y };
+      },
+      label: (quote, verdict) => [
+        localizer.format('hud.build.template-map-hint'),
+        verdict?.ok === true ? localizer.format('hud.build.template-ready') : verdict?.ok === false ? localizer.format('hud.build.template-blocked') : localizer.format('hud.build.template-unavailable'),
+        ...(quote === undefined ? [] : [formatRoomTemplateQuote(localizer, quote)]),
+      ].join(' | '),
+    });
+  };
+  reinstallPlanGhost = installPlanGhost;
+  if (appRoot?.querySelector('canvas') !== null) installPlanGhost();
+  else if (appRoot !== null) {
+    const observer = new MutationObserver(() => {
+      if (appRoot.querySelector('canvas') === null) return;
+      observer.disconnect();
+      installPlanGhost();
+    });
+    observer.observe(appRoot, { childList: true, subtree: true });
+  }
+}
+
 
 // The save panel is laid out by the HUD, so there is nowhere to put it until
 // the HUD is mounted. That is not a new dependency in disguise: with no

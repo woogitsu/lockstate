@@ -420,9 +420,10 @@ test.describe('a wall drag that passes under a HUD island (#878)', () => {
           Array.from({ length: run.spanned }, (_, index) => Math.min(run.from, run.to) + index),
         );
         expect(
-          [...new Set(produced.map((command) => command['edge']))],
-          `the run changed axis part way. ${detail}`,
-        ).toEqual([run.axis === 'x' ? 'north' : 'west']);
+          produced.every((command) => command['footprint'] === 'square' && command['edge'] === undefined &&
+            (run.axis === 'x' ? command['y'] === run.line : command['x'] === run.line)),
+          `the run did not occupy exactly the whole squares on its intended row or column. ${detail}`,
+        ).toBe(true);
       };
 
       // The control first: if it fails, nothing after it is evidence.

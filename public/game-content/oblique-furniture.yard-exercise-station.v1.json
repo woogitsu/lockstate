@@ -1,0 +1,477 @@
+{
+  "schemaVersion": 1,
+  "assetId": "furniture.yard.exercise-station",
+  "source": "assets/source/blender/furniture.yard.exercise-station.blend",
+  "sourceSha256": "b1b8c2b648f3e34bff4b03755e57ece30b37b557ffcbb1bb805de4c3de3e36b7",
+  "resolutionPx": [
+    256,
+    256
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    128,
+    128
+  ],
+  "cameraTargetTiles": [
+    1.0,
+    0.5,
+    0.82
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    0,
+    30,
+    60,
+    90,
+    120,
+    150,
+    180,
+    210,
+    240,
+    270,
+    300,
+    330
+  ],
+  "elevationDegrees": [
+    20,
+    30,
+    40,
+    50,
+    60,
+    70
+  ],
+  "frames": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+00-elev20.ede33077c788.png",
+      "sha256": "ede33077c7885e887696899fa9785d6116dcce51d66272698580d1016f459fd3"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+00-elev30.da4454cfd50e.png",
+      "sha256": "da4454cfd50e9c0b32dbcc39b361216f82786e63161add43507111143289e5a6"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+00-elev40.1e08221d9ca7.png",
+      "sha256": "1e08221d9ca735f10380a815a85868a3c8e32157e43f58a0ef591cd92f480e12"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+00-elev50.4c5c23e1c460.png",
+      "sha256": "4c5c23e1c460d01f12f28ece8a5eac4ac46c8e46fc7fdeefafa8e5da25b81619"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+00-elev60.d22c002fda3b.png",
+      "sha256": "d22c002fda3b14e5bb611521bd74bc5fa2f4cba9e37aec49e25e244694b711c4"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+00-elev70.d3145908ee42.png",
+      "sha256": "d3145908ee423af59111efeaced89b2a895da70928e6843a321ce36793bea303"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+30-elev20.a442b7cfe4ab.png",
+      "sha256": "a442b7cfe4abe1d5779f8990b2bbdceafe2e85a16dace5aeb930a3d12e9ee738"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+30-elev30.05f3008a4530.png",
+      "sha256": "05f3008a4530f7e9d32e8066d91a9227a240ca97e3772d52cb588844b2284085"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+30-elev40.0223005b8d32.png",
+      "sha256": "0223005b8d32099d377ef2b50addcc34f1bfa91f014a8426a49e50ecfa844611"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+30-elev50.b3638e93e11e.png",
+      "sha256": "b3638e93e11e6c92d36e35837234562ef0d671c8b57805f415941181f56c9c4c"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+30-elev60.a4404a2fbfa8.png",
+      "sha256": "a4404a2fbfa8c3a6716aa5e5fee4daf98e44b860ef9dab0bef017c2bbcddf7e6"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+30-elev70.c3c693509679.png",
+      "sha256": "c3c6935096790a9ed50e7a0e9c626b756be18d1ce25fb39072921b8e7de8fe93"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+60-elev20.6da59953fd63.png",
+      "sha256": "6da59953fd63e5444562c533322ab7b252075ec6693ee75a6fa58151f0fe25cc"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+60-elev30.0d9c9a2fef9b.png",
+      "sha256": "0d9c9a2fef9ba2f6049428945cc52e71c962ecd409fc52117d3a7559a0400277"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+60-elev40.47ea5a0230ab.png",
+      "sha256": "47ea5a0230ab5864a88e073151aeb3cf375578409117f0a09bde6060867926ae"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+60-elev50.b7fb28df0f0a.png",
+      "sha256": "b7fb28df0f0a3573bc23a57ce70edcee639c641881a46b43b17c54f21ee74841"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+60-elev60.2d38a7bd0e4f.png",
+      "sha256": "2d38a7bd0e4fa6c0ca0cf9a13e7ef5bf2a5c60409577f3de7e81eadf52b14cbc"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+60-elev70.d230ffbc9e0e.png",
+      "sha256": "d230ffbc9e0ec3f2a3538c8ac321a239e72aadfac990745fa5542fd560e05824"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+90-elev20.08ef50e31877.png",
+      "sha256": "08ef50e31877129fd584bd66772fc480d4fe815c6d94c7a87c6fe971f9d65dc5"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+90-elev30.e07b210d0b17.png",
+      "sha256": "e07b210d0b1707b09bf1e2c35498560089c6cd592c71ef400faf1870bc6cc250"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+90-elev40.1a73c6412c21.png",
+      "sha256": "1a73c6412c21dd662d25377685f55c7520d32c735921f927a30f897e5033daeb"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+90-elev50.4a517d4e8087.png",
+      "sha256": "4a517d4e80872f9fdf6d65092f8efe26240ec770a7e04c3b2c4c274e7c7ebe58"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+90-elev60.5315817b6faa.png",
+      "sha256": "5315817b6faab83ab1258f8ea4f089d5ddd6cc001826c6ba49bf1470becbbcfc"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+90-elev70.d9540897b9fe.png",
+      "sha256": "d9540897b9fef8b07b9073fbe5277e06dd82351bacf4ffcf358ef1fcdcbf6e2d"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+120-elev20.f85e0b3e87cd.png",
+      "sha256": "f85e0b3e87cd85c6ecfe3042ba7efcb1f50577dd6eac4be378f7458d4923cd27"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+120-elev30.9e744ab69ff4.png",
+      "sha256": "9e744ab69ff4be60dbc73d0d5752788e290750e5e80f7a9a0265eb757f7dbd57"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+120-elev40.3e674b3d78df.png",
+      "sha256": "3e674b3d78df01bc3b698bf8c212f492fb0fe1c5c01ce5d3b8f08e895effa730"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+120-elev50.f751bae20f0c.png",
+      "sha256": "f751bae20f0cef70863e973498ae40fc74e602c0e654751317d238232f85238d"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+120-elev60.d475f7807ae3.png",
+      "sha256": "d475f7807ae35cb4c376de400b6271e877adde74a5b6deb1fabb5842383e3e9d"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+120-elev70.af45c15d7ec9.png",
+      "sha256": "af45c15d7ec989a990172e106f6d0ea473c7c05d6355ac4f478db08d9dce77af"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+150-elev20.3f09ab823c53.png",
+      "sha256": "3f09ab823c532bf97c0cad0d49073d94fd81268e876e0031a93631e1ca19beed"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+150-elev30.85582678155f.png",
+      "sha256": "85582678155fc7ae74538e0b5bb1e19d1373fa6d92d9d4a07ea69e015d4edf3c"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+150-elev40.64b97e9959a8.png",
+      "sha256": "64b97e9959a8804ba98c21b6e62ae5a4a92645380e2d4e4fefe5256b9fb25806"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+150-elev50.e7663c22fada.png",
+      "sha256": "e7663c22fadacb5c20fd4c5b4bffac1488a038709566058671d8bcf0cf94b773"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+150-elev60.dbe8ae476218.png",
+      "sha256": "dbe8ae476218528e5661ca507966fdeb39ce2d94b8c8ed8493f1185a475df73b"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+150-elev70.59ac73e9ab9a.png",
+      "sha256": "59ac73e9ab9a85d603ebc06092f67efeac680c229f216e638c608c8c081ca6c3"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+180-elev20.320bca192ad9.png",
+      "sha256": "320bca192ad90571d5827f3111a12c78cfc7a6cb2374b8550290edfdfbd900c2"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+180-elev30.592349e94047.png",
+      "sha256": "592349e94047f3739ffa6e5b53aba9e30358bb5ef1d1dc1864a8be69816cb197"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+180-elev40.b949493a623d.png",
+      "sha256": "b949493a623d5b4d79c9f7dddfc36f375d1c2690c9ad5db7e46757235653dda5"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+180-elev50.3f754c106bff.png",
+      "sha256": "3f754c106bffb341e2b84883f21a318d6ef442dce861dc9c3d02e39547dc1f00"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+180-elev60.a5fce8ecc73e.png",
+      "sha256": "a5fce8ecc73eb1e3beb9d054256380d391fd3273eef07c75c067cebbf669cac9"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+180-elev70.97b1889fcbbe.png",
+      "sha256": "97b1889fcbbe700c045973962907dfc915c9c8cd0ceb7eb94247633c3347d656"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+210-elev20.1f587f93aff9.png",
+      "sha256": "1f587f93aff9fbb08824442d2e92392cb7a07877d98c3908f7cfab46f635739a"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+210-elev30.54e837a9c754.png",
+      "sha256": "54e837a9c754f7bb5f67ead63aa2b469e7a6cedda899f273cd70419c5392c99c"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+210-elev40.768dad1a3804.png",
+      "sha256": "768dad1a380424b998a6e134e593c699bd424c8d451d2fea95c34726df88cba7"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+210-elev50.b813e25d16c3.png",
+      "sha256": "b813e25d16c3d9cf7139ecd7d4a0c6e792f157befaa816841f12a8a496b8335e"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+210-elev60.e1900eb5e410.png",
+      "sha256": "e1900eb5e410aa5e19963aa28a90f7dfe36a35671f3b8056d5fdd3bfe5b60cd1"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+210-elev70.cd927654f7b9.png",
+      "sha256": "cd927654f7b91d0b08c3c26b6c6986c7582a7aab2faf39980774789d312b62dd"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+240-elev20.afb5184090aa.png",
+      "sha256": "afb5184090aaaad86730315f583ad977c3cbc90111c964387aedb25af8e79247"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+240-elev30.123fa36091d5.png",
+      "sha256": "123fa36091d530e61c880c9bdde90df866e1199457250c356879533ec78816fd"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+240-elev40.d2bfc094ff80.png",
+      "sha256": "d2bfc094ff80b0875d07f03ba85ef7fddb4e73f1d67cbd7ea574674fc042db77"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+240-elev50.f3d07a284f22.png",
+      "sha256": "f3d07a284f220f82c8cc9a7775dd3c278aeb7e35ac3677c3e69e949e33e705ac"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+240-elev60.8c08310bacf2.png",
+      "sha256": "8c08310bacf2916d608eae6f60f2666e4f4467c65d72466849b624b027a8caa2"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+240-elev70.cba39d151bcd.png",
+      "sha256": "cba39d151bcd81cd1aab03746cd7461dd5f1016e4544ab04684a71885f86e11a"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+270-elev20.40142e9a2cc7.png",
+      "sha256": "40142e9a2cc772147cbd141daa9ce4e44368cdb35505477b4c1b6b123f3a29f0"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+270-elev30.b4b03685c0f9.png",
+      "sha256": "b4b03685c0f980c2b854660f3de78c93df6c85f035e3bedd8b91d9aa84e4ff6e"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+270-elev40.18070a1cf764.png",
+      "sha256": "18070a1cf7643005e08c577ab8a945051e4a59e1a765de1a897568ee851b01b5"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+270-elev50.553d6eeb0dd1.png",
+      "sha256": "553d6eeb0dd1235e1e1552c7a09478e28bc7cbbc054d60999a02d5266516b553"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+270-elev60.a36a0ff71a53.png",
+      "sha256": "a36a0ff71a53bb1b887da9d71663360f791f6bc81bb8b7f6016d3f6bc0cd5cf9"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+270-elev70.9ddda61cc0d8.png",
+      "sha256": "9ddda61cc0d87b866bff51c8210707b19d9aee0c69afa805e54f94dcb88b8865"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+300-elev20.ff8ac0fdb07c.png",
+      "sha256": "ff8ac0fdb07ca9913d193c47ceb217b99483fefb56c35a1abeb42be73809c237"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+300-elev30.274a4878d63a.png",
+      "sha256": "274a4878d63a83108b68e028b32d15775a5d8d9b67d4e4a50ce24f7ac536f443"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+300-elev40.96bf089124af.png",
+      "sha256": "96bf089124afaa1fb73f14c939452bfa070d5cd88fa5a3fc920c57975f71bd96"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+300-elev50.c62318e98f1b.png",
+      "sha256": "c62318e98f1b9c3d03d2dc0789f8670398702e7773125eddc11e184a16c2cfce"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+300-elev60.3630eeb06d14.png",
+      "sha256": "3630eeb06d14b01580485432ac1f6aae680b938e7c6a67f8b50acb7cce3fe7e5"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+300-elev70.b98dd1cc077c.png",
+      "sha256": "b98dd1cc077cf785a86d79a0f033289faf00e9d32b9fbf0698f36f3aacec8178"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+330-elev20.caba519b1822.png",
+      "sha256": "caba519b182231ca108f5f24314e82c018f8522331da02bb92fface5afeab075"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+330-elev30.479feddf6999.png",
+      "sha256": "479feddf6999c4ee27596bacfcf92857a1c1c54b00f7bd59d28ce061927e27d6"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+330-elev40.4f259a25a03b.png",
+      "sha256": "4f259a25a03ba250ddbab8bc6e956e139067440dd6ffc9a61c978316a0fadb16"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+330-elev50.fc8f37b2c7e2.png",
+      "sha256": "fc8f37b2c7e2ae5e568dda61e97dcb5376dfcd61bcc0c8e7aa2eaaa840a19df4"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+330-elev60.d202d8cf40e0.png",
+      "sha256": "d202d8cf40e01c149998e3f63bd92ffedc338894486d514cb10b9213e87beb03"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.yard.exercise-station-yaw+330-elev70.dee3729406af.png",
+      "sha256": "dee3729406af5d3065784f532e1236b732d71962f2042b5458ef7b4875852d58"
+    }
+  ]
+}

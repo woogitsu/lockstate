@@ -635,7 +635,7 @@ export class SimulationSnapshotFeed implements RenderFeed {
       this.frame = {
         revision: this.frame.revision + 1,
         world: WorldRenderView.fromSnapshot(bundle.world),
-        structures: structuresFromConstruction(bundle.construction),
+        structures: structuresFromConstruction(bundle.construction, bundle.simulation?.objects?.placedObjects),
         // Decoded from the bundle's own `simulation` and `entities` sections
         // (#70 put prisoner tile positions there; `CURRENT_SAVE_RESTORED_SCOPE`
         // reports them under `restored` as `save.scope.prisoners`). Empty
@@ -649,14 +649,10 @@ export class SimulationSnapshotFeed implements RenderFeed {
         // here from that tick. What this feed no longer does is discard the
         // ones a bundle carries.
         //
-        // Positions only. The bundle publishes no velocity and no facing, so
-        // every prisoner is drawn with the idle clip and the pose module's
-        // default facing; `actors-from-snapshot.ts` states which fields are
-        // defaults rather than simulation state. That is not something the
-        // delta channel fixes and this comment used to say it was: the
-        // simulation moves an actor only on arrival at a route's destination,
-        // so neither path has a velocity to carry. Simulation-side locomotion
-        // is the missing piece, and it is its own decision.
+        // This pull has no wall-clock velocity, so actors are drawn idle until
+        // the next delta. Its optional in-flight section does carry saved
+        // headings; `actorsFromSnapshot` preserves those for a paused/restored
+        // prison, without guessing a direction for older saves lacking them.
         actors: actorsFromSnapshot(bundle.simulation, bundle.entities),
         // ADR 0111 decision 1: the rectangles ride the geometry pull, beside
         // the world and the structures they are drawn over, and are replaced

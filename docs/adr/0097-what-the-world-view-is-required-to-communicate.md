@@ -234,8 +234,11 @@ that changed a value the painter reads.
 
 ### 3. The one state indicator the world view does have, and its scope
 
-VERIFIED, read. `alphaFor` (`src/rendering/phaser/tile-layer.ts:622-631`) draws
+VERIFIED, read. `alphaFor` (`src/rendering/phaser/tile-layer.ts:639-648`) draws
 an unfinished build order translucent, from two constants:
+
+Re-anchored 2026-10-02 after object sprite rotation support. The previous
+coordinate in this same file was `:622-631`; the opacity behavior is unchanged.
 
 `export const PLANNED_ALPHA = 0.35;` `export const BUILDING_ALPHA = 0.65;`
 (both verbatim in `src/rendering/world/appearance.ts`)

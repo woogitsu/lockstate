@@ -71,11 +71,15 @@ const HUD_MODULE_NAMES = [
   'label-parameters.ts',
   'layout-shell.ts',
   'messages.ts',
+  'object-thumbnail.ts',
   'overview-panel.ts',
   'pooled-row-binding.ts',
   'projection.ts',
   'regime-panel.ts',
+  'renderer-selection-control.ts',
+  'room-template-miniature.ts',
   'room-template-preview.ts',
+  'room-template-quote.ts',
   'rooms-panel.ts',
   'roster-panel.ts',
   'security-panel.ts',
@@ -310,6 +314,7 @@ describe('every HUD message key resolves in the bundled default locale', () => {
       'hud.overview.income-note',
       'hud.build.catalogue-row-price',
       'hud.build.catalogue-row-price-segment',
+      'hud.build.catalogue-row-price-square',
     ]);
 
     for (const key of HUD_MESSAGE_KEYS) {

@@ -38,12 +38,25 @@ test('an angled world gesture reaches the real build command and survives save/l
   await page.mouse.move(900, 540);
   await page.mouse.down({ button: 'left' });
   await page.mouse.move(1060, 540, { steps: 8 });
+  await expect(page.locator('.hud-build__target-value')).toContainText('whole squares');
+  await expect(page.locator('.hud-build__target-value')).toContainText('catalogue value');
   await page.mouse.up({ button: 'left' });
   await expect.poll(async () => page.evaluate(() =>
     ((window as Window & { lockstateSentToWorker?: unknown[] }).lockstateSentToWorker ?? [])
       .filter((message) => (message as { kind?: string }).kind === 'simulation/submit-command')
       .filter((message) => (message as { payload?: { command?: { data?: { type?: string } } } }).payload?.command?.data?.type === 'PlaceBuildOrder').length,
   )).toBeGreaterThan(0);
+  const placed = await page.evaluate(() =>
+    ((window as Window & { lockstateSentToWorker?: unknown[] }).lockstateSentToWorker ?? [])
+      .filter((message) => (message as { kind?: string }).kind === 'simulation/submit-command')
+      .map((message) => (message as { payload?: { command?: { data?: Record<string, unknown> } } }).payload?.command?.data)
+      .filter((data) => data?.['type'] === 'PlaceBuildOrder'),
+  );
+  expect(placed.length).toBeGreaterThan(1);
+  expect(placed.every((order) => order?.['footprint'] === 'square' && order['edge'] === undefined),
+    'the angled Build gesture sent edge walls instead of occupied squares').toBe(true);
+  expect(new Set(placed.map((order) => `${order?.['x']},${order?.['y']}`)).size).toBe(placed.length);
+  expect(new Set(placed.map((order) => order?.['transactionId'])).size).toBe(1);
   await page.getByRole('button', { name: 'Overview' }).click();
   await page.getByRole('button', { name: 'Save now' }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');

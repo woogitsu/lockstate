@@ -73,7 +73,7 @@
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const REPOSITORY_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const LOCALE_SOURCE_PATH = 'src/content/default-locale-en.ts';
@@ -328,8 +328,7 @@ export function renderInventory({ entries }) {
   lines.push('| Key | Ships today | At |');
   lines.push('| --- | --- | --- |');
   for (const entry of entries) {
-    // Quote the literal source key beside the coordinate; dotted bare keys look like filenames.
-    lines.push(`| ${markdownCode(entry.key)} | ${markdownCode(entry.value)} | ${markdownCode(`${LOCALE_SOURCE_PATH}:${String(entry.line)}`)}, ${markdownCode("'" + entry.key + "'")} |`);
+    lines.push(`| ${markdownCode(entry.key)} | ${markdownCode(entry.value)} | ${markdownCode(`${LOCALE_SOURCE_PATH}:${String(entry.line)}`)}, ${markdownCode(`'${entry.key}'`)} |`);
   }
   lines.push('');
   return lines.join('\n');
@@ -347,4 +346,4 @@ function main() {
   process.stdout.write(`Wrote ${INVENTORY_PATH}: ${String(entries.length)} authored sentences\n`);
 }
 
-if (process.argv[1] !== undefined && import.meta.url === `file://${process.argv[1]}`) main();
+if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) main();

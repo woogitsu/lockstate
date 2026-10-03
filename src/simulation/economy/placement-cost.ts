@@ -34,7 +34,7 @@ import type { MaterialRequirement } from '../construction/definition';
  * what the panel already did for a buildable with nothing purchasable in it.
  *
  * **This differs from what the panel used to do, and the difference is only
- * reachable in a registry that does not exist yet.** All twenty-one rows of
+ * reachable in a registry that does not exist yet.** All current rows of
  * `BUILDABLE_REGISTRY` name exactly one requirement and every one of them is
  * priced (`tests/foundation/object-buildable-cost-contract.test.ts` pins the
  * count for the object rows), so "first purchasable" and "all of them" agree
@@ -82,4 +82,15 @@ export function placementCostMinorUnits(
     total += material.unitPriceMinorUnits * requirement.quantity;
   }
   return total;
+}
+
+/** Catalogue value of a whole-square run; actual debit may be lower when stock is held. */
+export function placementRunCatalogueCostMinorUnits(
+  requirements: readonly MaterialRequirement[],
+  count: number,
+): number | undefined {
+  if (!Number.isSafeInteger(count) || count < 0) return undefined;
+  const unit = placementCostMinorUnits(requirements);
+  if (unit === undefined || !Number.isSafeInteger(unit * count)) return undefined;
+  return unit * count;
 }

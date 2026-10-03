@@ -1,0 +1,27 @@
+{
+  "mutations": [
+    {
+      "mutation": "actual-loaded-bounds",
+      "exitCode": 1,
+      "expectedGuardMessage": "geometry escapes grounded 1x1"
+    },
+    {
+      "mutation": "actual-camera-scale",
+      "exitCode": 1,
+      "expectedGuardMessage": "actual camera scale"
+    },
+    {
+      "mutation": "actual-camera-origin",
+      "exitCode": 1,
+      "expectedGuardMessage": "actual camera target/yaw basis"
+    },
+    {
+      "mutation": "retained-seat-omission",
+      "exitCode": 1,
+      "expectedGuardMessage": "authored mesh set changed"
+    }
+  ],
+  "restoredNativeExitCode": 0,
+  "wrapperOriginalAndRestoredSha256": "0d86230ae25a9622eb2444c6621f7dad7d5d9fe129e223d62dc312e5ced47e6c",
+  "wrapperActualByteEquality": true
+}

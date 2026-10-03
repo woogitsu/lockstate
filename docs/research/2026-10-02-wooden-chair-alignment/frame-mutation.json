@@ -1,0 +1,9 @@
+{
+  "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+00-elev20.c3ee272f061f.png",
+  "actualPngByteMutation": "appended null byte",
+  "redExitCode": 1,
+  "restoredExitCode": 0,
+  "restoredFrameSha256": "c3ee272f061fe11e605ac91cac3f1c5107b4d58181861c12e18db087733a2c75",
+  "actualFrameByteRestoration": true,
+  "restoredUnitCasesPassed": 2
+}

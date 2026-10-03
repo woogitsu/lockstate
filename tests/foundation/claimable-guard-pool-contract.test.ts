@@ -117,7 +117,7 @@ function isProse(line: string): boolean {
 function poolConsumers(): readonly string[] {
   const counts = new Map<string, number>();
   for (const file of sourceFiles(SOURCE_ROOT)) {
-    const path = relative(REPOSITORY_ROOT, file);
+    const path = relative(REPOSITORY_ROOT, file).replace(/\\/g, '/');
     if (path === DECLARATION) continue;
     for (const line of readFileSync(file, 'utf8').split('\n')) {
       if (isProse(line)) continue;

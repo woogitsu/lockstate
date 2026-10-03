@@ -1,0 +1,12 @@
+{
+  "mutatedWorker": {
+    "path": "dist\\client\\assets\\worker-BxnR3pZF.js",
+    "sha256": "cfd7bb59b26eb2bdb55b1a3a727564dd149ab60433a648b12b0fee3b70a1d2f9"
+  },
+  "restoredWorker": {
+    "path": "dist\\client\\assets\\worker-BxnR3pZF.js",
+    "sha256": "cfd7bb59b26eb2bdb55b1a3a727564dd149ab60433a648b12b0fee3b70a1d2f9"
+  },
+  "actualWorkerByteEquality": true,
+  "length": 425954
+}

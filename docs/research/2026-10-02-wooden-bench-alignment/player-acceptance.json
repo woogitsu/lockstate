@@ -1,0 +1,112 @@
+{
+  "testedCheckpoint": "d50bf157292ceb6b1babfb5006ce42124209b453",
+  "build": "node scripts/cloudflare-task.mjs build production; actual Cloudflare workerd built-client preview, own port5197, never reused another server",
+  "restoredNativeRun": {
+    "exitCode": 0,
+    "casesPassed": 3,
+    "durationsSeconds": [
+      43.0,
+      38.0,
+      37.5
+    ],
+    "timeoutSeconds": 60,
+    "constructionCountProgressGuardSeconds": 10
+  },
+  "missingDefaultConsumerRuns": [
+    {
+      "quarterTurns": 0,
+      "exitCode": 1,
+      "capacitySeconds": 44.0,
+      "holdingCellSeconds": 38.5,
+      "expectedPixelAssertionsFailed": 4,
+      "beforePixels": [
+        0,
+        0
+      ],
+      "afterPixels": [
+        0,
+        0
+      ]
+    },
+    {
+      "quarterTurns": 1,
+      "exitCode": 1,
+      "capacitySeconds": 43.3,
+      "holdingCellSeconds": 38.6,
+      "expectedPixelAssertionsFailed": 4,
+      "beforePixels": [
+        0,
+        0
+      ],
+      "afterPixels": [
+        0,
+        0
+      ]
+    }
+  ],
+  "runtimeRGB": [
+    150,
+    115,
+    75
+  ],
+  "openedFinalLoadedFrames": true,
+  "openedMissingConsumerLoadedFrames": true,
+  "actualIndexedDBSaveLoad": true,
+  "authoritativePositionsAndOrientationsPersisted": true,
+  "injectedWorldObjectsOrCompletion": false,
+  "shortenedConstructionPath": false,
+  "unitVerification": {
+    "filesPassed": 4,
+    "casesPassed": 48,
+    "files": [
+      "tests/unit/oblique-wooden-bench-integrity.test.ts",
+      "tests/unit/oblique-object-mapping.test.ts",
+      "tests/unit/oblique-module-registry.test.ts",
+      "tests/unit/room-template-oblique-art-coverage.test.ts"
+    ]
+  },
+  "typescriptAppAndTools": "passed",
+  "frames": [
+    {
+      "quarterTurns": 0,
+      "phase": "loaded",
+      "path": "accepted-q0-loaded-fullhd.png",
+      "sha256": "87178dde3bb4d138eeac27f3859dfc08795d550ed1a6ec41e956a63c1531c26a",
+      "dimensions": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "quarterTurns": 0,
+      "phase": "worker-completed",
+      "path": "accepted-q0-worker-completed-fullhd.png",
+      "sha256": "31500fd5ec72cf234cc80f8e750ce20d2f8576a35350d6a9d0169ea5ba755415",
+      "dimensions": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "quarterTurns": 1,
+      "phase": "loaded",
+      "path": "accepted-q1-loaded-fullhd.png",
+      "sha256": "c9164c9466b40eef2a3146267689b90fa402d50a26dd2afec0f1a3d72024ebee",
+      "dimensions": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "quarterTurns": 1,
+      "phase": "worker-completed",
+      "path": "accepted-q1-worker-completed-fullhd.png",
+      "sha256": "24afbf9ff6095f647c7e17693da7783983b26de8381a69962a4627ddd86a95b6",
+      "dimensions": [
+        1920,
+        1080
+      ]
+    }
+  ],
+  "limits": "Rotated rear bench is partially wall-occluded; calibrated test proves its visible timber. Local production acceptance is established; integrated exact-head and hosted execution remain parent-owned, not claimed."
+}
