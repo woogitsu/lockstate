@@ -1,0 +1,21 @@
+{
+  "typecheck": {
+    "exitCode": 0
+  },
+  "productionBuild": {
+    "exitCode": 0
+  },
+  "worker": {
+    "path": "dist/client/assets/worker-BMAX00bm.js",
+    "bytes": 438431,
+    "sha256": "880fe29be7fcef75d3284e9e18b7a3a91aa665c4c9fd32a77ee483600bef17a0"
+  },
+  "nativeBrowserStarted": false,
+  "serverStarted": false,
+  "sourceBaseCommit": "0d5ea8939a4475a9750d4ef22e890b9ea1df87e1",
+  "fixture": "tests/browser/dedicated-loading-dock-door-player-build.spec.ts",
+  "sourceSha256": "7eeca158b9e5f92abb139ab8164f5dd7a2aa2f2ca47936e4b08e4ea6c79a3aac",
+  "descriptorGitBlobSha256": "c747970e23e5c738571c5ba396f6db2dd29a16600647652d0e46929eee83fc2f",
+  "descriptorCheckedOutSha256": "c5bc35d786db9d7582e2178bbfdd0f112090397c7b923faad8595b29fd0c5b3a",
+  "descriptorLineEndings": "Git blob LF; this Windows checkout CRLF. Parsed descriptors are identical."
+}
