@@ -196,3 +196,48 @@ it('standing down a numeric unarmed request discards its actual late clear resul
     expect(h.clients[0]!.sent.filter(message => message.kind === 'simulation/submit-command')).toHaveLength(1);
   } finally { await h.host.stop(); }
 });
+
+it.each(['selection', 'arm'] as const)('a genuine new %s generation can place before an abandoned old reply and keeps its own busy token', async boundary => {
+  const h = await setup(); h.tool.arm(); h.clients[0]!.holdPreflight = true;
+  const old = h.tool.placeAt({ x: 20, y: 10 });
+  if (boundary === 'selection') h.tool.select('cell-basic', true, 1);
+  else h.tool.arm(); // Actual Place on map callback creates a new selection revision.
+  const current = h.tool.placeAt({ x: 20, y: 10 });
+  const before = await h.host.capture();
+  try {
+    expect(h.clients[0]!.held, 'new generation must reach its genuine current worker preflight').toHaveLength(2);
+    h.clients[0]!.emit(h.clients[0]!.held.shift()!);
+    expect(await old).toEqual({ ok: false, reason: 'busy' });
+    expect(await h.host.capture()).toEqual(before);
+    expect(await h.tool.placeAt({ x: 20, y: 10 })).toEqual({ ok: false, reason: 'busy' });
+    expect(h.clients[0]!.held).toHaveLength(1);
+    h.clients[0]!.release();
+    expect(await current).toEqual({ ok: true });
+    const after = await h.host.capture();
+    expect(after.construction.orders).toHaveLength(before.construction.orders.length + 18);
+    expect(h.clients[0]!.sent.filter(message => message.kind === 'simulation/submit-command')).toHaveLength(2);
+    const placed = h.clients[0]!.sent.filter(message => message.kind === 'simulation/submit-command').at(-1)!;
+    expect(placed.payload.command.data).toEqual({ type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 20, y: 10 },
+      ...(boundary === 'selection' ? { mirrorX: true, quarterTurns: 1 } : {}) });
+    for (const existing of before.construction.orders) expect(after.construction.orders).toContainEqual(existing);
+  } finally {
+    h.clients[0]!.release(); await Promise.all([old, current]); await h.host.stop();
+  }
+});
+
+it('a no-op same plan selection preserves the active same-generation busy owner', async () => {
+  const h = await setup(); h.tool.arm(); h.clients[0]!.holdPreflight = true;
+  const old = h.tool.placeAt({ x: 20, y: 10 });
+  const revision = h.tool.revision, before = await h.host.capture();
+  h.tool.select('cell-basic', false, 0);
+  try {
+    expect(h.tool.revision).toBe(revision);
+    expect(await h.tool.placeAt({ x: 20, y: 10 })).toEqual({ ok: false, reason: 'busy' });
+    expect(h.clients[0]!.held).toHaveLength(1);
+    expect(await h.host.capture()).toEqual(before);
+    h.clients[0]!.release();
+    expect(await old).toEqual({ ok: true });
+    expect((await h.host.capture()).construction.orders).toHaveLength(before.construction.orders.length + 18);
+    expect(h.clients[0]!.sent.filter(message => message.kind === 'simulation/submit-command')).toHaveLength(2);
+  } finally { h.clients[0]!.release(); await old; await h.host.stop(); }
+});

@@ -100,6 +100,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [2026-10-04 Template selection busy owner](./2026-10-04-template-selection-busy-owner/README.md) | Can a new selected/armed plan query its worker before the abandoned old preflight settles? | Existing#2002 actual transport-only source2RED/10legal, mirror/q1 Cell and no-op selection controls. Generation-owned busy reset; no native timing claim. |
 | [2026-10-04 Held wall catalogue selection](./2026-10-04-held-wall-catalogue-selection/README.md) | Can changing Wall to Door buy from the unfinished old wall press? | #2028 real catalogue/Phaser/worker source2RED/25legal, fixed/restored27GREEN and omission2RED/25GREEN;132 bounded neighboring checks. Native timing not claimed. |
 | [2026-10-04 Empty construction order ID](./2026-10-04-empty-construction-order-id/README.md) | Can an accepted empty order ID make an ordinary save invalid? | #2027 actual packed kernel2RED/2legal, corrected17-case baseline14RED/3legal, and lossless V1–V10 opaque queue boundary. Narrow current input guards; no native claim. |
 | [2026-10-04 Kitchen fridge: retained soft Cycles](./2026-10-04-kitchen-fridge-retained-cycles/README.md) | Can the actual retained Kitchen fridge expose its authored enamel, glass and hardware response without altering its 1 x 1 occupied geometry? | Genuine source/material audit and saved-source comparison; full export and native boundary recorded separately. |
