@@ -100,6 +100,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [Reception visitor registration desk](./2026-10-03-reception-registration-desk/README.md) | Can the actual Reception Office desk gain functional visitor handover equipment while retaining its authored geometry and palette? | Published literal catalogue/current-source proposal; genuine model72/context controls next, native root boundary pending. |
 | [Individual object preflight](./2026-10-03-individual-object-preflight/CONSUMER.md) | Can an exact worker verdict share actual admission and stay current under a stationary ghost? | DRAFT query proposal; mounted source consumer, real publication/ownership/V8 and mutation proof; native pending |
 | [2026-10-03 Square wall removal readout consumer](./2026-10-03-square-wall-removal-readout-consumer/README.md) | Does the native removal readout follow the actual default whole-square target? | Original hosted edge-vs-tile RED; exact two-point coordinate oracle, 27 existing tool/readout controls GREEN; strict types/collection; native pending. |
 | [2026-10-03 Yard Bench target observer](./2026-10-03-yard-bench-target-consumer/README.md) | Does the existing native target assertion match the actual occupied footprint readout? | Actual hosted expected/received failure; one exact literal correction; 13 formatter/readout controls GREEN, collection1, types; native execution pending. |
