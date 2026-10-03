@@ -1,0 +1,38 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-reception-context-blender-guards-20261003
+
+ ❯ tests/determinism/art-pipeline-determinism.test.ts (5 tests | 1 failed | 4 skipped) 9ms
+     × pins a concrete Blender version and asserts it in every Blender entry point 8ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 skipped (5)
+   Start at  14:30:48
+   Duration  166ms (transform 18ms, setup 0ms, import 38ms, tests 9ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+$ vitest run "tests/determinism/art-pipeline-determinism.test.ts" "-t" "pins a concrete Blender version"
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/determinism/art-pipeline-determinism.test.ts > Blender-to-atlas pipeline determinism > pins a concrete Blender version and asserts it in every Blender entry point
+AssertionError: A Blender script that does not assert bpy.app.version will render silently different pixels on the wrong toolchain.: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "render-classroom-teacher-desk-oblique.py",
++   "render-garbage-room-bin-oblique.py",
++ ]
+
+ ❯ tests/determinism/art-pipeline-determinism.test.ts:104:7
+    102|       unguarded,
+    103|       'A Blender script that does not assert bpy.app.version will rend…
+    104|     ).toEqual([]);
+       |       ^
+    105|   });
+    106|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

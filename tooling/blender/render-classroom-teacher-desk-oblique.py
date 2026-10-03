@@ -9,6 +9,11 @@ import json
 import sys
 from mathutils import Vector
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import pipeline_common
+
+pipeline_common.require_blender_version()
+
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 

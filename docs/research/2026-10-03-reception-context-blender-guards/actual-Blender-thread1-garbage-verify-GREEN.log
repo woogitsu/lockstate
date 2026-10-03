@@ -1,0 +1,7 @@
+00:01.109  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-reception-context-blender-guards-20261003\assets\source\blender\fixture.garbage-room.waste-bin.blend"
+GARBAGE_BIN_SOURCE_GREEN 42 meshes/33 actual contacts/all original materials/four occupied turns
+KITCHEN_BOUNDS fixture.garbage-room.waste-bin [0.07750000059604645, 0.012500032782554626, -2.8311715194462295e-09] [0.9225000143051147, 0.987500011920929, 1.190000057220459]
+GARBAGE_BIN_VERIFY_GREEN source/semantic contacts/72 cameras/four occupied turns
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
