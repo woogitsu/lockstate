@@ -102,7 +102,9 @@ export const SESSION_SNAPSHOT_SCHEMA_ID = 'simulation-save-payload';
  * receives a bundle without it restores exactly as it did before rather than
  * mis-reading anything. A bump would only relabel a refusal nobody is making.
  */
-export const SESSION_SNAPSHOT_SCHEMA_VERSION = 3;
+// V4 changes construction revision tokens to exact decimal strings (#2025).
+// Historical save envelopes migrate before a host wraps their current snapshot.
+export const SESSION_SNAPSHOT_SCHEMA_VERSION = 4;
 
 /**
  * One line of a restore report: a **message key, never text** (ADR 0011).
