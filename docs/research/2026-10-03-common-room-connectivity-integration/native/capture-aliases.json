@@ -192,5 +192,78 @@
     "sourceSha256": "4fab79d956e196ddc387e039d2de5fd9e0a166d996fdbf0b257a1a197a387e08",
     "archivedBytes": 3431,
     "archivedSha256": "4fab79d956e196ddc387e039d2de5fd9e0a166d996fdbf0b257a1a197a387e08"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-native-20261003.json",
+    "archived": "showcase-initial/report.json",
+    "sourceBytes": 13000,
+    "sourceSha256": "fa5b5cd5720f778570a452ac9e74a895190217807eb03a9750e5b496a6872df0",
+    "archivedBytes": 13000,
+    "archivedSha256": "fa5b5cd5720f778570a452ac9e74a895190217807eb03a9750e5b496a6872df0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-native-20261003.txt",
+    "archived": "showcase-initial/console.txt",
+    "sourceBytes": 7690,
+    "sourceSha256": "0fa5e247d7d141f9f5e09064976f0e51342c63b98ba23f342cf68b3473955e38",
+    "archivedBytes": 3862,
+    "archivedSha256": "823649843e2c67f9554c7492169bae93212929656401c948e0c81f5ba57f889b",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-native-20261003\\.last-run.json",
+    "archived": "showcase-initial/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "a74a694fd8fcff88e8ef3d89531408b3a0ca956a83a60e5d5a6c49c11688c9f3",
+    "archivedBytes": 96,
+    "archivedSha256": "a74a694fd8fcff88e8ef3d89531408b3a0ca956a83a60e5d5a6c49c11688c9f3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-native-20261003\\native-small-prison-showca-2d3fa-m-and-Delivery-Bay-capacity\\actual-completed-whole-paused-snapshot.json",
+    "archived": "showcase-initial/002-actual-completed-whole-paused-snapshot.json",
+    "sourceBytes": 54387,
+    "sourceSha256": "9eb83398c67a16ef22bf37b33323fb741128c348b4a933a09cc626ec2fa00603",
+    "archivedBytes": 54387,
+    "archivedSha256": "9eb83398c67a16ef22bf37b33323fb741128c348b4a933a09cc626ec2fa00603"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-native-20261003\\native-small-prison-showca-2d3fa-m-and-Delivery-Bay-capacity\\actual-public-stage-receipt.json",
+    "archived": "showcase-initial/003-actual-public-stage-receipt.json",
+    "sourceBytes": 321352,
+    "sourceSha256": "0435db3e1c9421a0cb7d32078804f6f8cc67d81b5527f32005930a7d830209b2",
+    "archivedBytes": 321352,
+    "archivedSha256": "0435db3e1c9421a0cb7d32078804f6f8cc67d81b5527f32005930a7d830209b2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-native-20261003\\native-small-prison-showca-c851b--wing-and-two-tile-corridor\\error-context.md",
+    "archived": "showcase-initial/004-error-context.md",
+    "sourceBytes": 9519,
+    "sourceSha256": "95455b4978fe58a9f3809bb8a78f72ae89a542083e1f704083c5897d42f0d2be",
+    "archivedBytes": 9519,
+    "archivedSha256": "95455b4978fe58a9f3809bb8a78f72ae89a542083e1f704083c5897d42f0d2be"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-native-20261003\\native-small-prison-showca-c851b--wing-and-two-tile-corridor\\failed-actual-art-observations.json",
+    "archived": "showcase-initial/005-failed-actual-art-observations.json",
+    "sourceBytes": 257258,
+    "sourceSha256": "fddac3ba38ea10e9ab4070139353d980d5eb6be088e36160258a144ba131a8e4",
+    "archivedBytes": 257258,
+    "archivedSha256": "fddac3ba38ea10e9ab4070139353d980d5eb6be088e36160258a144ba131a8e4"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-native-20261003\\native-small-prison-showca-c851b--wing-and-two-tile-corridor\\failed-actual-fullhd.png",
+    "archived": "showcase-initial/006-failed-actual-fullhd.png",
+    "sourceBytes": 1592721,
+    "sourceSha256": "9d1ab7b6cc62bbee2e638dfb73e215c04a2629aaa94ad3f23b0558541364c08b",
+    "archivedBytes": 1592721,
+    "archivedSha256": "9d1ab7b6cc62bbee2e638dfb73e215c04a2629aaa94ad3f23b0558541364c08b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-native-20261003\\native-small-prison-showca-c851b--wing-and-two-tile-corridor\\failed-actual-worker-snapshot.json",
+    "archived": "showcase-initial/007-failed-actual-worker-snapshot.json",
+    "sourceBytes": 54387,
+    "sourceSha256": "bd087f0fc701c99e62f15df49ff8413ccc7194faf8f096fae5882c1401a10e25",
+    "archivedBytes": 54387,
+    "archivedSha256": "bd087f0fc701c99e62f15df49ff8413ccc7194faf8f096fae5882c1401a10e25"
   }
 ]

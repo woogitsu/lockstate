@@ -28,7 +28,10 @@ async function openActualSession(page: Page, first: boolean): Promise<void> {
     expect(routeStorage, 'serial stages consume only the previous actual IndexedDB save').toBeDefined();
     await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
     await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
-    await expect.poll(() => currentClock(page)).toMatchObject({ mode: 'paused' });
+    // A restored session publishes its initial HUD clock without a later
+    // simulation/clock-state broadcast. Observe the real public paused state;
+    // the complete worker equality below also rejects any advanced tick.
+    await expect(page.getByRole('button', { name: 'Pause', exact: true })).toHaveAttribute('aria-pressed', 'true');
     expect(await showcaseSnapshot(page), 'the same whole paused prison enters this stage').toEqual(lastPaused);
   }
 }
@@ -167,7 +170,7 @@ test('05 same completed prison at three public camera poses and whole paused Sav
   expect(lastPaused).toEqual(before);
   await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
-  await expect.poll(() => currentClock(page)).toMatchObject({ mode: 'paused' });
+  await expect(page.getByRole('button', { name: 'Pause', exact: true })).toHaveAttribute('aria-pressed', 'true');
   const loaded = await showcaseSnapshot(page, info.outputPath('whole-paused-after-real-save-load.json'));
   expect(loaded, 'ALL authoritative persisted state survives actual Save/Load').toEqual(before);
   assertShowcaseStage(loaded, 6);

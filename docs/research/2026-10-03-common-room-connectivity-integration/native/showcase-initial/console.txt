@@ -1,0 +1,63 @@
+node : [2m[WebServer] [22m(node:17656) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:2 char:572
++ ... 1003.json'; node node_modules/@playwright/test/cli.js test --config a ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 5 tests using 1 worker
+
+(node:23000) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:23000) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\native-small-prison-showcase.recipe.ts:149:3 › 01 public Storage Room and Delivery Bay capacity (44.7s)
+  x  2 tests\browser\native-small-prison-showcase.recipe.ts:149:3 › 02 horizontal four-cell wing and two-tile corridor (12.1s)
+  -  3 tests\browser\native-small-prison-showcase.recipe.ts:149:3 › 03 completed Kitchen and Shower room
+  -  4 tests\browser\native-small-prison-showcase.recipe.ts:149:3 › 04 completed Canteen and outdoor Yard
+  -  5 tests\browser\native-small-prison-showcase.recipe.ts:214:1 › 05 same completed prison at three public camera poses and whole paused Save/Load
+
+
+  1) tests\browser\native-small-prison-showcase.recipe.ts:149:3 › 02 horizontal four-cell wing and two-tile corridor 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoMatchObject[2m([22m[32mexpected[39m[2m)[22m
+
+    [1mMatcher error[22m: [31mreceived[39m value must be a non-null object
+
+    Received has value: [31mnull[39m
+
+    Call Log:
+    - Timeout 10000ms exceeded while waiting on the predicate
+
+      29 |     await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
+      30 |     await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+    > 31 |     await expect.poll(() => currentClock(page)).toMatchObject({ mode: 'paused' });
+         |     ^
+      32 |     expect(await showcaseSnapshot(page), 'the same whole paused prison enters this stage').toEqual(lastPaused);
+      33 |   }
+      34 | }
+        at openActualSession (C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-connectivity-integration-20261003\tests\browser\native-small-prison-showcase.recipe.ts:31:5)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-connectivity-integration-20261003\tests\browser\native-small-prison-showcase.recipe.ts:96:5
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-small-prison-native-20261003\native-small-prison-showca-c851b--wing-and-two-tile-corridor\error-context.md
+
+  1 failed
+    tests\browser\native-small-prison-showcase.recipe.ts:149:3 › 02 horizontal four-cell wing and two-tile corridor 
+  3 did not run
+  1 passed (1.0m)
