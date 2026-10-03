@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import math
 import struct
@@ -127,6 +128,22 @@ def pose_camera(camera, yaw: int, elevation: int) -> None:
 
 
 def render(kind: str) -> None:
+    # The accepted full ID consumes its retained approved-material shader scene.
+    # Keep the historical prepare_scene available for genuine before evidence;
+    # cutaway continues through its existing untouched Workbench producer.
+    if kind == 'full':
+        spec = importlib.util.spec_from_file_location('square_wall_retained_cycles', Path(__file__).resolve().parent / 'render-square-wall-retained-cycles.py')
+        modern = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modern)
+        if '--verify-only' in sys.argv:
+            modern.configure()
+        else:
+            modern.render_full()
+        return
+    if '--verify-only' in sys.argv:
+        prepare_scene(kind)
+        print('retained low wall historical producer source opened')
+        return
     asset_id = f'wall.square.brick.{kind}'
     scene, camera, source = prepare_scene(kind)
     frames = []

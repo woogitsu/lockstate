@@ -1,0 +1,19 @@
+00:01.094  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\assets\source\blender\wall.square.brick.full.soft-light.blend"
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender\render-square-wall-retained-cycles.py", line 127, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender\render-square-wall-retained-cycles.py", line 104, in main
+    configure()
+    ~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender\render-square-wall-retained-cycles.py", line 34, in configure
+    variant.verify(scene, RECEIPT)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender\render-square-wall-approved-material-draft.py", line 96, in verify
+    raise ValueError('Approved wall draft geometry or synchronized shader fields changed')
+ValueError: Approved wall draft geometry or synchronized shader fields changed
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender\render-square-wall-retained-cycles.py', exiting.

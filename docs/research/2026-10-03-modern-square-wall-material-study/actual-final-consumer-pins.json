@@ -1,0 +1,20 @@
+{
+  "sourceSha256": "53c35a0013a93ed662983a2888031c8377ba1965981e3ef98757e20547bd9cd8",
+  "descriptorPath": "/game-content/oblique-square-brick-full-wall.v1.json",
+  "canonicalLFDescriptorSha256": "040b6b321288c2cd3dfcde0ffce2a18c18672fada36732ef07d3de863ca376c7",
+  "sourceFrames": [
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/square-brick-full-wall-yaw-045-elev45.0b190bd964b6.png",
+      "sha256": "0b190bd964b6dc601776885c70a9980a16af47d679a507b7567357f4f2b2a83c"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 45,
+      "image": "/assets/environment/oblique/square-brick-full-wall-yaw+135-elev45.52091c58cada.png",
+      "sha256": "52091c58cada6cdfdce13caff58ef83cb209eebafa72e8f74ca75ac34087aaf4"
+    }
+  ],
+  "nativeAcceptance": false
+}

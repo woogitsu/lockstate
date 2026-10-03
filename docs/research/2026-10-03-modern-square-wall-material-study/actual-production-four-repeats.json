@@ -1,0 +1,35 @@
+{
+  "frames": [
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 45,
+      "image": "docs/research/2026-10-03-modern-square-wall-material-study/production-repeat-yaw-135-elev45.png",
+      "sha256": "4c6117beb07676ff572d52b836f904a80b5c75595d2f261948284097ce1cea62",
+      "byteExact": true
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "image": "docs/research/2026-10-03-modern-square-wall-material-study/production-repeat-yaw-45-elev45.png",
+      "sha256": "0b190bd964b6dc601776885c70a9980a16af47d679a507b7567357f4f2b2a83c",
+      "byteExact": true
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "image": "docs/research/2026-10-03-modern-square-wall-material-study/production-repeat-yaw+45-elev45.png",
+      "sha256": "012663cc0c9b2d6cbe9d9de486108084a8540c197e21010466295b018533523c",
+      "byteExact": true
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 45,
+      "image": "docs/research/2026-10-03-modern-square-wall-material-study/production-repeat-yaw+135-elev45.png",
+      "sha256": "52091c58cada6cdfdce13caff58ef83cb209eebafa72e8f74ca75ac34087aaf4",
+      "byteExact": true
+    }
+  ],
+  "renderSeconds": 9.086369800032116,
+  "threads": 1,
+  "nativeAcceptance": false
+}

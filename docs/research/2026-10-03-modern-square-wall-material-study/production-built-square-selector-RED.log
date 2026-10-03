@@ -1,0 +1,29 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-modern-ground-wall-material-study-20261003
+
+ ❯ tests/unit/square-wall-retained-cycles-production.test.ts (1 test | 1 failed) 6ms
+   × existing full square wall consumers require the approved-material source at both real canonical yaws and whole footprint 6ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  22:12:14
+   Duration  558ms (transform 153ms, setup 0ms, import 433ms, tests 6ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/square-wall-retained-cycles-production.test.ts > existing full square wall consumers require the approved-material source at both real canonical yaws and whole footprint
+AssertionError: expected 'wall.square.brick.low' to be 'wall.square.brick.full' // Object.is equality
+
+Expected: "wall.square.brick.full"
+Received: "wall.square.brick.low"
+
+ ❯ tests/unit/square-wall-retained-cycles-production.test.ts:29:26
+     27|       yawRadians: yaw * Math.PI / 180, elevationRadians: Math.PI / 4 };
+     28|     const wall = projectObliqueWorldFrame(frame, camera).raised.find(r…
+     29|     expect(wall.assetId).toBe('wall.square.brick.full');
+       |                          ^
+     30|     expect(wall.kind).toBe('structure');
+     31|     expect(wall.footprint).toEqual(projectedTileQuad(3, 3, camera));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

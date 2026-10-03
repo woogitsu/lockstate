@@ -1,60 +1,6 @@
 {
-  "schemaVersion": 1,
   "assetId": "wall.square.brick.full",
-  "source": "wall.square.brick.full.soft-light.blend",
-  "sourceSha256": "53c35a0013a93ed662983a2888031c8377ba1965981e3ef98757e20547bd9cd8",
-  "sourceDependencies": [
-    {
-      "source": "wall.square.brick.full.blend",
-      "sha256": "c73fcc00471682135b53049e0b74f1d71588909b245bfeac0cac6cd93d696ae1"
-    }
-  ],
-  "resolutionPx": [
-    512,
-    512
-  ],
-  "nominalPixelsPerTile": 64,
-  "pivotPx": [
-    256,
-    256
-  ],
-  "cameraTargetTiles": [
-    0.5,
-    0.5,
-    0
-  ],
-  "projection": "orthographic",
-  "yawDegrees": [
-    -180,
-    -165,
-    -150,
-    -135,
-    -120,
-    -105,
-    -90,
-    -75,
-    -60,
-    -45,
-    -30,
-    -15,
-    0,
-    15,
-    30,
-    45,
-    60,
-    75,
-    90,
-    105,
-    120,
-    135,
-    150,
-    165
-  ],
-  "elevationDegrees": [
-    25,
-    45,
-    65
-  ],
+  "realRenderCount": 72,
   "frames": [
     {
       "yawDegrees": -180,
@@ -488,5 +434,15 @@
       "image": "/assets/environment/oblique/square-brick-full-wall-yaw+165-elev65.2e77d11a6e8f.png",
       "sha256": "2e77d11a6e8f6b74f00b09835a045d73f1dfb7c46059427c76f3b334f4899668"
     }
-  ]
+  ],
+  "sourceSha256": "53c35a0013a93ed662983a2888031c8377ba1965981e3ef98757e20547bd9cd8",
+  "genuineBlenderVersion": [
+    5,
+    2,
+    1
+  ],
+  "threads": 1,
+  "samples": 64,
+  "renderSeconds": 168.13063369999873,
+  "nativeAcceptance": false
 }
