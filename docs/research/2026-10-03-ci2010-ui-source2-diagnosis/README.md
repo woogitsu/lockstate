@@ -2,7 +2,9 @@
 
 Frozen exact head345a7d83de4909cd59d9cfb988f71baf471e5325; run37111391449. No browser/server/source mutation. Artifact browser-source-2-37111391449-1 downloaded once into isolated TEMP scratch; exact log/errors copied, whole log hash recorded.
 
-Opened actual kitchen quote200 screenshot and Polish focus screenshot. At200% safe quote width338 but label outer width366; actual line1193.13 crosses rail1192, hiddenSampleCount1. Bridge positions an oversized label but never constrains its width: genuine producer cause, fix pending.
+## Initial observation checkpoint (before the corrections below)
+
+Opened actual kitchen quote200 screenshot and Polish focus screenshot. At200% safe quote width338 but label outer width366; actual line1193.13 crosses rail1192, hiddenSampleCount1. Bridge positions an oversized label but never constrains its width: genuine producer cause.
 
 Cards timeout at solitary fixture count receivedundefined after earlier cards: requires offline trace cost audit before treating it as missing furniture. Polish Tab expectation skips newly present rotation/mirror controls: source/trace focus audit pending. #1292 corner actual494 vsold398 and threshold clearance−85.8125: extra96px camera row invalidates old budget; responsive overlap/source cause pending.200% Overview alerts return inside minimap but are hidden: actual trace/source geometry pending.
 
@@ -27,3 +29,9 @@ Related quote bodies#1925/#1953 were read after expanded dedup. #1925 explicitly
 ## #1292 proposal, no layout edit
 
 [Clickable measured proposal](./1292-proposal.html) compares actual494px corner/−85.8125px clearance at781 with a clearly hypothetical model restoring398px by debiting new camera rows from the minimap surface. The current stylesheet already debits the zoom island from that surface to protect alerts. This could preserve781 and every control without raising the protected threshold; it still requires actual native geometry/hit tests and approval before CSS implementation. FullHD200 list shrink is a separate required measurement, not accepted from this arithmetic.
+
+## Read-only native geometry handoff
+
+[Minimap geometry probe](./minimap-geometry-probe.ts) is a self-contained function for `page.evaluate(readMinimapGeometry)` in the root's existing native session. Capture after Build expansion and again immediately after the public Overview click, before the original list-visible assertion. It records every matching box, computed flex/height/overflow, the actual alert-list ancestor chain, and centre hit ownership; it changes no DOM, style, simulation or expectations. No probe result exists yet. The 200% corner cap is six tap targets while the surface keeps 1.25 tap targets; the new camera rows are an additional height consumer. Their actual contribution and the first zero-height ancestor must be measured before choosing a fix. Tools strict types also exit0.
+
+The same probe returns the exact existing #1292 middle-row budget (six-section count, row/column/corner/strip dimensions, clearance, tallest tab), individual corner controls and camera block heights including margins. Capture at the original 1280x800, 1280x781 and 1280x780 sizes using the original test's public open flow. Thresholds 398px, 29.19/10.19/9.19px and 781 remain untouched. Probe measurements are evidence, not relaxed assertions.
