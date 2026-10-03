@@ -1629,6 +1629,7 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
   construction.setPendingRoomTemplateClaims((tile, sequence) => roomTemplates.claimsPendingFootprint(tile, sequence));
   construction.setPendingRoomTemplateDoorApproachClaims((order) => roomTemplates.claimsRoomDoorApproach(order));
   construction.setObjectFootprintClaims(objectPlacement.claimsObjectFootprint.bind(objectPlacement));
+  construction.setRoomDoorApproachTileClaims((tile) => roomTemplates.claimsRoomDoorApproachTile(tile));
   objectPlacement.setPendingRoomDoorApproachClaim((tile) => roomTemplates.claimsRoomDoorApproachTile(tile));
   construction.setUndoPreparation((orderIds) => {
     const key = 'room-template-undo';

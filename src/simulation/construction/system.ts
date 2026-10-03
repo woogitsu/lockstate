@@ -397,6 +397,7 @@ export class ConstructionSystem implements SystemRegistration {
   private pendingRoomTemplateClaims?: (tile: TilePosition, sequence: number | undefined) => boolean;
   private pendingRoomTemplateDoorApproachClaims?: (order: BuildOrder) => boolean;
   private objectFootprintClaims?: (tile: TilePosition) => boolean;
+  private roomDoorApproachTileClaims?: (tile: TilePosition) => boolean;
 
   /** The session supplies its live template reservations after both systems exist. */
   public setPendingRoomTemplateClaims(reader: (tile: TilePosition, sequence: number | undefined) => boolean): void {
@@ -410,6 +411,10 @@ export class ConstructionSystem implements SystemRegistration {
   /** A whole wall square cannot share a standing or in-flight object tile. */
   public setObjectFootprintClaims(reader: (tile: TilePosition) => boolean): void {
     this.objectFootprintClaims = reader;
+  }
+
+  public setRoomDoorApproachTileClaims(reader: (tile: TilePosition) => boolean): void {
+    this.roomDoorApproachTileClaims = reader;
   }
 
   public constructor(
@@ -687,6 +692,7 @@ export class ConstructionSystem implements SystemRegistration {
             return;
           }
           if (this.world.getSquareStructure(tile) !== 0 || this.hasPendingSquareStructureAt(tile) ||
+              this.roomDoorApproachTileClaims?.(tile) === true ||
               this.pendingRoomTemplateClaims?.(tile, order.placementSequence) === true) {
             this.setState(order, 'failed');
             order.failReason = 'unbuildable';
