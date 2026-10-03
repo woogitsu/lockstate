@@ -6,7 +6,7 @@ import { defaultObjectRegistry } from '../../src/content/object-catalog';
 import { parseObliqueModuleCatalog } from '../../src/rendering/assets/oblique-module-catalog';
 
 it.each([
-  ['object.medical-bed', 'oblique-furniture.medical-bed.v1.json', 0.675],
+  ['object.medical-bed', 'oblique-furniture.medical-bed.v1.json', .675000011920929],
   ['object.medicine-cabinet', 'oblique-fixture.medicine-cabinet.v1.json', .5899999737739563],
 ] as const)('exports %s around its occupied footprint with verified source and all pose bytes', (objectId, manifest, targetZ) => {
   const root = new URL('../../', import.meta.url);
