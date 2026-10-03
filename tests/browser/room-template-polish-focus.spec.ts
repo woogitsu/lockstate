@@ -41,6 +41,10 @@ test('Polish Full HD room catalogue exposes all names and supports one roving ke
   await page.keyboard.press('Enter'); await expect(last).toHaveAttribute('aria-pressed','true');
   await expect(dialog.locator('.hud-template__quote')).not.toBeEmpty();
   await page.keyboard.press('Tab');
+  await expect(dialog.locator('.hud-template__rotation')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(dialog.getByRole('checkbox')).toBeFocused();
+  await page.keyboard.press('Tab');
   await expect(dialog.getByRole('button',{name:'Postaw na mapie',exact:true})).toBeFocused();
   expect((await sentCommands(page)).filter(c=>c.type==='PlaceRoomTemplate')).toHaveLength(0);
   await page.keyboard.press('Escape'); await expect(dialog).toBeHidden(); await expect(open).toBeFocused();
