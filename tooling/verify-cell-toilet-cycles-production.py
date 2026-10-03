@@ -24,7 +24,7 @@ sha = lambda body: hashlib.sha256(body).hexdigest()
 def run(label, command, error=None, timeout=60):
     result = subprocess.run(command, cwd=ROOT, capture_output=True, timeout=timeout)
     text = (result.stdout + result.stderr).decode('utf-8', errors='replace')
-    (REPORT / (label + '.log')).write_text('\n'.join(text.splitlines()) + '\n', encoding='utf-8', newline='\n')
+    (REPORT / (label + '.log')).write_text('\n'.join(line.rstrip() for line in text.splitlines()).rstrip() + '\n', encoding='utf-8', newline='\n')
     if (error and (result.returncode == 0 or error not in text)) or (not error and result.returncode):
         raise AssertionError(label + '\n' + text)
     print(label, 'RED' if error else 'GREEN', result.returncode, flush=True)

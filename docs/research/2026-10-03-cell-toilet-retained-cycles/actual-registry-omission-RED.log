@@ -35,4 +35,3 @@ AssertionError: expected [] to deeply equal [ { …(2) } ]
      41|   expect(catalog.source).toBe('assets/source/blender/fixture.cell.toil…
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
-
