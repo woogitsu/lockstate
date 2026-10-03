@@ -31,7 +31,9 @@ def raw_record(obj):
         modifiers.append({'name': modifier.name, 'type': modifier.type, 'values': values})
     return {'name': obj.name, 'rawVertexBytesSha256': hashlib.sha256(vertices).hexdigest(),
             'rawTopologyBytesSha256': hashlib.sha256(topology).hexdigest(),
-            'materials': [m.name for m in obj.data.materials], 'modifiers': modifiers}
+            'materials': [m.name for m in obj.data.materials],
+            'polygonMaterialIndicesSha256': hashlib.sha256(b''.join(struct.pack('<I', polygon.material_index) for polygon in obj.data.polygons)).hexdigest(),
+            'modifiers': modifiers}
 
 
 def materials_record():
@@ -88,7 +90,7 @@ def convex_normal_audit(scene):
             normal_matrix = value.matrix_world.to_3x3().inverted().transposed()
             dots = [(normal_matrix @ p.normal).normalized().dot(value.matrix_world @ p.center - center) for p in mesh.polygons]
             if not dots or min(dots) <= 0:
-                raise ValueError('Evaluated office desk convex surface normals face inward: ' + obj.name)
+                raise ValueError('Evaluated medicine cabinet convex surface normals face inward: ' + obj.name)
             rows.append({'name': obj.name, 'evaluatedVertices': len(points), 'evaluatedPolygons': len(dots),
                          'minimumOutwardNormalDistance': min(dots), 'transformDeterminant': value.matrix_world.to_3x3().determinant()})
         finally:
