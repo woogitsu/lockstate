@@ -1,0 +1,69 @@
+{
+  "controls": [
+    {
+      "control": "omit-real-stretcher",
+      "exitCode": 1,
+      "error": "ValueError: Wooden chair retained/authored mesh set changed"
+    },
+    {
+      "control": "move-real-mount",
+      "exitCode": 1,
+      "error": "ValueError: Wooden chair actual evaluated authored geometry changed"
+    },
+    {
+      "control": "move-retained-back",
+      "exitCode": 1,
+      "error": "ValueError: Wooden chair actual evaluated authored geometry changed"
+    },
+    {
+      "control": "change-retained-bevel",
+      "exitCode": 1,
+      "error": "ValueError: Wooden chair actual authored topology/material assignment/modifier data changed"
+    },
+    {
+      "control": "change-retained-material-graph",
+      "exitCode": 1,
+      "error": "ValueError: Wooden chair retained four material graphs changed"
+    },
+    {
+      "control": "change-added-joint-material",
+      "exitCode": 1,
+      "error": "ValueError: Wooden chair actual authored topology/material assignment/modifier data changed"
+    },
+    {
+      "control": "actual-reversed-joint-winding",
+      "exitCode": 1,
+      "error": "ValueError: Evaluated wooden chair geometric surfaces face inward: angled-wooden-chair.front leg triangular gusset -0.32"
+    },
+    {
+      "control": "wrong-loaded-fit",
+      "exitCode": 1,
+      "error": "ValueError: Wooden chair declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-accepted-target",
+      "exitCode": 1,
+      "error": "ValueError: Wooden chair declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-canonical-descriptor",
+      "exitCode": 1,
+      "error": "ValueError: Wooden chair exporter targets the wrong canonical descriptor"
+    },
+    {
+      "control": "wrong-camera-span",
+      "exitCode": 1,
+      "error": "ValueError: Wooden chair actual camera pitch differs from64pixels per tile"
+    },
+    {
+      "control": "wrong-camera-vector",
+      "exitCode": 1,
+      "error": "ValueError: Wooden chair actual camera ground basis differs from world projection"
+    }
+  ],
+  "exactRestoredNativeVerifyExitCode": 0,
+  "sourceBytesUnchanged": true,
+  "wrapperSha256": "a809de5fcac35438078cd8842a37d59ed075d722acca81528ba4a07b0eff766a",
+  "sourceSha256": "acd0e9decb3bb451b44e8354e797fb5656825f4748bbed832bab61659f06cd88",
+  "originalSourceSha256": "dab33079c7a42b2967950bab72048953270520383adbf3873a65aeb8e1b6687d"
+}

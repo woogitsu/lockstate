@@ -14,9 +14,21 @@ exporter = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(exporter)
 exporter.pipeline_common.require_blender_version()
 ASSET_ID = 'furniture.chair.wooden'
-exporter.MODELS = ((ASSET_ID, 'furniture.chair.wooden.blend',
+exporter.MODELS = ((ASSET_ID, 'furniture.chair.wooden.angled-detail.blend',
                     'oblique-cell-chair.v1.json', 1, 1, 1.0, 1.0, 0.6600000262260437),)
 exporter.PREVIEW = exporter.ROOT / 'assets/intermediate/wooden-chair-preview'
+
+
+_detail_module = None
+
+def chair_detail_exporter():
+    global _detail_module
+    if _detail_module is None:
+        detail_spec = importlib.util.spec_from_file_location('wooden_chair_physical_detail', SCRIPT.with_name('render-wooden-chair-detail-oblique.py'))
+        assert detail_spec and detail_spec.loader
+        _detail_module = importlib.util.module_from_spec(detail_spec)
+        detail_spec.loader.exec_module(_detail_module)
+    return _detail_module
 
 
 def evaluated_points(scene):
@@ -49,6 +61,8 @@ configure_shared = exporter.configure
 
 
 def configure(model):
+    if model[0] == ASSET_ID:
+        return chair_detail_exporter().configure(model)
     scene, camera, target = configure_shared(model, prepare_source)
     points = evaluated_points(scene)
     minimum = [min(point[axis] for point in points) for axis in range(3)]
@@ -81,6 +95,8 @@ point_camera_shared = exporter.point_camera
 
 
 def point_camera(camera, target, yaw, elevation):
+    if exporter.MODELS[0][0] == ASSET_ID:
+        return chair_detail_exporter().point_camera(camera, target, yaw, elevation)
     point_camera_shared(camera, target, yaw, elevation)
     # Independent world projection basis: yaw0 camera looks north from -Y;
     # positive yaw moves its ground position toward +X. Read actual transforms.
