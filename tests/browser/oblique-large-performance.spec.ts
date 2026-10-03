@@ -71,4 +71,15 @@ test('Full HD angled 64 × 64 cell fixture keeps the large world visible', async
   expect(actorAfter).toBeDefined();
   expect(actorAfter?.x).not.toBe(actorBefore?.x);
   expect(await page.evaluate(() => window.lockstateObliqueWorldHarness.visibleUncachedRaisedObjectCount())).toBe(0);
+  const actorFrameMs = await page.evaluate(async () => {
+    const samples: number[] = [];
+    for (let index = 0; index < 30; index += 1) {
+      const start = performance.now();
+      await window.lockstateObliqueWorldHarness.moveActorToTile(index % 2 === 0 ? 35 : 34);
+      samples.push(performance.now() - start);
+    }
+    samples.sort((a, b) => a - b);
+    return { median: samples[15], p95: samples[28] };
+  });
+  console.log('OBLIQUE_ACTOR_FRAME_MS', JSON.stringify(actorFrameMs));
 });

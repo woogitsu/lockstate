@@ -249,25 +249,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # The art contract tests inside `pnpm verify` hash Blender sources and
-      # transparent PNGs. Checkout deliberately leaves LFS pointers in this
-      # job, so materialise only the directories those tests inspect.
-      - name: Provision Git LFS for art contracts
-        run: bash scripts/provision-git-lfs.sh
-
-      - name: Fetch contract art from Git LFS
-        env:
-          LFS_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          cleanup() {
-            git config --local --unset-all 'http.https://github.com/.extraheader' 2>/dev/null || true
-          }
-          trap cleanup EXIT
-          git config --local 'http.https://github.com/.extraheader' \
-            "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$LFS_TOKEN" | base64 -w0)"
-          git lfs pull --include="assets/source/blender/*.blend,assets/rendered/camera-study/*.png,assets/rendered/camera-study/baseline/*.png,assets/rendered/cell-door-angle-study/*.png,public/assets/environment/modules/*.png,public/assets/environment/oblique/*.png"
-
       - name: Verify project
         run: pnpm verify
 
