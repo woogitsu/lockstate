@@ -1,0 +1,5 @@
+Listing tests:
+  player-build.spec.ts:144:1 › player creates storage and delivery capacity before the paid Laundry rack
+  player-build.spec.ts:208:3 › player builds Laundry q0, independently buys linen rack and retains whole V9 after Save/Load
+  player-build.spec.ts:208:3 › player builds Laundry q1, independently buys linen rack and retains whole V9 after Save/Load
+Total: 3 tests in 1 file
