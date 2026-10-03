@@ -1,0 +1,628 @@
+{
+  "quarterTurns": 0,
+  "cameraRightButtons": 7,
+  "rightButtonDragFrom": [
+    1200,
+    650
+  ],
+  "rightButtonDragTo": [
+    1200,
+    667
+  ],
+  "expectedGlobalYawDegrees": 60,
+  "expectedLocalObjectYawDegrees": 60,
+  "expectedGlobalElevationDegrees": 40.129858741388006,
+  "selectedSourcePose": [
+    60,
+    40
+  ],
+  "networkEvidence": {
+    "quarterTurns": 0,
+    "sourceSha256": "4b174ad498260ac3c736d2b4d78fb1f566cface5bab81d513fb2e00a4568ab81",
+    "catalog": {
+      "schemaVersion": 1,
+      "assetId": "furniture.corridor.bench.variants",
+      "source": "assets/source/blender/furniture.corridor.bench.angled-detail.blend",
+      "sourceSha256": "4b174ad498260ac3c736d2b4d78fb1f566cface5bab81d513fb2e00a4568ab81",
+      "resolutionPx": [
+        256,
+        256
+      ],
+      "nominalPixelsPerTile": 64,
+      "pivotPx": [
+        128,
+        128
+      ],
+      "cameraTargetTiles": [
+        1,
+        0.5,
+        0.44325
+      ],
+      "projection": "orthographic",
+      "yawDegrees": [
+        0,
+        30,
+        60,
+        90,
+        120,
+        150,
+        180,
+        210,
+        240,
+        270,
+        300,
+        330
+      ],
+      "elevationDegrees": [
+        20,
+        30,
+        40,
+        50,
+        60,
+        70
+      ],
+      "frames": [
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 20,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev20.d2708724cc53.png",
+          "sha256": "d2708724cc53da83011692fcddc474cc61e8e70d409dc230c351b2ece4d35f8d"
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 30,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev30.422e8c62aa4c.png",
+          "sha256": "422e8c62aa4c088b99308e4170468bccd9a7e74af612f120d18a2ea60ad0f02a"
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 40,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev40.d82d334e1416.png",
+          "sha256": "d82d334e14161eb34a9dea8a7037f5429449a2323447be46f2af6121c5ef28a5"
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 50,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev50.9bb8824357ea.png",
+          "sha256": "9bb8824357ea175d615aa87c98dfd1bfa517e6fba6226c0c0128804d11422552"
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 60,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev60.81e73448fee4.png",
+          "sha256": "81e73448fee4192526ccf42a2c2435f9f681d8a43a3ea02adcb9bd735c96652a"
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 70,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev70.6baadb43cbd4.png",
+          "sha256": "6baadb43cbd4f07799d0f7b9ba7c701a2e1b60c4e715b162cc14b6b8731c6fc3"
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 20,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev20.8ef15dc1b290.png",
+          "sha256": "8ef15dc1b290848e58e6def364a7060e6bd7d626c3b5644eaab7d47b02102d4f"
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 30,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev30.980b0b561fad.png",
+          "sha256": "980b0b561fadb38943e90ad6b3436c34b07242faeae2cd8058d1b9fd29a2cbd5"
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 40,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev40.9a68e39f278c.png",
+          "sha256": "9a68e39f278c9fa14a8e87f2650f4cfe46e9d0f78a8178b0c57a3f3438419cc6"
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 50,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev50.0fd266b95ab0.png",
+          "sha256": "0fd266b95ab040e82936d48aa2a2d74a2b5343ea06e781818d31c82da458f94a"
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 60,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev60.f291805d342b.png",
+          "sha256": "f291805d342bd760d9606f34aae23aaaee32d7b82935b9d2e13851429f80afe1"
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 70,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev70.af00b0ddfe44.png",
+          "sha256": "af00b0ddfe44dc7b06f7485f6331762ea37e24c09e1f58a805cdec8eab682b1d"
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 20,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev20.3944abba3438.png",
+          "sha256": "3944abba3438be8ebb3b1703bc92eb5e7b375f78cab25097601c9305cad818b7"
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 30,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev30.70ee431c1d77.png",
+          "sha256": "70ee431c1d77db88ec29c4cef2008babfb48137274e9d0ab4d9841c08d5cfe13"
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 40,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev40.845cd9e2698f.png",
+          "sha256": "845cd9e2698f21575a73b74f7087261bf9e303250b5ea90201441bc696b0e1da"
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 50,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev50.742eb61f0dd0.png",
+          "sha256": "742eb61f0dd0a2a23ad55f79da39ad4566a9695757252d54864fe9d4faa82011"
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 60,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev60.225eb16c1b25.png",
+          "sha256": "225eb16c1b250365d58fd58f97170fcdf7b654010becbcaf71ccc21c5c22cc80"
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 70,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev70.bf07a080f022.png",
+          "sha256": "bf07a080f022941370bec84979ca6f614e9d3c8814d878e849c9267b523d236d"
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 20,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+90-elev20.a8f52bd1e9a3.png",
+          "sha256": "a8f52bd1e9a3802b9df0c5d14b2fcb72f1779390249b8e15e83591972d4ef2a1"
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 30,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+90-elev30.acef162deafc.png",
+          "sha256": "acef162deafc2e8f8c2712a910821370420a4fbe2b19424b819d768aa28a2852"
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 40,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+90-elev40.f7bb8c79543a.png",
+          "sha256": "f7bb8c79543ae21392548574d55c135a0907cfa0bba90ff8fc37a4fd7d66f6c1"
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 50,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+90-elev50.f6b76d5de725.png",
+          "sha256": "f6b76d5de725c9d89dfc367df3fd5e6c394033a8bc82c6232360b0823dae11b7"
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 60,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+90-elev60.b7359481fdf8.png",
+          "sha256": "b7359481fdf858e87b027bd8362d2de919c3960c64731c1fb356f7f226687072"
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 70,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+90-elev70.fb948efbb2ce.png",
+          "sha256": "fb948efbb2cecfce14b970bedb616ee0756fe0609d6239ccb8feae995c387207"
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 20,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+120-elev20.8b7407a56041.png",
+          "sha256": "8b7407a5604182d6eec2eef273109617bc30114ddde65d4d748e039f9e2dae96"
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 30,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+120-elev30.52198cd1ffbe.png",
+          "sha256": "52198cd1ffbe2dc122086ecbaa0969c336b3a908ea0add6f68023f5eced6e78f"
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 40,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+120-elev40.d6951ea840bb.png",
+          "sha256": "d6951ea840bbfa6bca838bf151b6090bceec3c25d0da5ea84645a173f0366c9a"
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 50,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+120-elev50.85f75a735456.png",
+          "sha256": "85f75a7354569e5ce459fdd112a528d5c550eabda044fb0886f813a72e36e78a"
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 60,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+120-elev60.57814299ec47.png",
+          "sha256": "57814299ec47135b11a376b999ab767c2f942d0d787cf51647f05c9f345e7c27"
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 70,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+120-elev70.73a18a90b260.png",
+          "sha256": "73a18a90b2609259976f0f5efa1a17df834f8093866f20a51c1b1bc8b414cb26"
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 20,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+150-elev20.530aa5400179.png",
+          "sha256": "530aa54001797794bf5c112dc310e4f944113227b0bd3ae14f87358af2df0f8d"
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 30,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+150-elev30.58c1b224101f.png",
+          "sha256": "58c1b224101f7ec6ff06635e54da96b619514d447845787b4206a43d80d60632"
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 40,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+150-elev40.b292cc6e0426.png",
+          "sha256": "b292cc6e0426467a0a4fbd03a04a031c091c53aaead52c210978fad9f95abc62"
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 50,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+150-elev50.57ebb9c56a2f.png",
+          "sha256": "57ebb9c56a2ff9f88ddb78842604afb568ab9da26e76e58ae379ab40ca9b650f"
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 60,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+150-elev60.bee68f49be2d.png",
+          "sha256": "bee68f49be2d061a5c0adeb36b2f481717a192caaef57e49ed4c362d7fd461dc"
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 70,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+150-elev70.ec365ba15c47.png",
+          "sha256": "ec365ba15c4708513de374271c31e83df3f8f52957e7fe4879240be4d2611952"
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 20,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+180-elev20.c4d02288ade2.png",
+          "sha256": "c4d02288ade2be606ac00114e1deaa732b4d6715c5758c608df783779117adac"
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 30,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+180-elev30.dd9a96faa7db.png",
+          "sha256": "dd9a96faa7db71630eec0df39a34137391c961c27aae414a7c202e5ee9d851de"
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 40,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+180-elev40.a754f32ec319.png",
+          "sha256": "a754f32ec319ce1224894b0bce0454e7cc11c02a8fd9cc7b2615b6d4f1559ab1"
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 50,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+180-elev50.4dcfb401e1c0.png",
+          "sha256": "4dcfb401e1c09a9900301f39f638f18094bfadf501bdb2637c2a873d2f09b950"
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 60,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+180-elev60.e94bc019e0d4.png",
+          "sha256": "e94bc019e0d403b3e306541f31eb36d96b6ca080536a7fae6fe5391af6e5f20d"
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 70,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+180-elev70.08aca070c38b.png",
+          "sha256": "08aca070c38bf1f9167063150a3f8f66b9ee76a2d4d668cf61a55018b8467455"
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 20,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+210-elev20.abe775fb3c1e.png",
+          "sha256": "abe775fb3c1ea6a120e5d5386a5c6fdf58121110679173329cfcf1fd092082fb"
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 30,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+210-elev30.7d20959df07d.png",
+          "sha256": "7d20959df07dbcf1a02e9b0f55ca3f499b5f0237a8ce65947c0e78502910bdae"
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 40,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+210-elev40.335f6afeb642.png",
+          "sha256": "335f6afeb642971022775e714c02a6ae72ad014bb40f53c404d8ce7402132d35"
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 50,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+210-elev50.de405923751d.png",
+          "sha256": "de405923751d72316dfa2deee1bb4ea04232c880c7101d6d7ca51d466a9ea1f2"
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 60,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+210-elev60.81d50c84b8be.png",
+          "sha256": "81d50c84b8bede58d05cfddd672e7b693da7023d738af601cc54334bc3c484b2"
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 70,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+210-elev70.174eeaf15e54.png",
+          "sha256": "174eeaf15e542e4a81c19cead5dc59870342fbe479baa0bff2b30e56f94dcc3a"
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 20,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+240-elev20.782849ee264c.png",
+          "sha256": "782849ee264c2df43d5f1ca9b3abcbf60a04eba70b17bd094b1289baa9d36978"
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 30,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+240-elev30.77604dc1a6f9.png",
+          "sha256": "77604dc1a6f99634194a17c11d847b2b5e92d1eac600d1df6c333c25c10f23aa"
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 40,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+240-elev40.cf0b691f38e9.png",
+          "sha256": "cf0b691f38e94dc7ac856d1070b7a11efba34852f29be947adbfec37d4370404"
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 50,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+240-elev50.d60a2e64dc4e.png",
+          "sha256": "d60a2e64dc4ea03d36b87829c61b190b50298b267fb1888cd8796387819463d5"
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 60,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+240-elev60.fc39bb08a6e9.png",
+          "sha256": "fc39bb08a6e90239d54cd93828213bdfce3f5fbb8838f7e27e03570cb7f34720"
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 70,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+240-elev70.1467ee7d727a.png",
+          "sha256": "1467ee7d727af27a235f3020a694596e691adb5824dfd04b7fd1906049b5bcde"
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 20,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+270-elev20.041686b88ad8.png",
+          "sha256": "041686b88ad8b4d0edba5f61225fe44a1de976c59400d07582f065c83eaa060d"
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 30,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+270-elev30.94b9bc80f817.png",
+          "sha256": "94b9bc80f8176c5f40510530d86f2493d078c0973944cd13e8131ae7b47596c0"
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 40,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+270-elev40.14648d72f1cd.png",
+          "sha256": "14648d72f1cd618a160bc70cd7d7af581b474731f839e25cc3aecc874f5aee73"
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 50,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+270-elev50.b1f7f7f6907c.png",
+          "sha256": "b1f7f7f6907c4a56154e5f6bed5d7b15fafc6fea209d4ea1a31d1636d1eadecb"
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 60,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+270-elev60.0f3ca461b738.png",
+          "sha256": "0f3ca461b7387c94a365e0246bd127a0ffc2684fb7b2a29860bbae8657e702f1"
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 70,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+270-elev70.5efec48b44a6.png",
+          "sha256": "5efec48b44a60731e6ec2b8eb05542c4ea6cf4a6c7ea32f392676fb8134d30ff"
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 20,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev20.cd4251a76a61.png",
+          "sha256": "cd4251a76a61690a876a5829a0754d896e0c502fa584438570e44f9a273ac36c"
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 30,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev30.964369c8377d.png",
+          "sha256": "964369c8377d992f4f4d28c8edafe4bb93e7f546fe2114917b77363b4faf12c5"
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 40,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev40.788a2ecb837d.png",
+          "sha256": "788a2ecb837d71162595e2b0b9701924fcb0f29fcf4a5c77d6c32dc21a7827e7"
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 50,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev50.58ac8361467f.png",
+          "sha256": "58ac8361467f9012ba0969be648187baf085d1ed9649154b717a9398087ecbd3"
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 60,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev60.6115054d671f.png",
+          "sha256": "6115054d671ff74dbac61f9ef2ad5c2cfde6aa91e8c6e9eabeb6b4ea8ba1e6c1"
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 70,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev70.a5c2dd76a683.png",
+          "sha256": "a5c2dd76a68308e4b6d731b0547c7c620504b9ab038f1e06c3cd61a2ab8e7e8a"
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 20,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev20.2570a345804e.png",
+          "sha256": "2570a345804ec73a10e2c994644e85eda8475d7e461163a88bc1d5978785d08b"
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 30,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev30.a58a53c76774.png",
+          "sha256": "a58a53c76774d0e77ad55cc74be59ee8ee591650bbc8dddf512f9b793e7f0c47"
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 40,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev40.db895d258f8a.png",
+          "sha256": "db895d258f8ae5431e08d145392fadfd68a6da7f9dd67893f184dd05d24fef44"
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 50,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev50.5967ac208bc0.png",
+          "sha256": "5967ac208bc0a776ae7c731d7b256788facca3da72246284c82cf3efdb39dfde"
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 60,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev60.899cae97cfc4.png",
+          "sha256": "899cae97cfc41736cabfc35ac46badc381baa668cd1057deda5902ef6a5ba6dd"
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 70,
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev70.787947d16d45.png",
+          "sha256": "787947d16d45c9df2255ce416590858edf4857d8661526686b42e4c693767a9d"
+        }
+      ]
+    },
+    "network": [
+      {
+        "url": "http://127.0.0.1:5184/assets/worker-CI5uwrgr.js",
+        "decodedPath": "/assets/worker-CI5uwrgr.js",
+        "status": 200,
+        "encodedPlusInUrl": false,
+        "sha256": "3d2f98b8514d20492636e9e1579109557c39325ae6b37cbc314294172e92f07b",
+        "bytes": 442115
+      },
+      {
+        "url": "http://127.0.0.1:5184/game-content/oblique-canteen-bench.v1.json",
+        "decodedPath": "/game-content/oblique-canteen-bench.v1.json",
+        "status": 200,
+        "encodedPlusInUrl": false,
+        "sha256": "793f4908d0ea3f416fd063627a2ea3f8b3b1744397272f908b197ecdcde36c69",
+        "bytes": 20022
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev40.788a2ecb837d.png",
+        "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev40.788a2ecb837d.png",
+        "status": 307,
+        "encodedPlusInUrl": false,
+        "location": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B300-elev40.788a2ecb837d.png"
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B300-elev40.788a2ecb837d.png",
+        "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev40.788a2ecb837d.png",
+        "status": 200,
+        "encodedPlusInUrl": true,
+        "sha256": "788a2ecb837d71162595e2b0b9701924fcb0f29fcf4a5c77d6c32dc21a7827e7",
+        "bytes": 8748
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev40.9a68e39f278c.png",
+        "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev40.9a68e39f278c.png",
+        "status": 307,
+        "encodedPlusInUrl": false,
+        "location": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B30-elev40.9a68e39f278c.png"
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B30-elev40.9a68e39f278c.png",
+        "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev40.9a68e39f278c.png",
+        "status": 200,
+        "encodedPlusInUrl": true,
+        "sha256": "9a68e39f278c9fa14a8e87f2650f4cfe46e9d0f78a8178b0c57a3f3438419cc6",
+        "bytes": 8041
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/worker-CI5uwrgr.js",
+        "decodedPath": "/assets/worker-CI5uwrgr.js",
+        "status": 200,
+        "encodedPlusInUrl": false,
+        "sha256": "3d2f98b8514d20492636e9e1579109557c39325ae6b37cbc314294172e92f07b",
+        "bytes": 442115
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev40.db895d258f8a.png",
+        "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev40.db895d258f8a.png",
+        "status": 307,
+        "encodedPlusInUrl": false,
+        "location": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B330-elev40.db895d258f8a.png"
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B330-elev40.db895d258f8a.png",
+        "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev40.db895d258f8a.png",
+        "status": 200,
+        "encodedPlusInUrl": true,
+        "sha256": "db895d258f8ae5431e08d145392fadfd68a6da7f9dd67893f184dd05d24fef44",
+        "bytes": 7994
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev40.d82d334e1416.png",
+        "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev40.d82d334e1416.png",
+        "status": 307,
+        "encodedPlusInUrl": false,
+        "location": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B00-elev40.d82d334e1416.png"
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B00-elev40.d82d334e1416.png",
+        "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev40.d82d334e1416.png",
+        "status": 200,
+        "encodedPlusInUrl": true,
+        "sha256": "d82d334e14161eb34a9dea8a7037f5429449a2323447be46f2af6121c5ef28a5",
+        "bytes": 3768
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev40.9a68e39f278c.png",
+        "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev40.9a68e39f278c.png",
+        "status": 307,
+        "encodedPlusInUrl": false,
+        "location": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B30-elev40.9a68e39f278c.png"
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B30-elev40.9a68e39f278c.png",
+        "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev40.9a68e39f278c.png",
+        "status": 200,
+        "encodedPlusInUrl": true,
+        "sha256": "9a68e39f278c9fa14a8e87f2650f4cfe46e9d0f78a8178b0c57a3f3438419cc6",
+        "bytes": 8041
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev40.845cd9e2698f.png",
+        "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev40.845cd9e2698f.png",
+        "status": 307,
+        "encodedPlusInUrl": false,
+        "location": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B60-elev40.845cd9e2698f.png"
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B60-elev40.845cd9e2698f.png",
+        "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev40.845cd9e2698f.png",
+        "status": 200,
+        "encodedPlusInUrl": true,
+        "sha256": "845cd9e2698f21575a73b74f7087261bf9e303250b5ea90201441bc696b0e1da",
+        "bytes": 7973
+      }
+    ],
+    "exposedFrameBodySha256": "845cd9e2698f21575a73b74f7087261bf9e303250b5ea90201441bc696b0e1da",
+    "decoded": {
+      "width": 256,
+      "height": 256,
+      "nontransparent": 4974,
+      "decoder": "HTMLImageElement from actual200body Blob"
+    },
+    "syntheticFetchUsed": false,
+    "privateRendererTextureRead": false,
+    "hardwareRoiMeasured": false
+  },
+  "hardwareRoiMeasured": false,
+  "sourcePreviewSubstitutedForNative": false
+}

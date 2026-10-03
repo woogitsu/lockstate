@@ -1,0 +1,2622 @@
+{
+  "protocolVersion": 1,
+  "messageId": "dfc43391-e4ab-4bcf-8b64-5994f0a5d5fc",
+  "replyTo": "c6945349-3132-44b3-9fe4-3a7ffb72b494",
+  "kind": "simulation/snapshot",
+  "payload": {
+    "tick": 4269,
+    "reason": "consistency-check",
+    "snapshot": {
+      "transport": "structured-clone",
+      "schemaId": "simulation-save-payload",
+      "schemaVersion": 3,
+      "data": {
+        "masterSeed": 1277554110,
+        "kernel": {
+          "tick": 4269,
+          "expectedSequence": 3,
+          "rngStates": [
+            {
+              "name": "contraband.detection",
+              "state": {
+                "algorithm": "xoshiro128**",
+                "version": 1,
+                "words": [
+                  162670380,
+                  2583447902,
+                  2843234085,
+                  1613099305
+                ]
+              }
+            },
+            {
+              "name": "contraband.intelligence",
+              "state": {
+                "algorithm": "xoshiro128**",
+                "version": 1,
+                "words": [
+                  548044303,
+                  1076061948,
+                  2509875134,
+                  1987624694
+                ]
+              }
+            },
+            {
+              "name": "contraband.introduction",
+              "state": {
+                "algorithm": "xoshiro128**",
+                "version": 1,
+                "words": [
+                  513141728,
+                  1736926222,
+                  3306499628,
+                  681368621
+                ]
+              }
+            },
+            {
+              "name": "identity.actor-name",
+              "state": {
+                "algorithm": "xoshiro128**",
+                "version": 1,
+                "words": [
+                  2325111375,
+                  4286758410,
+                  1183466682,
+                  2842027750
+                ]
+              }
+            },
+            {
+              "name": "prisoners.classification",
+              "state": {
+                "algorithm": "xoshiro128**",
+                "version": 1,
+                "words": [
+                  947232769,
+                  1998425965,
+                  1325229823,
+                  158909312
+                ]
+              }
+            },
+            {
+              "name": "prisoners.sentence",
+              "state": {
+                "algorithm": "xoshiro128**",
+                "version": 1,
+                "words": [
+                  1217710236,
+                  2489166467,
+                  969533212,
+                  3826771446
+                ]
+              }
+            }
+          ],
+          "commands": []
+        },
+        "world": {
+          "version": 1,
+          "chunkSize": 32,
+          "ownedChunks": [
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "chunks": [
+            {
+              "x": 0,
+              "y": 0,
+              "lifecycle": "loaded",
+              "geometryRevision": 61,
+              "contentRevision": 41,
+              "dirty": true,
+              "terrain": [
+                [
+                  0,
+                  1024
+                ]
+              ],
+              "topEdge": [
+                [
+                  0,
+                  295
+                ],
+                [
+                  2,
+                  1
+                ],
+                [
+                  0,
+                  38
+                ],
+                [
+                  2,
+                  1
+                ],
+                [
+                  0,
+                  689
+                ]
+              ],
+              "leftEdge": [
+                [
+                  0,
+                  245
+                ],
+                [
+                  2,
+                  1
+                ],
+                [
+                  0,
+                  778
+                ]
+              ],
+              "squareStructure": [
+                [
+                  0,
+                  165
+                ],
+                [
+                  1,
+                  5
+                ],
+                [
+                  0,
+                  2
+                ],
+                [
+                  1,
+                  6
+                ],
+                [
+                  0,
+                  2
+                ],
+                [
+                  1,
+                  6
+                ],
+                [
+                  0,
+                  11
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  3
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  2
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  4
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  2
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  4
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  11
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  3
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  2
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  4
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  7
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  11
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  3
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  2
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  4
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  2
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  4
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  11
+                ],
+                [
+                  1,
+                  2
+                ],
+                [
+                  0,
+                  1
+                ],
+                [
+                  1,
+                  2
+                ],
+                [
+                  0,
+                  2
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  4
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  2
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  4
+                ],
+                [
+                  1,
+                  1
+                ],
+                [
+                  0,
+                  18
+                ],
+                [
+                  1,
+                  2
+                ],
+                [
+                  0,
+                  1
+                ],
+                [
+                  1,
+                  3
+                ],
+                [
+                  0,
+                  2
+                ],
+                [
+                  1,
+                  6
+                ],
+                [
+                  0,
+                  678
+                ]
+              ],
+              "zoning": [
+                [
+                  0,
+                  198
+                ],
+                [
+                  15,
+                  3
+                ],
+                [
+                  0,
+                  4
+                ],
+                [
+                  16,
+                  4
+                ],
+                [
+                  0,
+                  4
+                ],
+                [
+                  2,
+                  4
+                ],
+                [
+                  0,
+                  13
+                ],
+                [
+                  15,
+                  3
+                ],
+                [
+                  0,
+                  4
+                ],
+                [
+                  16,
+                  4
+                ],
+                [
+                  0,
+                  4
+                ],
+                [
+                  2,
+                  4
+                ],
+                [
+                  0,
+                  13
+                ],
+                [
+                  15,
+                  3
+                ],
+                [
+                  0,
+                  4
+                ],
+                [
+                  16,
+                  4
+                ],
+                [
+                  0,
+                  4
+                ],
+                [
+                  2,
+                  4
+                ],
+                [
+                  0,
+                  20
+                ],
+                [
+                  16,
+                  4
+                ],
+                [
+                  0,
+                  4
+                ],
+                [
+                  2,
+                  4
+                ],
+                [
+                  0,
+                  711
+                ]
+              ]
+            }
+          ]
+        },
+        "construction": {
+          "orders": [
+            {
+              "id": "room-template-000000000000-0-wall-000",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 5,
+                "y": 5
+              },
+              "footprint": "square",
+              "placementSequence": 0,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000000-0-wall-001",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 6,
+                "y": 5
+              },
+              "footprint": "square",
+              "placementSequence": 0,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000000-0-wall-002",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 7,
+                "y": 5
+              },
+              "footprint": "square",
+              "placementSequence": 0,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000000-0-wall-003",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 8,
+                "y": 5
+              },
+              "footprint": "square",
+              "placementSequence": 0,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000000-0-wall-004",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 9,
+                "y": 5
+              },
+              "footprint": "square",
+              "placementSequence": 0,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000000-0-wall-005",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 5,
+                "y": 6
+              },
+              "footprint": "square",
+              "placementSequence": 0,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000000-0-wall-006",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 9,
+                "y": 6
+              },
+              "footprint": "square",
+              "placementSequence": 0,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000000-0-wall-007",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 5,
+                "y": 7
+              },
+              "footprint": "square",
+              "placementSequence": 0,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000000-0-wall-008",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 9,
+                "y": 7
+              },
+              "footprint": "square",
+              "placementSequence": 0,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000000-0-wall-009",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 5,
+                "y": 8
+              },
+              "footprint": "square",
+              "placementSequence": 0,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000000-0-wall-010",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 9,
+                "y": 8
+              },
+              "footprint": "square",
+              "placementSequence": 0,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000000-0-wall-011",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 5,
+                "y": 9
+              },
+              "footprint": "square",
+              "placementSequence": 0,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000000-0-wall-012",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 6,
+                "y": 9
+              },
+              "footprint": "square",
+              "placementSequence": 0,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000000-0-wall-013",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 8,
+                "y": 9
+              },
+              "footprint": "square",
+              "placementSequence": 0,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000000-0-wall-014",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 9,
+                "y": 9
+              },
+              "footprint": "square",
+              "placementSequence": 0,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000000-1-door-000",
+              "definitionId": "door-wooden",
+              "location": {
+                "x": 7,
+                "y": 9
+              },
+              "edge": "north",
+              "placementSequence": 0,
+              "state": "completed",
+              "progress": 30,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.wood-plank",
+                  "quantity": 1
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000000-2-object-000",
+              "definitionId": "storage-rack-wooden",
+              "location": {
+                "x": 6,
+                "y": 6
+              },
+              "placementSequence": 0,
+              "state": "completed",
+              "progress": 30,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.wood-plank",
+                  "quantity": 1
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000000-2-object-001",
+              "definitionId": "storage-rack-wooden",
+              "location": {
+                "x": 8,
+                "y": 6
+              },
+              "placementSequence": 0,
+              "state": "completed",
+              "progress": 30,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.wood-plank",
+                  "quantity": 1
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-000",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 12,
+                "y": 5
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-001",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 13,
+                "y": 5
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-002",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 14,
+                "y": 5
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-003",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 15,
+                "y": 5
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-004",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 16,
+                "y": 5
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-005",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 17,
+                "y": 5
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-006",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 12,
+                "y": 6
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-007",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 17,
+                "y": 6
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-008",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 12,
+                "y": 7
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-009",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 17,
+                "y": 7
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-010",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 12,
+                "y": 8
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-011",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 17,
+                "y": 8
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-012",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 12,
+                "y": 9
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-013",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 17,
+                "y": 9
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-014",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 12,
+                "y": 10
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-015",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 13,
+                "y": 10
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-016",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 15,
+                "y": 10
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-017",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 16,
+                "y": 10
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-0-wall-018",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 17,
+                "y": 10
+              },
+              "footprint": "square",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-1-door-000",
+              "definitionId": "door-wooden",
+              "location": {
+                "x": 14,
+                "y": 10
+              },
+              "edge": "north",
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 30,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.wood-plank",
+                  "quantity": 1
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000001-2-object-000",
+              "definitionId": "loading-dock-door-wooden",
+              "location": {
+                "x": 13,
+                "y": 6
+              },
+              "placementSequence": 1,
+              "state": "completed",
+              "progress": 90,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.wood-plank",
+                  "quantity": 3
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-000",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 25,
+                "y": 5
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-001",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 25,
+                "y": 6
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-002",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 25,
+                "y": 7
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-003",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 25,
+                "y": 8
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-004",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 25,
+                "y": 9
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-005",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 25,
+                "y": 10
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-006",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 24,
+                "y": 5
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-007",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 24,
+                "y": 10
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-008",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 23,
+                "y": 5
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-009",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 23,
+                "y": 10
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-010",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 22,
+                "y": 5
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-011",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 22,
+                "y": 10
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-012",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 21,
+                "y": 5
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-013",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 21,
+                "y": 10
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-014",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 20,
+                "y": 5
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-015",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 20,
+                "y": 6
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-016",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 20,
+                "y": 8
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-017",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 20,
+                "y": 9
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-0-wall-018",
+              "definitionId": "wall-brick",
+              "location": {
+                "x": 20,
+                "y": 10
+              },
+              "footprint": "square",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 50,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.brick",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-1-door-000",
+              "definitionId": "door-wooden",
+              "location": {
+                "x": 21,
+                "y": 7
+              },
+              "edge": "west",
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 30,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.wood-plank",
+                  "quantity": 1
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-2-object-000",
+              "definitionId": "bench-wooden",
+              "location": {
+                "x": 24,
+                "y": 6
+              },
+              "objectOrientation": 1,
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 60,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.wood-plank",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            },
+            {
+              "id": "room-template-000000000002-2-object-001",
+              "definitionId": "bench-wooden",
+              "location": {
+                "x": 22,
+                "y": 8
+              },
+              "objectOrientation": 1,
+              "placementSequence": 2,
+              "state": "completed",
+              "progress": 60,
+              "materialsAllocated": [
+                {
+                  "itemId": "item.wood-plank",
+                  "quantity": 2
+                }
+              ],
+              "assignedWorkerId": "mock-worker-1"
+            }
+          ],
+          "undoStack": [
+            [
+              "room-template-000000000000-0-wall-000",
+              "room-template-000000000000-0-wall-001",
+              "room-template-000000000000-0-wall-002",
+              "room-template-000000000000-0-wall-003",
+              "room-template-000000000000-0-wall-004",
+              "room-template-000000000000-0-wall-005",
+              "room-template-000000000000-0-wall-006",
+              "room-template-000000000000-0-wall-007",
+              "room-template-000000000000-0-wall-008",
+              "room-template-000000000000-0-wall-009",
+              "room-template-000000000000-0-wall-010",
+              "room-template-000000000000-0-wall-011",
+              "room-template-000000000000-0-wall-012",
+              "room-template-000000000000-0-wall-013",
+              "room-template-000000000000-0-wall-014",
+              "room-template-000000000000-1-door-000",
+              "room-template-000000000000-2-object-000",
+              "room-template-000000000000-2-object-001"
+            ],
+            [
+              "room-template-000000000001-0-wall-000",
+              "room-template-000000000001-0-wall-001",
+              "room-template-000000000001-0-wall-002",
+              "room-template-000000000001-0-wall-003",
+              "room-template-000000000001-0-wall-004",
+              "room-template-000000000001-0-wall-005",
+              "room-template-000000000001-0-wall-006",
+              "room-template-000000000001-0-wall-007",
+              "room-template-000000000001-0-wall-008",
+              "room-template-000000000001-0-wall-009",
+              "room-template-000000000001-0-wall-010",
+              "room-template-000000000001-0-wall-011",
+              "room-template-000000000001-0-wall-012",
+              "room-template-000000000001-0-wall-013",
+              "room-template-000000000001-0-wall-014",
+              "room-template-000000000001-0-wall-015",
+              "room-template-000000000001-0-wall-016",
+              "room-template-000000000001-0-wall-017",
+              "room-template-000000000001-0-wall-018",
+              "room-template-000000000001-1-door-000",
+              "room-template-000000000001-2-object-000"
+            ]
+          ],
+          "redoStack": [],
+          "currentTransaction": [
+            "room-template-000000000002-0-wall-000",
+            "room-template-000000000002-0-wall-001",
+            "room-template-000000000002-0-wall-002",
+            "room-template-000000000002-0-wall-003",
+            "room-template-000000000002-0-wall-004",
+            "room-template-000000000002-0-wall-005",
+            "room-template-000000000002-0-wall-006",
+            "room-template-000000000002-0-wall-007",
+            "room-template-000000000002-0-wall-008",
+            "room-template-000000000002-0-wall-009",
+            "room-template-000000000002-0-wall-010",
+            "room-template-000000000002-0-wall-011",
+            "room-template-000000000002-0-wall-012",
+            "room-template-000000000002-0-wall-013",
+            "room-template-000000000002-0-wall-014",
+            "room-template-000000000002-0-wall-015",
+            "room-template-000000000002-0-wall-016",
+            "room-template-000000000002-0-wall-017",
+            "room-template-000000000002-0-wall-018",
+            "room-template-000000000002-1-door-000",
+            "room-template-000000000002-2-object-000",
+            "room-template-000000000002-2-object-001"
+          ],
+          "currentTransactionId": "room-template-2"
+        },
+        "entities": {
+          "capacity": 5000,
+          "nextAvailableIndex": 0,
+          "maxActiveIndex": -1,
+          "generations": [
+            [
+              0,
+              5000
+            ]
+          ],
+          "freeIndices": [],
+          "alive": [
+            [
+              0,
+              5000
+            ]
+          ]
+        },
+        "simulation": {
+          "regimeSchedules": [
+            {
+              "classificationGroupId": "general-population",
+              "blocks": [
+                {
+                  "startTickOfDay": 0,
+                  "endTickOfDay": 400,
+                  "allowedCategories": [
+                    "sleep"
+                  ]
+                },
+                {
+                  "startTickOfDay": 400,
+                  "endTickOfDay": 500,
+                  "allowedCategories": [
+                    "meal",
+                    "hygiene"
+                  ]
+                },
+                {
+                  "startTickOfDay": 500,
+                  "endTickOfDay": 1000,
+                  "allowedCategories": [
+                    "work",
+                    "education",
+                    "free-association"
+                  ]
+                },
+                {
+                  "startTickOfDay": 1000,
+                  "endTickOfDay": 1200,
+                  "allowedCategories": [
+                    "recreation",
+                    "free-association"
+                  ]
+                },
+                {
+                  "startTickOfDay": 1200,
+                  "endTickOfDay": 1300,
+                  "allowedCategories": [
+                    "meal"
+                  ]
+                },
+                {
+                  "startTickOfDay": 1300,
+                  "endTickOfDay": 1800,
+                  "allowedCategories": [
+                    "work",
+                    "education",
+                    "free-association"
+                  ]
+                },
+                {
+                  "startTickOfDay": 1800,
+                  "endTickOfDay": 2000,
+                  "allowedCategories": [
+                    "recreation",
+                    "hygiene",
+                    "free-association"
+                  ]
+                },
+                {
+                  "startTickOfDay": 2000,
+                  "endTickOfDay": 2100,
+                  "allowedCategories": [
+                    "meal"
+                  ]
+                },
+                {
+                  "startTickOfDay": 2100,
+                  "endTickOfDay": 2300,
+                  "allowedCategories": [
+                    "recreation",
+                    "hygiene",
+                    "free-association"
+                  ]
+                },
+                {
+                  "startTickOfDay": 2300,
+                  "endTickOfDay": 2400,
+                  "allowedCategories": [
+                    "sleep"
+                  ]
+                }
+              ]
+            },
+            {
+              "classificationGroupId": "high-risk",
+              "blocks": [
+                {
+                  "startTickOfDay": 0,
+                  "endTickOfDay": 2000,
+                  "allowedCategories": [
+                    "sleep",
+                    "meal",
+                    "hygiene"
+                  ]
+                },
+                {
+                  "startTickOfDay": 2000,
+                  "endTickOfDay": 2200,
+                  "allowedCategories": [
+                    "recreation",
+                    "free-association"
+                  ]
+                },
+                {
+                  "startTickOfDay": 2200,
+                  "endTickOfDay": 2400,
+                  "allowedCategories": [
+                    "sleep",
+                    "meal",
+                    "hygiene"
+                  ]
+                }
+              ]
+            }
+          ],
+          "prisoners": {
+            "components": {
+              "activeLength": 0,
+              "sentenceLengthTicks": [],
+              "priorIncidentsAtIntake": [],
+              "sentenceEndTick": [],
+              "riskTier": [],
+              "classificationGroupIndex": [],
+              "intakeStage": [],
+              "solitarySanctionEndTick": [],
+              "injured": [],
+              "needs": {
+                "hunger": [],
+                "sleep": [],
+                "hygiene": [],
+                "bladder": [],
+                "safety": [],
+                "recreation": []
+              },
+              "actionIndex": [],
+              "actionPhase": [],
+              "phaseStartedAtTick": [],
+              "needFulfilledLastTick": [],
+              "tileX": [],
+              "tileY": []
+            },
+            "coldState": {
+              "accommodationInstanceId": [],
+              "currentActionTargetInstanceId": []
+            },
+            "roomInstanceDefinitions": [
+              {
+                "instanceId": "room.delivery-bay:13:6",
+                "roomCatalogId": "room.delivery-bay",
+                "anchorTile": {
+                  "x": 13,
+                  "y": 6
+                },
+                "width": 4,
+                "height": 4
+              },
+              {
+                "instanceId": "room.holding-cell:21:6",
+                "roomCatalogId": "room.holding-cell",
+                "anchorTile": {
+                  "x": 21,
+                  "y": 6
+                },
+                "width": 4,
+                "height": 4
+              },
+              {
+                "instanceId": "room.storage-room:6:6",
+                "roomCatalogId": "room.storage-room",
+                "anchorTile": {
+                  "x": 6,
+                  "y": 6
+                },
+                "width": 3,
+                "height": 3
+              }
+            ],
+            "roomInstanceOccupancy": [
+              [
+                "room.delivery-bay:13:6",
+                []
+              ],
+              [
+                "room.holding-cell:21:6",
+                []
+              ],
+              [
+                "room.storage-room:6:6",
+                []
+              ]
+            ]
+          },
+          "operations": {
+            "containers": [
+              [
+                "construction-materials",
+                []
+              ]
+            ],
+            "jobs": [],
+            "jobWorkers": {
+              "workers": [],
+              "busy": []
+            },
+            "electricity": {
+              "type": "electricity",
+              "nodes": [],
+              "connections": [],
+              "failedNodeIds": []
+            },
+            "water": {
+              "type": "water",
+              "nodes": [],
+              "connections": [],
+              "failedNodeIds": []
+            }
+          },
+          "navigation": {
+            "doors": [
+              {
+                "id": "door:left:21:7",
+                "position": {
+                  "x": 21,
+                  "y": 7
+                },
+                "side": "left",
+                "state": "closed",
+                "requiredSecurityClearance": 0,
+                "costMultiplier": 1
+              },
+              {
+                "id": "door:top:14:10",
+                "position": {
+                  "x": 14,
+                  "y": 10
+                },
+                "side": "top",
+                "state": "closed",
+                "requiredSecurityClearance": 0,
+                "costMultiplier": 1
+              },
+              {
+                "id": "door:top:7:9",
+                "position": {
+                  "x": 7,
+                  "y": 9
+                },
+                "side": "top",
+                "state": "closed",
+                "requiredSecurityClearance": 0,
+                "costMultiplier": 1
+              }
+            ]
+          },
+          "security": {
+            "sectorDefinitions": [
+              {
+                "id": "security-sector.prison",
+                "gradeId": "grade.general",
+                "doorIds": [],
+                "postTile": {
+                  "x": 16,
+                  "y": 16
+                }
+              }
+            ],
+            "sectorControlStates": [
+              [
+                "security-sector.prison",
+                "normal"
+              ]
+            ],
+            "guards": {
+              "entityStore": {
+                "capacity": 500,
+                "nextAvailableIndex": 0,
+                "maxActiveIndex": -1,
+                "generations": [
+                  [
+                    0,
+                    500
+                  ]
+                ],
+                "freeIndices": [],
+                "alive": [
+                  [
+                    0,
+                    500
+                  ]
+                ]
+              },
+              "records": []
+            },
+            "schedules": [
+              {
+                "sectorId": "security-sector.prison",
+                "blocks": [
+                  {
+                    "startTickOfDay": 0,
+                    "endTickOfDay": 2400,
+                    "requiredGuardCount": 1
+                  }
+                ]
+              }
+            ],
+            "deployment": {
+              "metrics": {
+                "deploymentFailures": 0
+              }
+            },
+            "patrol": {
+              "metrics": {
+                "loopsCompletedOnTime": 0,
+                "loopsCompletedLate": 0,
+                "loopsMissed": 0
+              }
+            }
+          },
+          "contraband": {
+            "items": [],
+            "intelligence": [],
+            "intelligenceSequence": 0,
+            "informants": [],
+            "confiscations": [],
+            "searchPolicies": [
+              {
+                "scope": "cell",
+                "requiredGuardCount": 1,
+                "dwellTicksPerTarget": 40,
+                "baseDetectionProbability": 0.7,
+                "concealmentPenaltyPerPoint": 0.05,
+                "intelligenceConfidenceBonus": 0.2
+              },
+              {
+                "scope": "delivery",
+                "requiredGuardCount": 1,
+                "dwellTicksPerTarget": 25,
+                "baseDetectionProbability": 0.6,
+                "concealmentPenaltyPerPoint": 0.05,
+                "intelligenceConfidenceBonus": 0.15
+              },
+              {
+                "scope": "person",
+                "requiredGuardCount": 1,
+                "dwellTicksPerTarget": 20,
+                "baseDetectionProbability": 0.75,
+                "concealmentPenaltyPerPoint": 0.06,
+                "intelligenceConfidenceBonus": 0.2
+              },
+              {
+                "scope": "sector",
+                "requiredGuardCount": 1,
+                "dwellTicksPerTarget": 15,
+                "baseDetectionProbability": 0.5,
+                "concealmentPenaltyPerPoint": 0.05,
+                "intelligenceConfidenceBonus": 0.25
+              }
+            ],
+            "searchContainerLocations": [],
+            "search": {
+              "queue": [],
+              "active": [],
+              "metrics": {
+                "itemsDiscovered": 0,
+                "itemsMissed": 0,
+                "searchesCompleted": 0,
+                "searchesCancelled": 0
+              }
+            }
+          },
+          "economy": {
+            "treasury": {
+              "balanceMinorUnits": 19980
+            },
+            "procurement": {
+              "pending": []
+            },
+            "payroll": {
+              "unpaidWagesMinorUnits": 0
+            }
+          },
+          "objects": {
+            "placedObjects": [
+              {
+                "placedObjectId": "object:6:6",
+                "objectId": "object.storage-rack",
+                "anchorTile": {
+                  "x": 6,
+                  "y": 6
+                },
+                "orientation": 0,
+                "sourceOrderId": "room-template-000000000000-2-object-000"
+              },
+              {
+                "placedObjectId": "object:8:6",
+                "objectId": "object.storage-rack",
+                "anchorTile": {
+                  "x": 8,
+                  "y": 6
+                },
+                "orientation": 0,
+                "sourceOrderId": "room-template-000000000000-2-object-001"
+              },
+              {
+                "placedObjectId": "object:13:6",
+                "objectId": "object.loading-dock-door",
+                "anchorTile": {
+                  "x": 13,
+                  "y": 6
+                },
+                "orientation": 0,
+                "sourceOrderId": "room-template-000000000001-2-object-000"
+              },
+              {
+                "placedObjectId": "object:24:6",
+                "objectId": "object.bench",
+                "anchorTile": {
+                  "x": 24,
+                  "y": 6
+                },
+                "orientation": 1,
+                "sourceOrderId": "room-template-000000000002-2-object-000"
+              },
+              {
+                "placedObjectId": "object:22:8",
+                "objectId": "object.bench",
+                "anchorTile": {
+                  "x": 22,
+                  "y": 8
+                },
+                "orientation": 1,
+                "sourceOrderId": "room-template-000000000002-2-object-001"
+              }
+            ]
+          },
+          "alerts": {
+            "sequence": 61,
+            "records": [
+              {
+                "sequence": 1,
+                "tick": 170,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 2,
+                "tick": 230,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 3,
+                "tick": 290,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 4,
+                "tick": 350,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 5,
+                "tick": 410,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 6,
+                "tick": 470,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 7,
+                "tick": 530,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 8,
+                "tick": 590,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 9,
+                "tick": 650,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 10,
+                "tick": 710,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 11,
+                "tick": 770,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 12,
+                "tick": 830,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 13,
+                "tick": 890,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 14,
+                "tick": 950,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 15,
+                "tick": 1010,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 16,
+                "tick": 1050,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 17,
+                "tick": 1110,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 18,
+                "tick": 1170,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 19,
+                "tick": 1210,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 20,
+                "tick": 1250,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 21,
+                "tick": 1310,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 22,
+                "tick": 1370,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 23,
+                "tick": 1430,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 24,
+                "tick": 1490,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 25,
+                "tick": 1550,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 26,
+                "tick": 1610,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 27,
+                "tick": 1670,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 28,
+                "tick": 1730,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 29,
+                "tick": 1790,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 30,
+                "tick": 1850,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 31,
+                "tick": 1910,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 32,
+                "tick": 1970,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 33,
+                "tick": 2030,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 34,
+                "tick": 2090,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 35,
+                "tick": 2150,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 36,
+                "tick": 2210,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 37,
+                "tick": 2270,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 38,
+                "tick": 2310,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 39,
+                "tick": 2530,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 40,
+                "tick": 2770,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 41,
+                "tick": 2830,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 42,
+                "tick": 2890,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 43,
+                "tick": 2950,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 44,
+                "tick": 3010,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 45,
+                "tick": 3070,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 46,
+                "tick": 3130,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 47,
+                "tick": 3190,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 48,
+                "tick": 3250,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 49,
+                "tick": 3310,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 50,
+                "tick": 3370,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 51,
+                "tick": 3430,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 52,
+                "tick": 3490,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 53,
+                "tick": 3550,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 54,
+                "tick": 3610,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 55,
+                "tick": 3670,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 56,
+                "tick": 3730,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 57,
+                "tick": 3790,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 58,
+                "tick": 3850,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 59,
+                "tick": 3890,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 60,
+                "tick": 4080,
+                "type": "construction.order-completed"
+              },
+              {
+                "sequence": 61,
+                "tick": 4150,
+                "type": "construction.order-completed"
+              }
+            ],
+            "dismissed": []
+          },
+          "inFlight": {
+            "navigation": {
+              "pending": [],
+              "results": []
+            },
+            "prisoners": {
+              "locomotion": {
+                "walks": [],
+                "headings": []
+              },
+              "pathRequestIds": [],
+              "requestSequence": 0
+            },
+            "guards": {
+              "locomotion": {
+                "walks": [],
+                "headings": []
+              },
+              "deploymentRequestSequence": 0,
+              "patrolRequestSequence": 0
+            },
+            "search": {
+              "requestSequence": 0,
+              "jobs": []
+            }
+          },
+          "roomTemplates": {
+            "version": 1,
+            "pending": [],
+            "completed": [
+              {
+                "templateId": "storage-room-basic",
+                "origin": {
+                  "x": 5,
+                  "y": 5
+                },
+                "mirrorX": false,
+                "sequence": 0
+              },
+              {
+                "templateId": "delivery-bay-basic",
+                "origin": {
+                  "x": 12,
+                  "y": 5
+                },
+                "mirrorX": false,
+                "sequence": 1
+              },
+              {
+                "templateId": "holding-cell-basic",
+                "origin": {
+                  "x": 20,
+                  "y": 5
+                },
+                "mirrorX": false,
+                "quarterTurns": 1,
+                "sequence": 2
+              }
+            ]
+          },
+          "incidents": {
+            "log": [],
+            "sectorRisk": [
+              [
+                "security-sector.prison",
+                {
+                  "latestScore": 0,
+                  "consecutiveHotSamples": 0
+                }
+              ]
+            ],
+            "gangs": {
+              "definitions": [
+                {
+                  "id": "gang.alpha",
+                  "territorySectorIds": [
+                    "security-sector.prison"
+                  ]
+                },
+                {
+                  "id": "gang.beta",
+                  "territorySectorIds": [
+                    "security-sector.prison"
+                  ]
+                }
+              ],
+              "members": [],
+              "reputation": [
+                [
+                  "gang.alpha",
+                  0.5
+                ],
+                [
+                  "gang.beta",
+                  0.5
+                ]
+              ],
+              "grudges": []
+            },
+            "tunnels": [],
+            "watchedSectorIds": [
+              "security-sector.prison"
+            ],
+            "trigger": {
+              "metrics": {
+                "incidentsTriggered": 0,
+                "riotsTriggered": 0,
+                "retaliationsTriggered": 0
+              },
+              "sequence": 0
+            },
+            "response": {
+              "metrics": {
+                "incidentsResolved": 0,
+                "incidentsLapsed": 0,
+                "respondersDispatched": 0,
+                "routeFailures": 0
+              }
+            }
+          }
+        },
+        "identity": {
+          "version": 1,
+          "poolId": "placeholder.v1",
+          "entries": []
+        }
+      }
+    }
+  }
+}

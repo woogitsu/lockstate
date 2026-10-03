@@ -1,0 +1,118 @@
+{
+  "frozen": "5008b18920edce057bd4d21446ddfcac1ac8586e",
+  "runs": [
+    {
+      "name": "lockstate-bench-toilet-numeric-negative-20261003",
+      "stats": {
+        "startTime": "2026-10-03T09:24:34.166Z",
+        "duration": 235252.324,
+        "expected": 2,
+        "skipped": 2,
+        "unexpected": 4,
+        "flaky": 0
+      },
+      "globalErrors": []
+    },
+    {
+      "name": "lockstate-bench-toilet-complement-negative-20261003",
+      "stats": {
+        "startTime": "2026-10-03T09:28:30.046Z",
+        "duration": 190634.652,
+        "expected": 2,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "globalErrors": []
+    },
+    {
+      "name": "lockstate-bench-toilet-numeric-restored-eight-20261003",
+      "stats": {
+        "startTime": "2026-10-03T09:31:49.093Z",
+        "duration": 277086.422,
+        "expected": 8,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "globalErrors": []
+    }
+  ],
+  "restoration": {
+    "branch": "codex/integrate-bench-gameplay-20261003",
+    "buildBefore": {
+      "worker-CI5uwrgr.js": {
+        "bytes": 442115,
+        "sha256": "3d2f98b8514d20492636e9e1579109557c39325ae6b37cbc314294172e92f07b"
+      },
+      "index-ClnjsNGm.js": {
+        "bytes": 1932422,
+        "sha256": "2b7891abc62d7e6d12418eec08936f4fa9b1608a8a6cd44192190f464d5a7408"
+      }
+    },
+    "restoredExit": 0,
+    "frozen": "5008b18920edce057bd4d21446ddfcac1ac8586e",
+    "after": {
+      "src/rendering/assets/oblique-object-mapping.ts": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+      "src/ui/hud/room-template-preview.ts": "25f90ad451f43d4a62ab22fa2bc8f2cc6c70799499994669b728cd279400f2bb"
+    },
+    "buildAfter": {
+      "worker-CI5uwrgr.js": {
+        "bytes": 442115,
+        "sha256": "3d2f98b8514d20492636e9e1579109557c39325ae6b37cbc314294172e92f07b"
+      },
+      "index-ClnjsNGm.js": {
+        "bytes": 1932422,
+        "sha256": "2b7891abc62d7e6d12418eec08936f4fa9b1608a8a6cd44192190f464d5a7408"
+      }
+    },
+    "before": {
+      "src/rendering/assets/oblique-object-mapping.ts": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+      "src/ui/hud/room-template-preview.ts": "25f90ad451f43d4a62ab22fa2bc8f2cc6c70799499994669b728cd279400f2bb"
+    },
+    "complementExit": 1,
+    "negativeExit": 1
+  },
+  "archived": [
+    {
+      "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-byte-restoration-20261003.json",
+      "archived": "byte-restoration.json",
+      "sourceBytes": 2082,
+      "sourceSha256": "a75bdd630149c94da22e13090a86326ed93bc72cafa937176b985564f33ef18d",
+      "archivedBytes": 2082,
+      "archivedSha256": "a75bdd630149c94da22e13090a86326ed93bc72cafa937176b985564f33ef18d"
+    },
+    {
+      "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-consumer-controls-20261003.ps1",
+      "archived": "executed-controls.ps1.txt",
+      "sourceBytes": 6845,
+      "sourceSha256": "d2f368e0e8be8790c2c98cc1ccd6bc2b50b5730acfa5e3d2207d85477c61b189",
+      "archivedBytes": 6845,
+      "archivedSha256": "d2f368e0e8be8790c2c98cc1ccd6bc2b50b5730acfa5e3d2207d85477c61b189"
+    },
+    {
+      "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-frozen-build-20261003.txt",
+      "archived": "frozen-build.txt",
+      "sourceBytes": 4854,
+      "sourceSha256": "79df08cafdfb6ffeb965e53dc1f7abae5c036f9898f26fa2e89d8b8c0419240a",
+      "archivedBytes": 2450,
+      "archivedSha256": "a3339b5b16a0ac4119eed589b53c963c37f74ab5747be61758edb6f8de6db016"
+    },
+    {
+      "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-build-20261003.txt",
+      "archived": "negative-build.txt",
+      "sourceBytes": 4854,
+      "sourceSha256": "4a9e1c689f9573fee449110c9e5a7acac159c823138abc54b175afbd2bad4644",
+      "archivedBytes": 2450,
+      "archivedSha256": "70fdbd4c2bf4cf02a60f43ca85701c44cbfd2f83194465509e7140cb9077dc2a"
+    },
+    {
+      "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-build-20261003.txt",
+      "archived": "restored-build.txt",
+      "sourceBytes": 4854,
+      "sourceSha256": "853a30a1b14948fdf474eeda840455c913a0f2301ac77fa8854959ecd65410f7",
+      "archivedBytes": 2450,
+      "archivedSha256": "c3da3d1d53be7a05ebb24e059edc0f79f9c411ec362837c79266777151b68f24"
+    }
+  ]
+}
