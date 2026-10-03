@@ -1,0 +1,955 @@
+{
+  "sourceSha256": "48e3457298d9d3a2cc9dcd39725ba263450bffea27df05d42fe90afc6e659c0b",
+  "canonicalDescriptorSha256": "63f40668ba3090d4ba43d0ba4f6f3b8b36f6b53b3cfb12a08fe8282488f8c7be",
+  "productionSceneSha256": "d461926ee16903ca9b430dd08f6cb649b55801cc4472449b22ecf7b51227949e",
+  "actualScaleExpression": "TILE_SIZE_PX * this.pose.zoom / catalog.nominalPixelsPerTile",
+  "tileSizePx": 64,
+  "actualScaleByZoom": [
+    {
+      "zoom": 0.5,
+      "actualImageScale": 0.5
+    },
+    {
+      "zoom": 1,
+      "actualImageScale": 1
+    },
+    {
+      "zoom": 1.25,
+      "actualImageScale": 1.25
+    },
+    {
+      "zoom": 2,
+      "actualImageScale": 2
+    }
+  ],
+  "configuredRoleCameraIsPublishedCanonicalProducer": false,
+  "historicalPublishedCamera": {
+    "rootScale": 0.5,
+    "orthoScale": 8,
+    "pixelsPerUnscaledSourceUnit": 32,
+    "effectiveWorldTilesPerSourceUnit": 0.5,
+    "bodyHeightTiles": 1.7125000227242708
+  },
+  "pixelsPerBlenderSourceUnit": 33.03225806451613,
+  "effectiveWorldTilesPerSourceUnit": 0.5161290322580645,
+  "effectiveGeometricBodyHeightTiles": 1.7677419589411827,
+  "geometricCoordinateTransform": {
+    "worldX": "sourceX * 512/15.5",
+    "worldY": "-sourceY * 512/15.5",
+    "worldZ": "sourceZ * 512/15.5"
+  },
+  "actualProductionHeadingCases": [
+    {
+      "worldFacing": "south",
+      "cameraYawDegrees": 0,
+      "actualAssetYawDegrees": 0
+    },
+    {
+      "worldFacing": "south",
+      "cameraYawDegrees": 90,
+      "actualAssetYawDegrees": 90
+    },
+    {
+      "worldFacing": "east",
+      "cameraYawDegrees": 0,
+      "actualAssetYawDegrees": -90
+    },
+    {
+      "worldFacing": "east",
+      "cameraYawDegrees": 90,
+      "actualAssetYawDegrees": 0
+    },
+    {
+      "worldFacing": "north",
+      "cameraYawDegrees": 0,
+      "actualAssetYawDegrees": -180
+    },
+    {
+      "worldFacing": "north",
+      "cameraYawDegrees": 90,
+      "actualAssetYawDegrees": -90
+    },
+    {
+      "worldFacing": "west",
+      "cameraYawDegrees": 0,
+      "actualAssetYawDegrees": 90
+    },
+    {
+      "worldFacing": "west",
+      "cameraYawDegrees": 90,
+      "actualAssetYawDegrees": 180
+    }
+  ],
+  "actual72ProjectionCases": [
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000024610950106307428,
+      "maximumFrontBackMarkerErrorPx": 0.000034455330137461715,
+      "geometricBoundsAtZoom1": [
+        236.41187114100302,
+        152.0987039558574,
+        275.588128858997,
+        257.20720130186385
+      ]
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000024610950106307428,
+      "maximumFrontBackMarkerErrorPx": 0.00002264207410007657,
+      "geometricBoundsAtZoom1": [
+        236.41187114100302,
+        172.8886453979021,
+        275.588128858997,
+        258.8238655631744
+      ]
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000024610950106307428,
+      "maximumFrontBackMarkerErrorPx": 0.00001957768878924071,
+      "geometricBoundsAtZoom1": [
+        236.41187114100302,
+        202.50297117935185,
+        275.588128858997,
+        260.3227861141489
+      ]
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.00002883455945834612,
+      "maximumFrontBackMarkerErrorPx": 0.00004008140439282215,
+      "geometricBoundsAtZoom1": [
+        236.88618637540148,
+        152.0632843731217,
+        275.11381362459855,
+        258.46140195131306
+      ]
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.00001694180770073217,
+      "maximumFrontBackMarkerErrorPx": 0.00002161838483516476,
+      "geometricBoundsAtZoom1": [
+        236.88618637540148,
+        172.82590107252042,
+        275.11381362459855,
+        260.92234059053294
+      ]
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.00001694180770073217,
+      "maximumFrontBackMarkerErrorPx": 0.00001884617793734833,
+      "geometricBoundsAtZoom1": [
+        236.88618637540148,
+        202.10318360642685,
+        275.11381362459855,
+        262.99820005584405
+      ]
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000019943793347465544,
+      "maximumFrontBackMarkerErrorPx": 0.0000265743674958685,
+      "geometricBoundsAtZoom1": [
+        238.28211506597228,
+        151.96128882568155,
+        273.897912759586,
+        259.48650043238325
+      ]
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000014700453561999893,
+      "maximumFrontBackMarkerErrorPx": 0.00001467634004370666,
+      "geometricBoundsAtZoom1": [
+        238.28211506597228,
+        172.64573613600044,
+        273.897912759586,
+        262.7182904478642
+      ]
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000012986059545028183,
+      "maximumFrontBackMarkerErrorPx": 0.000010628375946453161,
+      "geometricBoundsAtZoom1": [
+        238.28211506597228,
+        201.60631025612795,
+        273.897912759586,
+        265.28776502148173
+      ]
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000012913896114241652,
+      "maximumFrontBackMarkerErrorPx": 0.000013002034336295765,
+      "geometricBoundsAtZoom1": [
+        240.51901890694035,
+        151.8047214773337,
+        274.4732795154586,
+        260.23646075521106
+      ]
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000012913896114241652,
+      "maximumFrontBackMarkerErrorPx": 0.00001210777278970454,
+      "geometricBoundsAtZoom1": [
+        240.51901890694035,
+        172.37078229482705,
+        274.4732795154586,
+        264.0241198234082
+      ]
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000012913896114241652,
+      "maximumFrontBackMarkerErrorPx": 0.000013620402057767933,
+      "geometricBoundsAtZoom1": [
+        240.51901890694035,
+        201.763357156671,
+        274.4732795154586,
+        266.914743409654
+      ]
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000022292164146620053,
+      "maximumFrontBackMarkerErrorPx": 0.000020629597571542035,
+      "geometricBoundsAtZoom1": [
+        241.8694168382989,
+        151.6111550514148,
+        273.9583657980235,
+        260.6872863450939
+      ]
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000022292164146620053,
+      "maximumFrontBackMarkerErrorPx": 0.000019817755912754365,
+      "geometricBoundsAtZoom1": [
+        241.8694168382989,
+        172.0339239603993,
+        273.9583657980235,
+        264.727394280276
+      ]
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000018006532343406434,
+      "maximumFrontBackMarkerErrorPx": 0.000014841113568309083,
+      "geometricBoundsAtZoom1": [
+        241.8694168382989,
+        201.9222842395614,
+        273.9583657980235,
+        267.862858223233
+      ]
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000015332971088355407,
+      "maximumFrontBackMarkerErrorPx": 0.00002054605062085102,
+      "geometricBoundsAtZoom1": [
+        243.52171541618193,
+        151.4006839090615,
+        272.2196198251586,
+        260.7811422011757
+      ]
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000015184607036644593,
+      "maximumFrontBackMarkerErrorPx": 0.000013744076909461,
+      "geometricBoundsAtZoom1": [
+        243.52171541618193,
+        171.67226221464506,
+        272.2196198251586,
+        264.8036306571597
+      ]
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000015332971088355407,
+      "maximumFrontBackMarkerErrorPx": 0.000013744076909461,
+      "geometricBoundsAtZoom1": [
+        243.52171541618193,
+        201.4510743123894,
+        272.2196198251586,
+        267.97289907545905
+      ]
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000014284976771250513,
+      "maximumFrontBackMarkerErrorPx": 0.000016154266717194332,
+      "geometricBoundsAtZoom1": [
+        245.00025792275704,
+        151.19270499054744,
+        269.54322568831907,
+        260.48780920135135
+      ]
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000013782132043616002,
+      "maximumFrontBackMarkerErrorPx": 0.0000167807193633962,
+      "geometricBoundsAtZoom1": [
+        245.00025792275704,
+        171.32079916573807,
+        269.54322568831907,
+        264.31283844087625
+      ]
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000012797694068922283,
+      "maximumFrontBackMarkerErrorPx": 0.000021577337435019217,
+      "geometricBoundsAtZoom1": [
+        245.00025792275704,
+        200.99779508266693,
+        269.54322568831907,
+        267.3580729364126
+      ]
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000014929815733921714,
+      "maximumFrontBackMarkerErrorPx": 0.000022184082780540848,
+      "geometricBoundsAtZoom1": [
+        243.52171541618193,
+        151.00324037530586,
+        272.2196200799499,
+        261.6482915897118
+      ]
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000014929815733921714,
+      "maximumFrontBackMarkerErrorPx": 0.000016125736010508263,
+      "geometricBoundsAtZoom1": [
+        243.52171541618193,
+        171.00727671046968,
+        272.2196200799499,
+        266.25450768797157
+      ]
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000014929815733921714,
+      "maximumFrontBackMarkerErrorPx": 0.000018538118354172184,
+      "geometricBoundsAtZoom1": [
+        243.52171541618193,
+        200.5987539037386,
+        272.2196200799499,
+        269.8325073237587
+      ]
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000022784383133966912,
+      "maximumFrontBackMarkerErrorPx": 0.000014862277225802245,
+      "geometricBoundsAtZoom1": [
+        241.8694168382989,
+        150.84335310392245,
+        273.9583662902425,
+        262.3624905325605
+      ]
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000007733194991033088,
+      "maximumFrontBackMarkerErrorPx": 0.000014862277225802245,
+      "geometricBoundsAtZoom1": [
+        241.8694168382989,
+        170.7492707022304,
+        273.9583662902425,
+        267.5302739168614
+      ]
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000007733194991033088,
+      "maximumFrontBackMarkerErrorPx": 0.00001552786810066209,
+      "geometricBoundsAtZoom1": [
+        241.8694168382989,
+        200.27572776110878,
+        273.9583662902425,
+        271.4553455428638
+      ]
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000017111463535002258,
+      "maximumFrontBackMarkerErrorPx": 0.000013787237634232952,
+      "geometricBoundsAtZoom1": [
+        240.51901890694035,
+        150.7188854764271,
+        274.4732795154586,
+        262.6055572483133
+      ]
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000012913896114241652,
+      "maximumFrontBackMarkerErrorPx": 0.000010637434172622307,
+      "geometricBoundsAtZoom1": [
+        240.51901890694035,
+        170.5540079880683,
+        274.4732795154586,
+        267.9879905434541
+      ]
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000013297669283929281,
+      "maximumFrontBackMarkerErrorPx": 0.000016574004604308357,
+      "geometricBoundsAtZoom1": [
+        240.51901890694035,
+        200.03592429819196,
+        274.4732795154586,
+        271.99528699529947
+      ]
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000008060992570335657,
+      "maximumFrontBackMarkerErrorPx": 0.000027175083459951566,
+      "geometricBoundsAtZoom1": [
+        238.28211506597228,
+        150.63141675239882,
+        273.897912759586,
+        262.38803945088443
+      ]
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000010573784777534456,
+      "maximumFrontBackMarkerErrorPx": 0.000014081397125664807,
+      "geometricBoundsAtZoom1": [
+        238.28211506597228,
+        170.42065097061095,
+        273.897912759586,
+        267.5730210183353
+      ]
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000021117637970746728,
+      "maximumFrontBackMarkerErrorPx": 0.000014081397125664807,
+      "geometricBoundsAtZoom1": [
+        238.28211506597228,
+        199.87546716361203,
+        273.897912759586,
+        271.5101350484517
+      ]
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000014043718238099245,
+      "maximumFrontBackMarkerErrorPx": 0.00002176122796981872,
+      "geometricBoundsAtZoom1": [
+        236.88618637540148,
+        150.58000471107326,
+        275.11381362459855,
+        261.6976483097974
+      ]
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.00001357577042426783,
+      "maximumFrontBackMarkerErrorPx": 0.00001665061782318844,
+      "geometricBoundsAtZoom1": [
+        236.88618637540148,
+        170.34414172083282,
+        275.11381362459855,
+        266.33708923881585
+      ]
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.00001357577042426783,
+      "maximumFrontBackMarkerErrorPx": 0.00001609914102118637,
+      "geometricBoundsAtZoom1": [
+        236.88618637540148,
+        199.78506603644914,
+        275.11381362459855,
+        269.9383522897532
+      ]
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000010082669120947685,
+      "maximumFrontBackMarkerErrorPx": 0.00001467479563643792,
+      "geometricBoundsAtZoom1": [
+        236.41187114100302,
+        150.56310026889338,
+        275.588128858997,
+        260.55760995130015
+      ]
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000005906628018692572,
+      "maximumFrontBackMarkerErrorPx": 0.000018754131360765314,
+      "geometricBoundsAtZoom1": [
+        236.41187114100302,
+        170.31933835948718,
+        275.588128858997,
+        264.4296258680049
+      ]
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000022405396578051295,
+      "maximumFrontBackMarkerErrorPx": 0.000023588411153241395,
+      "geometricBoundsAtZoom1": [
+        236.41187114100302,
+        199.75608111022842,
+        275.588128858997,
+        267.50776064940015
+      ]
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.00001694180770073217,
+      "maximumFrontBackMarkerErrorPx": 0.000021384349878417197,
+      "geometricBoundsAtZoom1": [
+        236.88618637540148,
+        150.58000471107326,
+        275.11381362459855,
+        261.6976481944259
+      ]
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.00001357577042426783,
+      "maximumFrontBackMarkerErrorPx": 0.000016020041528008733,
+      "geometricBoundsAtZoom1": [
+        236.88618637540148,
+        170.34414172083282,
+        275.11381362459855,
+        266.3370892449548
+      ]
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.00001357577042426783,
+      "maximumFrontBackMarkerErrorPx": 0.000014639969748486692,
+      "geometricBoundsAtZoom1": [
+        236.88618637540148,
+        199.78506603644914,
+        275.11381362459855,
+        269.93835252067254
+      ]
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000010573784777534456,
+      "maximumFrontBackMarkerErrorPx": 0.00002476917057947503,
+      "geometricBoundsAtZoom1": [
+        238.102087240414,
+        150.63141675239882,
+        273.7178849340277,
+        262.3880394358542
+      ]
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000010573784777534456,
+      "maximumFrontBackMarkerErrorPx": 0.000013850430718775897,
+      "geometricBoundsAtZoom1": [
+        238.102087240414,
+        170.42065097061095,
+        273.7178849340277,
+        267.57302127937385
+      ]
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000021117637970746728,
+      "maximumFrontBackMarkerErrorPx": 0.00001146275516816786,
+      "geometricBoundsAtZoom1": [
+        238.102087240414,
+        199.87546716361203,
+        273.7178849340277,
+        271.5101354945536
+      ]
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000017111463535002258,
+      "maximumFrontBackMarkerErrorPx": 0.000014427499365865515,
+      "geometricBoundsAtZoom1": [
+        237.52672048454139,
+        150.7188854764271,
+        271.48098109305965,
+        262.60555743097353
+      ]
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000008125212957565964,
+      "maximumFrontBackMarkerErrorPx": 0.000016090078759134485,
+      "geometricBoundsAtZoom1": [
+        237.52672048454139,
+        170.5540079880683,
+        271.48098109305965,
+        267.98799094866024
+      ]
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000012913896114241652,
+      "maximumFrontBackMarkerErrorPx": 0.000016090078759134485,
+      "geometricBoundsAtZoom1": [
+        237.52672048454139,
+        200.03592429819196,
+        271.48098109305965,
+        271.99528762618286
+      ]
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000012381945737161004,
+      "maximumFrontBackMarkerErrorPx": 0.000014841113568309083,
+      "geometricBoundsAtZoom1": [
+        238.04163420197648,
+        150.84335310392245,
+        270.1305831617011,
+        262.3624906698121
+      ]
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000007033375084120053,
+      "maximumFrontBackMarkerErrorPx": 0.000013847483728568477,
+      "geometricBoundsAtZoom1": [
+        238.04163420197648,
+        170.7492707022304,
+        270.1305831617011,
+        267.5302744326912
+      ]
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000007966444570683962,
+      "maximumFrontBackMarkerErrorPx": 0.00001282351897202716,
+      "geometricBoundsAtZoom1": [
+        238.04163420197648,
+        200.27572776110878,
+        270.1305831617011,
+        271.45534549085863
+      ]
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000015184607036644593,
+      "maximumFrontBackMarkerErrorPx": 0.000022189228843672026,
+      "geometricBoundsAtZoom1": [
+        239.7803801748414,
+        151.00324037530586,
+        268.47828458381804,
+        261.64829176852606
+      ]
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000013526875932257099,
+      "maximumFrontBackMarkerErrorPx": 0.000012166842736860417,
+      "geometricBoundsAtZoom1": [
+        239.7803801748414,
+        171.00727671046968,
+        268.47828458381804,
+        266.25450818632953
+      ]
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000013099443037845049,
+      "maximumFrontBackMarkerErrorPx": 0.000018549154162883497,
+      "geometricBoundsAtZoom1": [
+        239.7803801748414,
+        200.5987539037386,
+        268.47828458381804,
+        269.8325073237587
+      ]
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000014284976771250513,
+      "maximumFrontBackMarkerErrorPx": 0.000020816555434066686,
+      "geometricBoundsAtZoom1": [
+        242.45677431168096,
+        151.19270499054744,
+        266.99974207724296,
+        260.48780920135135
+      ]
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000013782132043616002,
+      "maximumFrontBackMarkerErrorPx": 0.00001458279467669854,
+      "geometricBoundsAtZoom1": [
+        242.45677431168096,
+        171.32079916573807,
+        266.99974207724296,
+        264.31283844087625
+      ]
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000013782132043616002,
+      "maximumFrontBackMarkerErrorPx": 0.00002158876250746289,
+      "geometricBoundsAtZoom1": [
+        242.45677431168096,
+        200.99779508266693,
+        266.99974207724296,
+        267.3580729364126
+      ]
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000013099443037845049,
+      "maximumFrontBackMarkerErrorPx": 0.000013058612296390493,
+      "geometricBoundsAtZoom1": [
+        239.7803799200501,
+        151.4006839090615,
+        268.47828458381804,
+        260.78114202236145
+      ]
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000013099443037845049,
+      "maximumFrontBackMarkerErrorPx": 0.000018061744071928842,
+      "geometricBoundsAtZoom1": [
+        239.7803799200501,
+        171.67226221464506,
+        268.47828458381804,
+        264.80363015880175
+      ]
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000013099443037845049,
+      "maximumFrontBackMarkerErrorPx": 0.000013058612296390493,
+      "geometricBoundsAtZoom1": [
+        239.7803799200501,
+        201.4510743123894,
+        268.47828458381804,
+        267.97289907545905
+      ]
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000032072673889160797,
+      "maximumFrontBackMarkerErrorPx": 0.000014862277225802245,
+      "geometricBoundsAtZoom1": [
+        238.0416337097575,
+        151.6111550514148,
+        270.1305831617011,
+        260.68728620784236
+      ]
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000011586475693547982,
+      "maximumFrontBackMarkerErrorPx": 0.000017707806478028942,
+      "geometricBoundsAtZoom1": [
+        238.0416337097575,
+        172.0339239603993,
+        270.1305831617011,
+        264.72739376444616
+      ]
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000018006532343406434,
+      "maximumFrontBackMarkerErrorPx": 0.000012754093518196896,
+      "geometricBoundsAtZoom1": [
+        238.0416337097575,
+        201.9222842395614,
+        270.1305831617011,
+        267.8628582752382
+      ]
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000006455768470914336,
+      "maximumFrontBackMarkerErrorPx": 0.000016187866037853382,
+      "geometricBoundsAtZoom1": [
+        237.52672048454139,
+        151.8047214773337,
+        271.48098109305965,
+        260.2364605725508
+      ]
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000006455768470914336,
+      "maximumFrontBackMarkerErrorPx": 0.000011998336844953883,
+      "geometricBoundsAtZoom1": [
+        237.52672048454139,
+        172.37078229482705,
+        271.48098109305965,
+        264.0241194182021
+      ]
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000008911664366451078,
+      "maximumFrontBackMarkerErrorPx": 0.000013612323300549178,
+      "geometricBoundsAtZoom1": [
+        237.52672048454139,
+        201.76335778755438,
+        271.48098109305965,
+        266.91474277877063
+      ]
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000021200374931140686,
+      "maximumFrontBackMarkerErrorPx": 0.000032145777538516995,
+      "geometricBoundsAtZoom1": [
+        238.102087240414,
+        151.96128882568155,
+        273.7178849340277,
+        259.48650044741345
+      ]
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000019943793347465544,
+      "maximumFrontBackMarkerErrorPx": 0.000013458160168511313,
+      "geometricBoundsAtZoom1": [
+        238.102087240414,
+        172.64573613600044,
+        273.7178849340277,
+        262.71829018682564
+      ]
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.000019943793347465544,
+      "maximumFrontBackMarkerErrorPx": 0.000012189732643719253,
+      "geometricBoundsAtZoom1": [
+        238.102087240414,
+        201.60631102879913,
+        273.7178849340277,
+        265.2877645753798
+      ]
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 25,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.00003220059679165388,
+      "maximumFrontBackMarkerErrorPx": 0.00003638047269305389,
+      "geometricBoundsAtZoom1": [
+        236.88618637540148,
+        152.0632843731217,
+        275.11381362459855,
+        258.46140206668457
+      ]
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 45,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.00001694180772915388,
+      "maximumFrontBackMarkerErrorPx": 0.00002112168363055389,
+      "geometricBoundsAtZoom1": [
+        236.88618637540148,
+        172.82590107252042,
+        275.11381362459855,
+        260.92234058439396
+      ]
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 65,
+      "maximumActualBlenderVsProductionProjectionErrorPx": 0.00001694180772915388,
+      "maximumFrontBackMarkerErrorPx": 0.00002112168363055389,
+      "geometricBoundsAtZoom1": [
+        236.88618637540148,
+        202.10318360642685,
+        275.11381362459855,
+        262.9981998249247
+      ]
+    }
+  ],
+  "graphicsFallbackHeadHeightTiles": 0.8,
+  "graphicsFallbackIsAuthoredSpriteHeight": false,
+  "nativePixelsMeasured": false,
+  "productionSourcesChanged": false,
+  "browserStarted": false,
+  "serverStarted": false
+}

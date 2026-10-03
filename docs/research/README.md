@@ -482,3 +482,4 @@ and it stopped one step short of its own consequence.
   summariser, the incident alert projection and the whole tunnel registry with no
   caller in `src/` — the same class as issue #287's two uncalled capabilities,
   three layers deeper.
+| [2026-10-03 Prisoner historical actor camera audit](2026-10-03-prisoner-legacy-camera-audit/README.md) | Is the existing authored actor too small or wrongly oriented, and can the producer be reproduced? | All48parts/eight graphs/eight poses unchanged; eighteen historical rasters pixel-exact and actual scale/projection checked; native pending. |
