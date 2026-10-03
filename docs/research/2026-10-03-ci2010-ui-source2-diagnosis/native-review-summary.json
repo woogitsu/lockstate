@@ -1,0 +1,198 @@
+{
+  "builtHead": "129a861c14fa36744cdbbefa59faa109d6983fb2",
+  "sourceBase": "345a7d83de4909cd59d9cfb988f71baf471e5325",
+  "productionLayoutChanged": false,
+  "quoteSourceCheckpoint": "83b6601b6e",
+  "CloudflareBuildVerifier": "GREEN",
+  "compiledFiles": {
+    "index-CwNfJqej.js": "d371ba2be5c7a60cf665692cf76029d15f180ae72337d15364647abbec00caa3",
+    "index-5ZA72Oh0.css": "d8b20ae31e777325ca042bdd0418d9295c0102b14f4d138fc78387b1cabfc65d",
+    "worker--ZeLeAEZ.js": "dccb9e10c57c552e5afdc439b56ef043cdcc5fb7095ab9b25f4afd398e87d6de"
+  },
+  "actualWorkers": [
+    "http://127.0.0.1:5369/assets/worker--ZeLeAEZ.js"
+  ],
+  "originalMinimap200": {
+    "result": "RED unchanged assertion",
+    "geometry": {
+      "corner": [
+        {
+          "height": 528,
+          "clientHeight": 528,
+          "hidden": false,
+          "display": "flex",
+          "centreHitOwned": false
+        }
+      ],
+      "surface": [
+        {
+          "height": 110,
+          "clientHeight": 108,
+          "hidden": false,
+          "display": "flex",
+          "centreHitOwned": true
+        }
+      ],
+      "list": [
+        {
+          "height": 0,
+          "clientHeight": 0,
+          "hidden": false,
+          "display": "flex",
+          "centreHitOwned": false
+        }
+      ],
+      "emptyRow": [
+        {
+          "height": 67,
+          "clientHeight": 67,
+          "hidden": false,
+          "display": "flex",
+          "centreHitOwned": false
+        }
+      ],
+      "camera": []
+    }
+  },
+  "disclosure": {
+    "attempt": 2,
+    "result": "GREEN 20.3s",
+    "geometry": {
+      "corner": [
+        {
+          "height": 511,
+          "clientHeight": 511,
+          "hidden": false,
+          "display": "flex",
+          "centreHitOwned": true
+        }
+      ],
+      "surface": [
+        {
+          "height": 110,
+          "clientHeight": 108,
+          "hidden": false,
+          "display": "flex",
+          "centreHitOwned": true
+        }
+      ],
+      "list": [
+        {
+          "height": 67,
+          "clientHeight": 67,
+          "hidden": false,
+          "display": "flex",
+          "centreHitOwned": true
+        }
+      ],
+      "emptyRow": [
+        {
+          "height": 67,
+          "clientHeight": 67,
+          "hidden": false,
+          "display": "flex",
+          "centreHitOwned": true
+        }
+      ],
+      "camera": [
+        {
+          "height": 258,
+          "clientHeight": 256,
+          "hidden": false,
+          "display": "flex",
+          "centreHitOwned": true
+        }
+      ]
+    },
+    "note": "Before shared preview ResizeObserver addition; screenshot/floor checks really executed."
+  },
+  "toolbox": {
+    "attempt": 4,
+    "result": "GREEN 17.4s",
+    "geometry": {
+      "corner": [
+        {
+          "height": 511,
+          "clientHeight": 511,
+          "hidden": false,
+          "display": "flex",
+          "centreHitOwned": true
+        }
+      ],
+      "surface": [
+        {
+          "height": 110,
+          "clientHeight": 108,
+          "hidden": false,
+          "display": "flex",
+          "centreHitOwned": true
+        }
+      ],
+      "list": [
+        {
+          "height": 67,
+          "clientHeight": 67,
+          "hidden": false,
+          "display": "flex",
+          "centreHitOwned": true
+        }
+      ],
+      "emptyRow": [
+        {
+          "height": 67,
+          "clientHeight": 67,
+          "hidden": false,
+          "display": "flex",
+          "centreHitOwned": true
+        }
+      ],
+      "camera": [
+        {
+          "height": 258,
+          "clientHeight": 256,
+          "hidden": false,
+          "display": "flex",
+          "centreHitOwned": true
+        }
+      ]
+    },
+    "note": "After ResizeObserver of actual strip/navigation/inspector boxes; only toolbox rerun."
+  },
+  "originalAttemptFailures": {
+    "attempt1": "2 RED: CSP blocked inline candidate style tag",
+    "attempt2": "disclosure GREEN, toolbox RED centre hit",
+    "attempt3": "original minimap200 RED; toolbox200 RED zoom-out centre hit hud-camera-pose"
+  },
+  "workers": 1,
+  "retries": 0,
+  "budgetSeconds": 60,
+  "ownerLayoutChoice": "pending",
+  "productAcceptance": false,
+  "leaseReleased": true,
+  "noFurtherBrowserRuns": true,
+  "evidenceHashes": {
+    "native-comparison/disclosure-fullhd-100-angled-controls.png": "5891ad40d3e34b8efe5bcdb1edc38545676a191296148870ae487f8537102e33",
+    "native-comparison/disclosure-fullhd-200-angled-controls.json": "87e53ceb70c4da7bcf0e836745fdd2894b2ab11c60c6d9e355cbdd3388fc1bb6",
+    "native-comparison/disclosure-fullhd-200-angled-controls.png": "7cd9df221c01e2f7cd21fd61f53ecc9dee479d50a4fb04447f4b9ffb77f23fa2",
+    "native-comparison/disclosure-fullhd-200-build-expanded.png": "36817bf4b704325e541b31f29f340272f34b68e8410049a14ffe9e6f8877507c",
+    "native-comparison/disclosure-fullhd-200-closed.png": "318abaf23de2f3220f6691aeb170c04f3a460e3a5cf91829576625fc0f7602d8",
+    "native-comparison/disclosure-original-observer.txt": "397d8a44397735f86f7ced7c6babb72fa0a8279474bc9ada8dc74ec757050d34",
+    "native-comparison/original200-overview.json": "08083c8bddd46ccb24d898e380091d141b5384b974d160cc1d4e47127ee4592b",
+    "native-comparison/original200-overview.png": "2bcceef6ebc8162c4089da7c4119975adee8afc181058a3203a7f64907e53d7d",
+    "native-comparison/toolbox-fullhd-100-angled-controls.png": "8a8b99ecca1fbdd532f8b917c69b85eb61dc24ef4f9e5a4948d8b713a95b4305",
+    "native-comparison/toolbox-fullhd-200-angled-controls.json": "cb7163405aebb85329291680bd7cc9ff82df6d9b30e62bda5208ab3f72a87f82",
+    "native-comparison/toolbox-fullhd-200-angled-controls.png": "3c5814cc525da2fe05754518b63dff6fbeb5fb5575f40b200c27ec1a58fa9529",
+    "native-comparison/toolbox-original-observer.txt": "397d8a44397735f86f7ced7c6babb72fa0a8279474bc9ada8dc74ec757050d34",
+    "native-review-build.txt": "d8f0ff9852304768eb12e0445d9d1557ac3c45d286414c7ec2942aa1dab29eb7",
+    "native-review-attempt1.txt": "ba18b848ae3eef9c25d074f08f067bfc06e1df42c7444777fc66e8a8d3a1b22e",
+    "native-review-attempt2.txt": "d36ced33905cd45a77d170f88f89991f7acfb1cf973f2855524be71c36b3dacb",
+    "native-review-attempt3.txt": "582ee5e15c4cd3bb07d5d2bfd440fbdf418c800d75afa51d4e6c514ac1bd1288",
+    "native-review-attempt4.txt": "a3ace420c2aa5a5642122058d7e964723e39618071668a6e658c95c1b3c0aba1",
+    "camera-variant-native.ts": "c9034a98185d5e0bd16b75079adfa841c6da45b60f92ce17e662dd36e9292a9a",
+    "camera-variant-native-recipe.ts": "9d0efba2c79e0e12041ea9f4909b8547e19f89ed315c96a49e177bb77c912aed",
+    "camera-variant-review.spec.ts": "260a92e266a8d89abc79e4972ac8de2cb2e79d34cfd862de51320dba5221c0a7",
+    "playwright.review.config.ts": "3132bda27ec681517977bc422eea07a8d2419221de4956fad657eaa7b2b7a0e6"
+  },
+  "strictTypesExit": 0,
+  "researchIndexTests": 5
+}

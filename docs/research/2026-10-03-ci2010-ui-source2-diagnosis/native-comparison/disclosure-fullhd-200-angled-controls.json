@@ -1,0 +1,1779 @@
+{
+  "viewport": {
+    "width": 1920,
+    "height": 1080,
+    "devicePixelRatio": 1
+  },
+  "uiScale": "2",
+  "enlarged": "true",
+  "middleRowBudget": {
+    "placement": "rail",
+    "sections": 6,
+    "rowHeight": 821,
+    "columnHeight": 624,
+    "columnBottom": 987,
+    "cornerTop": 569,
+    "cornerHeight": 511,
+    "cornerLeft": 280,
+    "clearance": -418,
+    "tallestTab": 104,
+    "stripHeight": 259
+  },
+  "boxes": [
+    {
+      "selector": ".hud",
+      "nodes": [
+        {
+          "tag": "DIV",
+          "classes": "hud",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 1920,
+            "height": 1080,
+            "top": 0,
+            "right": 1920,
+            "bottom": 1080,
+            "left": 0
+          },
+          "clientHeight": 1080,
+          "scrollHeight": 1080,
+          "display": "grid",
+          "visibility": "visible",
+          "height": "1080px",
+          "minHeight": "0px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "0px",
+          "borderBottom": "0px",
+          "centreHit": {
+            "tag": "SECTION",
+            "classes": "camera-review-toolbox"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 1080
+        }
+      ]
+    },
+    {
+      "selector": ".hud__tabs",
+      "nodes": [
+        {
+          "tag": "NAV",
+          "classes": "hud__tabs",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 0,
+            "y": 259,
+            "width": 256,
+            "height": 821,
+            "top": 259,
+            "right": 256,
+            "bottom": 1080,
+            "left": 0
+          },
+          "clientHeight": 821,
+          "scrollHeight": 821,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "821px",
+          "minHeight": "0px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "8px",
+          "marginBottom": "0px",
+          "paddingTop": "104px",
+          "paddingBottom": "24px",
+          "borderTop": "0px",
+          "borderBottom": "0px",
+          "centreHit": {
+            "tag": "BUTTON",
+            "classes": "ui-tab"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 821
+        }
+      ]
+    },
+    {
+      "selector": ".hud-tabs__inner",
+      "nodes": [
+        {
+          "tag": "DIV",
+          "classes": "hud-tabs__inner",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 8,
+            "y": 363,
+            "width": 247,
+            "height": 624,
+            "top": 363,
+            "right": 255,
+            "bottom": 987,
+            "left": 8
+          },
+          "clientHeight": 624,
+          "scrollHeight": 624,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "624px",
+          "minHeight": "0px",
+          "maxHeight": "100%",
+          "flex": "0 1 auto",
+          "overflowY": "auto",
+          "gap": "0px",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "0px",
+          "borderBottom": "0px",
+          "centreHit": {
+            "tag": "BUTTON",
+            "classes": "ui-tab"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 624
+        }
+      ]
+    },
+    {
+      "selector": ".hud-tabs__inner > .ui-tab",
+      "nodes": [
+        {
+          "tag": "BUTTON",
+          "classes": "ui-tab",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 8,
+            "y": 363,
+            "width": 247,
+            "height": 104,
+            "top": 363,
+            "right": 255,
+            "bottom": 467,
+            "left": 8
+          },
+          "clientHeight": 102,
+          "scrollHeight": 102,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "104px",
+          "minHeight": "104px",
+          "maxHeight": "none",
+          "flex": "0 0 auto",
+          "overflowY": "visible",
+          "gap": "16px",
+          "marginBottom": "0px",
+          "paddingTop": "8px",
+          "paddingBottom": "8px",
+          "borderTop": "2px",
+          "borderBottom": "0px",
+          "centreHit": {
+            "tag": "SPAN",
+            "classes": "ui-tab__label"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 104
+        },
+        {
+          "tag": "BUTTON",
+          "classes": "ui-tab",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 8,
+            "y": 467,
+            "width": 247,
+            "height": 104,
+            "top": 467,
+            "right": 255,
+            "bottom": 571,
+            "left": 8
+          },
+          "clientHeight": 103,
+          "scrollHeight": 103,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "104px",
+          "minHeight": "104px",
+          "maxHeight": "none",
+          "flex": "0 0 auto",
+          "overflowY": "visible",
+          "gap": "16px",
+          "marginBottom": "0px",
+          "paddingTop": "8px",
+          "paddingBottom": "8px",
+          "borderTop": "1px",
+          "borderBottom": "0px",
+          "centreHit": {
+            "tag": "SPAN",
+            "classes": "ui-tab__label"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 104
+        },
+        {
+          "tag": "BUTTON",
+          "classes": "ui-tab",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 8,
+            "y": 571,
+            "width": 247,
+            "height": 104,
+            "top": 571,
+            "right": 255,
+            "bottom": 675,
+            "left": 8
+          },
+          "clientHeight": 103,
+          "scrollHeight": 103,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "104px",
+          "minHeight": "104px",
+          "maxHeight": "none",
+          "flex": "0 0 auto",
+          "overflowY": "visible",
+          "gap": "16px",
+          "marginBottom": "0px",
+          "paddingTop": "8px",
+          "paddingBottom": "8px",
+          "borderTop": "1px",
+          "borderBottom": "0px",
+          "centreHit": {
+            "tag": "SPAN",
+            "classes": "ui-tab__label"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 104
+        },
+        {
+          "tag": "BUTTON",
+          "classes": "ui-tab",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 8,
+            "y": 675,
+            "width": 247,
+            "height": 104,
+            "top": 675,
+            "right": 255,
+            "bottom": 779,
+            "left": 8
+          },
+          "clientHeight": 103,
+          "scrollHeight": 103,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "104px",
+          "minHeight": "104px",
+          "maxHeight": "none",
+          "flex": "0 0 auto",
+          "overflowY": "visible",
+          "gap": "16px",
+          "marginBottom": "0px",
+          "paddingTop": "8px",
+          "paddingBottom": "8px",
+          "borderTop": "1px",
+          "borderBottom": "0px",
+          "centreHit": {
+            "tag": "SPAN",
+            "classes": "ui-tab__label"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 104
+        },
+        {
+          "tag": "BUTTON",
+          "classes": "ui-tab",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 8,
+            "y": 779,
+            "width": 247,
+            "height": 104,
+            "top": 779,
+            "right": 255,
+            "bottom": 883,
+            "left": 8
+          },
+          "clientHeight": 103,
+          "scrollHeight": 103,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "104px",
+          "minHeight": "104px",
+          "maxHeight": "none",
+          "flex": "0 0 auto",
+          "overflowY": "visible",
+          "gap": "16px",
+          "marginBottom": "0px",
+          "paddingTop": "8px",
+          "paddingBottom": "8px",
+          "borderTop": "1px",
+          "borderBottom": "0px",
+          "centreHit": {
+            "tag": "SPAN",
+            "classes": "ui-tab__label"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 104
+        },
+        {
+          "tag": "BUTTON",
+          "classes": "ui-tab",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 8,
+            "y": 883,
+            "width": 247,
+            "height": 104,
+            "top": 883,
+            "right": 255,
+            "bottom": 987,
+            "left": 8
+          },
+          "clientHeight": 103,
+          "scrollHeight": 103,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "104px",
+          "minHeight": "104px",
+          "maxHeight": "none",
+          "flex": "0 0 auto",
+          "overflowY": "visible",
+          "gap": "16px",
+          "marginBottom": "0px",
+          "paddingTop": "8px",
+          "paddingBottom": "8px",
+          "borderTop": "1px",
+          "borderBottom": "0px",
+          "centreHit": {
+            "tag": "SPAN",
+            "classes": "ui-tab__label"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 104
+        }
+      ]
+    },
+    {
+      "selector": ".hud-strip",
+      "nodes": [
+        {
+          "tag": "DIV",
+          "classes": "hud-strip",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 1920,
+            "height": 259,
+            "top": 0,
+            "right": 1920,
+            "bottom": 259,
+            "left": 0
+          },
+          "clientHeight": 258,
+          "scrollHeight": 258,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "259px",
+          "minHeight": "96px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "0px 32px",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "0px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "SPAN",
+            "classes": "ui-badge__text"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 259
+        }
+      ]
+    },
+    {
+      "selector": ".hud__corner",
+      "nodes": [
+        {
+          "tag": "DIV",
+          "classes": "hud__corner",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 280,
+            "y": 569,
+            "width": 558,
+            "height": 511,
+            "top": 569,
+            "right": 838,
+            "bottom": 1080,
+            "left": 280
+          },
+          "clientHeight": 511,
+          "scrollHeight": 511,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "511px",
+          "minHeight": "0px",
+          "maxHeight": "528px",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "8px",
+          "paddingBottom": "8px",
+          "borderTop": "0px",
+          "borderBottom": "0px",
+          "centreHit": {
+            "tag": "BUTTON",
+            "classes": "hud-minimap__surface"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 511
+        }
+      ]
+    },
+    {
+      "selector": ".hud__corner > select.hud-build__category",
+      "nodes": []
+    },
+    {
+      "selector": ".hud-camera-pan",
+      "nodes": [
+        {
+          "tag": "DIV",
+          "classes": "hud-camera-pan",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 470,
+            "y": 300,
+            "width": 400,
+            "height": 88,
+            "top": 300,
+            "right": 870,
+            "bottom": 388,
+            "left": 470
+          },
+          "clientHeight": 88,
+          "scrollHeight": 88,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "auto",
+          "maxHeight": "none",
+          "flex": "0 0 auto",
+          "overflowY": "visible",
+          "gap": "16px",
+          "marginBottom": "16px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "0px",
+          "borderBottom": "0px",
+          "centreHit": {
+            "tag": "DIV",
+            "classes": "hud-camera-pan"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 104
+        }
+      ]
+    },
+    {
+      "selector": ".hud-camera-pose",
+      "nodes": [
+        {
+          "tag": "DIV",
+          "classes": "hud-camera-pose",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 297,
+            "y": 420,
+            "width": 400,
+            "height": 88,
+            "top": 420,
+            "right": 697,
+            "bottom": 508,
+            "left": 297
+          },
+          "clientHeight": 88,
+          "scrollHeight": 88,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "auto",
+          "maxHeight": "none",
+          "flex": "0 0 auto",
+          "overflowY": "visible",
+          "gap": "16px",
+          "marginBottom": "16px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "0px",
+          "borderBottom": "0px",
+          "centreHit": {
+            "tag": "DIV",
+            "classes": "hud-camera-pose"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 104
+        }
+      ]
+    },
+    {
+      "selector": ".hud-zoom",
+      "nodes": [
+        {
+          "tag": "DIV",
+          "classes": "hud-zoom",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 288,
+            "y": 577,
+            "width": 424.828125,
+            "height": 90,
+            "top": 577,
+            "right": 712.828125,
+            "bottom": 667,
+            "left": 288
+          },
+          "clientHeight": 88,
+          "scrollHeight": 88,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "auto",
+          "maxHeight": "none",
+          "flex": "0 0 auto",
+          "overflowY": "visible",
+          "gap": "16px",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "CANVAS",
+            "classes": ""
+          },
+          "centreHitOwned": false,
+          "outerBlockHeight": 90
+        }
+      ]
+    },
+    {
+      "selector": ".hud__corner button",
+      "nodes": [
+        {
+          "tag": "BUTTON",
+          "classes": "ui-icon-button ui-icon-button--bordered hud-zoom__out",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 399.828125,
+            "y": 578,
+            "width": 88,
+            "height": 88,
+            "top": 578,
+            "right": 487.828125,
+            "bottom": 666,
+            "left": 399.828125
+          },
+          "clientHeight": 86,
+          "scrollHeight": 86,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "88px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "svg",
+            "classes": {}
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 88
+        },
+        {
+          "tag": "BUTTON",
+          "classes": "ui-icon-button ui-icon-button--bordered hud-zoom__in",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 503.828125,
+            "y": 578,
+            "width": 88,
+            "height": 88,
+            "top": 578,
+            "right": 591.828125,
+            "bottom": 666,
+            "left": 503.828125
+          },
+          "clientHeight": 86,
+          "scrollHeight": 86,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "88px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "svg",
+            "classes": {}
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 88
+        },
+        {
+          "tag": "BUTTON",
+          "classes": "ui-icon-button ui-icon-button--bordered camera-review-trigger",
+          "hidden": false,
+          "ariaExpanded": "true",
+          "rect": {
+            "x": 607.828125,
+            "y": 578,
+            "width": 88,
+            "height": 88,
+            "top": 578,
+            "right": 695.828125,
+            "bottom": 666,
+            "left": 607.828125
+          },
+          "clientHeight": 86,
+          "scrollHeight": 86,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "88px",
+          "maxHeight": "none",
+          "flex": "0 0 auto",
+          "overflowY": "visible",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "BUTTON",
+            "classes": "ui-icon-button ui-icon-button--bordered camera-review-trigger"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 88
+        },
+        {
+          "tag": "BUTTON",
+          "classes": "ui-icon-button ui-icon-button--quiet ui-panel__toggle",
+          "hidden": false,
+          "ariaExpanded": "true",
+          "rect": {
+            "x": 733,
+            "y": 668,
+            "width": 88,
+            "height": 88,
+            "top": 668,
+            "right": 821,
+            "bottom": 756,
+            "left": 733
+          },
+          "clientHeight": 86,
+          "scrollHeight": 86,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "88px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "svg",
+            "classes": {}
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 88
+        },
+        {
+          "tag": "BUTTON",
+          "classes": "hud-minimap__surface",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 305,
+            "y": 773,
+            "width": 508,
+            "height": 110,
+            "top": 773,
+            "right": 813,
+            "bottom": 883,
+            "left": 305
+          },
+          "clientHeight": 108,
+          "scrollHeight": 108,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "110px",
+          "minHeight": "0px",
+          "maxHeight": "278px",
+          "flex": "0 0 auto",
+          "overflowY": "hidden",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "24px",
+          "paddingBottom": "24px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "BUTTON",
+            "classes": "hud-minimap__surface"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 110
+        },
+        {
+          "tag": "BUTTON",
+          "classes": "ui-section__header",
+          "hidden": false,
+          "ariaExpanded": "true",
+          "rect": {
+            "x": 305,
+            "y": 884,
+            "width": 508,
+            "height": 88,
+            "top": 884,
+            "right": 813,
+            "bottom": 972,
+            "left": 305
+          },
+          "clientHeight": 88,
+          "scrollHeight": 88,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "88px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "16px",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "0px",
+          "borderBottom": "0px",
+          "centreHit": {
+            "tag": "SPAN",
+            "classes": "ui-eyebrow ui-section__eyebrow"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 88
+        }
+      ]
+    },
+    {
+      "selector": ".hud__corner select",
+      "nodes": []
+    },
+    {
+      "selector": ".camera-review-toolbox",
+      "nodes": [
+        {
+          "tag": "SECTION",
+          "classes": "camera-review-toolbox",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 280,
+            "y": 283,
+            "width": 792,
+            "height": 258,
+            "top": 283,
+            "right": 1072,
+            "bottom": 541,
+            "left": 280
+          },
+          "clientHeight": 256,
+          "scrollHeight": 256,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "258px",
+          "minHeight": "0px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "16px",
+          "marginBottom": "0px",
+          "paddingTop": "16px",
+          "paddingBottom": "16px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "SECTION",
+            "classes": "camera-review-toolbox"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 258
+        }
+      ]
+    },
+    {
+      "selector": ".camera-review-toolbox select",
+      "nodes": [
+        {
+          "tag": "SELECT",
+          "classes": "hud-build__category",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 297,
+            "y": 300,
+            "width": 157,
+            "height": 88,
+            "top": 300,
+            "right": 454,
+            "bottom": 388,
+            "left": 297
+          },
+          "clientHeight": 86,
+          "scrollHeight": 86,
+          "display": "block",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "auto",
+          "maxHeight": "none",
+          "flex": "0 0 auto",
+          "overflowY": "visible",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "SELECT",
+            "classes": "hud-build__category"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 88
+        }
+      ]
+    },
+    {
+      "selector": ".camera-review-toolbox button",
+      "nodes": [
+        {
+          "tag": "BUTTON",
+          "classes": "ui-icon-button ui-icon-button--bordered",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 470,
+            "y": 300,
+            "width": 88,
+            "height": 88,
+            "top": 300,
+            "right": 558,
+            "bottom": 388,
+            "left": 470
+          },
+          "clientHeight": 86,
+          "scrollHeight": 86,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "88px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "svg",
+            "classes": {}
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 88
+        },
+        {
+          "tag": "BUTTON",
+          "classes": "ui-icon-button ui-icon-button--bordered",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 574,
+            "y": 300,
+            "width": 88,
+            "height": 88,
+            "top": 300,
+            "right": 662,
+            "bottom": 388,
+            "left": 574
+          },
+          "clientHeight": 86,
+          "scrollHeight": 86,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "88px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "svg",
+            "classes": {}
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 88
+        },
+        {
+          "tag": "BUTTON",
+          "classes": "ui-icon-button ui-icon-button--bordered",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 678,
+            "y": 300,
+            "width": 88,
+            "height": 88,
+            "top": 300,
+            "right": 766,
+            "bottom": 388,
+            "left": 678
+          },
+          "clientHeight": 86,
+          "scrollHeight": 86,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "88px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "svg",
+            "classes": {}
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 88
+        },
+        {
+          "tag": "BUTTON",
+          "classes": "ui-icon-button ui-icon-button--bordered",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 782,
+            "y": 300,
+            "width": 88,
+            "height": 88,
+            "top": 300,
+            "right": 870,
+            "bottom": 388,
+            "left": 782
+          },
+          "clientHeight": 86,
+          "scrollHeight": 86,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "88px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "svg",
+            "classes": {}
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 88
+        },
+        {
+          "tag": "BUTTON",
+          "classes": "ui-icon-button ui-icon-button--bordered",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 297,
+            "y": 420,
+            "width": 88,
+            "height": 88,
+            "top": 420,
+            "right": 385,
+            "bottom": 508,
+            "left": 297
+          },
+          "clientHeight": 86,
+          "scrollHeight": 86,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "88px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "svg",
+            "classes": {}
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 88
+        },
+        {
+          "tag": "BUTTON",
+          "classes": "ui-icon-button ui-icon-button--bordered",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 401,
+            "y": 420,
+            "width": 88,
+            "height": 88,
+            "top": 420,
+            "right": 489,
+            "bottom": 508,
+            "left": 401
+          },
+          "clientHeight": 86,
+          "scrollHeight": 86,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "88px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "svg",
+            "classes": {}
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 88
+        },
+        {
+          "tag": "BUTTON",
+          "classes": "ui-icon-button ui-icon-button--bordered",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 505,
+            "y": 420,
+            "width": 88,
+            "height": 88,
+            "top": 420,
+            "right": 593,
+            "bottom": 508,
+            "left": 505
+          },
+          "clientHeight": 86,
+          "scrollHeight": 86,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "88px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "svg",
+            "classes": {}
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 88
+        },
+        {
+          "tag": "BUTTON",
+          "classes": "ui-icon-button ui-icon-button--bordered",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 609,
+            "y": 420,
+            "width": 88,
+            "height": 88,
+            "top": 420,
+            "right": 697,
+            "bottom": 508,
+            "left": 609
+          },
+          "clientHeight": 86,
+          "scrollHeight": 86,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "88px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "svg",
+            "classes": {}
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 88
+        }
+      ]
+    },
+    {
+      "selector": ".camera-review-trigger",
+      "nodes": [
+        {
+          "tag": "BUTTON",
+          "classes": "ui-icon-button ui-icon-button--bordered camera-review-trigger",
+          "hidden": false,
+          "ariaExpanded": "true",
+          "rect": {
+            "x": 607.828125,
+            "y": 578,
+            "width": 88,
+            "height": 88,
+            "top": 578,
+            "right": 695.828125,
+            "bottom": 666,
+            "left": 607.828125
+          },
+          "clientHeight": 86,
+          "scrollHeight": 86,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "88px",
+          "maxHeight": "none",
+          "flex": "0 0 auto",
+          "overflowY": "visible",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "BUTTON",
+            "classes": "ui-icon-button ui-icon-button--bordered camera-review-trigger"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 88
+        }
+      ]
+    },
+    {
+      "selector": ".hud-minimap",
+      "nodes": [
+        {
+          "tag": "SECTION",
+          "classes": "ui-panel hud-minimap",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 288,
+            "y": 667,
+            "width": 542,
+            "height": 405,
+            "top": 667,
+            "right": 830,
+            "bottom": 1072,
+            "left": 288
+          },
+          "clientHeight": 403,
+          "scrollHeight": 403,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "403px",
+          "minHeight": "0px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "hidden",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "BUTTON",
+            "classes": "hud-minimap__surface"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 405
+        }
+      ]
+    },
+    {
+      "selector": ".hud-minimap > .ui-panel__header",
+      "nodes": [
+        {
+          "tag": "HEADER",
+          "classes": "ui-panel__header",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 289,
+            "y": 668,
+            "width": 540,
+            "height": 89,
+            "top": 668,
+            "right": 829,
+            "bottom": 757,
+            "left": 289
+          },
+          "clientHeight": 88,
+          "scrollHeight": 88,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "88px",
+          "minHeight": "88px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "16px",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "0px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "CANVAS",
+            "classes": ""
+          },
+          "centreHitOwned": false,
+          "outerBlockHeight": 89
+        }
+      ]
+    },
+    {
+      "selector": ".hud-minimap > .ui-panel__body",
+      "nodes": [
+        {
+          "tag": "DIV",
+          "classes": "ui-panel__body",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 289,
+            "y": 757,
+            "width": 540,
+            "height": 314,
+            "top": 757,
+            "right": 829,
+            "bottom": 1071,
+            "left": 289
+          },
+          "clientHeight": 314,
+          "scrollHeight": 314,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "282px",
+          "minHeight": "0px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "16px",
+          "paddingBottom": "16px",
+          "borderTop": "0px",
+          "borderBottom": "0px",
+          "centreHit": {
+            "tag": "SPAN",
+            "classes": "ui-eyebrow ui-section__eyebrow"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 314
+        }
+      ]
+    },
+    {
+      "selector": ".hud-minimap__surface",
+      "nodes": [
+        {
+          "tag": "BUTTON",
+          "classes": "hud-minimap__surface",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 305,
+            "y": 773,
+            "width": 508,
+            "height": 110,
+            "top": 773,
+            "right": 813,
+            "bottom": 883,
+            "left": 305
+          },
+          "clientHeight": 108,
+          "scrollHeight": 108,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "110px",
+          "minHeight": "0px",
+          "maxHeight": "278px",
+          "flex": "0 0 auto",
+          "overflowY": "hidden",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "24px",
+          "paddingBottom": "24px",
+          "borderTop": "1px",
+          "borderBottom": "1px",
+          "centreHit": {
+            "tag": "BUTTON",
+            "classes": "hud-minimap__surface"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 110
+        }
+      ]
+    },
+    {
+      "selector": ".hud-minimap .hud-alerts",
+      "nodes": []
+    },
+    {
+      "selector": ".hud-minimap .ui-section__header-row",
+      "nodes": []
+    },
+    {
+      "selector": ".hud-minimap .ui-section__body",
+      "nodes": [
+        {
+          "tag": "DIV",
+          "classes": "ui-section__body",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 305,
+            "y": 972,
+            "width": 508,
+            "height": 83,
+            "top": 972,
+            "right": 813,
+            "bottom": 1055,
+            "left": 305
+          },
+          "clientHeight": 83,
+          "scrollHeight": 83,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "67px",
+          "minHeight": "0px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "visible",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "16px",
+          "borderTop": "0px",
+          "borderBottom": "0px",
+          "centreHit": {
+            "tag": "SPAN",
+            "classes": "ui-row__label"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 83
+        }
+      ]
+    },
+    {
+      "selector": ".hud-minimap .hud-alerts__list",
+      "nodes": [
+        {
+          "tag": "DIV",
+          "classes": "hud-alerts__list",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 313,
+            "y": 972,
+            "width": 492,
+            "height": 67,
+            "top": 972,
+            "right": 805,
+            "bottom": 1039,
+            "left": 313
+          },
+          "clientHeight": 67,
+          "scrollHeight": 67,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "67px",
+          "minHeight": "0px",
+          "maxHeight": "none",
+          "flex": "0 1 auto",
+          "overflowY": "auto",
+          "gap": "normal",
+          "marginBottom": "0px",
+          "paddingTop": "0px",
+          "paddingBottom": "0px",
+          "borderTop": "0px",
+          "borderBottom": "0px",
+          "centreHit": {
+            "tag": "SPAN",
+            "classes": "ui-row__label"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 67
+        }
+      ]
+    },
+    {
+      "selector": ".hud-minimap [data-alert=\"empty\"]",
+      "nodes": [
+        {
+          "tag": "DIV",
+          "classes": "ui-row ui-row--wrap",
+          "hidden": false,
+          "ariaExpanded": null,
+          "rect": {
+            "x": 313,
+            "y": 972,
+            "width": 492,
+            "height": 67,
+            "top": 972,
+            "right": 805,
+            "bottom": 1039,
+            "left": 313
+          },
+          "clientHeight": 67,
+          "scrollHeight": 67,
+          "display": "flex",
+          "visibility": "visible",
+          "height": "67px",
+          "minHeight": "48px",
+          "maxHeight": "none",
+          "flex": "0 0 auto",
+          "overflowY": "visible",
+          "gap": "16px",
+          "marginBottom": "0px",
+          "paddingTop": "16px",
+          "paddingBottom": "16px",
+          "borderTop": "0px",
+          "borderBottom": "0px",
+          "centreHit": {
+            "tag": "SPAN",
+            "classes": "ui-row__label"
+          },
+          "centreHitOwned": true,
+          "outerBlockHeight": 67
+        }
+      ]
+    },
+    {
+      "selector": ".hud__corner > .hud-alerts--detached",
+      "nodes": []
+    }
+  ],
+  "listAncestors": [
+    {
+      "tag": "DIV",
+      "classes": "ui-section__body",
+      "hidden": false,
+      "ariaExpanded": null,
+      "rect": {
+        "x": 305,
+        "y": 972,
+        "width": 508,
+        "height": 83,
+        "top": 972,
+        "right": 813,
+        "bottom": 1055,
+        "left": 305
+      },
+      "clientHeight": 83,
+      "scrollHeight": 83,
+      "display": "flex",
+      "visibility": "visible",
+      "height": "67px",
+      "minHeight": "0px",
+      "maxHeight": "none",
+      "flex": "0 1 auto",
+      "overflowY": "visible",
+      "gap": "normal",
+      "marginBottom": "0px",
+      "paddingTop": "0px",
+      "paddingBottom": "16px",
+      "borderTop": "0px",
+      "borderBottom": "0px",
+      "centreHit": {
+        "tag": "SPAN",
+        "classes": "ui-row__label"
+      },
+      "centreHitOwned": true,
+      "outerBlockHeight": 83
+    },
+    {
+      "tag": "DIV",
+      "classes": "ui-section",
+      "hidden": false,
+      "ariaExpanded": null,
+      "rect": {
+        "x": 305,
+        "y": 883,
+        "width": 508,
+        "height": 172,
+        "top": 883,
+        "right": 813,
+        "bottom": 1055,
+        "left": 305
+      },
+      "clientHeight": 171,
+      "scrollHeight": 171,
+      "display": "flex",
+      "visibility": "visible",
+      "height": "171px",
+      "minHeight": "0px",
+      "maxHeight": "none",
+      "flex": "0 1 auto",
+      "overflowY": "visible",
+      "gap": "normal",
+      "marginBottom": "0px",
+      "paddingTop": "0px",
+      "paddingBottom": "0px",
+      "borderTop": "1px",
+      "borderBottom": "0px",
+      "centreHit": {
+        "tag": "BUTTON",
+        "classes": "ui-section__header"
+      },
+      "centreHitOwned": true,
+      "outerBlockHeight": 172
+    },
+    {
+      "tag": "DIV",
+      "classes": "ui-panel__body",
+      "hidden": false,
+      "ariaExpanded": null,
+      "rect": {
+        "x": 289,
+        "y": 757,
+        "width": 540,
+        "height": 314,
+        "top": 757,
+        "right": 829,
+        "bottom": 1071,
+        "left": 289
+      },
+      "clientHeight": 314,
+      "scrollHeight": 314,
+      "display": "flex",
+      "visibility": "visible",
+      "height": "282px",
+      "minHeight": "0px",
+      "maxHeight": "none",
+      "flex": "0 1 auto",
+      "overflowY": "visible",
+      "gap": "normal",
+      "marginBottom": "0px",
+      "paddingTop": "16px",
+      "paddingBottom": "16px",
+      "borderTop": "0px",
+      "borderBottom": "0px",
+      "centreHit": {
+        "tag": "SPAN",
+        "classes": "ui-eyebrow ui-section__eyebrow"
+      },
+      "centreHitOwned": true,
+      "outerBlockHeight": 314
+    },
+    {
+      "tag": "SECTION",
+      "classes": "ui-panel hud-minimap",
+      "hidden": false,
+      "ariaExpanded": null,
+      "rect": {
+        "x": 288,
+        "y": 667,
+        "width": 542,
+        "height": 405,
+        "top": 667,
+        "right": 830,
+        "bottom": 1072,
+        "left": 288
+      },
+      "clientHeight": 403,
+      "scrollHeight": 403,
+      "display": "flex",
+      "visibility": "visible",
+      "height": "403px",
+      "minHeight": "0px",
+      "maxHeight": "none",
+      "flex": "0 1 auto",
+      "overflowY": "hidden",
+      "gap": "normal",
+      "marginBottom": "0px",
+      "paddingTop": "0px",
+      "paddingBottom": "0px",
+      "borderTop": "1px",
+      "borderBottom": "1px",
+      "centreHit": {
+        "tag": "BUTTON",
+        "classes": "hud-minimap__surface"
+      },
+      "centreHitOwned": true,
+      "outerBlockHeight": 405
+    },
+    {
+      "tag": "DIV",
+      "classes": "hud__corner",
+      "hidden": false,
+      "ariaExpanded": null,
+      "rect": {
+        "x": 280,
+        "y": 569,
+        "width": 558,
+        "height": 511,
+        "top": 569,
+        "right": 838,
+        "bottom": 1080,
+        "left": 280
+      },
+      "clientHeight": 511,
+      "scrollHeight": 511,
+      "display": "flex",
+      "visibility": "visible",
+      "height": "511px",
+      "minHeight": "0px",
+      "maxHeight": "528px",
+      "flex": "0 1 auto",
+      "overflowY": "visible",
+      "gap": "normal",
+      "marginBottom": "0px",
+      "paddingTop": "8px",
+      "paddingBottom": "8px",
+      "borderTop": "0px",
+      "borderBottom": "0px",
+      "centreHit": {
+        "tag": "BUTTON",
+        "classes": "hud-minimap__surface"
+      },
+      "centreHitOwned": true,
+      "outerBlockHeight": 511
+    },
+    {
+      "tag": "DIV",
+      "classes": "hud",
+      "hidden": false,
+      "ariaExpanded": null,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080,
+        "top": 0,
+        "right": 1920,
+        "bottom": 1080,
+        "left": 0
+      },
+      "clientHeight": 1080,
+      "scrollHeight": 1080,
+      "display": "grid",
+      "visibility": "visible",
+      "height": "1080px",
+      "minHeight": "0px",
+      "maxHeight": "none",
+      "flex": "0 1 auto",
+      "overflowY": "visible",
+      "gap": "normal",
+      "marginBottom": "0px",
+      "paddingTop": "0px",
+      "paddingBottom": "0px",
+      "borderTop": "0px",
+      "borderBottom": "0px",
+      "centreHit": {
+        "tag": "SECTION",
+        "classes": "camera-review-toolbox"
+      },
+      "centreHitOwned": true,
+      "outerBlockHeight": 1080
+    }
+  ]
+}

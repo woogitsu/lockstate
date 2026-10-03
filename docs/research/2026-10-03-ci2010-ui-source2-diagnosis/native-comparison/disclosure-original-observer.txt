@@ -1,0 +1,8 @@
+Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeCloseTo[2m([22m[32mexpected[39m[2m, [22mprecision[2m)[22m
+
+Expected: [32m398[39m
+Received: [31m494[39m
+
+Expected precision:    1
+Expected difference: < [32m0.05[39m
+Received difference:   [31m96[39m
