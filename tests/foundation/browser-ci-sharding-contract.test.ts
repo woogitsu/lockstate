@@ -27,7 +27,10 @@ const { yaml } = pwRequire(path.join(path.dirname(pwRequire.resolve('playwright-
 };
 const read = (file: string) => readFileSync(file, 'utf8');
 const workflow = () => yaml.parse(read('.github/workflows/ci.yml'));
-const before = yaml.parse(read(`${directory}/activation/ci-before-activation.yml`));
+// This art stack already contains the owner's separately approved verification
+// hydration. Preserve its actual pre-sharding workflow, including that step;
+// the main32c28 activation baseline remains archived in the design record.
+const before = yaml.parse(read('docs/research/2026-10-03-canteen-washer-cot-integration/approved-ci-before-integration.yml'));
 const job = (value: Workflow, name: string): Job => {
   const result = value.jobs[name]; if (!result) throw Error(`Missing job ${name}`); return result;
 };
