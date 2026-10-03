@@ -1,0 +1,161 @@
+diff --git a/src/ui/hud/hud.css b/src/ui/hud/hud.css
+index a5cc6470bc..673e676a6c 100644
+--- a/src/ui/hud/hud.css
++++ b/src/ui/hud/hud.css
+@@ -7418,6 +7418,48 @@
+ .hud-camera-pan [data-camera-pan-direction='right'] .ui-icon { transform: rotate(-90deg); }
+ .hud-camera-pose [data-camera-pose-axis='elevation'][data-camera-pose-direction='1'] .ui-icon { transform: rotate(180deg); }
+ 
++/* UNAPPROVED #1292 A/B source proposal. Camera controls use their own map
++ * region instead of spending minimap/alert height. Existing zoom stays put.
++ * No camera action, text, token or alert row floor is removed. */
++.hud-camera-panel {
++  position: fixed;
++  z-index: 4;
++  display: flex;
++  flex-wrap: wrap;
++  align-content: flex-start;
++  align-items: flex-start;
++  gap: var(--space-2);
++  box-sizing: border-box;
++  padding: var(--space-2);
++  border: var(--hairline) solid var(--border);
++  border-radius: var(--radius-md);
++  background: var(--surface-raised);
++  color: var(--text-body);
++  pointer-events: auto;
++}
++.hud-camera-panel[hidden] { display: none; }
++.hud-camera-panel > select {
++  max-width: 100%;
++  flex: 0 0 auto;
++  min-height: var(--tap-target);
++}
++.hud-camera-panel > .hud-camera-pan,
++.hud-camera-panel > .hud-camera-pose {
++  flex: 0 0 auto;
++  flex-wrap: wrap;
++  max-width: 100%;
++}
++.hud-camera-panel__trigger {
++  font: inherit;
++  padding-inline: var(--space-1);
++  flex: none;
++  min-width: var(--tap-target);
++  pointer-events: auto;
++}
++/* Preserve the existing phone camera/corner visibility boundary in this
++ * desktop-only proposal; it does not approve a new mobile camera layout. */
++@media (max-width: 720px) { .hud-camera-panel { display: none; } }
++
+ .room-template-world-ghost { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+ .room-template-world-ghost[hidden] { display: none; }
+ .room-template-world-ghost svg { width: 100%; height: 100%; }
+diff --git a/src/ui/hud/hud.ts b/src/ui/hud/hud.ts
+index 5d6fa6e302..f92b5e0bdb 100644
+--- a/src/ui/hud/hud.ts
++++ b/src/ui/hud/hud.ts
+@@ -1,4 +1,4 @@
+-import { createRendererSelectionControl, type HudRendererMode } from './renderer-selection-control';
++import { createCameraControlsPresentation, createRendererSelectionControl, type HudRendererMode } from './renderer-selection-control';
+ import { createCameraPoseControl, type CameraPoseStep } from './camera-pose-control';
+ import { createCameraPanControl, type CameraPanStep } from './camera-pan-control';
+ import type { LocalizationKey } from '../../content/localization';
+@@ -2951,6 +2951,14 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
+     children: [strip.element, unavailable, refusal, eventNotice, corner, rail, tabBar],
+   });
+ 
++  // UNAPPROVED owner choice A. B uses the same source nodes with variant 'always'.
++  const cameraPresentation = createCameraControlsPresentation({
++    variant: 'disclosure', viewLabel: t(HUD_MESSAGE_KEY.cameraView), hud, zoom: zoomControl,
++    ...(rendererControl === undefined ? {} : { select: rendererControl.element }),
++    controls: [...(panControl === undefined ? [] : [panControl]), ...(poseControl === undefined ? [] : [poseControl])],
++    ...(options.rendererSelection?.focus === undefined ? {} : { onFocus: options.rendererSelection.focus }),
++  });
++
+   /**
+    * `onChange` reports upward and nothing more: the HUD never writes to
+    * storage, so a host that passes no handler gets a layout that works for the
+@@ -3509,6 +3517,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
+     refreshLayout: () => {
+       layout.refresh();
+       roomsPanel.refreshLayout();
++      cameraPresentation.reposition();
+     },
+     setLayout: (settings: LayoutSettings) => {
+       layout.setSettings(settings);
+@@ -3517,6 +3526,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
+       applyState(hudShellReducer(state, action));
+     },
+     destroy: () => {
++      cameraPresentation.destroy();
+       fullHdBuild.removeEventListener('change', paintState);
+       gate.dispose();
+       // Tearing the layout down is also what ends a drag that was still live:
+diff --git a/src/ui/hud/renderer-selection-control.ts b/src/ui/hud/renderer-selection-control.ts
+index 8cce7990e8..0927b874a9 100644
+--- a/src/ui/hud/renderer-selection-control.ts
++++ b/src/ui/hud/renderer-selection-control.ts
+@@ -1,4 +1,61 @@
+-import { element } from '../primitives/dom';
++import { element, nextUiId } from '../primitives/dom';
++
++export type CameraControlPresentationVariant = 'disclosure' | 'always';
++
++/** UNAPPROVED #1292 presentation draft. Reuses original control nodes/ports. */
++export function createCameraControlsPresentation(options: {
++  readonly variant: CameraControlPresentationVariant;
++  readonly viewLabel: string;
++  readonly hud: HTMLElement;
++  readonly zoom: HTMLElement;
++  readonly select?: HTMLElement;
++  readonly controls: readonly HTMLElement[];
++  readonly onFocus?: () => void;
++}) {
++  const panel = element('section', { className: 'hud-camera-panel', attributes: {
++    id: nextUiId('camera-view'), role: 'region', 'aria-label': options.viewLabel,
++  }, children: [...(options.select === undefined ? [] : [options.select]), ...options.controls] });
++  panel.dataset['presentation'] = options.variant;
++  options.hud.append(panel);
++  const trigger = options.variant === 'disclosure' ? element('button', {
++    className: 'ui-icon-button ui-icon-button--bordered hud-camera-panel__trigger', text: options.viewLabel,
++    attributes: { type: 'button', 'aria-controls': panel.id, 'aria-expanded': 'false' },
++  }) : undefined;
++  panel.hidden = trigger !== undefined;
++  if (trigger !== undefined) {
++    options.zoom.append(trigger);
++    trigger.addEventListener('focus', () => options.onFocus?.());
++    trigger.addEventListener('click', () => {
++      panel.hidden = !panel.hidden; trigger.setAttribute('aria-expanded', String(!panel.hidden));
++      position();
++      if (!panel.hidden) options.select?.focus({ preventScroll: true });
++    });
++    panel.addEventListener('keydown', event => {
++      if (event.key !== 'Escape') return;
++      event.stopPropagation(); panel.hidden = true; trigger.setAttribute('aria-expanded', 'false');
++      trigger.focus({ preventScroll: true });
++    });
++  }
++  function position() {
++    const tabs = options.hud.querySelector('.hud__tabs')?.getBoundingClientRect();
++    const strip = options.hud.querySelector('.hud-strip')?.getBoundingClientRect();
++    const rail = options.hud.querySelector('.hud__rail')?.getBoundingClientRect();
++    const scale = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ui-scale'));
++    if (tabs === undefined || strip === undefined || rail === undefined || !Number.isFinite(scale)) return;
++    const gap = 12 * scale, left = tabs.right + gap;
++    panel.style.left = `${left}px`; panel.style.top = `${strip.bottom + gap}px`;
++    panel.style.width = `${Math.max(0, Math.min(396 * scale, rail.left - left - gap))}px`;
++  }
++  const observer = new ResizeObserver(position);
++  for (const selector of ['.hud-strip', '.hud__tabs', '.hud__rail']) {
++    const bounds = options.hud.querySelector(selector); if (bounds !== null) observer.observe(bounds);
++  }
++  window.addEventListener('resize', position);
++  position();
++  return { element: panel, trigger, reposition: position, destroy: () => {
++    observer.disconnect(); window.removeEventListener('resize', position); panel.remove(); trigger?.remove();
++  } };
++}
+ 
+ export type HudRendererMode = 'world' | 'oblique';
+ export interface RendererSelectionLabels { readonly region: string; readonly world: string; readonly oblique: string; readonly failure: string }
