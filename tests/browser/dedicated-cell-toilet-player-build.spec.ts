@@ -1,7 +1,9 @@
-// Integrated V8 owner acceptance; retain the original opened native palette/detail controls.
+// Pending native transfer-neck acceptance; original opened palette/detail controls retained.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
-import { installTee, sentCommands } from './playtest-harness';
+import { installTee, sentCommands, currentClock } from './playtest-harness';
+
+import { assertToiletProducer, observeToiletNetwork, type ToiletSnapshotData } from './cell-toilet-flush-neck-evidence';
 
 interface ProbeWindow extends Window {
   askWorker?: (kind: string, payload: unknown) => Promise<unknown>;
@@ -35,6 +37,14 @@ async function installWorkerProbe(page: Page): Promise<void> {
       worker.postMessage({ protocolVersion: 1, messageId, kind, payload });
     });
   });
+}
+
+async function recordToiletSnapshot(page: Page, path: string): Promise<ToiletSnapshotData> {
+  const reply=await page.evaluate(async ()=>(window as ProbeWindow).askWorker!('simulation/request-snapshot',{reason:'consistency-check'}));
+  await writeFile(path,JSON.stringify(reply,null,2));
+  const snapshot=(reply as {payload:{snapshot:{schemaVersion:number;data:ToiletSnapshotData}}}).payload.snapshot;
+  expect(snapshot.schemaVersion).toBe(3);
+  return snapshot.data;
 }
 
 async function fixtureAnchors(page: Page): Promise<string[]> {
@@ -98,9 +108,11 @@ const test = base.extend({
   storageState: async ({}, use) => { await use(routeStorage ?? { cookies: [], origins: [] }); },
 });
 test.describe.configure({ mode: 'serial' });
+const networkCaptures=new WeakMap<Page, ReturnType<typeof observeToiletNetwork>>();
 
 test.afterEach(async ({ page }, info) => {
   if (info.status === info.expectedStatus) return;
+  await networkCaptures.get(page)?.raw(info.outputPath('failed-toilet-raw-network-provenance.json'));
   const snapshot = await page.evaluate(async () => (window as ProbeWindow).askWorker
     ? (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' })
     : null);
@@ -134,7 +146,8 @@ async function finishQueuedConstruction(page: Page): Promise<void> {
   }
 }
 
-test('player creates storage and delivery capacity before Basic cell', async ({ page }) => {
+test('player creates storage and delivery capacity before Basic cell', async ({ page }, info) => {
+  await installWorkerProbe(page);
   await installTee(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/?renderer=oblique');
@@ -155,12 +168,16 @@ test('player creates storage and delivery capacity before Basic cell', async ({ 
     { type: 'PlaceRoomTemplate', templateId: 'storage-room-basic', origin: { x: 5, y: 5 } },
     { type: 'PlaceRoomTemplate', templateId: 'delivery-bay-basic', origin: { x: 12, y: 5 } },
   ]);
+  const capacity=await recordToiletSnapshot(page,info.outputPath('capacity-completed-worker-snapshot.json'));
+  assertToiletProducer(capacity,0,false);
   routeStorage = await page.context().storageState({ indexedDB: true });
 });
 
 for (const quarterTurns of [0, 1] as const) {
 test(`player builds Basic cell at quarterTurns${quarterTurns} and retains toilet palettes and anchors after Save/Load`, async ({ page }, info) => {
   expect(routeStorage, 'this case consumes the first stage actual IndexedDB save').toBeDefined();
+  const network=observeToiletNetwork(page);
+  networkCaptures.set(page,network);
   await installWorkerProbe(page);
   await installTee(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
@@ -168,6 +185,8 @@ test(`player builds Basic cell at quarterTurns${quarterTurns} and retains toilet
   await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
   await expect(page.locator('[data-metric="rooms"] .ui-stat__value')).toHaveText('2');
+  const capacity=await recordToiletSnapshot(page,info.outputPath('capacity-loaded-worker-snapshot.json'));
+  assertToiletProducer(capacity,0,false);
   await placePlan(page, 'Basic cell', 20, quarterTurns);
   await page.getByRole('button', { name: 'Fast forward', exact: true }).click();
   await page.getByRole('button', { name: 'Fast forward', exact: true }).click();
@@ -207,6 +226,9 @@ test(`player builds Basic cell at quarterTurns${quarterTurns} and retains toilet
   const turn = quarterTurns === 0 ? 'Rotate camera right' : 'Rotate camera left';
   for (let step = 0; step < 4; step++) await page.getByRole('button', { name: turn, exact: true }).click();
   const completed = await page.screenshot({ path: info.outputPath('dedicated-cell-toilet-worker-completed-fullhd.png') });
+  await expect.poll(()=>currentClock(page)).toMatchObject({mode:'paused'});
+  const completedData=await recordToiletSnapshot(page,info.outputPath('toilet-completed-whole-paused-worker-snapshot.json'));
+  assertToiletProducer(completedData,quarterTurns);
   const beforePixels = await toiletPalettePixels(page, completed, quarterTurns);
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
@@ -227,16 +249,46 @@ test(`player builds Basic cell at quarterTurns${quarterTurns} and retains toilet
   await minimap.click({ position: { x: bounds.width * 21.5 / 32, y: bounds.height * 6.5 / 32 } });
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('dedicated-cell-toilet-loaded-fullhd.png') });
+  await expect.poll(()=>currentClock(page)).toMatchObject({mode:'paused'});
+  const loadedData=await recordToiletSnapshot(page,info.outputPath('toilet-loaded-whole-paused-worker-snapshot.json'));
+  assertToiletProducer(loadedData,quarterTurns);
+  expect(loadedData).toEqual(completedData);
   const afterPixels = await toiletPalettePixels(page, loaded, quarterTurns);
   afterPixels.forEach((count, index) => expect.soft(count, `toilet ${index + 1} authored palette after Load`)
     .toBeGreaterThan(index === 0 ? 100 : 8));
   expect(afterPixels).toEqual(beforePixels);
   const evidencePath = info.outputPath('dedicated-cell-toilet-worker-and-save-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
-    quarterTurns, actualBefore, actualAfter, ownershipBefore, ownershipAfter, beforePixels, afterPixels,
+    quarterTurns, actualBefore, actualAfter, ownershipBefore, ownershipAfter, beforePixels, afterPixels, completedData, loadedData,
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   await info.attach('dedicated-cell-toilet-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
+
+  // Separate transfer-neck view AFTER every original calibrated crop/colour/minimum.
+  // Original palette recipe ends q0 at global15; q1 at global-105/local-15.
+  // Additional right steps2/4 reach global45/-45, both local45 afterorientation.
+  // Public native RMB drag17px lowers45deg to40.129859deg, selecting source40.
+  for (let step=0;step<(quarterTurns===0?2:4);step++) {
+    await page.getByRole('button',{name:'Rotate camera right',exact:true}).click();
+  }
+  await page.mouse.move(1200,650);
+  await page.mouse.down({button:'right'});
+  await page.mouse.move(1200,667,{steps:3});
+  await page.mouse.up({button:'right'});
+  await minimap.click({position:{x:bounds.width*21.5/32,y:bounds.height*6.5/32}});
+  const networkEvidence=await network.evidence(info,quarterTurns);
+  await page.mouse.move(1300,700);
+  await page.screenshot({path:info.outputPath('toilet-transfer-neck-local45-elev40-loaded-fullhd.png')});
+  const detailData=await recordToiletSnapshot(page,info.outputPath('toilet-detail-whole-paused-worker-snapshot.json'));
+  expect(detailData).toEqual(loadedData);
+  await writeFile(info.outputPath('toilet-detail-pending-native-recipe.json'),JSON.stringify({
+    quarterTurns,originalPaletteCameraTurnDirection:quarterTurns===0?'right':'left',originalPaletteCameraTurns:4,
+    additionalCameraRightButtons:quarterTurns===0?2:4,rightButtonDragFrom:[1200,650],rightButtonDragTo:[1200,667],
+    expectedGlobalYawDegrees:quarterTurns===0?45:-45,expectedLocalObjectYawDegrees:45,
+    expectedGlobalElevationDegrees:45-17*.005*180/Math.PI,selectedSourcePose:[45,40],
+    networkEvidence,transferNeckRoiMeasured:false,sourcePreviewSubstitutedForNative:false,
+  },null,2));
+
 
 });
 }

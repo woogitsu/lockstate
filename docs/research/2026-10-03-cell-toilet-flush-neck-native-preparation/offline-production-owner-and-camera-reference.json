@@ -1,0 +1,169 @@
+{
+  "preparedBaseCommit": "62cb36c50911beba41de83866a7195ea5f3a0047",
+  "kind": "pending-native-preparation",
+  "offlineGenuineKernelCompletion": true,
+  "browserStarted": false,
+  "serverStarted": false,
+  "nativeAcceptanceClaimed": false,
+  "canonicalSource": "assets/source/blender/fixture.cell.toilet_sink.angled-connection.blend",
+  "canonicalSourceSha256": "ebc1570274663d22315eed0adfafe8886120bdbf9901dfa744edcde540428ff8",
+  "descriptorSha256": "b651cc3e7cfceb218d1fd7496a1325e4f0205397265e3fed34ac64026523c906",
+  "capacityCompletionTicks": 2529,
+  "cases": [
+    {
+      "quarterTurns": 0,
+      "offlineWholeBundleCaptureRestoreExact": true,
+      "originalAuthoritativeObjects": [
+        {
+          "buildableId": "bed-wooden",
+          "x": 1,
+          "y": 1
+        },
+        {
+          "buildableId": "toilet-brick",
+          "x": 2,
+          "y": 4
+        }
+      ],
+      "realOfflineConstructionTicks": 1379,
+      "expectedPlacedObjects": [
+        {
+          "placedObjectId": "object:22:9",
+          "objectId": "object.toilet",
+          "anchorTile": {
+            "x": 22,
+            "y": 9
+          },
+          "orientation": 0,
+          "sourceOrderId": "room-template-000000000002-2-object-001"
+        }
+      ],
+      "actualCompletedBuildOrders": [
+        {
+          "id": "room-template-000000000002-2-object-001",
+          "definitionId": "toilet-brick",
+          "location": {
+            "x": 22,
+            "y": 9
+          },
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 30,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 1
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        }
+      ],
+      "publicCameraRecipe": {
+        "startingYawDegrees": -45,
+        "startingElevationDegrees": 45,
+        "totalRightButtonsFromDefault": 6,
+        "originalPaletteDirection": "right",
+        "originalPaletteSteps": 4,
+        "additionalRightButtonsAfterLegacyPalette": 2,
+        "nativeRightButtonDrag": {
+          "from": [
+            1200,
+            650
+          ],
+          "to": [
+            1200,
+            667
+          ]
+        },
+        "actualCameraYawDegrees": 45,
+        "actualCameraElevationDegrees": 40.129858741388006,
+        "actualObjectLocalYawDegrees": 45,
+        "selectedCanonicalFrame": {
+          "yawDegrees": 45,
+          "elevationDegrees": 40,
+          "image": "/assets/environment/oblique/cell-toilet-yaw+45-elev40.fb4b086cfbce.png",
+          "sha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932"
+        }
+      },
+      "worldVersion": 1
+    },
+    {
+      "quarterTurns": 1,
+      "offlineWholeBundleCaptureRestoreExact": true,
+      "originalAuthoritativeObjects": [
+        {
+          "buildableId": "bed-wooden",
+          "x": 1,
+          "y": 1
+        },
+        {
+          "buildableId": "toilet-brick",
+          "x": 2,
+          "y": 4
+        }
+      ],
+      "realOfflineConstructionTicks": 1379,
+      "expectedPlacedObjects": [
+        {
+          "placedObjectId": "object:22:7",
+          "objectId": "object.toilet",
+          "anchorTile": {
+            "x": 22,
+            "y": 7
+          },
+          "orientation": 1,
+          "sourceOrderId": "room-template-000000000002-2-object-001"
+        }
+      ],
+      "actualCompletedBuildOrders": [
+        {
+          "id": "room-template-000000000002-2-object-001",
+          "definitionId": "toilet-brick",
+          "location": {
+            "x": 22,
+            "y": 7
+          },
+          "objectOrientation": 1,
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 30,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 1
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        }
+      ],
+      "publicCameraRecipe": {
+        "startingYawDegrees": -45,
+        "startingElevationDegrees": 45,
+        "totalRightButtonsFromDefault": 0,
+        "originalPaletteDirection": "left",
+        "originalPaletteSteps": 4,
+        "additionalRightButtonsAfterLegacyPalette": 4,
+        "nativeRightButtonDrag": {
+          "from": [
+            1200,
+            650
+          ],
+          "to": [
+            1200,
+            667
+          ]
+        },
+        "actualCameraYawDegrees": -45,
+        "actualCameraElevationDegrees": 40.129858741388006,
+        "actualObjectLocalYawDegrees": 45,
+        "selectedCanonicalFrame": {
+          "yawDegrees": 45,
+          "elevationDegrees": 40,
+          "image": "/assets/environment/oblique/cell-toilet-yaw+45-elev40.fb4b086cfbce.png",
+          "sha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932"
+        }
+      },
+      "worldVersion": 1
+    }
+  ]
+}
