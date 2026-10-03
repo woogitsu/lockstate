@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
@@ -27,19 +28,24 @@ const { yaml } = pwRequire(path.join(path.dirname(pwRequire.resolve('playwright-
 };
 const read = (file: string) => readFileSync(file, 'utf8');
 const workflow = () => yaml.parse(read('.github/workflows/ci.yml'));
-const before = yaml.parse(read(`${directory}/activation/ci-before-activation.yml`));
+// This release starts from #1977, whose approved verify hydration predates the
+// split. Keep the original main baseline intact and pin this subject separately.
+const beforePath = `${directory}/activation/ci-before-object-admission-release-activation.yml`;
+const before = yaml.parse(read(beforePath));
 const job = (value: Workflow, name: string): Job => {
   const result = value.jobs[name]; if (!result) throw Error(`Missing job ${name}`); return result;
 };
 const step = (value: Job, name: string): Step => {
   const result = value.steps.find(entry => entry.name === name); if (!result) throw Error(`Missing step ${name}`); return result;
 };
-const report = (name: string) => JSON.parse(read(`${directory}/evidence/${name}.json`)) as CollectedReport;
+const report = (name: string) => JSON.parse(read(`${directory}/activation/object-admission-release/${name}.json`)) as CollectedReport;
 const weights = JSON.parse(read(`${directory}/file-weight-evidence.json`)) as FileWeights;
 const files = (value: CollectedReport) => [...new Set(specs(value).map(spec => spec.file))].sort();
 
 describe('owner-approved browser CI sharding contract (#1983)', () => {
-  it('preserves main verification/assets/provisioning, fork and event/concurrency gates', () => {
+  it('preserves exact #1977 verification/assets/provisioning, fork and event/concurrency gates', () => {
+    // Check the immutable LF Git blob on both Unix and autocrlf Windows checkouts.
+    expect(createHash('sha256').update(read(beforePath).replaceAll('\r\n', '\n')).digest('hex')).toBe('749bfab9c2467b8442f89f238e796fd8aae9dd9aee4e8976cd622ca9e8241833');
     const active = workflow();
     for (const key of ['on', 'env', 'concurrency', 'permissions'] as const) expect(active[key]).toEqual(before[key]);
     expect(Object.keys(active.jobs).sort()).toEqual(['assets', 'browser', 'browser-artifact', 'browser-source', 'verify']);

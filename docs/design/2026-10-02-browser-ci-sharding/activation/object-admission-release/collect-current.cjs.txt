@@ -1,0 +1,51 @@
+const fs = require('fs');
+const path = require('path');
+const cp = require('child_process');
+const crypto = require('crypto');
+const root = process.cwd();
+const base = '00ad3ed1936f0eacb3ed40d88cc01d8d3ae6c0b2';
+const dir = 'docs/design/2026-10-02-browser-ci-sharding/activation/object-admission-release';
+fs.mkdirSync(dir, {recursive:true});
+const blob = cp.spawnSync('git',['show',base+':.github/workflows/ci.yml'],{maxBuffer:5e6});
+if (blob.status!==0) throw Error(blob.stderr.toString());
+const baselineFile = 'docs/design/2026-10-02-browser-ci-sharding/activation/ci-before-object-admission-release-activation.yml';
+fs.writeFileSync(baselineFile,blob.stdout);
+const hash = b=>crypto.createHash('sha256').update(b).digest('hex');
+const req = require('module').createRequire(path.join(root,'package.json'));
+const pwReq = require('module').createRequire(req.resolve('@playwright/test/package.json'));
+const playwrightReq = require('module').createRequire(pwReq.resolve('playwright/package.json'));
+const {yaml}=playwrightReq(path.join(path.dirname(playwrightReq.resolve('playwright-core/package.json')),'lib/utilsBundle.js'));
+const before=yaml.parse(blob.stdout.toString()), active=yaml.parse(fs.readFileSync('.github/workflows/ci.yml','utf8'));
+for (const key of ['verify','assets']) require('assert').deepStrictEqual(active.jobs[key],before.jobs[key]);
+fs.copyFileSync(path.join(process.env.TEMP,'delivery-admission-release-initial.txt'),dir+'/initial-contract-red.txt');
+const flags=['--experimental-transform-types','--disable-warning=ExperimentalWarning'];
+const env={...process.env,PATH:path.dirname(process.execPath)+path.delimiter+process.env.PATH};
+const calls=[];
+function run(label,args){
+  const start=performance.now();
+  const r=cp.spawnSync(process.execPath,args,{env,maxBuffer:20e6});
+  fs.writeFileSync(dir+'/'+label+'.json',r.stdout);fs.writeFileSync(dir+'/'+label+'.stderr.txt',r.stderr);
+  calls.push({label,args,status:r.status,elapsedMs:Math.round(performance.now()-start),stdoutSHA256:hash(r.stdout)});
+  if(r.status!==0) throw Error(label+' failed '+r.stderr);
+  return JSON.parse(r.stdout);
+}
+run('source-all',[...flags,'tests/browser/run-suite.ts','--suite','browser','--list','--reporter=json','--workers=1']);
+const prefix=dir+'/source-files';
+const p=cp.spawnSync(process.execPath,[...flags,'tests/browser/partition-source-files.ts',dir+'/source-all.json',prefix],{env,maxBuffer:20e6});
+if(p.status!==0)throw Error(p.stderr.toString());
+for(let i=1;i<=2;i++){
+ const filters=fs.readFileSync(prefix+'-filters-'+i+'.txt','utf8').trim().split('\n');
+ run('source-balanced-'+i,[...flags,'tests/browser/run-suite.ts','--suite','browser','--list','--reporter=json','--workers=1',...filters]);
+}
+run('artifact-all',[...flags,'tests/browser/run-suite.ts','--suite','artifact','--list','--reporter=json','--workers=1']);
+function tests(report){return [...(report.suites||[]).flatMap(tests),...(report.specs||[]).flatMap(s=>s.tests.map(t=>({file:s.file,title:s.title,id:s.id,projectName:t.projectName,line:s.line,column:s.column})))];}
+const reports=Object.fromEntries(calls.map(c=>[c.label,JSON.parse(fs.readFileSync(dir+'/'+c.label+'.json','utf8'))]));
+const summary=Object.fromEntries(Object.entries(reports).map(([k,r])=>[k,{tests:tests(r).length,files:new Set(tests(r).map(t=>t.file)).size,errors:r.errors||[]}]));
+const all=tests(reports['source-all']).map(t=>JSON.stringify(t)).sort();
+const union=[...tests(reports['source-balanced-1']),...tests(reports['source-balanced-2'])].map(t=>JSON.stringify(t)).sort();
+require('assert').deepStrictEqual(all,union);
+require('assert').strictEqual(new Set(union).size,union.length);
+const sourceFiles=new Set(tests(reports['source-all']).map(t=>t.file));
+require('assert').strictEqual(tests(reports['artifact-all']).some(t=>sourceFiles.has(t.file)),false);
+fs.writeFileSync(dir+'/collection-receipt.json',JSON.stringify({base,baselineFile,baselineGitBlob:cp.spawnSync('git',['rev-parse',base+':.github/workflows/ci.yml'],{encoding:'utf8'}).stdout.trim(),baselineSHA256:hash(blob.stdout),verifyEntireJobEqual:true,assetsEntireJobEqual:true,calls,summary,exactTestMetadataUnion:true,duplicateTests:0,sourceArtifactOverlap:false,browserLaunched:false},null,2)+'\n');
+console.log(JSON.stringify(summary));

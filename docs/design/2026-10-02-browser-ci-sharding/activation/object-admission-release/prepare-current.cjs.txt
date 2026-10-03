@@ -1,0 +1,20 @@
+const fs=require('fs'),cp=require('child_process'),crypto=require('crypto');
+const old='cee3eac48870e9038fee1fe13059d30f50d7c057';
+const base='00ad3ed1936f0eacb3ed40d88cc01d8d3ae6c0b2';
+const dir='docs/design/2026-10-02-browser-ci-sharding/activation/object-admission-release';
+fs.mkdirSync(dir,{recursive:true});
+const git=args=>{const r=cp.spawnSync('git',args,{maxBuffer:20e6});if(r.status!==0)throw Error(r.stderr.toString());return r.stdout;};
+const baseline='docs/design/2026-10-02-browser-ci-sharding/activation/ci-before-object-admission-release-activation.yml';
+fs.writeFileSync(baseline,git(['show',base+':.github/workflows/ci.yml']));
+let contract=git(['show',old+':tests/foundation/browser-ci-sharding-contract.test.ts']).toString();
+contract=contract.replaceAll('#1899','#1977').replaceAll('ci-before-room-plan-release-activation.yml','ci-before-object-admission-release-activation.yml').replaceAll('activation/room-plan-release/','activation/object-admission-release/');
+fs.writeFileSync('tests/foundation/browser-ci-sharding-contract.test.ts',contract);
+fs.copyFileSync(process.env.TEMP+'/delivery-admission-release-initial.txt',dir+'/initial-contract-red.txt');
+const sources={};
+for(const file of ['.github/workflows/ci.yml','tests/browser/partition-source-files.ts','docs/design/2026-10-02-browser-ci-sharding/file-weight-evidence.json']){
+ const previous=git(['show',old+':'+file]),current=git(['show','HEAD:'+file]);
+ if(!previous.equals(current))throw Error(file+' differs from tested previous producer');
+ sources[file]={gitBlob:git(['rev-parse','HEAD:'+file]).toString().trim(),sha256:crypto.createHash('sha256').update(current).digest('hex'),byteEqual:true};
+}
+fs.writeFileSync(dir+'/prior-producer-restoration-receipt.json',git(['show',old+':docs/design/2026-10-02-browser-ci-sharding/activation/room-plan-release/producer-restoration-receipt.json']));
+fs.writeFileSync(dir+'/split-producer-byte-equality.json',JSON.stringify({base,previousTestedCandidate:old,sources,noNewMutationLoops:true,priorReceipt:'prior-producer-restoration-receipt.json',reason:'Entire production workflow and partition producer are Git-byte identical to the six observed RED/restore proof on the prior candidate.'},null,2)+'\n');

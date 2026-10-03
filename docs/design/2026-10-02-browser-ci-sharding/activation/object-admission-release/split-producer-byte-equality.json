@@ -1,0 +1,24 @@
+{
+  "base": "00ad3ed1936f0eacb3ed40d88cc01d8d3ae6c0b2",
+  "previousTestedCandidate": "cee3eac48870e9038fee1fe13059d30f50d7c057",
+  "sources": {
+    ".github/workflows/ci.yml": {
+      "gitBlob": "644ccf34c3381e35ccc0846a01df7bfe2ad5ef47",
+      "sha256": "1ac56063e488a7480ce1e660daf46509f098a3f3443abe47cf99e339149747ba",
+      "byteEqual": true
+    },
+    "tests/browser/partition-source-files.ts": {
+      "gitBlob": "dba3f2fa0eb21575fd348583d2a3752dcdd54180",
+      "sha256": "3c2d2a3bfcdba8d0246eac87f8363cf853fac3b90e2bcadb3925d341c03d68a9",
+      "byteEqual": true
+    },
+    "docs/design/2026-10-02-browser-ci-sharding/file-weight-evidence.json": {
+      "gitBlob": "5eb921a6e3e1dbf9ad1121b736b4da964d1969f2",
+      "sha256": "83e92f7c1a424f261bfd4f9a17eab8211a8f8c59e943343925272585deec2af8",
+      "byteEqual": true
+    }
+  },
+  "noNewMutationLoops": true,
+  "priorReceipt": "prior-producer-restoration-receipt.json",
+  "reason": "Entire production workflow and partition producer are Git-byte identical to the six observed RED/restore proof on the prior candidate."
+}
