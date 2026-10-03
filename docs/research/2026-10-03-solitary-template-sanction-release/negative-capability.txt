@@ -1,0 +1,41 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-navigation-next-audit-20261003
+
+stdout | tests/integration/solitary-template-sanction-release.test.ts > releases a valid current home after completed template sanction: saved=false surface='removed-bed'
+{"saved":false,"surface":"removed-bed","tick":9861,"end":9851,"actualEnd":0,"home":"room.solitary-cell:6:6","metrics":{"relocatedIntoSolitaryCount":0,"releasedFromSolitaryCount":1,"relocationBacklogTicks":0,"releaseBacklogTicks":0}}
+
+stdout | tests/integration/solitary-template-sanction-release.test.ts > releases a valid current home after completed template sanction: saved=true surface='removed-bed'
+{"saved":true,"surface":"removed-bed","tick":9861,"end":9851,"actualEnd":0,"home":"room.solitary-cell:6:6","metrics":{"relocatedIntoSolitaryCount":0,"releasedFromSolitaryCount":1,"relocationBacklogTicks":0,"releaseBacklogTicks":0}}
+
+ ❯ tests/integration/solitary-template-sanction-release.test.ts (6 tests | 2 failed) 777ms
+   × releases a valid current home after completed template sanction: saved=false surface='removed-bed' 110ms
+   × releases a valid current home after completed template sanction: saved=true surface='removed-bed' 116ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 4 passed (6)
+   Start at  04:02:56
+   Duration  3.08s (transform 826ms, setup 0ms, import 2.18s, tests 777ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/solitary-template-sanction-release.test.ts > releases a valid current home after completed template sanction: saved=false surface='removed-bed'
+ FAIL  tests/integration/solitary-template-sanction-release.test.ts > releases a valid current home after completed template sanction: saved=true surface='removed-bed'
+AssertionError: expected +0 to be 9851 // Object.is equality
+
+- Expected
++ Received
+
+- 9851
++ 0
+
+ ❯ tests/integration/solitary-template-sanction-release.test.ts:74:70
+     72|     metrics: runtime.prisoners.sanctionSystem.getMetrics() }));
+     73|   if (surface === 'removed-bed') {
+     74|     expect(runtime.prisoners.records.solitarySanctionEndTick[index]).t…
+       |                                                                      ^
+     75|     expect(runtime.prisoners.sanctionSystem.getMetrics().releaseBacklo…
+     76|   } else {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
