@@ -1707,7 +1707,8 @@
   padding: var(--space-5);
   border: var(--hairline) solid var(--border);
   border-radius: var(--radius-md);
-  background: var(--surface-raised);
+  background: var(--surface-panel);
+  border-color: var(--border-panel);
   color: var(--text-body);
   overflow: auto;
 }
@@ -7061,8 +7062,32 @@
 @media (min-width: 1920px) and (min-height: 1080px) {
   .hud-strip {
     row-gap: 0;
-    background: var(--surface-sunken);
+    background: var(--surface-commandbar);
     border-bottom-color: var(--border-strong);
+  }
+
+  /* Only the command islands invert. The nine metrics and floating Layout
+     menu retain their original paper/text/status roles and every geometry. */
+  .hud-strip__brand,
+  .hud-strip__clock,
+  .hud-strip__transport,
+  .hud-strip__history,
+  .hud-strip .hud-layout__button {
+    --text-heading: var(--command-text-heading);
+    --text-body: var(--command-text-body);
+    --text-subtle: var(--command-text-subtle);
+    --text-muted: var(--command-text-muted);
+    --surface-control: var(--command-surface-control);
+    --surface-overlay: var(--command-surface-overlay);
+    --surface-active: var(--command-surface-active);
+    --border: var(--command-border);
+    --border-hairline: var(--command-border-hairline);
+    --accent: var(--command-accent);
+    --accent-deep: var(--command-accent-deep);
+    --accent-soft: var(--command-accent-soft);
+    --accent-contrast: var(--command-accent-contrast);
+    --badge-neutral-fg: var(--command-badge-neutral-fg);
+    --badge-neutral-bg: var(--command-badge-neutral-bg);
   }
 
   .hud-strip__metrics:not([hidden]) {
