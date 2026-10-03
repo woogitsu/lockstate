@@ -1,0 +1,19 @@
+00:01.172  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-laundry-retained-cycles-production-20261003\assets\source\blender\furniture.laundry.linen-rack.soft-light.blend"
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-laundry-retained-cycles-production-20261003\tooling\blender\render-laundry-linen-rack-cycles.py", line 142, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-laundry-retained-cycles-production-20261003\tooling\blender\render-laundry-linen-rack-cycles.py", line 109, in main
+    verify_exports()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-laundry-retained-cycles-production-20261003\tooling\blender\render-laundry-linen-rack-cycles.py", line 91, in verify_exports
+    draft.source.validate_png(body)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-laundry-retained-cycles-production-20261003\tooling\blender\render-laundry-linen-rack-oblique.py", line 101, in validate_png
+    raise ValueError('Laundry linen rack decoded silhouette clips frame border')
+ValueError: Laundry linen rack decoded silhouette clips frame border
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-laundry-retained-cycles-production-20261003\tooling\blender\render-laundry-linen-rack-cycles.py', exiting.
