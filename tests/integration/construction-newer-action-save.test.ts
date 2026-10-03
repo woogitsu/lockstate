@@ -2,6 +2,7 @@ import { expect, it } from 'vitest';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 
 type Runtime = ReturnType<typeof createNewSimulationRuntime>;
@@ -36,7 +37,7 @@ it.each([false, true].flatMap(hire => [false, true].map(load => ({ hire, load })
     expect(runtime.securityGuards.allGuardIds()).toHaveLength(hire ? 1 : 0);
     expect(runtime.treasury.balanceMinorUnits).toBe(hire ? 24840 : 24920);
     expect(runtime.construction.getOrder('owned-square')?.state).toBe(hire ? 'completed' : 'cancelled');
-    expect(runtime.world.getSquareStructure({ x: 12, y: 12 })).toBe(hire ? 1 : 0);
+    expect(runtime.world.getSquareStructure({ x: tileCoordinate(12), y: tileCoordinate(12) })).toBe(hire ? 1 : 0);
     expect(runtime.events.since(0).slice(eventsBefore).map(event => event.type)).toEqual([
       hire ? 'construction.undo-refused-newer-action' : 'construction.undone-spend-destroyed',
     ]);
