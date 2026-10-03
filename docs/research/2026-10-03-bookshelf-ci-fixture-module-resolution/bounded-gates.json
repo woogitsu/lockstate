@@ -1,0 +1,41 @@
+[
+  {
+    "name": "strict-types",
+    "args": [
+      "node_modules/typescript/bin/tsc",
+      "-b",
+      "--pretty",
+      "false"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 1301
+  },
+  {
+    "name": "scoped-source-neighbors",
+    "args": [
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/foundation/browser-network-changed-signature.test.ts",
+      "tests/foundation/browser-suite-partition-contract.test.ts",
+      "tests/foundation/browser-suite-selection.test.ts",
+      "tests/unit/oblique-actor-projection.test.ts",
+      "tests/unit/oblique-pending-wall-depth.test.ts",
+      "tests/unit/pending-wall-guards-fixture.test.ts",
+      "--maxWorkers=2"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 3981
+  },
+  {
+    "name": "scoped-docs",
+    "args": [
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/foundation/research-index-contract.test.ts",
+      "tests/foundation/documentation-links-contract.test.ts",
+      "--maxWorkers=2"
+    ],
+    "exitCode": 0,
+    "elapsedMs": 10608
+  }
+]

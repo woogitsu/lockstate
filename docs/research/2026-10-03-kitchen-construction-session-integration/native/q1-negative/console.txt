@@ -1,0 +1,188 @@
+node.exe : [2m[WebServer] [22m(node:52380) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being 
+set.
+At line:19 char:819
++ ... 0261003')));& node @args *> (Join-Path $env:TEMP ('lockstate-kitchen- ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 2 tests using 1 worker
+
+(node:34088) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:34088) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\dedicated-kitchen-stove-player-build.spec.ts:216:1 › player creates storage and delivery capacity before Kitchen (43.1s)
+  x  2 tests\browser\dedicated-kitchen-stove-player-build.spec.ts:279:3 › player builds Kitchen at quarterTurns1 and retains stove and fridge detail palettes and all completed owners after Save/Load (42.1s)
+
+
+  1) tests\browser\dedicated-kitchen-stove-player-build.spec.ts:279:3 › player builds Kitchen at quarterTurns1 and retains stove and fridge detail palettes and all completed owners after Save/Load 
+
+    Error: stove enamel body after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m50[39m
+    Received:   [31m0[39m
+
+      200 |   }, null, 2));
+      201 |   beforePixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? "enamel body" : "cast-iron support"} after construction`)
+    > 202 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));
+          |      ^
+      203 |   fridgeBefore.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after construction`)
+      204 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));
+      205 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\dedicated-kitchen-stove-player-build.spec.ts:202:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\dedicated-kitchen-stove-player-build.spec.ts:201:16
+
+    Error: stove cast-iron support after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m50[39m
+    Received:   [31m0[39m
+
+      200 |   }, null, 2));
+      201 |   beforePixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? "enamel body" : "cast-iron support"} after construction`)
+    > 202 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));
+          |      ^
+      203 |   fridgeBefore.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after construction`)
+      204 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));
+      205 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\dedicated-kitchen-stove-player-build.spec.ts:202:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\dedicated-kitchen-stove-player-build.spec.ts:201:16
+
+    Error: fridge freezer panel after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m800[39m
+    Received:   [31m0[39m
+
+      202 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));
+      203 |   fridgeBefore.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after construction`)
+    > 204 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));
+          |      ^
+      205 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      206 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      207 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\dedicated-kitchen-stove-player-build.spec.ts:204:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\dedicated-kitchen-stove-player-build.spec.ts:203:16
+
+    Error: fridge side louvres after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      202 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));
+      203 |   fridgeBefore.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after construction`)
+    > 204 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));
+          |      ^
+      205 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      206 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      207 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\dedicated-kitchen-stove-player-build.spec.ts:204:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\dedicated-kitchen-stove-player-build.spec.ts:203:16
+
+    Error: stove enamel body after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m50[39m
+    Received:   [31m0[39m
+
+      219 |   const fridgeAfter = await fridgePalettePixels(page, loaded, quarterTurns);
+      220 |   afterPixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? "enamel body" : "cast-iron support"} after Load`)
+    > 221 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));
+          |      ^
+      222 |   expect(afterPixels).toEqual(beforePixels);
+      223 |   fridgeAfter.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after Load`)
+      224 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\dedicated-kitchen-stove-player-build.spec.ts:221:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\dedicated-kitchen-stove-player-build.spec.ts:220:15
+
+    Error: stove cast-iron support after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m50[39m
+    Received:   [31m0[39m
+
+      219 |   const fridgeAfter = await fridgePalettePixels(page, loaded, quarterTurns);
+      220 |   afterPixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? "enamel body" : "cast-iron support"} after Load`)
+    > 221 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));
+          |      ^
+      222 |   expect(afterPixels).toEqual(beforePixels);
+      223 |   fridgeAfter.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after Load`)
+      224 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\dedicated-kitchen-stove-player-build.spec.ts:221:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\dedicated-kitchen-stove-player-build.spec.ts:220:15
+
+    Error: fridge freezer panel after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m800[39m
+    Received:   [31m0[39m
+
+      222 |   expect(afterPixels).toEqual(beforePixels);
+      223 |   fridgeAfter.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after Load`)
+    > 224 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));
+          |      ^
+      225 |   expect(fridgeAfter).toEqual(fridgeBefore);
+      226 |   const evidencePath = info.outputPath('dedicated-kitchen-stove-worker-and-save-evidence.json');
+      227 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\dedicated-kitchen-stove-player-build.spec.ts:224:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\dedicated-kitchen-stove-player-build.spec.ts:223:15
+
+    Error: fridge side louvres after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      222 |   expect(afterPixels).toEqual(beforePixels);
+      223 |   fridgeAfter.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after Load`)
+    > 224 |     .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));
+          |      ^
+      225 |   expect(fridgeAfter).toEqual(fridgeBefore);
+      226 |   const evidencePath = info.outputPath('dedicated-kitchen-stove-worker-and-save-evidence.json');
+      227 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\dedicated-kitchen-stove-player-build.spec.ts:224:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-fridge-world-chord-integration-20261003\tests\browser\dedicated-kitchen-stove-player-build.spec.ts:223:15
+
+    attachment #1: dedicated-kitchen-stove-worker-and-save-evidence (application/json) ─────────────
+    ..\..\..\AppData\Local\Temp\lockstate-kitchen-session-q1-negative-20261003\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\attachments\dedicated-kitchen-stove-worker-and-save-evidence-4dc582de8c19dd1544a40bc403384d83a0145a8d.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-kitchen-session-q1-negative-20261003\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\error-context.md
+
+  1 failed
+    tests\browser\dedicated-kitchen-stove-player-build.spec.ts:279:3 › player builds Kitchen at quarterTurns1 and retains stove and fridge detail palettes and all completed owners after Save/Load 
+  1 passed (1.5m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+

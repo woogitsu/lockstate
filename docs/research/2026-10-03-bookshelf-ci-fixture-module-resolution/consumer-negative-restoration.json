@@ -1,0 +1,17 @@
+{
+  "scope": "test-consumer module resolver, not gameplay production or native mutation",
+  "negativeExitCode": 1,
+  "restoredExitCode": 0,
+  "hashes": {
+    "tests/browser/oblique-authored-actors.spec.ts": {
+      "before": "a82a2f8ff5d22999d03430a87fcd7e58ba60d37b009fbeb9d3e8a4d059597279",
+      "restored": "a82a2f8ff5d22999d03430a87fcd7e58ba60d37b009fbeb9d3e8a4d059597279",
+      "equal": true
+    },
+    "tests/browser/oblique-pending-wall-player.spec.ts": {
+      "before": "f5eda50474a4f8df7d6989a1794e74bebd6d588c355428a1fef810455d73e271",
+      "restored": "f5eda50474a4f8df7d6989a1794e74bebd6d588c355428a1fef810455d73e271",
+      "equal": true
+    }
+  }
+}
