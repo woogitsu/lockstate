@@ -71,3 +71,12 @@ Next frozen integration combines deterministic conflicting-import restoration,
 completed-door approach admission, actual camera preconditions, Security
 Console and the detailed Medical Bed. Genuine combined-client Build/Load
 remains required. Owner-only CI sharding and V9 new-action fields are pending.
+
+### Final evidence publication gates
+
+The unchanged research-index, documentation-link, TypeScript-coverage and
+canonical-browser-partition contracts pass21/21. Their initial run found two
+historical Utility crop measurements formatted as nonexistent q0/q1 links;
+only formatting now states the same rectangles as code coordinates. [Original
+RED](documentation-original-red.txt) and [restored21GREEN](documentation-restored-21.txt)
+are retained. No measurement, test assertion or matcher budget was changed.
