@@ -51,8 +51,13 @@ it('retains the original fridge assembly/materials and registers dedicated physi
   expect(physical.originalSource).toBe(provenance.source);
   expect(physical.originalSourceSha256).toBe(provenance.sourceSha256);
   expect(hash(readFileSync(new URL(physical.source, root)))).toBe(physical.sourceSha256);
-  expect(catalog.source).toBe(physical.source);
-  expect(catalog.sourceSha256).toBe(physical.sourceSha256);
+  const soft = JSON.parse(readFileSync(new URL('assets/source/blender/furniture.kitchen.fridge.soft-light.provenance.json', root), 'utf8')) as {source:string;sourceSha256:string;retainedSource:string;retainedSourceSha256:string};
+  expect(soft.retainedSource).toBe(physical.source);
+  expect(soft.retainedSourceSha256).toBe(physical.sourceSha256);
+  expect(catalog.source).toBe(soft.source);
+  expect(catalog.sourceSha256).toBe('1bad1e58abc9cd6c7a5773742df6b365ceb85db0a1e20d3c20a46c2e2508ce7d');
+  expect(hash(readFileSync(new URL(soft.source, root)))).toBe(catalog.sourceSha256);
+  expect(soft.sourceSha256).toBe(catalog.sourceSha256);
   expect(catalog.cameraTargetTiles).toEqual(provenance.cameraTargetTiles);
   expect(catalog.resolutionPx).toEqual([256, 256]);
   expect(catalog.nominalPixelsPerTile).toBe(64);

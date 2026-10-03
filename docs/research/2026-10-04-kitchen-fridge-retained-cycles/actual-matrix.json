@@ -1,45 +1,23 @@
 {
-  "schemaVersion": 1,
-  "assetId": "furniture.kitchen.fridge.variants",
-  "source": "assets/source/blender/furniture.kitchen.fridge.soft-light.blend",
+  "genuineBlenderVersion": [
+    5,
+    2,
+    1
+  ],
+  "engine": "CYCLES",
+  "device": "CPU",
+  "threads": 1,
+  "samples": 128,
+  "seed": 0,
+  "adaptiveSampling": false,
+  "denoising": true,
+  "denoiser": "OPENIMAGEDENOISE",
+  "denoisingUseGpu": false,
+  "viewTransform": "AgX",
+  "actualExportSeconds": 208.3341738000163,
+  "realRenderCount": 72,
   "sourceSha256": "1bad1e58abc9cd6c7a5773742df6b365ceb85db0a1e20d3c20a46c2e2508ce7d",
-  "resolutionPx": [
-    256,
-    256
-  ],
-  "nominalPixelsPerTile": 64,
-  "pivotPx": [
-    128,
-    128
-  ],
-  "cameraTargetTiles": [
-    0.5,
-    0.5,
-    1.1999999284744263
-  ],
-  "projection": "orthographic",
-  "yawDegrees": [
-    0,
-    30,
-    60,
-    90,
-    120,
-    150,
-    180,
-    210,
-    240,
-    270,
-    300,
-    330
-  ],
-  "elevationDegrees": [
-    20,
-    30,
-    40,
-    50,
-    60,
-    70
-  ],
+  "descriptorSha256": "d4176f99677a6747842ebc8bb2e1650492fb99232464c823a85cc6751f47c46b",
   "frames": [
     {
       "yawDegrees": 0,
@@ -473,5 +451,7 @@
       "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+330-elev70.948dc781ac5f.png",
       "sha256": "948dc781ac5f2990cbb785f325ea66e7eda1c9b1de43692c31ab15284a8fcb86"
     }
-  ]
+  ],
+  "groundPlaneAdded": false,
+  "nativeAcceptance": false
 }

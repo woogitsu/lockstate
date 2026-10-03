@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-kitchen-fridge-cycles-20261004
+
+··
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  00:37:48
+   Duration  622ms (transform 173ms, setup 0ms, import 497ms, tests 13ms, environment 0ms)

@@ -1,0 +1,13 @@
+actual-saved-source-mutant-written GREEN 0
+actual-source-contact-RED RED 1
+exact-source-restore-GREEN GREEN 0
+actual-producer-dispatch-RED RED 1
+exact-dispatch-restore-GREEN GREEN 0
+actual-hash-valid-PNG-RED RED 1
+exact-PNG-descriptor-restore-GREEN GREEN 0
+actual-old-Workbench-consumer-RED RED 1
+exact-modern-descriptor-restore-GREEN GREEN 0
+actual-registry-omission-RED RED 1
+exact-registry-restore-GREEN GREEN 0
+four-real-canonical-repeats-GREEN GREEN 0
+KITCHEN_FRIDGE_CYCLES_PRODUCTION_CONTROLS_EXACT_RESTORE_GREEN 731

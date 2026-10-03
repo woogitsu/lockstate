@@ -1,0 +1,29 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-kitchen-fridge-cycles-20261004
+
+xx
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  00:37:47
+   Duration  660ms (transform 173ms, setup 0ms, import 519ms, tests 16ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-kitchen-fridge-modern-consumer.test.ts > selects genuine saved modern Kitchen fridge q0 over its whole unchanged paid footprint
+ FAIL  tests/unit/oblique-kitchen-fridge-modern-consumer.test.ts > selects genuine saved modern Kitchen fridge q1 over its whole unchanged paid footprint
+AssertionError: expected 'assets/source/blender/furniture.kitch…' to be 'assets/source/blender/furniture.kitch…' // Object.is equality
+
+Expected: "assets/source/blender/furniture.kitchen.fridge.soft-light.blend"
+Received: "assets/source/blender/furniture.kitchen.fridge.angled-detail.blend"
+
+ ❯ tests/unit/oblique-kitchen-fridge-modern-consumer.test.ts:41:26
+     39|   expect(registry.entries.filter(row=>row.assetId===solid.assetId)).to…
+     40|   const catalog=parseObliqueModuleCatalog(JSON.parse(readFileSync(new …
+     41|   expect(catalog.source).toBe('assets/source/blender/furniture.kitchen…
+       |                          ^
+     42|   expect(catalog.sourceSha256).toBe('1bad1e58abc9cd6c7a5773742df6b365c…
+     43|   const selected=selectObliqueModuleFrame(catalog,{yawRadians:solid.as…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯

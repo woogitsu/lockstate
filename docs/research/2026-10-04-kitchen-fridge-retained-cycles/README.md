@@ -22,8 +22,16 @@ Actual reopened60/e40 body SHA256 `6d705ce7fcb58f091d1f974716fe988cecea85167f640
 Actual reopened300/e40 body SHA256 `a6d73e1d54a877812e867aa877d5deda3c944259b35dd95506be64e31ce77fbc`.
 Initial575 released source/history/catalog/template/renderer/UI/browser files are protected exactly. Old source and all old72 images remain.
 
-## Current checkpoint and pending boundary
+## Completed source/export proof and native boundary
 
-This first coherent checkpoint publishes real saved Blender source and inspected before/after pictures. Full72, four independent real repeats, meaningful producer/source/PNG/current consumer/callback controls, focused tests and strict types follow. Blender5.2.1 LTS, one process/CPUthread1; no AI bitmap or invented render. Root owns final source integration/build/browser and genuine composed Kitchen public UI/HTTPbody/Blob/V10/visual acceptance. Source pictures do not establish native playability.
+Actual72 genuine Cycles poses finished in208.3341738000163s, CPUthread1. Four independently rerendered30/120/210/300e40 bodies are byte exact in12.10734010010492s. Every historical72 body remains. Final72 source60/300 bodies exactly equal the inspected reopened-source samples; current60 and opposite210 exported views were also opened.
+
+Seven real production REDs cover saved handle-contact loss, dedicated asset dispatch, hash-valid PNG decoded border failure, old Workbench descriptor consumed by the current typed renderer, actual registry omission, canonical callback omission and shared Kitchen callback omission (which incorrectly repeats the anchor translation and escapes the1x1 footprint). Every exact restore is GREEN, with731 protected source/render/catalog/template/renderer/UI/browser files unchanged. Both original dedicated entrypoints and the selected shared Kitchen callback are verified without rerendering other fixtures. The original mount guard checks evaluated mesh AABB overlap, not triangle-interior contact.
+
+Both previous live-source tests genuinely failed before their source assertions were corrected; all original73/97 structural and material guards remain. The formerly selected old Workbench descriptor also genuinely fails the new typed consumer. Thirteen focused suites65G/1existing optional generic Blender-PATHskip; two strict TypeScript projects0. The pinned real Blender controls ran independently.
+
+Current typed q0/q1 template consumer uses Kitchen6x6 at(4,4), owner `room-template-000000000002-2-object-002`: q0(5,7)/orientation0/camera60e40 and q1(6,5)/orientation1/camera-30e40. Whole1x1 projected occupied footprint and unchanged stove/prep/fridge template contents are asserted. Both select the actual source60/e40 exact PNG. This is source-level real template and renderer consumption, not a native purchase/SaveLoad result.
+
+Root owns source integration/build/browser and genuine composed Kitchen public UI/HTTPbody/Blob/V10/visual acceptance. Source pictures do not establish native playability. No pixel ROI, new material threshold or native fixture was invented. Existing aliases/mapping/registry/material palette/gameplay remain.
 
 Reproduce via `tooling/blender/prepare-kitchen-fridge-cycles.py`, then `--refresh-saved-comparison` or `--verify-saved`, using `--background --threads 1 --python-exit-code 1`. No UI/renderer/native observer/helper/fixture/config/schema/save/gameplay/palette/collision change is included.
