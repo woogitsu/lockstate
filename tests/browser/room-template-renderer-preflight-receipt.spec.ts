@@ -1,7 +1,7 @@
 import { expect, test, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 
-interface Target { templateId: string; origin: { x: number; y: number } }
+interface Target { kind: 'room-template'; templateId: string; origin: { x: number; y: number } }
 interface Probe {
   hold: boolean;
   heldTarget?: Target;
@@ -81,7 +81,7 @@ for (const initialMode of ['world', 'oblique'] as const) for (const rearm of [fa
     await expect(ghost.locator('polygon')).toHaveCount(28);
     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');
     const chosen = await page.evaluate(() => (Reflect.get(window, 'rendererPlanPreflight') as Probe).replies.at(-1)!);
-    expect(chosen.ok).toBe(true); expect(chosen.target.templateId).toBe('cell-basic');
+    expect(chosen.ok).toBe(true); expect(chosen.target.kind).toBe('room-template'); expect(chosen.target.templateId).toBe('cell-basic');
     await page.evaluate(target => { const probe = Reflect.get(window, 'rendererPlanPreflight') as Probe; probe.hold = true; probe.heldTarget = target; }, chosen.target);
     await page.mouse.down(); await page.mouse.up();
     await expect.poll(() => page.evaluate(() => (Reflect.get(window, 'rendererPlanPreflight') as Probe).held)).toEqual([chosen]);
@@ -105,7 +105,7 @@ for (const initialMode of ['world', 'oblique'] as const) for (const rearm of [fa
       reply.target.templateId === 'cell-basic' && reply.target.origin.x === target.origin.x && reply.target.origin.y === target.origin.y).length, chosen.target)).toBeGreaterThanOrEqual(2);
     if (!rearm) {
       await expect.poll(async () => (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toEqual([
-        { type: 'PlaceRoomTemplate', ...chosen.target },
+        { type: 'PlaceRoomTemplate', templateId: chosen.target.templateId, origin: chosen.target.origin },
       ]);
       await expect.poll(() => page.evaluate(() => (Reflect.get(window, 'rendererPlanPreflight') as Probe).commandResults)).toEqual([{ status: 'queued' }]);
     }

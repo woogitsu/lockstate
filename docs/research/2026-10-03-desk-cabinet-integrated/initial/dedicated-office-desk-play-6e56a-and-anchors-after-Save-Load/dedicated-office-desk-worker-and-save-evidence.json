@@ -1,0 +1,87 @@
+{
+  "quarterTurns": 0,
+  "actualBefore": [
+    "object.desk@21,6:orientation=0"
+  ],
+  "actualAfter": [
+    "object.desk@21,6:orientation=0"
+  ],
+  "ownerBefore": {
+    "object": {
+      "placedObjectId": "object:21:6",
+      "objectId": "object.desk",
+      "anchorTile": {
+        "x": 21,
+        "y": 6
+      },
+      "orientation": 0,
+      "sourceOrderId": "room-template-000000000002-2-object-000"
+    },
+    "order": {
+      "id": "room-template-000000000002-2-object-000",
+      "definitionId": "desk-wooden",
+      "location": {
+        "x": 21,
+        "y": 6
+      },
+      "placementSequence": 2,
+      "state": "completed",
+      "progress": 60,
+      "materialsAllocated": [
+        {
+          "itemId": "item.wood-plank",
+          "quantity": 2
+        }
+      ],
+      "assignedWorkerId": "mock-worker-1"
+    }
+  },
+  "ownerAfter": {
+    "object": {
+      "placedObjectId": "object:21:6",
+      "objectId": "object.desk",
+      "anchorTile": {
+        "x": 21,
+        "y": 6
+      },
+      "orientation": 0,
+      "sourceOrderId": "room-template-000000000002-2-object-000"
+    },
+    "order": {
+      "id": "room-template-000000000002-2-object-000",
+      "definitionId": "desk-wooden",
+      "location": {
+        "x": 21,
+        "y": 6
+      },
+      "placementSequence": 2,
+      "state": "completed",
+      "progress": 60,
+      "materialsAllocated": [
+        {
+          "itemId": "item.wood-plank",
+          "quantity": 2
+        }
+      ],
+      "assignedWorkerId": "mock-worker-1"
+    }
+  },
+  "beforePixels": [
+    281,
+    111
+  ],
+  "afterPixels": [
+    281,
+    111
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "reception-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      }
+    }
+  ]
+}

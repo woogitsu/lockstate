@@ -1,0 +1,42 @@
+node : [2m[WebServer] [22m(node:7432) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:2 char:308
++ ... 1003.json'; node --experimental-transform-types --disable-warning=Exp ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 7 tests using 1 worker
+
+(node:3888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\dedicated-medicine-cabinet-player-build.spec.ts:199:1 › player creates actual storage and delivery capacity before detailed Infirmary (43.1s)
+  ok 2 tests\browser\dedicated-medicine-cabinet-player-build.spec.ts:262:3 › player builds Infirmary at quarterTurns0 and retains the authored cabinet inset palette and anchors after Save/Load (44.5s)
+  ok 3 tests\browser\dedicated-medicine-cabinet-player-build.spec.ts:262:3 › player builds Infirmary at quarterTurns1 and retains the authored cabinet inset palette and anchors after Save/Load (44.5s)
+RENDERER_PLAN_PREFLIGHT_RECEIPT {"initialMode":"world","rearm":false,"chosen":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":14,"y":13}},"ok":true}}
+  ok 4 tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD world: renderer replacement during genuine preflight stands down accepted cell (7.0s)
+RENDERER_PLAN_PREFLIGHT_RECEIPT {"initialMode":"world","rearm":true,"chosen":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":14,"y":13}},"ok":true}}
+  ok 5 tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD world: renderer replacement during genuine preflight protects rearmed Yard (7.7s)
+RENDERER_PLAN_PREFLIGHT_RECEIPT {"initialMode":"oblique","rearm":false,"chosen":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":17,"y":13}},"ok":true}}
+  ok 6 tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD oblique: renderer replacement during genuine preflight stands down accepted cell (6.2s)
+RENDERER_PLAN_PREFLIGHT_RECEIPT {"initialMode":"oblique","rearm":true,"chosen":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":17,"y":13}},"ok":true}}
+  ok 7 tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD oblique: renderer replacement during genuine preflight protects rearmed Yard (7.0s)
+
+  7 passed (2.7m)

@@ -1,5 +1,5 @@
-// Pending new-source native acceptance: actual Infirmary construction and Save/Load.
-// The original q0 cabinet crop/control is retained; q1 remains provisional until native PNG inspection.
+// Actual combined-source Infirmary Build/SaveLoad accepted in both orientations.
+// Original regions/colours/>100 retained; root opened q0/q1 real FullHD captures.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
@@ -90,10 +90,9 @@ async function cabinetPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Pending native calibration. q0 retains the original accepted Infirmary
-    // cabinet region/colour/>100 threshold. q1 region is provisional; its
-    // existing dark-inset RGB comes from the actual source yaw30/elev40 PNG.
-    // Source previews are not native acceptance. Open both real FullHDs first.
+    // Native FullHD q0/q1 accepted with original regions/colours/>100 threshold.
+    // Actual counts1151/2231 are identical after Save/Load; root opened
+    // both loaded PNGs. Retain these controls on later rebuilds.
     const rects = quarterTurns === 0 ? [[830,350,100,130]] : [[965,390,100,130]];
     const colours = quarterTurns === 0 ? [[64,76,76]] : [[72,86,86]];
     return rects.map((rect, regionIndex) => {
