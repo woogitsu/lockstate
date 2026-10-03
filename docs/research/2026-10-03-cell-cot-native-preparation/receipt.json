@@ -1,0 +1,23 @@
+{
+  "base": "9cf6818ddccc96e379f888caacb77060a42c960d",
+  "preparedSpec": "tests/browser/cell-cot-player-build.spec.ts",
+  "helper": "tests/browser/cell-cot-evidence.ts",
+  "routing": "existing dev/source; root owns future artifact registration",
+  "strictTypeExitCode": 0,
+  "collectedTests": 3,
+  "collectedFiles": 1,
+  "docs": {
+    "failed": 4,
+    "passed": 11,
+    "durationSeconds": 11.69,
+    "inherited": true
+  },
+  "nativeExecuted": false,
+  "browserStarted": false,
+  "serverStarted": false,
+  "buildPerformed": false,
+  "producerMutationPerformed": false,
+  "hardwareCalibrationPending": true,
+  "privateBoundTextureExposed": false,
+  "productionConfigurationDiff": ""
+}

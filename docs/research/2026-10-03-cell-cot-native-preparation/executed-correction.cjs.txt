@@ -1,0 +1,12 @@
+﻿const fs=require('node:fs');const p='tests/browser/cell-cot-player-build.spec.ts'; let s=fs.readFileSync(p,'utf8').replaceAll('\r\n','\n');
+s=s.replace("  const minimapRegion = page.getByRole('region', { name: 'Minimap', exact: true });", `  const pausedBefore = await workerSnapshot(page);
+  const ownerBefore = requireCotOwner(pausedBefore, quarterTurns, sequence);
+  const completionElapsedMs = Date.now() - started;
+  const minimapRegion = page.getByRole('region', { name: 'Minimap', exact: true });`);
+s=s.replace("  expect(await bedAnchors(page)).toEqual([quarterTurns === 0 ? '21,6' : '24,6']);\n  await minimap.click",`  expect(await bedAnchors(page)).toEqual([quarterTurns === 0 ? '21,6' : '24,6']);
+  const pausedAfter = await workerSnapshot(page);
+  expect(pausedAfter).toEqual(pausedBefore);
+  const ownerAfter = requireCotOwner(pausedAfter, quarterTurns, sequence);
+  expect(ownerAfter).toEqual(ownerBefore);
+  await minimap.click`);
+fs.writeFileSync(p,s);
