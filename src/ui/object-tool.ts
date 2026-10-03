@@ -1,6 +1,15 @@
 import type { ObjectToolPort, TileRect } from '../rendering/build/area-picking';
 import type { BuildEdgeId } from '../rendering/build/edge-picking';
 import type { BuildPanelTarget, HudObjectGesture, HudWorldObjectSource } from './hud';
+import type { ObjectPlacementPreflight } from '../simulation/objects/object-placement-service';
+import type { ObjectPlacementPreviewTarget } from './simulation-object-placement-port';
+
+interface ObjectToolPreviewOptions {
+  readonly preflight: (target: ObjectPlacementPreviewTarget) => Promise<ObjectPlacementPreflight>;
+  /** Authoritative session/publication counter, independent of renderer geometry revisions. */
+  readonly worldRevision: () => number;
+  readonly onPreviewChanged?: () => void;
+}
 
 /**
  * What the preview covers while the tool is armed to remove: one tile.
@@ -57,6 +66,30 @@ export class ObjectTool implements ObjectToolPort, HudWorldObjectSource {
   private removing = false;
   private definitionId: string | undefined;
   private tileFootprint: { readonly width: number; readonly height: number } | undefined;
+  private previewOwner: { readonly definitionId: string; readonly x: number; readonly y: number; readonly world: number } | undefined;
+  private preview: ObjectPlacementPreflight | undefined;
+  private aimedRect: TileRect | undefined;
+
+  public constructor(private readonly previewOptions?: ObjectToolPreviewOptions) {}
+
+  private clearPreview(): void {
+    this.previewOwner = undefined;
+    this.preview = undefined;
+    this.aimedRect = undefined;
+  }
+
+  /** Re-read a stationary aim only after a real authoritative publication. */
+  public refreshPreview(): void {
+    if (this.aimedRect === undefined) return;
+    this.target(this.aimedRect);
+    this.previewOptions?.onPreviewChanged?.();
+  }
+
+  /** Undefined is unresolved/stale, never a fabricated successful verdict. */
+  public previewVerdict(): 'allowed' | 'blocked' | undefined {
+    if (!this.armed || this.removing || this.previewOwner?.world !== this.previewOptions?.worldRevision()) return undefined;
+    return this.preview === undefined ? undefined : this.preview.ok ? 'allowed' : 'blocked';
+  }
 
   /**
    * Where a finished gesture goes.
@@ -120,11 +153,13 @@ export class ObjectTool implements ObjectToolPort, HudWorldObjectSource {
       readonly removing?: boolean;
     } = {},
   ): void {
+    const wasArmed = this.armed, wasRemoving = this.removing, wasDefinition = this.definitionId;
     if (options.definitionId !== undefined) this.definitionId = options.definitionId;
     if (options.footprint !== undefined) this.tileFootprint = options.footprint;
     this.removing = options.removing ?? this.removing;
     this.armed =
       armed && (this.removing || (this.definitionId !== undefined && this.tileFootprint !== undefined));
+    if (!this.armed || wasArmed !== this.armed || wasRemoving !== this.removing || wasDefinition !== this.definitionId) this.clearPreview();
     // A tool that is not armed is aimed at nothing, and says so -- the rule
     // `BuildTool.setArmed` records in full (#550).
     if (!this.armed) this.readout?.(undefined);
@@ -175,12 +210,42 @@ export class ObjectTool implements ObjectToolPort, HudWorldObjectSource {
    * aim.
    */
   public target(rect: TileRect | undefined): void {
-    if (this.readout === undefined) return;
     if (rect === undefined) {
-      this.readout(undefined);
+      this.clearPreview();
+      this.readout?.(undefined);
       return;
     }
-    this.readout({ x: rect.tileX, y: rect.tileY });
+    this.aimedRect = rect;
+    const options = this.previewOptions;
+    if (options !== undefined && this.armed && !this.removing && this.definitionId !== undefined) {
+      const world = options.worldRevision();
+      if (this.previewOwner?.definitionId !== this.definitionId || this.previewOwner.x !== rect.tileX ||
+          this.previewOwner.y !== rect.tileY || this.previewOwner.world !== world) {
+        const owner = { definitionId: this.definitionId, x: rect.tileX, y: rect.tileY, world };
+        this.previewOwner = owner;
+        this.preview = undefined;
+        void options.preflight({ definitionId: owner.definitionId, anchor: { x: owner.x, y: owner.y } }).then(verdict => {
+          if (this.previewOwner !== owner || !this.armed || this.removing || options.worldRevision() !== owner.world) return;
+          this.preview = verdict;
+          this.reportTarget(rect);
+          options.onPreviewChanged?.();
+        }).catch(() => { if (this.previewOwner === owner) this.preview = undefined; });
+      }
+    }
+    this.reportTarget(rect);
+  }
+
+  private reportTarget(rect: TileRect): void {
+    const verdict = this.previewVerdict() === undefined ? undefined : this.preview;
+    const tiles = verdict?.footprint;
+    const objectFootprint = tiles === undefined || tiles.length === 0 ? undefined : {
+      width: Math.max(...tiles.map(tile => tile.x)) - Math.min(...tiles.map(tile => tile.x)) + 1,
+      height: Math.max(...tiles.map(tile => tile.y)) - Math.min(...tiles.map(tile => tile.y)) + 1,
+    };
+    this.readout?.({ x: rect.tileX, y: rect.tileY,
+      ...(objectFootprint === undefined ? {} : { objectFootprint }),
+      ...(verdict?.catalogueCostMinorUnits === undefined ? {} : { catalogueCostMinorUnits: verdict.catalogueCostMinorUnits }),
+    });
   }
 
   /**

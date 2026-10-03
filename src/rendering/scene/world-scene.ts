@@ -1503,8 +1503,14 @@ export class WorldScene extends Phaser.Scene {
     // gesture takes something away" and draws its own removal fill and outline.
     // So the removal look costs nothing new here, and the scene still learns
     // only which preview to draw -- never which command the press becomes.
-    this.objectOverlay?.update(this.objectRect, this.objectTool?.isRemoving() === true ? undefined : this.objectTint?.());
     this.objectTool?.target?.(this.objectRect);
+    this.objectOverlay?.update(this.objectRect, this.objectTool?.isRemoving() === true ? undefined : this.objectTint?.());
+  }
+
+  /** Verdict publication repaints the retained aim, without moving or cancelling a held press. */
+  public refreshObjectToolVerdict(): void {
+    if (!this.isObjectArmed()) { this.cancelObject(); return; }
+    this.paintObjectPreview();
   }
 
   private previewAreaHover(pointer: Phaser.Input.Pointer): void {

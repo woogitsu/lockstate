@@ -1,0 +1,26 @@
+[
+    {
+        "tag":  "stale-owner-omission",
+        "exit":  1,
+        "before":  "1CB25067FD78F527A9C83E64BD7A103683C87C10645C06AE63A1C696E3CE4A04",
+        "restored":  "1CB25067FD78F527A9C83E64BD7A103683C87C10645C06AE63A1C696E3CE4A04"
+    },
+    {
+        "tag":  "paused-publication-omission",
+        "exit":  1,
+        "before":  "05E8A309E4C5FFD2AE551275F90F3EC894603D13FFC7725DD5AF8CC9EDCF487D",
+        "restored":  "05E8A309E4C5FFD2AE551275F90F3EC894603D13FFC7725DD5AF8CC9EDCF487D"
+    },
+    {
+        "tag":  "async-scene-refresh-omission",
+        "exit":  1,
+        "before":  "1CB25067FD78F527A9C83E64BD7A103683C87C10645C06AE63A1C696E3CE4A04",
+        "restored":  "1CB25067FD78F527A9C83E64BD7A103683C87C10645C06AE63A1C696E3CE4A04"
+    },
+    {
+        "tag":  "oblique-verdict-omission",
+        "exit":  1,
+        "before":  "8D17C8B49D4FE443626724ADAD5ECA7BEEC42764CE872345EB923F03CF953F71",
+        "restored":  "8D17C8B49D4FE443626724ADAD5ECA7BEEC42764CE872345EB923F03CF953F71"
+    }
+]
