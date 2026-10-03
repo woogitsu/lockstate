@@ -1,0 +1,16 @@
+{
+  "controls": [
+    {
+      "control": "medical-cabinet-tuple-scale",
+      "exitCode": 1,
+      "error": "ValueError: Medicine cabinet declared occupied footprint and source scale changed"
+    },
+    {
+      "control": "medical-cabinet-tuple-target",
+      "exitCode": 1,
+      "error": "ValueError: Medicine cabinet declared target differs from measured source height"
+    }
+  ],
+  "exactRestoredVerifyExitCode": 0,
+  "medicalWrapperSha256": "dea8a0e339cbcd2810f3827794dbc8822ceb092d806468031051c06c95182e76"
+}
