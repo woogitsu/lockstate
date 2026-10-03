@@ -131,6 +131,7 @@ for (const locale of ['en', 'pl'] as const) test(`${locale}: DRAFT fourth Rotate
         top: box.top, bottom: box.bottom, hit: element.contains(document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)) };
     }));
     await writeFile(info.outputPath(`${locale}-ui${scale}-actual-all20-cards.json`), JSON.stringify(cardGeometry, null, 2));
+    await page.screenshot({ path: info.outputPath(`${locale}-ui${scale}-actual-all20-cards-fullhd.png`) });
     expect.soft(cardGeometry.every(card => card.text === card.accessible && card.fits && card.hit && card.top >= 0 && card.bottom <= 1080)).toBe(true);
     await page.locator('.hud-template__close').click();
   }

@@ -92,9 +92,18 @@ export async function actionGeometry(page: Page) {
     const visible = Array.from(row.querySelectorAll<HTMLButtonElement>('button')).filter(button => button.getClientRects().length > 0);
     const flowButtons = visible.filter(button => !['absolute', 'fixed'].includes(getComputedStyle(button).position));
     const flowWidth = flowButtons.reduce((sum, button) => sum + button.getBoundingClientRect().width, 0) + Math.max(0, flowButtons.length - 1) * Number.parseFloat(css.columnGap);
+    const allocations = ['.hud__rail', '.hud__side', '.hud-build', '.hud-build > .ui-panel__body', '.hud-build__catalogue', '.hud-build__list', '.hud-build__map', '.save-panel'].map(selector => {
+      const element = document.querySelector<HTMLElement>(selector);
+      if (element === null) return { selector, absent: true };
+      const b = element.getBoundingClientRect(), style = getComputedStyle(element);
+      return { selector, ...bounds(b), minimumHeight: style.minHeight, maximumHeight: style.maxHeight, heightRule: style.height,
+        position: style.position, flexBasis: style.flexBasis, flexGrow: style.flexGrow, flexShrink: style.flexShrink,
+        overflowY: style.overflowY, clientHeight: element.clientHeight, scrollHeight: element.scrollHeight, scrollTop: element.scrollTop,
+        insideViewport: b.left >= 0 && b.top >= 0 && b.right <= innerWidth && b.bottom <= innerHeight };
+    });
     return { viewport: { width: innerWidth, height: innerHeight, dpr: devicePixelRatio, visualScale: visualViewport?.scale },
       uiScale: document.documentElement.dataset['uiScaleStep'], row: bounds(box), panel: bounds(panel), gap: Number.parseFloat(css.columnGap), flexWrap: css.flexWrap,
-      flowWidth, flowButtonCount: flowButtons.length, overflowWidth: Math.max(0, flowWidth - box.width),
+      flowWidth, flowButtonCount: flowButtons.length, overflowWidth: Math.max(0, flowWidth - box.width), allocations,
       buttons: visible.map(button => {
         const b = button.getBoundingClientRect(), label = button.querySelector<HTMLElement>('.ui-action__label')!, l = label.getBoundingClientRect(), style = getComputedStyle(button);
         const range = document.createRange(); range.selectNodeContents(label);

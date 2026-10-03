@@ -7461,3 +7461,23 @@
     width: auto;
   }
 }
+
+/* SEPARATE UNAPPROVED allocation proposal. The200% catalogue already has a
+ * fixed110px scrolling list. Keep that floor and every action/label, but let
+ * Build's own minimum reflect the displayed group instead of shrinking it
+ * under its contents. Save/rail floors remain unchanged; actual native must
+ * reject this candidate if that allocation cannot fit them together. */
+@media (min-width: 1920px) and (min-height: 1080px) {
+  :root[data-ui-scale-step='200'] .hud[data-active-tab='build']
+    .hud-build:has(.hud-build__rotate-object:not([hidden])) {
+    min-height: min-content;
+    flex-shrink: 0;
+  }
+
+  /* Spend available horizontal modal space, not card/tap/thumbnail floors.
+   * Existing scaled padding is the viewport margin; max-height and overflow,
+   * all20 cards, their four columns and their content remain unchanged. */
+  :root[data-ui-scale-step='200'] .hud-template {
+    width: calc(100vw - 2 * var(--space-5));
+  }
+}
