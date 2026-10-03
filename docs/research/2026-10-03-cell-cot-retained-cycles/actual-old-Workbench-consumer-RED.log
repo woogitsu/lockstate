@@ -1,0 +1,30 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-cell-cot-retained-cycles-production-20261003
+
+xx
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  22:44:55
+   Duration  625ms (transform 172ms, setup 0ms, import 493ms, tests 16ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-cell-cot-modern-consumer.test.ts > selects genuine modern cot body in literal Basic Cell q0 over its whole paid occupied footprint
+ FAIL  tests/unit/oblique-cell-cot-modern-consumer.test.ts > selects genuine modern cot body in literal Basic Cell q1 over its whole paid occupied footprint
+AssertionError: expected 'assets/source/blender/furniture.cell.…' to be 'assets/source/blender/furniture.cell.…' // Object.is equality
+
+Expected: "assets/source/blender/furniture.cell.cot.single.soft-light.blend"
+Received: "assets/source/blender/furniture.cell.cot.single.angled-detail.blend"
+
+ ❯ tests/unit/oblique-cell-cot-modern-consumer.test.ts:41:26
+     39|   expect(registry.entries.filter(row=>row.assetId===solid.assetId)).to…
+     40|   const catalog=parseObliqueModuleCatalog(JSON.parse(readFileSync(new …
+     41|   expect(catalog.source).toBe('assets/source/blender/furniture.cell.co…
+       |                          ^
+     42|   expect(catalog.sourceSha256).toBe('1e3710b77601d6864f1de30d7b37a6220…
+     43|   const selected=selectObliqueModuleFrame(catalog,{yawRadians:solid.as…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+

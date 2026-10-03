@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-cell-cot-retained-cycles-production-20261003
+
+-······································································································································································································
+
+ Test Files  7 passed (7)
+      Tests  198 passed | 1 skipped (199)
+   Start at  23:08:31
+   Duration  810ms (transform 432ms, setup 0ms, import 1.43s, tests 572ms, environment 0ms)
+
