@@ -1,0 +1,49 @@
+{
+  "controls": [
+    {
+      "label": "actual-source-mutation-written",
+      "exitCode": 0,
+      "expectedFailure": null
+    },
+    {
+      "label": "actual-disconnected-source-red",
+      "exitCode": 1,
+      "expectedFailure": "Laundry linen rack actual contact disconnected"
+    },
+    {
+      "label": "exact-source-restore-green",
+      "exitCode": 0,
+      "expectedFailure": null
+    },
+    {
+      "label": "actual-producer-dispatch-red",
+      "exitCode": 1,
+      "expectedFailure": "Laundry linen rack dedicated producer dispatch changed"
+    },
+    {
+      "label": "exact-dispatch-restore-green",
+      "exitCode": 0,
+      "expectedFailure": null
+    }
+  ],
+  "protectedBefore": {
+    "assets/source/blender/furniture.laundry.linen-rack.blend": "779d11f79c28b8049ccd3371d840c75b52cd153439f3882e28c593d05dd964ec",
+    "assets/source/blender/furniture.laundry.linen-rack.provenance.json": "d3832ad3f75c1f56bb5f37a7181f0948775a9ad4d52dcee38c5e6b4a5b830ca9",
+    "assets/source/blender/furniture.storage.rack.wooden.angled-detail.blend": "600d62b3b5708081445b6ba84b5f38fc8534922f6a128b448e1585c97e95c212",
+    "public/game-content/oblique-module-registry.v1.json": "978ce3494304dc8157982d3eca1ea34af6801a861e5543422ec7d15e8079d4c5",
+    "src/rendering/assets/oblique-object-mapping.ts": "2e19583d8ae7800415c02aed546f45897bc143bfdd08b5aea3347ec316db05da",
+    "tooling/blender/build-laundry-linen-rack.py": "2fcd0b217c6104f67005dd9c73f631055f780c1e2c65dfa37dd323dd842057fd",
+    "tooling/blender/render-laundry-linen-rack-oblique.py": "35377b58cdefd94c651191959fc29dfe9afaca70a3b7ccd1d5df519620f70a6d"
+  },
+  "actualMutantSourceSha256": "f85a86cbab87fd47b0a0350f2a390fc7e42b94e92917c3a3bb1f9415fea1653b",
+  "protectedAfter": {
+    "assets/source/blender/furniture.laundry.linen-rack.blend": "779d11f79c28b8049ccd3371d840c75b52cd153439f3882e28c593d05dd964ec",
+    "assets/source/blender/furniture.laundry.linen-rack.provenance.json": "d3832ad3f75c1f56bb5f37a7181f0948775a9ad4d52dcee38c5e6b4a5b830ca9",
+    "assets/source/blender/furniture.storage.rack.wooden.angled-detail.blend": "600d62b3b5708081445b6ba84b5f38fc8534922f6a128b448e1585c97e95c212",
+    "public/game-content/oblique-module-registry.v1.json": "978ce3494304dc8157982d3eca1ea34af6801a861e5543422ec7d15e8079d4c5",
+    "src/rendering/assets/oblique-object-mapping.ts": "2e19583d8ae7800415c02aed546f45897bc143bfdd08b5aea3347ec316db05da",
+    "tooling/blender/build-laundry-linen-rack.py": "2fcd0b217c6104f67005dd9c73f631055f780c1e2c65dfa37dd323dd842057fd",
+    "tooling/blender/render-laundry-linen-rack-oblique.py": "35377b58cdefd94c651191959fc29dfe9afaca70a3b7ccd1d5df519620f70a6d"
+  },
+  "exactRestoredFiles": 7
+}
