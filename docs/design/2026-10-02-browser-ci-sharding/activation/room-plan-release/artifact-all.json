@@ -1,0 +1,1233 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-room-plan-release-ci-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-room-plan-release-ci-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-room-plan-release-ci-20261003/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-room-plan-release-ci-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5184 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-room-plan-release-ci-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5184/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "bookshelf-player-build.spec.ts",
+      "file": "bookshelf-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Classroom",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "cc4b308bbdc33c47e837-e2052e940ed785947b1f",
+          "file": "bookshelf-player-build.spec.ts",
+          "line": 134,
+          "column": 1
+        },
+        {
+          "title": "player builds the bookshelf in Classroom and keeps it after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "cc4b308bbdc33c47e837-2617e6f3e6b7f2e6277b",
+          "file": "bookshelf-player-build.spec.ts",
+          "line": 196,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "build-category-native-camera.spec.ts",
+      "file": "build-category-native-camera.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Full HD 100% native Build category navigation belongs to the filter in world",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "4a297b4533bc12144de9-4e2dade106fdb13ab9f3",
+          "file": "build-category-native-camera.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "Full HD 100% native Build category navigation belongs to the filter in oblique",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "4a297b4533bc12144de9-c0b02e9ff9c47c100019",
+          "file": "build-category-native-camera.spec.ts",
+          "line": 21,
+          "column": 3
+        },
+        {
+          "title": "Full HD 200% native Build category navigation belongs to the filter in oblique",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "4a297b4533bc12144de9-f58a50e8b6e8dec2ee93",
+          "file": "build-category-native-camera.spec.ts",
+          "line": 21,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "build-category-native-popup-held-key.spec.ts",
+      "file": "build-category-native-popup-held-key.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Full HD 100% Build Category native popup relinquishes world-held KeyE even when its release never reaches the page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "ada6fdbaa4f6bd754ef8-80dd73af3387ec7260f8",
+          "file": "build-category-native-popup-held-key.spec.ts",
+          "line": 14,
+          "column": 3
+        },
+        {
+          "title": "Full HD 200% Build Category native popup relinquishes world-held KeyJ even when its release never reaches the page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "ada6fdbaa4f6bd754ef8-7cc3fbe61c1933136141",
+          "file": "build-category-native-popup-held-key.spec.ts",
+          "line": 14,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "build-category-native-typeahead.spec.ts",
+      "file": "build-category-native-typeahead.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Full HD 100% Category native KeyW typeahead belongs to the filter in world",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "32d085699b03c42b59b5-291d06b07f916cd0b695",
+          "file": "build-category-native-typeahead.spec.ts",
+          "line": 25,
+          "column": 3
+        },
+        {
+          "title": "Full HD 100% Category native KeyW typeahead belongs to the filter in oblique",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "32d085699b03c42b59b5-bb50d2d36c0218fe25bf",
+          "file": "build-category-native-typeahead.spec.ts",
+          "line": 25,
+          "column": 3
+        },
+        {
+          "title": "Full HD 200% Category native KeyC typeahead belongs to the filter in oblique",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "32d085699b03c42b59b5-55574d6d32d2b5a82205",
+          "file": "build-category-native-typeahead.spec.ts",
+          "line": 25,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "canteen-dining-table-player-build.spec.ts",
+      "file": "canteen-dining-table-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Canteen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b692cd9cd048f51d3b66-472b23b7516399244e0f",
+          "file": "canteen-dining-table-player-build.spec.ts",
+          "line": 162,
+          "column": 1
+        },
+        {
+          "title": "player builds Canteen at quarterTurns0 and retains authored plates after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b692cd9cd048f51d3b66-e7a386b8238d58647434",
+          "file": "canteen-dining-table-player-build.spec.ts",
+          "line": 225,
+          "column": 3
+        },
+        {
+          "title": "player builds Canteen at quarterTurns1 and retains authored plates after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "b692cd9cd048f51d3b66-4f16157b13aab1e63149",
+          "file": "canteen-dining-table-player-build.spec.ts",
+          "line": 225,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "generic-office-desk-player-build.spec.ts",
+      "file": "generic-office-desk-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Reception",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "db7fe1d01999ecac7f19-9092e15d3cf59c12bf07",
+          "file": "generic-office-desk-player-build.spec.ts",
+          "line": 167,
+          "column": 1
+        },
+        {
+          "title": "player builds Reception at quarterTurns0 and retains authored desktop and detail palettes and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "db7fe1d01999ecac7f19-3a00390628f574bfd6e7",
+          "file": "generic-office-desk-player-build.spec.ts",
+          "line": 230,
+          "column": 3
+        },
+        {
+          "title": "player builds Reception at quarterTurns1 and retains authored desktop and detail palettes and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "db7fe1d01999ecac7f19-b0cded36909c3280cbc0",
+          "file": "generic-office-desk-player-build.spec.ts",
+          "line": 230,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "generic-wooden-rack-player-build.spec.ts",
+      "file": "generic-wooden-rack-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before generic rack",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "8db663fc1957556b28b4-139e1ce72f2291b0d74b",
+          "file": "generic-wooden-rack-player-build.spec.ts",
+          "line": 213,
+          "column": 1
+        },
+        {
+          "title": "player reaches default generic racks at quarterTurns0 and retains both authored rack palettes and native anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "8db663fc1957556b28b4-fb37c5bed10cdf20f3d0",
+          "file": "generic-wooden-rack-player-build.spec.ts",
+          "line": 276,
+          "column": 3
+        },
+        {
+          "title": "player reaches default generic racks at quarterTurns1 and retains both authored rack palettes and native anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "8db663fc1957556b28b4-18841381df24c2646c13",
+          "file": "generic-wooden-rack-player-build.spec.ts",
+          "line": 276,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "hud-layout-menu-fullhd.spec.ts",
+      "file": "hud-layout-menu-fullhd.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Full HD world view closes the Layout menu without cancelling the armed Build tool",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "ee94492962ae4db33aab-858b1fb769940248845f",
+          "file": "hud-layout-menu-fullhd.spec.ts",
+          "line": 3,
+          "column": 3
+        },
+        {
+          "title": "Full HD oblique view closes the Layout menu without cancelling the armed Build tool",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "ee94492962ae4db33aab-32d2c24a4a5361087c61",
+          "file": "hud-layout-menu-fullhd.spec.ts",
+          "line": 3,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "hud-separator-held-arrow.spec.ts",
+      "file": "hud-separator-held-arrow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Full HD acknowledged inspector resize arrow does not continue panning the world map",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "a77154145dacf06beb75-d4158bffb6c82be5c98a",
+          "file": "hud-separator-held-arrow.spec.ts",
+          "line": 4,
+          "column": 3
+        },
+        {
+          "title": "Full HD acknowledged inspector resize arrow does not continue panning the oblique map",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "a77154145dacf06beb75-ab2d65a08ce36038fc6b",
+          "file": "hud-separator-held-arrow.spec.ts",
+          "line": 4,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "infirmary-player-build.spec.ts",
+      "file": "infirmary-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Infirmary",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4bff34bea48fa24d233-44dfaf9071df5054dfff",
+          "file": "infirmary-player-build.spec.ts",
+          "line": 148,
+          "column": 1
+        },
+        {
+          "title": "player builds authored medical fixtures in Infirmary and keeps it after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "f4bff34bea48fa24d233-afb9e4eb9e9306bfcffd",
+          "file": "infirmary-player-build.spec.ts",
+          "line": 210,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "live-view-held-native-arrow.spec.ts",
+      "file": "live-view-held-native-arrow.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "a native View arrow starts renderer selection without panning the old map during actual registry preparation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "57be95bdd0ea96343933-7ef4f21edfe7f8e6c8df",
+          "file": "live-view-held-native-arrow.spec.ts",
+          "line": 3,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "live-view-native-popup-held-key.spec.ts",
+      "file": "live-view-native-popup-held-key.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Full HD 100% View native popup relinquishes world-held KeyE even when its release never reaches the page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "66e05d0c5b0a86bee0b3-d8ed8527536d856ec7bc",
+          "file": "live-view-native-popup-held-key.spec.ts",
+          "line": 14,
+          "column": 3
+        },
+        {
+          "title": "Full HD 200% View native popup relinquishes world-held KeyJ even when its release never reaches the page",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "66e05d0c5b0a86bee0b3-3b3627536e9c0d767700",
+          "file": "live-view-native-popup-held-key.spec.ts",
+          "line": 14,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "oblique-build-drag-under-hud.spec.ts",
+      "file": "oblique-build-drag-under-hud.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Full HD 100% angled canvas-origin Build drag retains its whole run beneath a native HUD control",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "2d236108e7d41e035205-2fc508d2ed0a14ea2649",
+          "file": "oblique-build-drag-under-hud.spec.ts",
+          "line": 41,
+          "column": 3
+        },
+        {
+          "title": "Full HD 200% angled canvas-origin Build drag retains its whole run beneath a native HUD control",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "2d236108e7d41e035205-38f421051507773ef6f9",
+          "file": "oblique-build-drag-under-hud.spec.ts",
+          "line": 41,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "production-artifact.spec.ts",
+      "file": "production-artifact.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "the production artefact runs the game",
+          "file": "production-artifact.spec.ts",
+          "line": 160,
+          "column": 6,
+          "specs": [
+            {
+              "title": "boots from dist with no page error, and the built client builds its worker from its own emitted chunk",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "986e60dbe88f53e24719-680d9b3f66854fc79631",
+              "file": "production-artifact.spec.ts",
+              "line": 161,
+              "column": 3
+            },
+            {
+              "title": "completes one command round trip and one persistence round trip in the built client",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "986e60dbe88f53e24719-2d529ff1460970dd34e5",
+              "file": "production-artifact.spec.ts",
+              "line": 282,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "room-plan-dialog-escape.spec.ts",
+      "file": "room-plan-dialog-escape.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Full HD 100% native catalogue Escape matches Close plans and preserves the armed map preview",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "2893494a18c6d355217d-3b18563295995e402571",
+          "file": "room-plan-dialog-escape.spec.ts",
+          "line": 14,
+          "column": 3
+        },
+        {
+          "title": "Full HD 200% native catalogue Escape matches Close plans and preserves the armed map preview",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "2893494a18c6d355217d-55673dd6dc67112d7f53",
+          "file": "room-plan-dialog-escape.spec.ts",
+          "line": 14,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "room-plan-native-picker.spec.ts",
+      "file": "room-plan-native-picker.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "native rotation popup owns its first Escape and releases a world-held camera key before catalogue close",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "38ef1a311040388e2c32-1b743ccf51a423363b49",
+          "file": "room-plan-native-picker.spec.ts",
+          "line": 13,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "room-template-live-orientation.spec.ts",
+      "file": "room-template-live-orientation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "native orientation edits keep an armed origin, complete fixtures and latest real preflight after refusal",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "d61fbab2450152e4f524-38c92be9015abb429240",
+          "file": "room-template-live-orientation.spec.ts",
+          "line": 82,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "rotated-security-console-player-build.spec.ts",
+      "file": "rotated-security-console-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Security Office",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "7b8236f3421742b77c59-199b77e07cfe5d1f97f3",
+          "file": "rotated-security-console-player-build.spec.ts",
+          "line": 141,
+          "column": 1
+        },
+        {
+          "title": "player builds a clockwise rotated console with authored front facing and keeps it after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "7b8236f3421742b77c59-2833f46cd993514bf1dc",
+          "file": "rotated-security-console-player-build.spec.ts",
+          "line": 203,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "shower-head-player-build.spec.ts",
+      "file": "shower-head-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Shower Room",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "fdf440cc1da0397a08c1-a1d542cc5e48ebc46c1a",
+          "file": "shower-head-player-build.spec.ts",
+          "line": 162,
+          "column": 1
+        },
+        {
+          "title": "player builds Shower Room at quarterTurns0 and retains authored nozzle palette after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "fdf440cc1da0397a08c1-21bfb3e33807820ee59c",
+          "file": "shower-head-player-build.spec.ts",
+          "line": 225,
+          "column": 3
+        },
+        {
+          "title": "player builds Shower Room at quarterTurns1 and retains authored nozzle palette after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "fdf440cc1da0397a08c1-f088e5da41a138f07ebf",
+          "file": "shower-head-player-build.spec.ts",
+          "line": 225,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "utility-panel-player-build.spec.ts",
+      "file": "utility-panel-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Utility Room",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "bde860d9ce3110ea9965-985d4358529e8f4e2ec1",
+          "file": "utility-panel-player-build.spec.ts",
+          "line": 136,
+          "column": 1
+        },
+        {
+          "title": "player builds the utility panel in Utility Room and keeps it after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "bde860d9ce3110ea9965-bf47032a5d14aba6ce74",
+          "file": "utility-panel-player-build.spec.ts",
+          "line": 198,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "wooden-bench-player-build.spec.ts",
+      "file": "wooden-bench-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Holding Cell",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "7262a4a9fc1306d6e6b5-1ffdf51a62ba3e3b6130",
+          "file": "wooden-bench-player-build.spec.ts",
+          "line": 164,
+          "column": 1
+        },
+        {
+          "title": "player builds Holding Cell at quarterTurns0 and retains authored timber palette after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "7262a4a9fc1306d6e6b5-e6f4e09aae5f0397e7a0",
+          "file": "wooden-bench-player-build.spec.ts",
+          "line": 227,
+          "column": 3
+        },
+        {
+          "title": "player builds Holding Cell at quarterTurns1 and retains authored timber palette after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "7262a4a9fc1306d6e6b5-a90d3493dca4c312db95",
+          "file": "wooden-bench-player-build.spec.ts",
+          "line": 227,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "wooden-chair-player-build.spec.ts",
+      "file": "wooden-chair-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Staff Room",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "d91448fac17bfa5d1c5c-499ea5e2821597cd20bf",
+          "file": "wooden-chair-player-build.spec.ts",
+          "line": 165,
+          "column": 1
+        },
+        {
+          "title": "player builds Staff Room at quarterTurns0 and retains both authored chair palettes and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "d91448fac17bfa5d1c5c-3f07a23532856b246808",
+          "file": "wooden-chair-player-build.spec.ts",
+          "line": 228,
+          "column": 3
+        },
+        {
+          "title": "player builds Staff Room at quarterTurns1 and retains both authored chair palettes and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "d91448fac17bfa5d1c5c-808f143fa66aa2b7ec97",
+          "file": "wooden-chair-player-build.spec.ts",
+          "line": 228,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T09:58:21.877Z",
+    "duration": 927.323,
+    "expected": 0,
+    "skipped": 49,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
