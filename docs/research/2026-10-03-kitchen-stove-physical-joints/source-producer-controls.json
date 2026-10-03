@@ -1,0 +1,32 @@
+{
+  "controls": [
+    {
+      "control": "actual-source-producer-omits-eight-EW-shoes",
+      "producerExitCode": 1,
+      "error": "ValueError: Expected eighty retained and sixteen real stove mounting shoes",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-reverses-shoe",
+      "producerExitCode": 1,
+      "error": "ValueError: Evaluated Kitchen stove geometric surfaces face inward: physical-kitchen-stove.east-west grate shoe 0 -1",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-shoe-in-empty-collar-hole",
+      "producerExitCode": 1,
+      "error": "ValueError: Stove mounting shoe lacks real triangle-interior contact: physical-kitchen-stove.east-west grate shoe 0 -1 / angled-stove.burner collar 0",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-short-shoe-cannot-reach-grate",
+      "producerExitCode": 1,
+      "error": "ValueError: Stove mounting shoe lacks real triangle-interior contact: physical-kitchen-stove.east-west grate shoe 0 -1 / angled-stove.pot support east-west 0",
+      "rejectedBeforeSourceSave": true
+    }
+  ],
+  "sourceProvenanceBuilderExactlyRestored": true,
+  "originalSourceBytesUnchanged": true,
+  "exactRestoredProductionVerifyExitCode": 0,
+  "sourceSha256": "2a912331e9c20a35ea417c25d371cf89a5f80092c3f066504c7b792cb1a042a2"
+}
