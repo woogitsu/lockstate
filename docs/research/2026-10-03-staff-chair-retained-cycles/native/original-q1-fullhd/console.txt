@@ -1,0 +1,118 @@
+node : [1A[2K[2m[WebServer] [22m(node:8100) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env bei
+ng set.
+At line:7 char:1
++ node node_modules/@playwright/test/cli.js test --config tests/browser ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([1A[2K[2m[We... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wra
+ngler.json configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+
+Running 2 tests using 1 worker
+
+[1A[2K(node:16448) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+
+
+[1A[2K(node:16448) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[1/2] tests\browser\wooden-chair-player-build.spec.ts:171:1 › player creates storage and delivery capacity before Staff Room
+[1A[2K[2/2] tests\browser\wooden-chair-player-build.spec.ts:234:3 › player builds Staff Room at quarterTurns1 and retains both authored chair palettes and anchors after Save/Load
+[1A[2K  1) tests\browser\wooden-chair-player-build.spec.ts:234:3 › player builds Staff Room at quarterTurns1 and retains both authored chair palettes and anchors after Save/Load 
+
+    Error: chair1 authored Staff pad after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m40[39m
+    Received:   [31m0[39m
+
+      197 |   }, null, 2));
+      198 |   beforePixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored Staff pad after construction`)
+    > 199 |     .toBeGreaterThan(40));
+          |      ^
+      200 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      201 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      202 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\wooden-chair-player-build.spec.ts:199:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\wooden-chair-player-build.spec.ts:198:16
+
+    Error: chair2 authored Staff pad after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m40[39m
+    Received:   [31m0[39m
+
+      197 |   }, null, 2));
+      198 |   beforePixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored Staff pad after construction`)
+    > 199 |     .toBeGreaterThan(40));
+          |      ^
+      200 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      201 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      202 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\wooden-chair-player-build.spec.ts:199:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\wooden-chair-player-build.spec.ts:198:16
+
+    Error: chair1 authored Staff pad after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m40[39m
+    Received:   [31m0[39m
+
+      216 |   const afterPixels = await chairMaterialPixels(page, loaded, quarterTurns, [38, 41, 44]);
+      217 |   afterPixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored Staff pad after Load`)
+    > 218 |     .toBeGreaterThan(40));
+          |      ^
+      219 |   expect(afterPixels).toEqual(beforePixels);
+      220 |   expect(afterTimberPixels).toEqual(beforeTimberPixels);
+      221 |   const evidencePath = info.outputPath('wooden-chair-worker-and-save-evidence.json');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\wooden-chair-player-build.spec.ts:218:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\wooden-chair-player-build.spec.ts:217:15
+
+    Error: chair2 authored Staff pad after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m40[39m
+    Received:   [31m0[39m
+
+      216 |   const afterPixels = await chairMaterialPixels(page, loaded, quarterTurns, [38, 41, 44]);
+      217 |   afterPixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored Staff pad after Load`)
+    > 218 |     .toBeGreaterThan(40));
+          |      ^
+      219 |   expect(afterPixels).toEqual(beforePixels);
+      220 |   expect(afterTimberPixels).toEqual(beforeTimberPixels);
+      221 |   const evidencePath = info.outputPath('wooden-chair-worker-and-save-evidence.json');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\wooden-chair-player-build.spec.ts:218:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\wooden-chair-player-build.spec.ts:217:15
+
+    attachment #1: wooden-chair-worker-and-save-evidence (application/json) ────────────────────────
+    assets\intermediate\staff-room-padded-chair-native\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\attachments\wooden-chair-worker-and-save-evidence-42eb4bef11826bac7b9fb69f523b4d1e3b4d4298.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: assets\intermediate\staff-room-padded-chair-native\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\error-context.md
+
+
+[1A[2K  1 failed
+    tests\browser\wooden-chair-player-build.spec.ts:234:3 › player builds Staff Room at quarterTurns1 and retains both authored chair palettes and anchors after Save/Load 
+  1 passed (1.6m)

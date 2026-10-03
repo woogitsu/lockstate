@@ -1744,3 +1744,14 @@ actual published Bench ref for citation verification; the other was a quoted
 historical local proposal path, now linked to its immutable published source.
 Native observer preparation for queued cancellation and Laundry is integrated;
 new actual combined-product native acceptance remains to be obtained.
+
+Latest2026-10-03 checkpoint: modern command-bar hierarchy, calmer panels and
+actual Staff/Laundry shader exports are integrated in compiled c28d481584.
+Both real Staff room orientations retain paid owners/whole paused V9 Save/Load
+and actual demanded PNG Blob decode. The legacy flat-color pixel observer
+remains RED pending a preserved-gradient calibration. The owner approved the
+concrete larger alert corner atUI200, plus separate V10 exact counters and
+V1–V9 migration for#2025. Root continues actual modern-world integration;
+three lanes now cover the Cell cot Blender model, Staff image observer and
+V10 persistence. All detailed native results and decisions are in the linked
+modern appearance record; neither a RED calibration nor partial CI is release.

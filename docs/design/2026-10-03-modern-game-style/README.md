@@ -78,3 +78,20 @@ One publication check required fetching the already published triage branch;
 the other identified an untyped historical comparison script. Its exact source
 is retained as inert text, without a TypeScript exemption. This does not claim
 the actual Laundry client recipe or the final whole gate has passed.
+
+## Subsequent actual game and decisions
+
+The combined c28d481584 Cloudflare client includes the navy command layer,
+quieter panels/template cards, genuine Staff/Laundry Cycles models and the
+owner-approved larger UI200 alert corner. Actual Staff q0/q1 room captures
+show the new model; complete paid ownership/whole paused V9 Save/Load/source
+network and real Blob guards pass, while the old uniform material-pixel
+observer remains RED and is being calibrated from preserved real images.
+This is a built-game checkpoint, not final release acceptance.
+
+The owner also selected on2026-10-03: "Tak — V10, dokładne liczniki i migracja
+(zalecane)" for[Issue2025](https://github.com/woogitsu/lockstate/issues/2025).
+The separate persistence lane implements exact decimal-string construction
+revision tokens, lossless V1–V9/queued-token migration and coordinated
+cancellation payload compatibility. Current c28 native photos remain V9;
+the V10 work is not silently included in that compiled subject.

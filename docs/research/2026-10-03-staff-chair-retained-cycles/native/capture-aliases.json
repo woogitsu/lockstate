@@ -1,0 +1,388 @@
+[
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003.json",
+    "archived": "original-fullhd/report.json",
+    "sourceBytes": 14776,
+    "sourceSha256": "706ffe012d1447df1192e46724b93bde282f50c91a03dc419741a5a05c33c703",
+    "archivedBytes": 14776,
+    "archivedSha256": "706ffe012d1447df1192e46724b93bde282f50c91a03dc419741a5a05c33c703"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003.txt",
+    "archived": "original-fullhd/console.txt",
+    "sourceBytes": 14572,
+    "sourceSha256": "da8a0ec834da95345679bba416aa7ef8130f91bf7c65b2938d9eb185841c9a32",
+    "archivedBytes": 7545,
+    "archivedSha256": "7076beca0de980ec980856376ca82a8ed2bdc100b7807aadeb933328774b7391",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\.last-run.json",
+    "archived": "original-fullhd/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "a9e1c39f0c2e2754602bc936f2a57a5444b922fd65440af77be40b3ca94b7dc7",
+    "archivedBytes": 96,
+    "archivedSha256": "a9e1c39f0c2e2754602bc936f2a57a5444b922fd65440af77be40b3ca94b7dc7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\attachments\\wooden-chair-worker-and-save-evidence-ca54a0a1e179d9267daaf9842b44a03bfd77a133.json",
+    "archived": "original-fullhd/002-wooden-chair-worker-and-save-evidence-ca54a0a1e179d9267daaf9842b.json",
+    "sourceBytes": 554,
+    "sourceSha256": "5ce763bd1ae13822ee7cc43528f145e6f56a5f3b1827c52dd5880f043d98b36e",
+    "archivedBytes": 554,
+    "archivedSha256": "5ce763bd1ae13822ee7cc43528f145e6f56a5f3b1827c52dd5880f043d98b36e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "original-fullhd/003-completed-worker-snapshot.json",
+    "sourceBytes": 80509,
+    "sourceSha256": "e75d75dc25190a4a21f51519d19c740c3214a6b4bb5e94da09a2762e6bf5d64e",
+    "archivedBytes": 80509,
+    "archivedSha256": "e75d75dc25190a4a21f51519d19c740c3214a6b4bb5e94da09a2762e6bf5d64e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\error-context.md",
+    "archived": "original-fullhd/004-error-context.md",
+    "sourceBytes": 9614,
+    "sourceSha256": "5165471be2d58e2cda2468ad304e75a2a7b7649073688f105599e1d958bb7231",
+    "archivedBytes": 9614,
+    "archivedSha256": "5165471be2d58e2cda2468ad304e75a2a7b7649073688f105599e1d958bb7231"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "original-fullhd/005-failed-player-fullhd.png",
+    "sourceBytes": 1593006,
+    "sourceSha256": "1fffd6f3e27381c2767e8d1ea122ec8451ba1b2178da2c46546c6adfc6c67563",
+    "archivedBytes": 1593006,
+    "archivedSha256": "1fffd6f3e27381c2767e8d1ea122ec8451ba1b2178da2c46546c6adfc6c67563"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\failed-player-worker-snapshot.json",
+    "archived": "original-fullhd/006-failed-player-worker-snapshot.json",
+    "sourceBytes": 80509,
+    "sourceSha256": "12b124c11439b2a596b2410726a2958a8cd4a1a81d294d4d5e81dd074c4e4910",
+    "archivedBytes": 80509,
+    "archivedSha256": "12b124c11439b2a596b2410726a2958a8cd4a1a81d294d4d5e81dd074c4e4910"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\failed-staff-chair-network.json",
+    "archived": "original-fullhd/007-failed-staff-chair-network.json",
+    "sourceBytes": 5994,
+    "sourceSha256": "f740977f0b39bc053f51c4534f6bf32c6eb82cdf9c7fe4a2210c80cf480fb99c",
+    "archivedBytes": 5994,
+    "archivedSha256": "f740977f0b39bc053f51c4534f6bf32c6eb82cdf9c7fe4a2210c80cf480fb99c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "original-fullhd/008-loaded-worker-snapshot.json",
+    "sourceBytes": 80509,
+    "sourceSha256": "ca33614f2e223db47f8835ce2206c9e4092193a325dde053cf212a5153305deb",
+    "archivedBytes": 80509,
+    "archivedSha256": "ca33614f2e223db47f8835ce2206c9e4092193a325dde053cf212a5153305deb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\physical-hardware-loaded-fullhd.png",
+    "archived": "original-fullhd/009-physical-hardware-loaded-fullhd.png",
+    "sourceBytes": 328109,
+    "sourceSha256": "e5db59e885c8469cce61206b262cbad9c5b403ccaffe7b67fc5bf898e671401c",
+    "archivedBytes": 328109,
+    "archivedSha256": "e5db59e885c8469cce61206b262cbad9c5b403ccaffe7b67fc5bf898e671401c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-actual-network-decoder-receipt.json",
+    "archived": "original-fullhd/010-staff-chair-actual-network-decoder-receipt.json",
+    "sourceBytes": 27609,
+    "sourceSha256": "9529ce9870e26f5df4412107aa64c791c8f02c3de7b0261fa882a9dd2433b92c",
+    "archivedBytes": 27609,
+    "archivedSha256": "9529ce9870e26f5df4412107aa64c791c8f02c3de7b0261fa882a9dd2433b92c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-actual-network.json",
+    "archived": "original-fullhd/011-staff-chair-actual-network.json",
+    "sourceBytes": 5994,
+    "sourceSha256": "f740977f0b39bc053f51c4534f6bf32c6eb82cdf9c7fe4a2210c80cf480fb99c",
+    "archivedBytes": 5994,
+    "archivedSha256": "f740977f0b39bc053f51c4534f6bf32c6eb82cdf9c7fe4a2210c80cf480fb99c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-actual200-source60-e40.png",
+    "archived": "original-fullhd/012-staff-chair-actual200-source60-e40.png",
+    "sourceBytes": 10805,
+    "sourceSha256": "a200ce9518d232a2ef0f6bdac0343738042804f87fb3e57f67c9f648345682f8",
+    "archivedBytes": 10805,
+    "archivedSha256": "a200ce9518d232a2ef0f6bdac0343738042804f87fb3e57f67c9f648345682f8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-canonical-source60-e40-canvas.png",
+    "archived": "original-fullhd/013-staff-chair-canonical-source60-e40-canvas.png",
+    "sourceBytes": 1593006,
+    "sourceSha256": "1fffd6f3e27381c2767e8d1ea122ec8451ba1b2178da2c46546c6adfc6c67563",
+    "archivedBytes": 1593006,
+    "archivedSha256": "1fffd6f3e27381c2767e8d1ea122ec8451ba1b2178da2c46546c6adfc6c67563"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-canonical-source60-e40-fullhd.png",
+    "archived": "original-fullhd/014-staff-chair-canonical-source60-e40-fullhd.png",
+    "sourceBytes": 1593006,
+    "sourceSha256": "1fffd6f3e27381c2767e8d1ea122ec8451ba1b2178da2c46546c6adfc6c67563",
+    "archivedBytes": 1593006,
+    "archivedSha256": "1fffd6f3e27381c2767e8d1ea122ec8451ba1b2178da2c46546c6adfc6c67563"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-native-prepared-route-receipt.json",
+    "archived": "original-fullhd/015-staff-chair-native-prepared-route-receipt.json",
+    "sourceBytes": 237524,
+    "sourceSha256": "d807cf364ee0f8cda5c2290447f53b5eebd1d1101d4e133b69262b78c3027250",
+    "archivedBytes": 237524,
+    "archivedSha256": "d807cf364ee0f8cda5c2290447f53b5eebd1d1101d4e133b69262b78c3027250"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-whole-paused-after-camera.json",
+    "archived": "original-fullhd/016-staff-chair-whole-paused-after-camera.json",
+    "sourceBytes": 80509,
+    "sourceSha256": "a05cce3c44692676ab300035ac6558831e967c3dc4befc219b84c4890c301b31",
+    "archivedBytes": 80509,
+    "archivedSha256": "a05cce3c44692676ab300035ac6558831e967c3dc4befc219b84c4890c301b31"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-whole-paused-completed.json",
+    "archived": "original-fullhd/017-staff-chair-whole-paused-completed.json",
+    "sourceBytes": 80509,
+    "sourceSha256": "16ec123e4f4c25d35d9353ab0eeb7a6370a7e245e6a70d22a99a672b5fb4712a",
+    "archivedBytes": 80509,
+    "archivedSha256": "16ec123e4f4c25d35d9353ab0eeb7a6370a7e245e6a70d22a99a672b5fb4712a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\staff-chair-whole-paused-loaded.json",
+    "archived": "original-fullhd/018-staff-chair-whole-paused-loaded.json",
+    "sourceBytes": 80509,
+    "sourceSha256": "3d898794f4fed1590f8beebd280a437313654eea4313112707407dd67e179d02",
+    "archivedBytes": 80509,
+    "archivedSha256": "3d898794f4fed1590f8beebd280a437313654eea4313112707407dd67e179d02"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\wooden-chair-loaded-fullhd.png",
+    "archived": "original-fullhd/019-wooden-chair-loaded-fullhd.png",
+    "sourceBytes": 1547395,
+    "sourceSha256": "742f5dd2cbca2a8c532d59a3e2c10a453febe2bbace9c45f69249049b4fa54b3",
+    "archivedBytes": 1547395,
+    "archivedSha256": "742f5dd2cbca2a8c532d59a3e2c10a453febe2bbace9c45f69249049b4fa54b3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\wooden-chair-worker-and-save-evidence.json",
+    "archived": "original-fullhd/020-wooden-chair-worker-and-save-evidence.json",
+    "sourceBytes": 554,
+    "sourceSha256": "5ce763bd1ae13822ee7cc43528f145e6f56a5f3b1827c52dd5880f043d98b36e",
+    "archivedBytes": 554,
+    "archivedSha256": "5ce763bd1ae13822ee7cc43528f145e6f56a5f3b1827c52dd5880f043d98b36e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\wooden-chair-worker-completed-fullhd.png",
+    "archived": "original-fullhd/021-wooden-chair-worker-completed-fullhd.png",
+    "sourceBytes": 1581865,
+    "sourceSha256": "5a2897f3bb15074f05b487e9fb79c1598e5f798836083f6bec303d0635f2ccba",
+    "archivedBytes": 1581865,
+    "archivedSha256": "5a2897f3bb15074f05b487e9fb79c1598e5f798836083f6bec303d0635f2ccba"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-original-native-20261003\\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "original-fullhd/022-worker-and-completed-save-evidence.json",
+    "sourceBytes": 373,
+    "sourceSha256": "34378173e3f2cc15585bfc25071b9654bcf9dd1f83bf50831b95767a7f5d33e3",
+    "archivedBytes": 373,
+    "archivedSha256": "34378173e3f2cc15585bfc25071b9654bcf9dd1f83bf50831b95767a7f5d33e3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003.json",
+    "archived": "original-q1-fullhd/report.json",
+    "sourceBytes": 13664,
+    "sourceSha256": "a1f7f8fa239731f9226e54c0ed826f3436b6747790101bfb16aceb452094b6c6",
+    "archivedBytes": 13664,
+    "archivedSha256": "a1f7f8fa239731f9226e54c0ed826f3436b6747790101bfb16aceb452094b6c6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003.txt",
+    "archived": "original-q1-fullhd/console.txt",
+    "sourceBytes": 14172,
+    "sourceSha256": "f8507f6075525805fa4afd122fe93791c02d269d536a71086df49f9377054255",
+    "archivedBytes": 7343,
+    "archivedSha256": "d7fc893c1c3eb4e93d6904b55bb53693c6b9ed491e5946543755ee7104b0031c",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\.last-run.json",
+    "archived": "original-q1-fullhd/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "d3b25cb95719c2261ef2292ad729004265f7866cfb815102cd097d679b3f0000",
+    "archivedBytes": 96,
+    "archivedSha256": "d3b25cb95719c2261ef2292ad729004265f7866cfb815102cd097d679b3f0000"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\attachments\\wooden-chair-worker-and-save-evidence-42eb4bef11826bac7b9fb69f523b4d1e3b4d4298.json",
+    "archived": "original-q1-fullhd/002-wooden-chair-worker-and-save-evidence-42eb4bef11826bac7b9fb69f52.json",
+    "sourceBytes": 579,
+    "sourceSha256": "2c7dbb94ac8ad033a8e92e88f510ccc5078638e7b0788f34cc5475476e647d51",
+    "archivedBytes": 579,
+    "archivedSha256": "2c7dbb94ac8ad033a8e92e88f510ccc5078638e7b0788f34cc5475476e647d51"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "original-q1-fullhd/003-completed-worker-snapshot.json",
+    "sourceBytes": 80346,
+    "sourceSha256": "96d52b520f86dc4ee6ef0ba452c0d97c497083cfdea87db02123d3d71251399c",
+    "archivedBytes": 80346,
+    "archivedSha256": "96d52b520f86dc4ee6ef0ba452c0d97c497083cfdea87db02123d3d71251399c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\error-context.md",
+    "archived": "original-q1-fullhd/004-error-context.md",
+    "sourceBytes": 9614,
+    "sourceSha256": "17156661f5ac59ce265b94cfb2bc8d44933598896b118fcc9d7b9aac60d71001",
+    "archivedBytes": 9614,
+    "archivedSha256": "17156661f5ac59ce265b94cfb2bc8d44933598896b118fcc9d7b9aac60d71001"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "original-q1-fullhd/005-failed-player-fullhd.png",
+    "sourceBytes": 1645822,
+    "sourceSha256": "13a1c97610982834e4ddd9e61398308714927c8949ce9d566a5ce87d717e2b43",
+    "archivedBytes": 1645822,
+    "archivedSha256": "13a1c97610982834e4ddd9e61398308714927c8949ce9d566a5ce87d717e2b43"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\failed-player-worker-snapshot.json",
+    "archived": "original-q1-fullhd/006-failed-player-worker-snapshot.json",
+    "sourceBytes": 80346,
+    "sourceSha256": "8a014f61d490c0a9ce8baef7ebe4fe3e652ee935c4fb78072ff9da7c8019b64e",
+    "archivedBytes": 80346,
+    "archivedSha256": "8a014f61d490c0a9ce8baef7ebe4fe3e652ee935c4fb78072ff9da7c8019b64e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\failed-staff-chair-network.json",
+    "archived": "original-q1-fullhd/007-failed-staff-chair-network.json",
+    "sourceBytes": 4496,
+    "sourceSha256": "eea9fbcdf137e09e76579449f6cb2fbb8eff72385bbdc408c543719b91dd6879",
+    "archivedBytes": 4496,
+    "archivedSha256": "eea9fbcdf137e09e76579449f6cb2fbb8eff72385bbdc408c543719b91dd6879"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "original-q1-fullhd/008-loaded-worker-snapshot.json",
+    "sourceBytes": 80346,
+    "sourceSha256": "864a2895b7f3b892dca50a5f6d564c81c4d09682f59a487f66952328a06ba66b",
+    "archivedBytes": 80346,
+    "archivedSha256": "864a2895b7f3b892dca50a5f6d564c81c4d09682f59a487f66952328a06ba66b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\physical-hardware-loaded-fullhd.png",
+    "archived": "original-q1-fullhd/009-physical-hardware-loaded-fullhd.png",
+    "sourceBytes": 338854,
+    "sourceSha256": "1d1a05e56f72ee7ac2ff886879f22dd9c0793605172a0c8010248c6100cb730e",
+    "archivedBytes": 338854,
+    "archivedSha256": "1d1a05e56f72ee7ac2ff886879f22dd9c0793605172a0c8010248c6100cb730e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\staff-chair-actual-network-decoder-receipt.json",
+    "archived": "original-q1-fullhd/010-staff-chair-actual-network-decoder-receipt.json",
+    "sourceBytes": 26060,
+    "sourceSha256": "5ca91db37052881a9de3fa41bb4769d73c95b0499dc617d8f2f051261475d9b5",
+    "archivedBytes": 26060,
+    "archivedSha256": "5ca91db37052881a9de3fa41bb4769d73c95b0499dc617d8f2f051261475d9b5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\staff-chair-actual-network.json",
+    "archived": "original-q1-fullhd/011-staff-chair-actual-network.json",
+    "sourceBytes": 4496,
+    "sourceSha256": "eea9fbcdf137e09e76579449f6cb2fbb8eff72385bbdc408c543719b91dd6879",
+    "archivedBytes": 4496,
+    "archivedSha256": "eea9fbcdf137e09e76579449f6cb2fbb8eff72385bbdc408c543719b91dd6879"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\staff-chair-actual200-source60-e40.png",
+    "archived": "original-q1-fullhd/012-staff-chair-actual200-source60-e40.png",
+    "sourceBytes": 10805,
+    "sourceSha256": "a200ce9518d232a2ef0f6bdac0343738042804f87fb3e57f67c9f648345682f8",
+    "archivedBytes": 10805,
+    "archivedSha256": "a200ce9518d232a2ef0f6bdac0343738042804f87fb3e57f67c9f648345682f8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\staff-chair-canonical-source60-e40-canvas.png",
+    "archived": "original-q1-fullhd/013-staff-chair-canonical-source60-e40-canvas.png",
+    "sourceBytes": 1645822,
+    "sourceSha256": "13a1c97610982834e4ddd9e61398308714927c8949ce9d566a5ce87d717e2b43",
+    "archivedBytes": 1645822,
+    "archivedSha256": "13a1c97610982834e4ddd9e61398308714927c8949ce9d566a5ce87d717e2b43"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\staff-chair-canonical-source60-e40-fullhd.png",
+    "archived": "original-q1-fullhd/014-staff-chair-canonical-source60-e40-fullhd.png",
+    "sourceBytes": 1645822,
+    "sourceSha256": "13a1c97610982834e4ddd9e61398308714927c8949ce9d566a5ce87d717e2b43",
+    "archivedBytes": 1645822,
+    "archivedSha256": "13a1c97610982834e4ddd9e61398308714927c8949ce9d566a5ce87d717e2b43"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\staff-chair-native-prepared-route-receipt.json",
+    "archived": "original-q1-fullhd/015-staff-chair-native-prepared-route-receipt.json",
+    "sourceBytes": 235578,
+    "sourceSha256": "7c85f51df6a0f69f6790d6469c835e347bd152b4dc0982111f4d6c62f2b4f711",
+    "archivedBytes": 235578,
+    "archivedSha256": "7c85f51df6a0f69f6790d6469c835e347bd152b4dc0982111f4d6c62f2b4f711"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\staff-chair-whole-paused-after-camera.json",
+    "archived": "original-q1-fullhd/016-staff-chair-whole-paused-after-camera.json",
+    "sourceBytes": 80346,
+    "sourceSha256": "78ddd1310a5f4a43ee12e8303f4e6f4ce5b55ce15ffcd5c1d1df7c629fc94837",
+    "archivedBytes": 80346,
+    "archivedSha256": "78ddd1310a5f4a43ee12e8303f4e6f4ce5b55ce15ffcd5c1d1df7c629fc94837"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\staff-chair-whole-paused-completed.json",
+    "archived": "original-q1-fullhd/017-staff-chair-whole-paused-completed.json",
+    "sourceBytes": 80346,
+    "sourceSha256": "ac5c629dcea1d890de7fc45b49d8c72d88b6f3bcb7addd9216c90fb80134df5c",
+    "archivedBytes": 80346,
+    "archivedSha256": "ac5c629dcea1d890de7fc45b49d8c72d88b6f3bcb7addd9216c90fb80134df5c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\staff-chair-whole-paused-loaded.json",
+    "archived": "original-q1-fullhd/018-staff-chair-whole-paused-loaded.json",
+    "sourceBytes": 80346,
+    "sourceSha256": "a8f508eeffd8d82e98bc8029ea8e0616cf9a4e6a43052f23edcfed807fb0a735",
+    "archivedBytes": 80346,
+    "archivedSha256": "a8f508eeffd8d82e98bc8029ea8e0616cf9a4e6a43052f23edcfed807fb0a735"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\wooden-chair-loaded-fullhd.png",
+    "archived": "original-q1-fullhd/019-wooden-chair-loaded-fullhd.png",
+    "sourceBytes": 1544144,
+    "sourceSha256": "8f4db907502f396b361bf7a9c0d16bc02fd9256c8114c31f112b79f25f23af77",
+    "archivedBytes": 1544144,
+    "archivedSha256": "8f4db907502f396b361bf7a9c0d16bc02fd9256c8114c31f112b79f25f23af77"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\wooden-chair-worker-and-save-evidence.json",
+    "archived": "original-q1-fullhd/020-wooden-chair-worker-and-save-evidence.json",
+    "sourceBytes": 579,
+    "sourceSha256": "2c7dbb94ac8ad033a8e92e88f510ccc5078638e7b0788f34cc5475476e647d51",
+    "archivedBytes": 579,
+    "archivedSha256": "2c7dbb94ac8ad033a8e92e88f510ccc5078638e7b0788f34cc5475476e647d51"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\wooden-chair-worker-completed-fullhd.png",
+    "archived": "original-q1-fullhd/021-wooden-chair-worker-completed-fullhd.png",
+    "sourceBytes": 1578598,
+    "sourceSha256": "7f51a0c85db9d2935383eb2108a7d1b9a9816646e4348a89175538dcfd32a499",
+    "archivedBytes": 1578598,
+    "archivedSha256": "7f51a0c85db9d2935383eb2108a7d1b9a9816646e4348a89175538dcfd32a499"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-staff-cycles-q1-original-native-20261003\\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "original-q1-fullhd/022-worker-and-completed-save-evidence.json",
+    "sourceBytes": 398,
+    "sourceSha256": "020e2e604260af7ca631b755b69b7b917c72cbd456eb8b537b376cf515fa4277",
+    "archivedBytes": 398,
+    "archivedSha256": "020e2e604260af7ca631b755b69b7b917c72cbd456eb8b537b376cf515fa4277"
+  }
+]

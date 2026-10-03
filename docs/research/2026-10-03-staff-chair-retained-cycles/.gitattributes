@@ -1,0 +1,4 @@
+native/**/*.png filter=lfs diff=lfs merge=lfs -text
+native/**/*.zip filter=lfs diff=lfs merge=lfs -text
+native/**/*.json -text
+native/**/*.txt text eol=lf
