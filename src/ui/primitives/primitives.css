@@ -958,3 +958,13 @@
 .ui-toggles__option:disabled { cursor: not-allowed; opacity: 0.75; }
 
 .ui-toggles[hidden] { display: none; }
+
+/* Source-only hierarchy draft: resting secondary controls are quiet inside
+   their panel. Selected/primary, hover, press and focus keep their original
+   rules; this changes no border width, hit target, opacity or layout. */
+.ui-icon-button--quiet:not([aria-pressed='true']):not(:hover):not(:active):not(:focus-visible):not(:disabled):not([aria-disabled='true']),
+.ui-action:not([data-tone='primary']):not([aria-pressed='true']):not(:hover):not(:active):not(:focus-visible):not(:disabled):not([aria-disabled='true']),
+.save-panel__button:not(:hover):not(:active):not(:focus-visible):not(:disabled):not([aria-disabled='true']) {
+  background: transparent;
+  border-color: var(--border-hairline);
+}
