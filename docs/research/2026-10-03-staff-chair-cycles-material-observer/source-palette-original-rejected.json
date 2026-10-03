@@ -1,0 +1,833 @@
+{
+  "training": [
+    {
+      "yaw": 60,
+      "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev40.a200ce9518d2.png",
+      "sha256": "a200ce9518d232a2ef0f6bdac0343738042804f87fb3e57f67c9f648345682f8",
+      "polygon": [
+        [
+          120.7487187078898,
+          122.37378197598302
+        ],
+        [
+          129.7087187078898,
+          132.34931553012046
+        ],
+        [
+          145.22789394370693,
+          126.58993854732906
+        ],
+        [
+          136.26789394370692,
+          116.61440499319163
+        ]
+      ],
+      "samples": 207
+    },
+    {
+      "yaw": 300,
+      "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev40.c89847058d28.png",
+      "sha256": "c89847058d28a70c0852dd5f0f6af903b449b78388cc68ca8b46560eefac6bf0",
+      "polygon": [
+        [
+          126.2912812921102,
+          132.34931553012046
+        ],
+        [
+          135.2512812921102,
+          122.37378197598302
+        ],
+        [
+          119.73210605629306,
+          116.61440499319163
+        ],
+        [
+          110.77210605629307,
+          126.58993854732906
+        ]
+      ],
+      "samples": 207
+    }
+  ],
+  "palette": [
+    4671819,
+    4869198,
+    4869454,
+    4935247,
+    5000783,
+    5000784,
+    5001040,
+    5066576,
+    5066577,
+    5066833,
+    5132369,
+    5132370,
+    5132626,
+    5132627,
+    5198163,
+    5198419,
+    5198420,
+    5263956,
+    5264212,
+    5264213,
+    5329748,
+    5329749,
+    5330005,
+    5395541,
+    5395542,
+    5395798,
+    5395799,
+    5461334,
+    5461335,
+    5461591,
+    5527127,
+    5527128,
+    5527384,
+    5592920,
+    5592921,
+    5593177,
+    5658713,
+    5658714,
+    5658970,
+    5724506,
+    5724507,
+    5724763,
+    5790299,
+    5790300,
+    5790556,
+    5856092,
+    5856093,
+    5856349,
+    5921885,
+    5922141,
+    5922142,
+    5987678,
+    5987679,
+    5987935,
+    6053728
+  ],
+  "defaultCounts": [
+    {
+      "yaw": 0,
+      "elevation": 20,
+      "matched": 21
+    },
+    {
+      "yaw": 0,
+      "elevation": 30,
+      "matched": 20
+    },
+    {
+      "yaw": 0,
+      "elevation": 40,
+      "matched": 185
+    },
+    {
+      "yaw": 0,
+      "elevation": 50,
+      "matched": 227
+    },
+    {
+      "yaw": 0,
+      "elevation": 60,
+      "matched": 28
+    },
+    {
+      "yaw": 0,
+      "elevation": 70,
+      "matched": 33
+    },
+    {
+      "yaw": 30,
+      "elevation": 20,
+      "matched": 35
+    },
+    {
+      "yaw": 30,
+      "elevation": 30,
+      "matched": 33
+    },
+    {
+      "yaw": 30,
+      "elevation": 40,
+      "matched": 91
+    },
+    {
+      "yaw": 30,
+      "elevation": 50,
+      "matched": 350
+    },
+    {
+      "yaw": 30,
+      "elevation": 60,
+      "matched": 83
+    },
+    {
+      "yaw": 30,
+      "elevation": 70,
+      "matched": 27
+    },
+    {
+      "yaw": 60,
+      "elevation": 20,
+      "matched": 35
+    },
+    {
+      "yaw": 60,
+      "elevation": 30,
+      "matched": 36
+    },
+    {
+      "yaw": 60,
+      "elevation": 40,
+      "matched": 56
+    },
+    {
+      "yaw": 60,
+      "elevation": 50,
+      "matched": 282
+    },
+    {
+      "yaw": 60,
+      "elevation": 60,
+      "matched": 84
+    },
+    {
+      "yaw": 60,
+      "elevation": 70,
+      "matched": 16
+    },
+    {
+      "yaw": 90,
+      "elevation": 20,
+      "matched": 35
+    },
+    {
+      "yaw": 90,
+      "elevation": 30,
+      "matched": 40
+    },
+    {
+      "yaw": 90,
+      "elevation": 40,
+      "matched": 168
+    },
+    {
+      "yaw": 90,
+      "elevation": 50,
+      "matched": 227
+    },
+    {
+      "yaw": 90,
+      "elevation": 60,
+      "matched": 32
+    },
+    {
+      "yaw": 90,
+      "elevation": 70,
+      "matched": 48
+    },
+    {
+      "yaw": 120,
+      "elevation": 20,
+      "matched": 98
+    },
+    {
+      "yaw": 120,
+      "elevation": 30,
+      "matched": 113
+    },
+    {
+      "yaw": 120,
+      "elevation": 40,
+      "matched": 174
+    },
+    {
+      "yaw": 120,
+      "elevation": 50,
+      "matched": 60
+    },
+    {
+      "yaw": 120,
+      "elevation": 60,
+      "matched": 45
+    },
+    {
+      "yaw": 120,
+      "elevation": 70,
+      "matched": 39
+    },
+    {
+      "yaw": 150,
+      "elevation": 20,
+      "matched": 316
+    },
+    {
+      "yaw": 150,
+      "elevation": 30,
+      "matched": 312
+    },
+    {
+      "yaw": 150,
+      "elevation": 40,
+      "matched": 62
+    },
+    {
+      "yaw": 150,
+      "elevation": 50,
+      "matched": 64
+    },
+    {
+      "yaw": 150,
+      "elevation": 60,
+      "matched": 33
+    },
+    {
+      "yaw": 150,
+      "elevation": 70,
+      "matched": 47
+    },
+    {
+      "yaw": 180,
+      "elevation": 20,
+      "matched": 183
+    },
+    {
+      "yaw": 180,
+      "elevation": 30,
+      "matched": 212
+    },
+    {
+      "yaw": 180,
+      "elevation": 40,
+      "matched": 58
+    },
+    {
+      "yaw": 180,
+      "elevation": 50,
+      "matched": 22
+    },
+    {
+      "yaw": 180,
+      "elevation": 60,
+      "matched": 23
+    },
+    {
+      "yaw": 180,
+      "elevation": 70,
+      "matched": 21
+    },
+    {
+      "yaw": 210,
+      "elevation": 20,
+      "matched": 64
+    },
+    {
+      "yaw": 210,
+      "elevation": 30,
+      "matched": 204
+    },
+    {
+      "yaw": 210,
+      "elevation": 40,
+      "matched": 41
+    },
+    {
+      "yaw": 210,
+      "elevation": 50,
+      "matched": 32
+    },
+    {
+      "yaw": 210,
+      "elevation": 60,
+      "matched": 27
+    },
+    {
+      "yaw": 210,
+      "elevation": 70,
+      "matched": 33
+    },
+    {
+      "yaw": 240,
+      "elevation": 20,
+      "matched": 310
+    },
+    {
+      "yaw": 240,
+      "elevation": 30,
+      "matched": 180
+    },
+    {
+      "yaw": 240,
+      "elevation": 40,
+      "matched": 48
+    },
+    {
+      "yaw": 240,
+      "elevation": 50,
+      "matched": 36
+    },
+    {
+      "yaw": 240,
+      "elevation": 60,
+      "matched": 22
+    },
+    {
+      "yaw": 240,
+      "elevation": 70,
+      "matched": 38
+    },
+    {
+      "yaw": 270,
+      "elevation": 20,
+      "matched": 51
+    },
+    {
+      "yaw": 270,
+      "elevation": 30,
+      "matched": 147
+    },
+    {
+      "yaw": 270,
+      "elevation": 40,
+      "matched": 51
+    },
+    {
+      "yaw": 270,
+      "elevation": 50,
+      "matched": 20
+    },
+    {
+      "yaw": 270,
+      "elevation": 60,
+      "matched": 19
+    },
+    {
+      "yaw": 270,
+      "elevation": 70,
+      "matched": 18
+    },
+    {
+      "yaw": 300,
+      "elevation": 20,
+      "matched": 129
+    },
+    {
+      "yaw": 300,
+      "elevation": 30,
+      "matched": 112
+    },
+    {
+      "yaw": 300,
+      "elevation": 40,
+      "matched": 40
+    },
+    {
+      "yaw": 300,
+      "elevation": 50,
+      "matched": 24
+    },
+    {
+      "yaw": 300,
+      "elevation": 60,
+      "matched": 24
+    },
+    {
+      "yaw": 300,
+      "elevation": 70,
+      "matched": 30
+    },
+    {
+      "yaw": 330,
+      "elevation": 20,
+      "matched": 83
+    },
+    {
+      "yaw": 330,
+      "elevation": 30,
+      "matched": 218
+    },
+    {
+      "yaw": 330,
+      "elevation": 40,
+      "matched": 193
+    },
+    {
+      "yaw": 330,
+      "elevation": 50,
+      "matched": 128
+    },
+    {
+      "yaw": 330,
+      "elevation": 60,
+      "matched": 23
+    },
+    {
+      "yaw": 330,
+      "elevation": 70,
+      "matched": 35
+    }
+  ],
+  "authoredCounts": [
+    {
+      "yaw": 0,
+      "elevation": 20,
+      "matched": 50
+    },
+    {
+      "yaw": 0,
+      "elevation": 30,
+      "matched": 20
+    },
+    {
+      "yaw": 0,
+      "elevation": 40,
+      "matched": 38
+    },
+    {
+      "yaw": 0,
+      "elevation": 50,
+      "matched": 272
+    },
+    {
+      "yaw": 0,
+      "elevation": 60,
+      "matched": 505
+    },
+    {
+      "yaw": 0,
+      "elevation": 70,
+      "matched": 640
+    },
+    {
+      "yaw": 30,
+      "elevation": 20,
+      "matched": 56
+    },
+    {
+      "yaw": 30,
+      "elevation": 30,
+      "matched": 99
+    },
+    {
+      "yaw": 30,
+      "elevation": 40,
+      "matched": 182
+    },
+    {
+      "yaw": 30,
+      "elevation": 50,
+      "matched": 359
+    },
+    {
+      "yaw": 30,
+      "elevation": 60,
+      "matched": 558
+    },
+    {
+      "yaw": 30,
+      "elevation": 70,
+      "matched": 597
+    },
+    {
+      "yaw": 60,
+      "elevation": 20,
+      "matched": 162
+    },
+    {
+      "yaw": 60,
+      "elevation": 30,
+      "matched": 298
+    },
+    {
+      "yaw": 60,
+      "elevation": 40,
+      "matched": 425
+    },
+    {
+      "yaw": 60,
+      "elevation": 50,
+      "matched": 492
+    },
+    {
+      "yaw": 60,
+      "elevation": 60,
+      "matched": 554
+    },
+    {
+      "yaw": 60,
+      "elevation": 70,
+      "matched": 586
+    },
+    {
+      "yaw": 90,
+      "elevation": 20,
+      "matched": 174
+    },
+    {
+      "yaw": 90,
+      "elevation": 30,
+      "matched": 314
+    },
+    {
+      "yaw": 90,
+      "elevation": 40,
+      "matched": 426
+    },
+    {
+      "yaw": 90,
+      "elevation": 50,
+      "matched": 487
+    },
+    {
+      "yaw": 90,
+      "elevation": 60,
+      "matched": 553
+    },
+    {
+      "yaw": 90,
+      "elevation": 70,
+      "matched": 583
+    },
+    {
+      "yaw": 120,
+      "elevation": 20,
+      "matched": 123
+    },
+    {
+      "yaw": 120,
+      "elevation": 30,
+      "matched": 311
+    },
+    {
+      "yaw": 120,
+      "elevation": 40,
+      "matched": 426
+    },
+    {
+      "yaw": 120,
+      "elevation": 50,
+      "matched": 503
+    },
+    {
+      "yaw": 120,
+      "elevation": 60,
+      "matched": 561
+    },
+    {
+      "yaw": 120,
+      "elevation": 70,
+      "matched": 599
+    },
+    {
+      "yaw": 150,
+      "elevation": 20,
+      "matched": 115
+    },
+    {
+      "yaw": 150,
+      "elevation": 30,
+      "matched": 304
+    },
+    {
+      "yaw": 150,
+      "elevation": 40,
+      "matched": 443
+    },
+    {
+      "yaw": 150,
+      "elevation": 50,
+      "matched": 515
+    },
+    {
+      "yaw": 150,
+      "elevation": 60,
+      "matched": 571
+    },
+    {
+      "yaw": 150,
+      "elevation": 70,
+      "matched": 610
+    },
+    {
+      "yaw": 180,
+      "elevation": 20,
+      "matched": 148
+    },
+    {
+      "yaw": 180,
+      "elevation": 30,
+      "matched": 342
+    },
+    {
+      "yaw": 180,
+      "elevation": 40,
+      "matched": 449
+    },
+    {
+      "yaw": 180,
+      "elevation": 50,
+      "matched": 526
+    },
+    {
+      "yaw": 180,
+      "elevation": 60,
+      "matched": 580
+    },
+    {
+      "yaw": 180,
+      "elevation": 70,
+      "matched": 620
+    },
+    {
+      "yaw": 210,
+      "elevation": 20,
+      "matched": 151
+    },
+    {
+      "yaw": 210,
+      "elevation": 30,
+      "matched": 339
+    },
+    {
+      "yaw": 210,
+      "elevation": 40,
+      "matched": 458
+    },
+    {
+      "yaw": 210,
+      "elevation": 50,
+      "matched": 521
+    },
+    {
+      "yaw": 210,
+      "elevation": 60,
+      "matched": 552
+    },
+    {
+      "yaw": 210,
+      "elevation": 70,
+      "matched": 608
+    },
+    {
+      "yaw": 240,
+      "elevation": 20,
+      "matched": 81
+    },
+    {
+      "yaw": 240,
+      "elevation": 30,
+      "matched": 277
+    },
+    {
+      "yaw": 240,
+      "elevation": 40,
+      "matched": 461
+    },
+    {
+      "yaw": 240,
+      "elevation": 50,
+      "matched": 541
+    },
+    {
+      "yaw": 240,
+      "elevation": 60,
+      "matched": 591
+    },
+    {
+      "yaw": 240,
+      "elevation": 70,
+      "matched": 619
+    },
+    {
+      "yaw": 270,
+      "elevation": 20,
+      "matched": 52
+    },
+    {
+      "yaw": 270,
+      "elevation": 30,
+      "matched": 206
+    },
+    {
+      "yaw": 270,
+      "elevation": 40,
+      "matched": 446
+    },
+    {
+      "yaw": 270,
+      "elevation": 50,
+      "matched": 548
+    },
+    {
+      "yaw": 270,
+      "elevation": 60,
+      "matched": 582
+    },
+    {
+      "yaw": 270,
+      "elevation": 70,
+      "matched": 616
+    },
+    {
+      "yaw": 300,
+      "elevation": 20,
+      "matched": 25
+    },
+    {
+      "yaw": 300,
+      "elevation": 30,
+      "matched": 202
+    },
+    {
+      "yaw": 300,
+      "elevation": 40,
+      "matched": 422
+    },
+    {
+      "yaw": 300,
+      "elevation": 50,
+      "matched": 535
+    },
+    {
+      "yaw": 300,
+      "elevation": 60,
+      "matched": 589
+    },
+    {
+      "yaw": 300,
+      "elevation": 70,
+      "matched": 611
+    },
+    {
+      "yaw": 330,
+      "elevation": 20,
+      "matched": 24
+    },
+    {
+      "yaw": 330,
+      "elevation": 30,
+      "matched": 43
+    },
+    {
+      "yaw": 330,
+      "elevation": 40,
+      "matched": 157
+    },
+    {
+      "yaw": 330,
+      "elevation": 50,
+      "matched": 355
+    },
+    {
+      "yaw": 330,
+      "elevation": 60,
+      "matched": 573
+    },
+    {
+      "yaw": 330,
+      "elevation": 70,
+      "matched": 636
+    }
+  ]
+}
