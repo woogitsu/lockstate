@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-chord-release-audit-20261003
+
+ ❯ tests/unit/ui-template-chord-release.test.ts (32 tests | 4 failed) 147ms
+   × world/normal: second touch must not buy an armed template before first finger lifts 8ms
+   × world/mirrored: second touch must not buy an armed template before first finger lifts 4ms
+   × oblique/normal: second touch must not buy an armed template before first finger lifts 4ms
+   × oblique/mirrored: second touch must not buy an armed template before first finger lifts 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-chord-release.test.ts > world/normal: second touch must not buy an armed template before first finger lifts
+ FAIL  tests/unit/ui-template-chord-release.test.ts > world/mirrored: second touch must not buy an armed template before first finger lifts
+ FAIL  tests/unit/ui-template-chord-release.test.ts > oblique/normal: second touch must not buy an armed template before first finger lifts
+ FAIL  tests/unit/ui-template-chord-release.test.ts > oblique/mirrored: second touch must not buy an armed template before first finger lifts
+AssertionError: non-primary second finger released while first remains down must not purchase a plan: expected [ { protocolVersion: 1, …(3) } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/ui-template-chord-release.test.ts:203:116
+    201|       touch(h.canvas, 'pointerup', { x: h.point.x + 30, y: h.point.y }…
+    202|       await h.paint(); await h.paint();
+    203|       expect(submitted(h), 'non-primary second finger released while f…
+       |                                                                                                                    ^
+    204|       touch(h.canvas, 'pointerup', h.point, 7); await h.paint(); await…
+    205|       touch(h.canvas, 'pointerdown', h.point, 7); touch(h.canvas, 'poi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 28 passed (32)
+   Start at  07:00:14
+   Duration  3.85s (transform 1.38s, setup 0ms, import 3.56s, tests 147ms, environment 0ms)
+

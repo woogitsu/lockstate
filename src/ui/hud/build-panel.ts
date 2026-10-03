@@ -1,3 +1,4 @@
+import { trimObjectThumbnail } from './object-thumbnail';
 import type { LocalizationKey } from '../../content/localization';
 import { deriveSimulationMessageKey } from '../../content/simulation-message-keys';
 import type { MessageParameters } from '../../services/localization/format';
@@ -84,6 +85,7 @@ export interface BuildPanelIntent {
   readonly x: number;
   readonly y: number;
   readonly edge: HudBuildEdge;
+  readonly squareFootprint?: boolean;
   /**
    * Whether the selected row places a discrete object rather than a wall
    * segment (ADR 0028 phase 1), which decides *which* command the press
@@ -153,12 +155,19 @@ export interface BuildPanelTarget {
   readonly edge?: HudBuildEdge;
   /** How many edges the pending gesture covers. `1` for a tap, absent for a tile aim. */
   readonly segments?: number;
+  readonly squareRun?: boolean;
+  readonly catalogueCostMinorUnits?: number;
+  readonly definitionId?: string;
+  /** Actual worker footprint when an object aim has a current preflight. */
+  readonly objectFootprint?: { readonly width: number; readonly height: number };
 }
 
 export interface BuildPanelOptions {
   readonly localizer: HudLocalizer;
   readonly model: HudBuildViewModel;
   readonly roomTemplateTool?: RoomTemplateTool;
+  /** Transfer held keyboard ownership on native focus or actual selection change. */
+  readonly onCategoryKeyboardOwnership?: () => void;
   /** The numeric route: place exactly one order at the coordinates shown. */
   readonly onPlace: (intent: BuildPanelIntent) => void;
   /**
@@ -353,7 +362,7 @@ export function buildEdgeChoiceOptions(t: Translate): readonly ChoiceOption[] {
  * which is what makes that pair unable to disagree.
  */
 export function edgeChooserShown(buildable: HudBuildableViewModel | undefined, removing: boolean): boolean {
-  return !removing && buildable?.occupiesEdge === true;
+  return !removing && buildable?.occupiesEdge === true && buildable.squareFootprint !== true;
 }
 
 /**
@@ -384,6 +393,7 @@ export function edgeChooserShown(buildable: HudBuildableViewModel | undefined, r
  */
 export function armedHintKey(buildable: HudBuildableViewModel | undefined, removing: boolean): LocalizationKey {
   if (removing) return HUD_MESSAGE_KEY.buildRemoveHint;
+  if (buildable?.squareFootprint === true) return HUD_MESSAGE_KEY.buildArmHintSquare;
   return buildable?.placesObject === true ? HUD_MESSAGE_KEY.buildArmHintObject : HUD_MESSAGE_KEY.buildArmHint;
 }
 
@@ -428,7 +438,9 @@ export function buildCatalogueRowLabel(
   return t(
     buildable.placesObject
       ? HUD_MESSAGE_KEY.buildCatalogueRowPrice
-      : HUD_MESSAGE_KEY.buildCatalogueRowPriceSegment,
+      : buildable.squareFootprint === true
+        ? HUD_MESSAGE_KEY.buildCatalogueRowPriceSquare
+        : HUD_MESSAGE_KEY.buildCatalogueRowPriceSegment,
     { buildable: name, total },
   );
 }
@@ -636,12 +648,22 @@ export function buildCatalogueFocusRing(
  * side by side, while the readout shows one string and looks plausible
  * whatever edge produced it.
  */
-export function formatBuildTargetText(t: Translate, target: BuildPanelTarget | undefined): string {
+export function formatBuildTargetText(t: Translate, target: BuildPanelTarget | undefined, formatNumber: (value: number) => string = String, objectFootprint?: { readonly width: number; readonly height: number }): string {
   if (target === undefined) return t(HUD_MESSAGE_KEY.buildTargetNone);
+  if (target.squareRun === true) return t(HUD_MESSAGE_KEY.buildTargetSquares, {
+    x: target.x, y: target.y, count: target.segments ?? 1,
+    cost: target.catalogueCostMinorUnits === undefined ? '—' : formatNumber(target.catalogueCostMinorUnits),
+  });
   // An aim with no edge is an aim at a tile, which is what the object tool
   // reports for both of its modes (#550). It gets its own template rather than
   // the edge one with a blank `{edge}`: see `buildTargetTile`.
-  if (target.edge === undefined) return t(HUD_MESSAGE_KEY.buildTargetTile, { x: target.x, y: target.y });
+  if (target.edge === undefined) {
+    objectFootprint = target.objectFootprint ?? objectFootprint;
+    if (objectFootprint !== undefined) return t(HUD_MESSAGE_KEY.roomsAreaValue, {
+      width: formatNumber(objectFootprint.width), height: formatNumber(objectFootprint.height), x: target.x, y: target.y,
+    });
+    return t(HUD_MESSAGE_KEY.buildTargetTile, { x: target.x, y: target.y });
+  }
   const edge = target.edge;
   return (target.segments ?? 1) > 1
     ? t(HUD_MESSAGE_KEY.buildTargetRun, {
@@ -1036,6 +1058,8 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   // ---- what to build ------------------------------------------------
   const catalogueList = element('div', { className: 'hud-build__list' });
   const selectedSummary = element('span', { className: 'hud-build__selected-summary' });
+  const selectedFootprint = element('span', { className: 'hud-build__selected-footprint' });
+  let currentTarget: BuildPanelTarget | undefined;
   const rows = new Map<string, ListRow>();
 
   /**
@@ -1081,7 +1105,14 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     ),
   });
   categoryFilter.value = activeCategoryId;
+  categoryFilter.addEventListener('focus', () => options.onCategoryKeyboardOwnership?.());
+  categoryFilter.addEventListener('keydown', (event) => {
+    // Keep native option navigation in the filter without suppressing its
+    // default selection change or unrelated world keyboard bindings.
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown'].includes(event.key)) event.stopPropagation();
+  });
   categoryFilter.addEventListener('change', () => {
+    options.onCategoryKeyboardOwnership?.();
     activeCategoryId = categoryFilter.value;
     paintCatalogue();
     revealSelectedRow();
@@ -1135,6 +1166,10 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     focusRing = buildCatalogueFocusRing(model.buildables, activeCategoryId, selectedId);
     const selected = selectedBuildable();
     selectedSummary.textContent = selected === undefined ? '' : t(selected.labelKey);
+    selectedFootprint.hidden = selected?.objectFootprint === undefined;
+    selectedFootprint.textContent = selected?.objectFootprint === undefined ? '' : t(HUD_MESSAGE_KEY.buildObjectFootprint, {
+      width: localizer.formatNumber(selected.objectFootprint.width), height: localizer.formatNumber(selected.objectFootprint.height),
+    });
     const visible = new Set(focusRing.visibleIds);
     for (const [id, row] of rows) {
       row.setBadge(id === selectedId ? { tone: 'info', text: t(HUD_MESSAGE_KEY.buildSelected) } : undefined);
@@ -1208,6 +1243,27 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         options.onArm(armed, selectedId, removing);
       },
     });
+
+    if (buildable.thumbnailUrl !== undefined) {
+      const fallback = row.element.firstElementChild as HTMLElement | SVGElement;
+      const thumbnail = element('img', {
+        className: 'hud-build__object-thumbnail',
+        attributes: { src: buildable.thumbnailUrl, alt: '', 'aria-hidden': 'true' },
+      });
+      thumbnail.hidden = true;
+      thumbnail.dataset['authoredSrc'] = buildable.thumbnailUrl;
+      let trimmed = false;
+      thumbnail.addEventListener('load', () => {
+        if (!trimmed) {
+          trimmed = true;
+          if (trimObjectThumbnail(thumbnail)) return;
+          thumbnail.hidden = true; fallback.removeAttribute('hidden'); return;
+        }
+        thumbnail.hidden = false; fallback.setAttribute('hidden', '');
+      });
+      thumbnail.addEventListener('error', () => { thumbnail.hidden = true; fallback.removeAttribute('hidden'); });
+      row.element.prepend(thumbnail);
+    }
     row.element.dataset['buildable'] = buildable.definitionId;
     // `role="radio"` on a real `<button>`, exactly as `rooms-panel.ts` does it:
     // the role carries the single-select meaning, the button carries the
@@ -1337,6 +1393,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
   // with the content catalogue, so it is the one that scrolls.
   catalogue.element.classList.add('hud-build__catalogue');
   catalogue.header.append(selectedSummary);
+  catalogue.body.prepend(selectedFootprint);
   catalogue.body.append(catalogueList);
 
   // ---- the map route (primary) --------------------------------------
@@ -1677,6 +1734,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
     // three loses the pointer takes its coordinates with it, whatever the panel
     // believes about arming. See `BuildTool.setArmed`.
     if (!armed) setTarget(undefined);
+    else setTarget(currentTarget);
   }
 
   // ---- buying the materials (#89) -----------------------------------
@@ -3237,12 +3295,14 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
       // decide it and cannot derive it, because what a buildable places is
       // simulation content the HUD may not read.
       placesObject: buildable.placesObject === true,
+      squareFootprint: buildable.squareFootprint === true,
       removing,
     };
   }
 
   function setTarget(target: BuildPanelTarget | undefined): void {
-    targetValue.textContent = formatBuildTargetText(t, target);
+    currentTarget = target;
+    targetValue.textContent = formatBuildTargetText(t, target, (value) => localizer.formatNumber(value), removing ? undefined : selectedBuildable()?.objectFootprint);
     if (target === undefined) {
       delete targetBlock.dataset['target'];
       return;

@@ -1,0 +1,54 @@
+{
+  "controls": [
+    {
+      "control": "omit-physical-keycap",
+      "exitCode": 1,
+      "error": "ValueError: Reception desk retained/authored mesh set changed"
+    },
+    {
+      "control": "move-physical-drawer-standoff",
+      "exitCode": 1,
+      "error": "ValueError: Reception desk actual evaluated authored geometry changed"
+    },
+    {
+      "control": "change-retained-bevel",
+      "exitCode": 1,
+      "error": "ValueError: Reception desk actual evaluated authored geometry changed"
+    },
+    {
+      "control": "change-retained-material",
+      "exitCode": 1,
+      "error": "ValueError: Desk retained six material graphs changed"
+    },
+    {
+      "control": "wrong-loaded-X-scale",
+      "exitCode": 1,
+      "error": "ValueError: Desk loaded transform is not unit-scale anchor translation"
+    },
+    {
+      "control": "wrong-measured-target",
+      "exitCode": 1,
+      "error": "ValueError: Desk declared target differs from measured source height"
+    },
+    {
+      "control": "wrong-canonical-descriptor",
+      "exitCode": 1,
+      "error": "ValueError: Desk exporter targets the wrong canonical descriptor"
+    },
+    {
+      "control": "wrong-camera-span",
+      "exitCode": 1,
+      "error": "ValueError: Desk actual camera pitch differs from64pixels per tile"
+    },
+    {
+      "control": "wrong-camera-vector",
+      "exitCode": 1,
+      "error": "ValueError: Desk actual camera ground basis differs from world projection"
+    }
+  ],
+  "exactRestoredNativeVerifyExitCode": 0,
+  "sourceBytesUnchanged": true,
+  "wrapperSha256": "d578e8f6e25fabdaf06f766cf235bb59b097bfe63495aa23d7e91aa1fc9097a7",
+  "sourceSha256": "486b83b5079698faeb1cd58e989d1a1dfe524996813474b04550dd4c82a2fd46",
+  "originalSourceSha256": "87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b"
+}

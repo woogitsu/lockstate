@@ -1,0 +1,24 @@
+const fs=require('node:fs'), crypto=require('node:crypto'),cp=require('node:child_process');
+const root=process.cwd(),record='docs/research/2026-10-03-object-preflight-session-arm-review/raw/';
+const sources=['src/main.ts','src/ui/object-tool.ts'];
+const original=sources.map(p=>fs.readFileSync(p));
+const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+const records=[];
+function run(label,index,mutate){
+ const before=original[index]; const entry={label,beforeSha:hash(before)}; records.push(entry);
+ try {
+  const changed=mutate(before.toString('utf8')); if(changed===before.toString('utf8'))throw Error('Expected producer absent');
+  fs.writeFileSync(sources[index],changed);
+  const r=cp.spawnSync(process.execPath,['node_modules/vitest/vitest.mjs','run','tests/unit/ui-object-preflight-session-arm.test.ts','--maxWorkers=2'],{cwd:root,encoding:'utf8'});
+  fs.writeFileSync(record+label+'.txt',(r.stdout||'')+(r.stderr||''));
+  entry.status=r.status; entry.mutatedSha=hash(fs.readFileSync(sources[index]));
+  if(r.status===0)throw Error('Producer omission unexpectedly GREEN');
+ }finally{fs.writeFileSync(sources[index],before);entry.restoredSha=hash(fs.readFileSync(sources[index]));}
+}
+try{
+ run('negative-session-disarm',0,s=>{const n=(s.match(/objectTool\?\.resetPreview\(\)/g)||[]).length;if(n!==2)throw Error('Expected both boundary consumers');return s.replace(/objectTool\?\.resetPreview\(\)/g,'objectTool?.setArmed(false)');});
+ run('negative-old-preview-owner',1,s=>s.replace(/(public resetPreview\(\): void \{\r?\n)    this\.clearPreview\(\);/, '    // deliberate old preview owner retained'));
+}finally{
+ sources.forEach((p,i)=>fs.writeFileSync(p,original[i]));
+ fs.writeFileSync(record+'mutation-restoration.json',JSON.stringify({records,restored:sources.map((p,i)=>({path:p,sha:hash(fs.readFileSync(p)),exact:fs.readFileSync(p).equals(original[i])}))},null,2)+'\n');
+}

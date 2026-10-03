@@ -1,0 +1,26 @@
+{
+  "quarterTurns": 1,
+  "owned": [
+    {
+      "anchorTile": {
+        "x": 25,
+        "y": 6
+      },
+      "orientation": 1,
+      "sourceOrderId": "room-template-000000000002-2-object-000"
+    }
+  ],
+  "beforePixels": 0,
+  "afterPixels": 0,
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "classroom-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      },
+      "quarterTurns": 1
+    }
+  ]
+}

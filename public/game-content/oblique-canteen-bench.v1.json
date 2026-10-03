@@ -1,487 +1,477 @@
 {
   "schemaVersion": 1,
   "assetId": "furniture.corridor.bench.variants",
-  "source": "environment.mvp.catalog.blend",
-  "sourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
-  "sourceDependencies": [],
+  "source": "assets/source/blender/furniture.corridor.bench.angled-detail.blend",
+  "sourceSha256": "4b174ad498260ac3c736d2b4d78fb1f566cface5bab81d513fb2e00a4568ab81",
   "resolutionPx": [
-    512,
-    512
-  ],
-  "nominalPixelsPerTile": 64,
-  "pivotPx": [
     256,
     256
   ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    128,
+    128
+  ],
   "cameraTargetTiles": [
-    0.0,
-    0.0,
-    0.0
+    1.0,
+    0.5,
+    0.44325
   ],
   "projection": "orthographic",
   "yawDegrees": [
-    -180,
-    -165,
-    -150,
-    -135,
-    -120,
-    -105,
-    -90,
-    -75,
-    -60,
-    -45,
-    -30,
-    -15,
     0,
-    15,
     30,
-    45,
     60,
-    75,
     90,
-    105,
     120,
-    135,
     150,
-    165
+    180,
+    210,
+    240,
+    270,
+    300,
+    330
   ],
   "elevationDegrees": [
-    25,
-    45,
-    65
+    20,
+    30,
+    40,
+    50,
+    60,
+    70
   ],
   "frames": [
     {
-      "yawDegrees": -180,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-180-elev25.2afa4a897c4c.png",
-      "sha256": "2afa4a897c4c78b7e74c5476d9696ba806e5079f955e10afdc9c77595dc81eb6"
-    },
-    {
-      "yawDegrees": -180,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-180-elev45.b7380300d970.png",
-      "sha256": "b7380300d97061be6625775b3029f44d9470a72f19ccfd5a7005521f077af059"
-    },
-    {
-      "yawDegrees": -180,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-180-elev65.654630882063.png",
-      "sha256": "654630882063b7780f8070a7d2c82ba13166e46fd6b03f84b4ebdc07314e0eb4"
-    },
-    {
-      "yawDegrees": -165,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-165-elev25.93814c094014.png",
-      "sha256": "93814c09401420e1c42cbfa8e47fdfcc3cdf802c6585ef761dc075dadd55d892"
-    },
-    {
-      "yawDegrees": -165,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-165-elev45.e61efdbc29dc.png",
-      "sha256": "e61efdbc29dc1750152d42e9e687c351b120fc5120813d54994ec0df9bbd6c3a"
-    },
-    {
-      "yawDegrees": -165,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-165-elev65.0eb7e4d15e88.png",
-      "sha256": "0eb7e4d15e887ec84b0fc84c616c8faf7f5a9979c06b947924b5327a91f926a8"
-    },
-    {
-      "yawDegrees": -150,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-150-elev25.9dbe91a8270e.png",
-      "sha256": "9dbe91a8270e4c3a7d7e883d6d88d04222485b955dc7a4a9ceb8d354ce63c49f"
-    },
-    {
-      "yawDegrees": -150,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-150-elev45.bc6c971ff091.png",
-      "sha256": "bc6c971ff091a842c9a4158bddf3d7feae3c7796f343399bda2cb72998627e7f"
-    },
-    {
-      "yawDegrees": -150,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-150-elev65.0746f052142c.png",
-      "sha256": "0746f052142cd21d62c5b7f8dcb461b6d371b14c76d38a402f503b1db29d4280"
-    },
-    {
-      "yawDegrees": -135,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-135-elev25.568e395efc89.png",
-      "sha256": "568e395efc89765a021d73109b7b07490df869fb5d10cd1f64ed7967ae8a9aab"
-    },
-    {
-      "yawDegrees": -135,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-135-elev45.0f2c72af0236.png",
-      "sha256": "0f2c72af0236f89d82d8da4a92925a66ffa43c274b59ab924f5eee3b9594e43c"
-    },
-    {
-      "yawDegrees": -135,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-135-elev65.8eee9c579b58.png",
-      "sha256": "8eee9c579b58f8cb1e65e574f622a8460e05d6068d8996819570739267718789"
-    },
-    {
-      "yawDegrees": -120,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-120-elev25.c6a79f094578.png",
-      "sha256": "c6a79f0945788b0d92889af2058ede47ccc19639ba0c35bb807929453aa55843"
-    },
-    {
-      "yawDegrees": -120,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-120-elev45.f1115063b787.png",
-      "sha256": "f1115063b7878786cc659e48f2da41734a4a5018df6d9fb8a631add338d8bbc8"
-    },
-    {
-      "yawDegrees": -120,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-120-elev65.e24db7056fe7.png",
-      "sha256": "e24db7056fe7079f2ad63b5ce28a77395981297bbe5b3d0913f8ebfaf15bd450"
-    },
-    {
-      "yawDegrees": -105,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-105-elev25.cda3acc5d500.png",
-      "sha256": "cda3acc5d500716752f4ffe5e4aae0bce6b8ec07c3a2c44a074e8ea4d39cb22a"
-    },
-    {
-      "yawDegrees": -105,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-105-elev45.210dcf0856a3.png",
-      "sha256": "210dcf0856a30a81f7d5839d677ac6091d8fd0b2386339e6d99522591c5e0449"
-    },
-    {
-      "yawDegrees": -105,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-105-elev65.7317575355db.png",
-      "sha256": "7317575355db85ce6a3d3a372b98711fcecbaf716b36c084f299edc43c8f8207"
-    },
-    {
-      "yawDegrees": -90,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-90-elev25.7445213d0e12.png",
-      "sha256": "7445213d0e1271c67d318b2fab6711b37a439eca73c91884308a6f63a7f3f968"
-    },
-    {
-      "yawDegrees": -90,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-90-elev45.8be43edb0548.png",
-      "sha256": "8be43edb0548e853b42504d7a55c972b38f6c40a325dfe289ae2bba80dc2b348"
-    },
-    {
-      "yawDegrees": -90,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-90-elev65.0976267b8175.png",
-      "sha256": "0976267b8175ffa9878428c158487cd9cb46c57ad6d1f15d18c0dba7dfd43ef7"
-    },
-    {
-      "yawDegrees": -75,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-75-elev25.b3219c31bca3.png",
-      "sha256": "b3219c31bca32eb9466e4c959f2bf321bb86ac79f6f76b4cae7dc21302054834"
-    },
-    {
-      "yawDegrees": -75,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-75-elev45.192c36eb2994.png",
-      "sha256": "192c36eb2994dad06f66c72cb4d79196b51de9bf6398d090ea54e1db295b2c2c"
-    },
-    {
-      "yawDegrees": -75,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-75-elev65.30b872ba42a6.png",
-      "sha256": "30b872ba42a69bdf185d1190b879a51bb25b695a1354c9537f78a5b15a127503"
-    },
-    {
-      "yawDegrees": -60,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-60-elev25.423507e6ed30.png",
-      "sha256": "423507e6ed3072fdf659cf439b773c0d88a9d85683b22d0b139a392248596ef1"
-    },
-    {
-      "yawDegrees": -60,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-60-elev45.ec2ac8f374e6.png",
-      "sha256": "ec2ac8f374e696538abfcf26375ea161f0649689ca34ea8e5de909fc2c75d644"
-    },
-    {
-      "yawDegrees": -60,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-60-elev65.ed31ed3c894e.png",
-      "sha256": "ed31ed3c894efc3926486cef7e792859cda59e4a5528d9cb0b605ecb3df7766c"
-    },
-    {
-      "yawDegrees": -45,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-45-elev25.f1f7fd378440.png",
-      "sha256": "f1f7fd3784409b17614d0dafc5acc40d45a9fcf98ec0df4b698295f1ac92981b"
-    },
-    {
-      "yawDegrees": -45,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-45-elev45.7ea9b9e694df.png",
-      "sha256": "7ea9b9e694dfd051b25417aa5e108e3bf4cfdf85f593ab46009fa3a466805926"
-    },
-    {
-      "yawDegrees": -45,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-45-elev65.fb1f653c0f98.png",
-      "sha256": "fb1f653c0f988a4465cb58152263b8f05d94b780f03518418a2e670f1a0fe0da"
-    },
-    {
-      "yawDegrees": -30,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-30-elev25.2e210cf487ae.png",
-      "sha256": "2e210cf487aed338aeec97d01044e8566f1a560c64045fdbc35492f42f2c5773"
-    },
-    {
-      "yawDegrees": -30,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-30-elev45.6b14d85cce66.png",
-      "sha256": "6b14d85cce6603e54f67db82bc5ad45b6b699efae099efb97dd18081e196da89"
-    },
-    {
-      "yawDegrees": -30,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-30-elev65.ab1e6d8d9b05.png",
-      "sha256": "ab1e6d8d9b053b9f2f1d5bd6972a8020ddf46d7ed84d432403973e418e43b36b"
-    },
-    {
-      "yawDegrees": -15,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-15-elev25.0f8463ed51a8.png",
-      "sha256": "0f8463ed51a8ae61fbad0d1db048c6fff1f94bae6f035448af25a36c453ce48c"
-    },
-    {
-      "yawDegrees": -15,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-15-elev45.438d0c586c67.png",
-      "sha256": "438d0c586c67983bfd22b642f899918891d8b07d86b6d4c9cf71fa77ac821034"
-    },
-    {
-      "yawDegrees": -15,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw-15-elev65.f132bc675cc2.png",
-      "sha256": "f132bc675cc2a68e367328f82e092db8d5a3ab9483d0c06e4625cacb2aa060c9"
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev20.d2708724cc53.png",
+      "sha256": "d2708724cc53da83011692fcddc474cc61e8e70d409dc230c351b2ece4d35f8d"
     },
     {
       "yawDegrees": 0,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+00-elev25.0b8cd72a9b21.png",
-      "sha256": "0b8cd72a9b21918bb7148bd0b91df93adaf2d1972911ea7628ef67ef81de4312"
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev30.422e8c62aa4c.png",
+      "sha256": "422e8c62aa4c088b99308e4170468bccd9a7e74af612f120d18a2ea60ad0f02a"
     },
     {
       "yawDegrees": 0,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+00-elev45.672a5301dacf.png",
-      "sha256": "672a5301dacf283789e28492b404df262cbb862da0245f39eb2e3a4a2070ef16"
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev40.d82d334e1416.png",
+      "sha256": "d82d334e14161eb34a9dea8a7037f5429449a2323447be46f2af6121c5ef28a5"
     },
     {
       "yawDegrees": 0,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+00-elev65.1f49cc89cc28.png",
-      "sha256": "1f49cc89cc28a995e3e324a8e5e3ce6afa1674fffcd54a32859645d4566222f8"
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev50.9bb8824357ea.png",
+      "sha256": "9bb8824357ea175d615aa87c98dfd1bfa517e6fba6226c0c0128804d11422552"
     },
     {
-      "yawDegrees": 15,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+15-elev25.58a58abd1f42.png",
-      "sha256": "58a58abd1f421fa5f44024323c2b9f38d5fd04e95d9cafda909df2ea3cbea7f3"
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev60.81e73448fee4.png",
+      "sha256": "81e73448fee4192526ccf42a2c2435f9f681d8a43a3ea02adcb9bd735c96652a"
     },
     {
-      "yawDegrees": 15,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+15-elev45.d628866ab6a9.png",
-      "sha256": "d628866ab6a957755212b59926ab4a26cd8fe03ce4f0cd2d24435d1260ea09d9"
-    },
-    {
-      "yawDegrees": 15,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+15-elev65.f80090193093.png",
-      "sha256": "f8009019309323547958d4e7053a6d202bf1a3e009dce77cf6683a8f63f41b0c"
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev70.6baadb43cbd4.png",
+      "sha256": "6baadb43cbd4f07799d0f7b9ba7c701a2e1b60c4e715b162cc14b6b8731c6fc3"
     },
     {
       "yawDegrees": 30,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+30-elev25.0c2b38523ac1.png",
-      "sha256": "0c2b38523ac18c0cc9b8ee2e39c9e885706d295fd910983bcc89990b4b6c90da"
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev20.8ef15dc1b290.png",
+      "sha256": "8ef15dc1b290848e58e6def364a7060e6bd7d626c3b5644eaab7d47b02102d4f"
     },
     {
       "yawDegrees": 30,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+30-elev45.449303a7aca1.png",
-      "sha256": "449303a7aca16b435ccf2407f4b9c988203775fb32d7a0adaac9a53f8a0a71ca"
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev30.980b0b561fad.png",
+      "sha256": "980b0b561fadb38943e90ad6b3436c34b07242faeae2cd8058d1b9fd29a2cbd5"
     },
     {
       "yawDegrees": 30,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+30-elev65.adf5f17f2c9e.png",
-      "sha256": "adf5f17f2c9efe6cbb5fc4771c8a84e9c1e90c4942db502f94e5ed78d7eb8eb8"
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev40.9a68e39f278c.png",
+      "sha256": "9a68e39f278c9fa14a8e87f2650f4cfe46e9d0f78a8178b0c57a3f3438419cc6"
     },
     {
-      "yawDegrees": 45,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+45-elev25.385db59e4053.png",
-      "sha256": "385db59e40539b83ad792dfd9c937ca82ec179b9997490f0929877a92c942460"
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev50.0fd266b95ab0.png",
+      "sha256": "0fd266b95ab040e82936d48aa2a2d74a2b5343ea06e781818d31c82da458f94a"
     },
     {
-      "yawDegrees": 45,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+45-elev45.6990d68c2c5e.png",
-      "sha256": "6990d68c2c5ede1534edb171bc3fe4a71b66d1fbe4ed6cb0410e313718cc38f2"
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev60.f291805d342b.png",
+      "sha256": "f291805d342bd760d9606f34aae23aaaee32d7b82935b9d2e13851429f80afe1"
     },
     {
-      "yawDegrees": 45,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+45-elev65.230b6df98c39.png",
-      "sha256": "230b6df98c39df95f1f82bf97d346d286787ee25b29fa0b915de7cad522f8da5"
-    },
-    {
-      "yawDegrees": 60,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+60-elev25.e1046902c86d.png",
-      "sha256": "e1046902c86db9297d6cee4b8b8e8c209cbaadf10b21cc43971ae2a26e48406f"
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev70.af00b0ddfe44.png",
+      "sha256": "af00b0ddfe44dc7b06f7485f6331762ea37e24c09e1f58a805cdec8eab682b1d"
     },
     {
       "yawDegrees": 60,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+60-elev45.b0ed7f9fc8d9.png",
-      "sha256": "b0ed7f9fc8d9ccf2b55d822511f104042180f216a6802df0212c91a467dceae1"
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev20.3944abba3438.png",
+      "sha256": "3944abba3438be8ebb3b1703bc92eb5e7b375f78cab25097601c9305cad818b7"
     },
     {
       "yawDegrees": 60,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+60-elev65.ddc9a4687e38.png",
-      "sha256": "ddc9a4687e38eb1fffd4268a1af3454c37ad480582be67de039c6e1bd17f77be"
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev30.70ee431c1d77.png",
+      "sha256": "70ee431c1d77db88ec29c4cef2008babfb48137274e9d0ab4d9841c08d5cfe13"
     },
     {
-      "yawDegrees": 75,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+75-elev25.33fd58c48148.png",
-      "sha256": "33fd58c48148e819120011c6b07f6020982837c3f1fbc48380084593887e7354"
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev40.845cd9e2698f.png",
+      "sha256": "845cd9e2698f21575a73b74f7087261bf9e303250b5ea90201441bc696b0e1da"
     },
     {
-      "yawDegrees": 75,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+75-elev45.a9cb9787e4a0.png",
-      "sha256": "a9cb9787e4a00275e5be77cc1e080c295be14bf889a3b5aa645973f48021e1e1"
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev50.742eb61f0dd0.png",
+      "sha256": "742eb61f0dd0a2a23ad55f79da39ad4566a9695757252d54864fe9d4faa82011"
     },
     {
-      "yawDegrees": 75,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+75-elev65.cb853d5c0770.png",
-      "sha256": "cb853d5c0770aade64ceef654a985745c6ee4ea0131c924880e5f8c972ea69ea"
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev60.225eb16c1b25.png",
+      "sha256": "225eb16c1b250365d58fd58f97170fcdf7b654010becbcaf71ccc21c5c22cc80"
     },
     {
-      "yawDegrees": 90,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+90-elev25.a8241fb123ac.png",
-      "sha256": "a8241fb123acda2ddfe266aa1e1d598ace5d409e30fca2c2659f7fa1077cf9e5"
-    },
-    {
-      "yawDegrees": 90,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+90-elev45.2ca63d12e521.png",
-      "sha256": "2ca63d12e5213da10b109bf16a385f15b90ec0ad5ff94937c7a0913c59ce4f01"
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev70.bf07a080f022.png",
+      "sha256": "bf07a080f022941370bec84979ca6f614e9d3c8814d878e849c9267b523d236d"
     },
     {
       "yawDegrees": 90,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+90-elev65.66f5786b3266.png",
-      "sha256": "66f5786b32666acf024f198e72d49a53970b3280a5a693bbcb05faa7b3745cb8"
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+90-elev20.a8f52bd1e9a3.png",
+      "sha256": "a8f52bd1e9a3802b9df0c5d14b2fcb72f1779390249b8e15e83591972d4ef2a1"
     },
     {
-      "yawDegrees": 105,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+105-elev25.370958e50e9e.png",
-      "sha256": "370958e50e9e02d3faaeca6f0c718e30f00d1bd13223c6fd47987e253e2930c0"
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+90-elev30.acef162deafc.png",
+      "sha256": "acef162deafc2e8f8c2712a910821370420a4fbe2b19424b819d768aa28a2852"
     },
     {
-      "yawDegrees": 105,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+105-elev45.76dcfb6d00ef.png",
-      "sha256": "76dcfb6d00ef55eaac567f35df968ff72bcf4451c84ed0f39a5acf9e581a456c"
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+90-elev40.f7bb8c79543a.png",
+      "sha256": "f7bb8c79543ae21392548574d55c135a0907cfa0bba90ff8fc37a4fd7d66f6c1"
     },
     {
-      "yawDegrees": 105,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+105-elev65.bde20655d3a3.png",
-      "sha256": "bde20655d3a3ad0d227c6882c487eec2028950db137102d235f2280e5a7774ed"
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+90-elev50.f6b76d5de725.png",
+      "sha256": "f6b76d5de725c9d89dfc367df3fd5e6c394033a8bc82c6232360b0823dae11b7"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+90-elev60.b7359481fdf8.png",
+      "sha256": "b7359481fdf858e87b027bd8362d2de919c3960c64731c1fb356f7f226687072"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+90-elev70.fb948efbb2ce.png",
+      "sha256": "fb948efbb2cecfce14b970bedb616ee0756fe0609d6239ccb8feae995c387207"
     },
     {
       "yawDegrees": 120,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+120-elev25.900481071d41.png",
-      "sha256": "900481071d41c0c6ea69f15eafe4c9053075b2337b261671c52d57ff3fb5ac03"
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+120-elev20.8b7407a56041.png",
+      "sha256": "8b7407a5604182d6eec2eef273109617bc30114ddde65d4d748e039f9e2dae96"
     },
     {
       "yawDegrees": 120,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+120-elev45.87b82844bcb9.png",
-      "sha256": "87b82844bcb90dba4b5e0a21f748ff4731466a686a8072c1a28d4119c65b64f5"
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+120-elev30.52198cd1ffbe.png",
+      "sha256": "52198cd1ffbe2dc122086ecbaa0969c336b3a908ea0add6f68023f5eced6e78f"
     },
     {
       "yawDegrees": 120,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+120-elev65.e988deb651ae.png",
-      "sha256": "e988deb651ae8ef1da0f0a32bab7b146f6911132c23f77c9bdf8d189d8c57b0c"
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+120-elev40.d6951ea840bb.png",
+      "sha256": "d6951ea840bbfa6bca838bf151b6090bceec3c25d0da5ea84645a173f0366c9a"
     },
     {
-      "yawDegrees": 135,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+135-elev25.bbf72ebb6995.png",
-      "sha256": "bbf72ebb69955e0075c59a41399f2d775cca36b596a9e0512bc4938b9d21c6af"
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+120-elev50.85f75a735456.png",
+      "sha256": "85f75a7354569e5ce459fdd112a528d5c550eabda044fb0886f813a72e36e78a"
     },
     {
-      "yawDegrees": 135,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+135-elev45.c468ad959501.png",
-      "sha256": "c468ad9595010471263f6091086cd4a3f3f116b8a2e1c11a46d48baeb7360e73"
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+120-elev60.57814299ec47.png",
+      "sha256": "57814299ec47135b11a376b999ab767c2f942d0d787cf51647f05c9f345e7c27"
     },
     {
-      "yawDegrees": 135,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+135-elev65.8ba77e1b9b60.png",
-      "sha256": "8ba77e1b9b603960f3dee315d08a8a437bba39dd1066888ef7c9e685aab94f7d"
-    },
-    {
-      "yawDegrees": 150,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+150-elev25.e4962213a223.png",
-      "sha256": "e4962213a223de6412bab94e88a3d69461d029f2e229b5c60716d1be15e64b3a"
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+120-elev70.73a18a90b260.png",
+      "sha256": "73a18a90b2609259976f0f5efa1a17df834f8093866f20a51c1b1bc8b414cb26"
     },
     {
       "yawDegrees": 150,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+150-elev45.7af8b343fa15.png",
-      "sha256": "7af8b343fa154bb1df40e2350b1095db0cdeefc8c24b0f956237a470af665979"
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+150-elev20.530aa5400179.png",
+      "sha256": "530aa54001797794bf5c112dc310e4f944113227b0bd3ae14f87358af2df0f8d"
     },
     {
       "yawDegrees": 150,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+150-elev65.af9d415fe9bf.png",
-      "sha256": "af9d415fe9bf34943f4f2a045098a25947aeb7fa0154a0d448aec3af9cb2a2ba"
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+150-elev30.58c1b224101f.png",
+      "sha256": "58c1b224101f7ec6ff06635e54da96b619514d447845787b4206a43d80d60632"
     },
     {
-      "yawDegrees": 165,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+165-elev25.2dd3403c2067.png",
-      "sha256": "2dd3403c2067999a5c7f7bb492d7050d364e3531263d474e2f2f8760b51ed7e5"
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+150-elev40.b292cc6e0426.png",
+      "sha256": "b292cc6e0426467a0a4fbd03a04a031c091c53aaead52c210978fad9f95abc62"
     },
     {
-      "yawDegrees": 165,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+165-elev45.ef1ac950348c.png",
-      "sha256": "ef1ac950348c7bfca0cf7ced564069b0bf72516cc1834dddeac5984e17664bba"
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+150-elev50.57ebb9c56a2f.png",
+      "sha256": "57ebb9c56a2ff9f88ddb78842604afb568ab9da26e76e58ae379ab40ca9b650f"
     },
     {
-      "yawDegrees": 165,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/canteen-bench-yaw+165-elev65.f61b7de52806.png",
-      "sha256": "f61b7de52806e204045077521208e36e99fab168ec8bfb197796c5dd8be34e81"
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+150-elev60.bee68f49be2d.png",
+      "sha256": "bee68f49be2d061a5c0adeb36b2f481717a192caaef57e49ed4c362d7fd461dc"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+150-elev70.ec365ba15c47.png",
+      "sha256": "ec365ba15c4708513de374271c31e83df3f8f52957e7fe4879240be4d2611952"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+180-elev20.c4d02288ade2.png",
+      "sha256": "c4d02288ade2be606ac00114e1deaa732b4d6715c5758c608df783779117adac"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+180-elev30.dd9a96faa7db.png",
+      "sha256": "dd9a96faa7db71630eec0df39a34137391c961c27aae414a7c202e5ee9d851de"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+180-elev40.a754f32ec319.png",
+      "sha256": "a754f32ec319ce1224894b0bce0454e7cc11c02a8fd9cc7b2615b6d4f1559ab1"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+180-elev50.4dcfb401e1c0.png",
+      "sha256": "4dcfb401e1c09a9900301f39f638f18094bfadf501bdb2637c2a873d2f09b950"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+180-elev60.e94bc019e0d4.png",
+      "sha256": "e94bc019e0d403b3e306541f31eb36d96b6ca080536a7fae6fe5391af6e5f20d"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+180-elev70.08aca070c38b.png",
+      "sha256": "08aca070c38bf1f9167063150a3f8f66b9ee76a2d4d668cf61a55018b8467455"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+210-elev20.abe775fb3c1e.png",
+      "sha256": "abe775fb3c1ea6a120e5d5386a5c6fdf58121110679173329cfcf1fd092082fb"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+210-elev30.7d20959df07d.png",
+      "sha256": "7d20959df07dbcf1a02e9b0f55ca3f499b5f0237a8ce65947c0e78502910bdae"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+210-elev40.335f6afeb642.png",
+      "sha256": "335f6afeb642971022775e714c02a6ae72ad014bb40f53c404d8ce7402132d35"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+210-elev50.de405923751d.png",
+      "sha256": "de405923751d72316dfa2deee1bb4ea04232c880c7101d6d7ca51d466a9ea1f2"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+210-elev60.81d50c84b8be.png",
+      "sha256": "81d50c84b8bede58d05cfddd672e7b693da7023d738af601cc54334bc3c484b2"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+210-elev70.174eeaf15e54.png",
+      "sha256": "174eeaf15e542e4a81c19cead5dc59870342fbe479baa0bff2b30e56f94dcc3a"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+240-elev20.782849ee264c.png",
+      "sha256": "782849ee264c2df43d5f1ca9b3abcbf60a04eba70b17bd094b1289baa9d36978"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+240-elev30.77604dc1a6f9.png",
+      "sha256": "77604dc1a6f99634194a17c11d847b2b5e92d1eac600d1df6c333c25c10f23aa"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+240-elev40.cf0b691f38e9.png",
+      "sha256": "cf0b691f38e94dc7ac856d1070b7a11efba34852f29be947adbfec37d4370404"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+240-elev50.d60a2e64dc4e.png",
+      "sha256": "d60a2e64dc4ea03d36b87829c61b190b50298b267fb1888cd8796387819463d5"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+240-elev60.fc39bb08a6e9.png",
+      "sha256": "fc39bb08a6e90239d54cd93828213bdfce3f5fbb8838f7e27e03570cb7f34720"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+240-elev70.1467ee7d727a.png",
+      "sha256": "1467ee7d727af27a235f3020a694596e691adb5824dfd04b7fd1906049b5bcde"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+270-elev20.041686b88ad8.png",
+      "sha256": "041686b88ad8b4d0edba5f61225fe44a1de976c59400d07582f065c83eaa060d"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+270-elev30.94b9bc80f817.png",
+      "sha256": "94b9bc80f8176c5f40510530d86f2493d078c0973944cd13e8131ae7b47596c0"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+270-elev40.14648d72f1cd.png",
+      "sha256": "14648d72f1cd618a160bc70cd7d7af581b474731f839e25cc3aecc874f5aee73"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+270-elev50.b1f7f7f6907c.png",
+      "sha256": "b1f7f7f6907c4a56154e5f6bed5d7b15fafc6fea209d4ea1a31d1636d1eadecb"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+270-elev60.0f3ca461b738.png",
+      "sha256": "0f3ca461b7387c94a365e0246bd127a0ffc2684fb7b2a29860bbae8657e702f1"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+270-elev70.5efec48b44a6.png",
+      "sha256": "5efec48b44a60731e6ec2b8eb05542c4ea6cf4a6c7ea32f392676fb8134d30ff"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev20.cd4251a76a61.png",
+      "sha256": "cd4251a76a61690a876a5829a0754d896e0c502fa584438570e44f9a273ac36c"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev30.964369c8377d.png",
+      "sha256": "964369c8377d992f4f4d28c8edafe4bb93e7f546fe2114917b77363b4faf12c5"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev40.788a2ecb837d.png",
+      "sha256": "788a2ecb837d71162595e2b0b9701924fcb0f29fcf4a5c77d6c32dc21a7827e7"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev50.58ac8361467f.png",
+      "sha256": "58ac8361467f9012ba0969be648187baf085d1ed9649154b717a9398087ecbd3"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev60.6115054d671f.png",
+      "sha256": "6115054d671ff74dbac61f9ef2ad5c2cfde6aa91e8c6e9eabeb6b4ea8ba1e6c1"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev70.a5c2dd76a683.png",
+      "sha256": "a5c2dd76a68308e4b6d731b0547c7c620504b9ab038f1e06c3cd61a2ab8e7e8a"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev20.2570a345804e.png",
+      "sha256": "2570a345804ec73a10e2c994644e85eda8475d7e461163a88bc1d5978785d08b"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev30.a58a53c76774.png",
+      "sha256": "a58a53c76774d0e77ad55cc74be59ee8ee591650bbc8dddf512f9b793e7f0c47"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev40.db895d258f8a.png",
+      "sha256": "db895d258f8ae5431e08d145392fadfd68a6da7f9dd67893f184dd05d24fef44"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev50.5967ac208bc0.png",
+      "sha256": "5967ac208bc0a776ae7c731d7b256788facca3da72246284c82cf3efdb39dfde"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev60.899cae97cfc4.png",
+      "sha256": "899cae97cfc41736cabfc35ac46badc381baa668cd1057deda5902ef6a5ba6dd"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev70.787947d16d45.png",
+      "sha256": "787947d16d45c9df2255ce416590858edf4857d8661526686b42e4c693767a9d"
     }
   ]
 }

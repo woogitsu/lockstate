@@ -1789,7 +1789,7 @@ export class ActionSystem implements SystemRegistration {
     // allocating a tuple per candidate on a per-prisoner, per-cycle path.
     for (let rank = 0; rank < plan.candidates.length; rank += 1) {
       const chosen = plan.candidates[rank]!;
-      const target = this.resolveTargetInstance(entityId, chosen);
+      const target = this.resolveTargetInstance(entityId, chosen, currentTile);
       if (target === undefined) continue;
 
       const destination = destinationTileOf(target);
@@ -1948,7 +1948,7 @@ export class ActionSystem implements SystemRegistration {
     return claimed === undefined ? undefined : { kind: 'job', job: claimed };
   }
 
-  private resolveTargetInstance(entityId: number, action: ActionDefinition): ResolvedActionTarget | undefined {
+  private resolveTargetInstance(entityId: number, action: ActionDefinition, currentTile: TilePosition): ResolvedActionTarget | undefined {
     if (action.target.kind === 'own-accommodation') {
       const instanceId = this.coldState.getAccommodation(entityId);
       const instance = instanceId === undefined ? undefined : this.roomInstances.getById(instanceId);
@@ -1962,7 +1962,12 @@ export class ActionSystem implements SystemRegistration {
     // -- it resolves by id -- which is why a prisoner who holds a cell keeps
     // sleeping, eating in cell and using the toilet whatever stands in the
     // room, and why the first bed placed buys three needs rather than one.
-    const instance = this.roomInstances.findAvailableForUse(action.target.roomCatalogId, action.requiredObjectCapability);
+    // An anchor present in the graph may still be physically disconnected.
+    // Filter against this actor's current component during selection, so an
+    // unusable first room cannot hide a later eligible one. Door permissions
+    // remain the queued router's responsibility.
+    const instance = this.roomInstances.findAvailableForUse(action.target.roomCatalogId, action.requiredObjectCapability,
+      (candidate) => this.navigation.sharesPhysicalComponent(currentTile, candidate.anchorTile));
     return instance === undefined ? undefined : { kind: 'room', instance };
   }
 

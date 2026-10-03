@@ -51,8 +51,9 @@ import { type Page, expect, test } from './network-changed-fixture';
 
 const APP_URL = '/index.html';
 
-/** The `data-target` shapes the panel writes: an edge aim, and a tile aim. */
-const EDGE_AIM = /^-?\d+,-?\d+,(?:north|west),\d+$/u;
+// 2026-10-03: the default wall is now a whole square. The historical edge
+// account above records #550; this current consumer compares two tile picks
+// exactly, without the neighbouring-edge allowance used by that old fixture.
 const TILE_AIM = /^-?\d+,-?\d+$/u;
 
 /** Loads the real application entry and waits for the renderer and the HUD. */
@@ -123,17 +124,19 @@ test.describe('the Build panel says where the player is aiming (#550)', () => {
     // laid out, which is how #220 shipped a message no viewport showed.
     await expect(readout).toBeVisible();
 
-    // ---- the wall tool, which always tracked the pointer ------------------
+    // ---- the default whole-square wall tool ------------------------------
     const arm = page.locator('.hud-build__arm');
     await arm.click();
     await expect(arm).toHaveText('Stop placing');
 
     await page.mouse.move(points.a.x, points.a.y);
-    await expect(block).toHaveAttribute('data-target', EDGE_AIM);
+    await expect(block).toHaveAttribute('data-target', TILE_AIM);
+    await expect(readout).toContainText('whole squares');
     const wallAtA = tileOf(await block.getAttribute('data-target'));
 
     await page.mouse.move(points.b.x, points.b.y);
-    await expect(block).toHaveAttribute('data-target', EDGE_AIM);
+    await expect(block).toHaveAttribute('data-target', TILE_AIM);
+    await expect(readout).toContainText('whole squares');
     const wallAtB = tileOf(await block.getAttribute('data-target'));
     expect(wallAtA, 'the two hover points are the same tile, so this test proves nothing').not.toEqual(wallAtB);
 
@@ -143,9 +146,8 @@ test.describe('the Build panel says where the player is aiming (#550)', () => {
     await expect(remove).toHaveAttribute('aria-pressed', 'true');
 
     await page.mouse.move(points.b.x, points.b.y);
-    // A *tile* aim, with no edge in it: a bed is not laid on a side of a tile,
-    // and neither is a deletion. Before the fix this attribute still carried
-    // the wall tool's four fields, which is the measurable form of the lie.
+    // Removal names a tile too, but must take ownership of the live pointer
+    // rather than retaining the wall's last coordinate or construction text.
     await expect(block).toHaveAttribute('data-target', TILE_AIM);
     const removeAtB = tileOf(await block.getAttribute('data-target'));
 
@@ -157,19 +159,16 @@ test.describe('the Build panel says where the player is aiming (#550)', () => {
     // fails first, and it fails it whichever half of the defect is present.
     expect(removeAtA, 'the readout named the same tile at two different aims').not.toEqual(removeAtB);
 
-    // And the answers are about *these* positions, not merely about each other:
-    // the wall tool independently named the tile under each of the same two
-    // points, and the two producers must agree to within the one step
-    // `pickEdgeAtWorld` is allowed to take into the neighbouring tile.
-    for (const [edgeAim, tileAim, label] of [
+    // Both independent producers now pick the actual tile at each position.
+    // An adjacent tile is no longer a legal edge-picking discrepancy.
+    for (const [squareAim, tileAim, label] of [
       [wallAtA, removeAtA, 'the first'],
       [wallAtB, removeAtB, 'the second'],
     ] as const) {
-      const steps = Math.abs(edgeAim.x - tileAim.x) + Math.abs(edgeAim.y - tileAim.y);
       expect(
-        steps,
-        `at ${label} hover point the removal readout named ${tileAim.x},${tileAim.y} where the pointer was over ${edgeAim.x},${edgeAim.y}`,
-      ).toBeLessThanOrEqual(1);
+        tileAim,
+        `at ${label} hover point the removal readout named ${tileAim.x},${tileAim.y} where the pointer was over ${squareAim.x},${squareAim.y}`,
+      ).toEqual(squareAim);
     }
 
     // The line a player actually reads, not only the attribute beside it.

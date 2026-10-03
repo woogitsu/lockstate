@@ -1,0 +1,9 @@
+import { defineConfig } from '@playwright/test';
+import { fileURLToPath } from 'node:url';
+import artifact from '../../../tests/browser/playwright.artifact.config.ts';
+
+export default defineConfig({
+  ...artifact,
+  testMatch: /native-classroom-desk\.recipe\.ts$/,
+  outputDir: fileURLToPath(new URL('./native-results/', import.meta.url)),
+});

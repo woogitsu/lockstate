@@ -1,0 +1,34 @@
+{
+  "scenarios": [
+    {
+      "scenario": "actual mesh translated outside 1x1",
+      "exitCode": 1,
+      "failures": [
+        "ValueError: Shower evaluated geometry escapes mounted 1x1: [-0.35499998927116394, 3.7997961044311523e-07, 0.7099999785423279] to [0.35499998927116394, 0.9750006794929504, 1.1399999856948853]"
+      ]
+    },
+    {
+      "scenario": "actual camera span halved",
+      "exitCode": 1,
+      "failures": [
+        "ValueError: Shower actual camera scale is not 64 pixels per tile"
+      ]
+    },
+    {
+      "scenario": "actual camera origin shifted",
+      "exitCode": 1,
+      "failures": [
+        "ValueError: Shower actual camera target/yaw basis differs from declared square pose"
+      ]
+    },
+    {
+      "scenario": "authored nozzle shell omitted",
+      "exitCode": 1,
+      "failures": [
+        "ValueError: Shower authored mesh set changed"
+      ]
+    }
+  ],
+  "restoredExitCode": 0,
+  "restoredWrapperSha256": "551389baf661a2d710db86c4abf0aa651def05aaeccd52b75ec95fb3325cfef5"
+}

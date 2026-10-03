@@ -1,0 +1,35 @@
+$ vitest run "tests/unit/oblique-common-room-bench-arm-supports-integrity.test.ts"
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-bench-arm-supports-20261003
+
+ ❯ tests/unit/oblique-common-room-bench-arm-supports-integrity.test.ts (2 tests | 1 failed) 24ms
+   × consumes the detailed default through the existing descriptor and decodes every canonical frame without clipping 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-common-room-bench-arm-supports-integrity.test.ts > consumes the detailed default through the existing descriptor and decodes every canonical frame without clipping
+AssertionError: /assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+00-elev20.b21cb685e396.png: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/oblique-common-room-bench-arm-supports-integrity.test.ts:71:51
+     69|     expect(png.subarray(0,8)).toEqual(Buffer.from([137,80,78,71,13,10,…
+     70|     expect([png.readUInt32BE(16),png.readUInt32BE(20)]).toEqual([256,2…
+     71|     expect(hasTransparentBorder(png),frame.image).toBe(true);
+       |                                                   ^
+     72|   }
+     73| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  11:03:42
+   Duration  225ms (transform 21ms, setup 0ms, import 88ms, tests 24ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

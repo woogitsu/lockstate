@@ -1,0 +1,79 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-oblique-steady-projection-audit-20261003
+
+ ❯ tests/unit/hud-minimap-publication-identity.test.ts (6 tests | 3 failed) 8ms
+   × keeps the actual placeholder child on 120 identical publications without repainting cached pixels 4ms
+   × keeps the empty-prison child on repeated inactive publications 1ms
+   × updates viewport and clipping with unchanged pixels, without treating pose as text or terrain change 1ms
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 3 passed (6)
+   Start at  15:25:23
+   Duration  256ms (transform 33ms, setup 0ms, import 66ms, tests 8ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/hud-minimap-publication-identity.test.ts > keeps the actual placeholder child on 120 identical publications without repainting cached pixels
+AssertionError: expected { Object (data) } to be { Object (data) } // Object.is equality
+
+If it should pass with deep equality, replace "toBe" with "toStrictEqual"
+
+Expected: { Object (data) }
+Received: serializes to the same string
+
+
+Compared values have no visual difference.
+
+ ❯ tests/unit/hud-minimap-publication-identity.test.ts:42:39
+     40|   const child = h.placeholder.childNodes[0];
+     41|   for (let i = 0; i < 120; i++) h.updateMinimap({ ...initial });
+     42|   expect(h.placeholder.childNodes[0]).toBe(child);
+       |                                       ^
+     43|   expect(h.placeholder.textContent).toBe(`en:${HUD_MESSAGE_KEY.minimap…
+     44|   expect(h.draws).toHaveLength(4);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/unit/hud-minimap-publication-identity.test.ts > keeps the empty-prison child on repeated inactive publications
+AssertionError: expected { Object (data) } to be { Object (data) } // Object.is equality
+
+If it should pass with deep equality, replace "toBe" with "toStrictEqual"
+
+Expected: { Object (data) }
+Received: serializes to the same string
+
+
+Compared values have no visual difference.
+
+ ❯ tests/unit/hud-minimap-publication-identity.test.ts:49:39
+     47|   const h = setup(); h.setMinimapSessionActive(false); const child = h…
+     48|   h.updateMinimap(view()); h.updateMinimap(undefined); h.setMinimapSes…
+     49|   expect(h.placeholder.childNodes[0]).toBe(child);
+       |                                       ^
+     50|   expect(h.placeholder.textContent).toBe(`en:${HUD_MESSAGE_KEY.minimap…
+     51|   expect(h.canvas.hidden).toBe(true); expect(h.surface.disabled).toBe(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/unit/hud-minimap-publication-identity.test.ts > updates viewport and clipping with unchanged pixels, without treating pose as text or terrain change
+AssertionError: expected { Object (data) } to be { Object (data) } // Object.is equality
+
+If it should pass with deep equality, replace "toBe" with "toStrictEqual"
+
+Expected: { Object (data) }
+Received: serializes to the same string
+
+
+Compared values have no visual difference.
+
+ ❯ tests/unit/hud-minimap-publication-identity.test.ts:58:39
+     56|   expect(h.viewport.style.left).toBe('0%'); expect(h.viewport.style.to…
+     57|   expect(parseFloat(h.viewport.style.width)).toBeCloseTo(40); expect(p…
+     58|   expect(h.placeholder.childNodes[0]).toBe(child); expect(h.draws).toH…
+       |                                       ^
+     59|   h.updateMinimap({ ...initial, viewport: { x: 2, y: 2, width: .1, hei…
+     60| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+

@@ -1,0 +1,131 @@
+node : [2m[WebServer] [22m(node:35816) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:4 char:1
++ node --experimental-transform-types --disable-warning=ExperimentalWar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 11 tests using 1 worker
+
+(node:15944) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15944) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\browser\generic-wooden-rack-player-build.spec.ts:214:1 › player creates storage and delivery capacity before generic rack (43.1s)
+  x   2 tests\browser\generic-wooden-rack-player-build.spec.ts:277:3 › player reaches default generic racks at quarterTurns0 and retains both authored rack palettes and native anchors after Save/Load (51.9s)
+  -   3 tests\browser\generic-wooden-rack-player-build.spec.ts:277:3 › player reaches default generic racks at quarterTurns1 and retains both authored rack palettes and native anchors after Save/Load
+(node:64096) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64096) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  4 tests\browser\oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw0 (20.4s)
+  ok  5 tests\browser\oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw180 (22.7s)
+  ok  6 tests\browser\shower-head-player-build.spec.ts:163:1 › player creates storage and delivery capacity before Shower Room (42.5s)
+  ok  7 tests\browser\shower-head-player-build.spec.ts:226:3 › player builds Shower Room at quarterTurns0 and retains authored nozzle palette after Save/Load (35.7s)
+  ok  8 tests\browser\shower-head-player-build.spec.ts:226:3 › player builds Shower Room at quarterTurns1 and retains authored nozzle palette after Save/Load (35.6s)
+  ok  9 tests\browser\wooden-chair-player-build.spec.ts:166:1 › player creates storage and delivery capacity before Staff Room (42.5s)
+  ok 10 tests\browser\wooden-chair-player-build.spec.ts:229:3 › player builds Staff Room at quarterTurns0 and retains both authored chair palettes and anchors after Save/Load (40.8s)
+  x  11 tests\browser\wooden-chair-player-build.spec.ts:229:3 › player builds Staff Room at quarterTurns1 and retains both authored chair palettes and anchors after Save/Load (32.1s)
+
+
+  1) tests\browser\generic-wooden-rack-player-build.spec.ts:277:3 › player reaches default generic racks at quarterTurns0 and retains both authored rack palettes and native anchors after Save/Load 
+
+    Error: rack1 authored timber after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m153[39m
+
+      244 |   }, null, 2));
+      245 |   beforePixels.forEach((count, index) => expect.soft(count, `rack${index + 1} authored timber after construction`)
+    > 246 |     .toBeGreaterThan(quarterTurns === 0 ? 200 : 70));
+          |      ^
+      247 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      248 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      249 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\generic-wooden-rack-player-build.spec.ts:246:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\generic-wooden-rack-player-build.spec.ts:245:16
+
+    Error: rack1 authored timber after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m153[39m
+
+      261 |   const afterPixels = await rackPixels(page, loaded, quarterTurns);
+      262 |   afterPixels.forEach((count, index) => expect.soft(count, `rack${index + 1} authored timber after Load`)
+    > 263 |     .toBeGreaterThan(quarterTurns === 0 ? 200 : 70));
+          |      ^
+      264 |   expect(afterPixels).toEqual(beforePixels);
+      265 |   const evidencePath = info.outputPath('generic-wooden-rack-worker-and-save-evidence.json');
+      266 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\generic-wooden-rack-player-build.spec.ts:263:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\generic-wooden-rack-player-build.spec.ts:262:15
+
+    attachment #1: generic-wooden-rack-worker-and-save-evidence (application/json) ─────────────────
+    ..\..\..\AppData\Local\Temp\lockstate-crs-depth-initial-20261003\generic-wooden-rack-player-2cd86-ive-anchors-after-Save-Load\attachments\generic-wooden-rack-worker-and-save-evidence-f0f63cb22419d4a4a2acb3d9380994e8c60b746f.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-crs-depth-initial-20261003\generic-wooden-rack-player-2cd86-ive-anchors-after-Save-Load\error-context.md
+
+  2) tests\browser\wooden-chair-player-build.spec.ts:229:3 › player builds Staff Room at quarterTurns1 and retains both authored chair palettes and anchors after Save/Load 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 1[39m
+
+    [33m@@ -4,7 +4,7 @@[39m
+    [2m      "y": 8,[22m
+    [2m    },[22m
+    [2m    "objectId": "object.chair",[22m
+    [2m    "orientation": 1,[22m
+    [2m    "placedObjectId": "object:22:8",[22m
+    [32m-   "sourceOrderId": "room-template-000000000002-2-object-001",[39m
+    [31m+   "sourceOrderId": "room-template-000000000002-2-object-002",[39m
+    [2m  }[22m
+
+       at owned-object-worker-evidence.ts:38
+
+      36 |     const objects = targets.filter(object => object.placedObjectId === placedObjectId);
+      37 |     expect(objects).toHaveLength(1);
+    > 38 |     expect(objects[0]).toEqual({ placedObjectId, objectId, ...identity });
+         |                        ^
+      39 |     const orders = data.construction.orders.filter(order => order.id === identity.sourceOrderId);
+      40 |     expect(orders).toHaveLength(1);
+      41 |     expect(orders[0]).toMatchObject({ id: identity.sourceOrderId, definitionId, state: 'completed', location: identity.anchorTile });
+        at assertOwnedObjectOrders (C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\owned-object-worker-evidence.ts:38:24)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\wooden-chair-player-build.spec.ts:183:3
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-crs-depth-initial-20261003\wooden-chair-player-build--59a60-and-anchors-after-Save-Load\error-context.md
+
+  2 failed
+    tests\browser\generic-wooden-rack-player-build.spec.ts:277:3 › player reaches default generic racks at quarterTurns0 and retains both authored rack palettes and native anchors after Save/Load 
+    tests\browser\wooden-chair-player-build.spec.ts:229:3 › player builds Staff Room at quarterTurns1 and retains both authored chair palettes and anchors after Save/Load 
+  1 did not run
+  8 passed (6.2m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+

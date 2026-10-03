@@ -451,8 +451,8 @@ inherited:
   > `givenName` and `familyName` separately rather than one composed string"*),
   > reaching the player through the localizer rather than as a composed string
   > from the simulation. `src/ui/simulation-events.ts:1498-1502`,
-  > `src/ui/simulation-prisoner-detail.ts:128` and
-  > `src/ui/simulation-prisoner-roster.ts:204` carry it the rest of the way.
+  > `src/ui/simulation-prisoner-detail.ts:128`, `givenName: view.name.givenName`, and
+  > `src/ui/simulation-prisoner-roster.ts:204`, `givenName: row.name.givenName`, carry it the rest of the way.
   >
   > **The projection anchors moved and their shape changed with them**, so they
   > are re-stated by subject rather than re-numbered: the three projections

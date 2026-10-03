@@ -1,0 +1,28 @@
+{
+  "quarterTurns": 1,
+  "actualBefore": [
+    "object.desk@24,6:orientation=1"
+  ],
+  "actualAfter": [
+    "object.desk@24,6:orientation=1"
+  ],
+  "beforePixels": [
+    353,
+    455
+  ],
+  "afterPixels": [
+    353,
+    455
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "reception-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      },
+      "quarterTurns": 1
+    }
+  ]
+}

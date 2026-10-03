@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-first-ci-remaining-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  02:48:30
+   Duration  873ms (transform 253ms, setup 0ms, import 736ms, tests 7ms, environment 0ms)
+

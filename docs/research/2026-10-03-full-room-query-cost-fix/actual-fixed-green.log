@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-full-room-query-cost-fix-20261003
+
+
+ Test Files  2 passed (2)
+      Tests  6 passed (6)
+   Start at  12:07:25
+   Duration  2.15s (transform 738ms, setup 0ms, import 2.00s, tests 112ms, environment 0ms)
+

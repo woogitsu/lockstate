@@ -1,0 +1,35 @@
+node : [2m[WebServer] [22m(node:56820) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:34 char:1
++ node --experimental-transform-types --disable-warning=ExperimentalWar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 4 tests using 1 worker
+
+(node:50240) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50240) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\dedicated-medical-bed-player-build.spec.ts:199:1 › player creates actual storage and delivery capacity before detailed medical bed Infirmary (44.1s)
+  ok 2 tests\browser\dedicated-medical-bed-player-build.spec.ts:262:3 › player builds Infirmary at quarterTurns1 and retains the authored medical bed headboard palette and anchors after Save/Load (43.2s)
+  ok 3 tests\browser\dedicated-security-console-player-build.spec.ts:197:1 › player creates actual storage and delivery capacity before detailed Security Office (43.2s)
+  ok 4 tests\browser\dedicated-security-console-player-build.spec.ts:260:3 › player builds Security Office at quarterTurns1 and retains the authored console monitor palette and anchors after Save/Load (36.3s)
+
+  4 passed (2.8m)

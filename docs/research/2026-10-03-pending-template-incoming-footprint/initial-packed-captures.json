@@ -1,0 +1,306 @@
+﻿[
+    {
+        "case":  "live-conflict",
+        "originalFullCaptureSHA256":  "F68763C736DA26AB6CB5CD60F93EC7BEDAF2F812B7D6EF9E08A8A2C0CA950701",
+        "base":  "d766477141",
+        "load":  false,
+        "conflict":  true,
+        "anchor":  {
+                       "x":  11,
+                       "y":  9
+                   },
+        "worldSquareAtIncomingFar":  1,
+        "physicalAtIncomingFar":  true,
+        "independentPhysical":  {
+                                    "placedObjectId":  "object:11:9",
+                                    "objectId":  "object.bed",
+                                    "anchorTile":  {
+                                                       "x":  11,
+                                                       "y":  9
+                                                   },
+                                    "orientation":  0,
+                                    "sourceOrderId":  "independent-bed"
+                                },
+        "balanceBefore":  25000,
+        "balanceCompleted":  23405,
+        "balanceAfterTemplateCancel":  23405,
+        "afterAdmissionOrder":  {
+                                    "id":  "independent-bed",
+                                    "definitionId":  "bed-wooden",
+                                    "location":  {
+                                                     "x":  11,
+                                                     "y":  9
+                                                 },
+                                    "placementSequence":  1,
+                                    "state":  "approved",
+                                    "progress":  0,
+                                    "materialsAllocated":  [
+
+                                                           ]
+                                },
+        "completedOrder":  {
+                               "id":  "independent-bed",
+                               "definitionId":  "bed-wooden",
+                               "location":  {
+                                                "x":  11,
+                                                "y":  9
+                                            },
+                               "placementSequence":  1,
+                               "state":  "completed",
+                               "progress":  30,
+                               "materialsAllocated":  [
+                                                          {
+                                                              "itemId":  "item.wood-plank",
+                                                              "quantity":  1
+                                                          }
+                                                      ],
+                               "assignedWorkerId":  "mock-worker-1"
+                           },
+        "afterTemplateCancelOrder":  {
+                                         "id":  "independent-bed",
+                                         "definitionId":  "bed-wooden",
+                                         "location":  {
+                                                          "x":  11,
+                                                          "y":  9
+                                                      },
+                                         "placementSequence":  1,
+                                         "state":  "completed",
+                                         "progress":  30,
+                                         "materialsAllocated":  [
+                                                                    {
+                                                                        "itemId":  "item.wood-plank",
+                                                                        "quantity":  1
+                                                                    }
+                                                                ],
+                                         "assignedWorkerId":  "mock-worker-1"
+                                     }
+    },
+    {
+        "case":  "load-conflict",
+        "originalFullCaptureSHA256":  "002C00B4FEA1CBF4681290EB1CAED61BD45C2DA61E57ABFB5B9C56228168A3F3",
+        "base":  "d766477141",
+        "load":  true,
+        "conflict":  true,
+        "anchor":  {
+                       "x":  11,
+                       "y":  9
+                   },
+        "worldSquareAtIncomingFar":  1,
+        "physicalAtIncomingFar":  true,
+        "independentPhysical":  {
+                                    "placedObjectId":  "object:11:9",
+                                    "objectId":  "object.bed",
+                                    "anchorTile":  {
+                                                       "x":  11,
+                                                       "y":  9
+                                                   },
+                                    "orientation":  0,
+                                    "sourceOrderId":  "independent-bed"
+                                },
+        "balanceBefore":  25000,
+        "balanceCompleted":  23405,
+        "balanceAfterTemplateCancel":  23405,
+        "afterAdmissionOrder":  {
+                                    "id":  "independent-bed",
+                                    "definitionId":  "bed-wooden",
+                                    "location":  {
+                                                     "x":  11,
+                                                     "y":  9
+                                                 },
+                                    "placementSequence":  1,
+                                    "state":  "approved",
+                                    "progress":  0,
+                                    "materialsAllocated":  [
+
+                                                           ]
+                                },
+        "completedOrder":  {
+                               "id":  "independent-bed",
+                               "definitionId":  "bed-wooden",
+                               "location":  {
+                                                "x":  11,
+                                                "y":  9
+                                            },
+                               "placementSequence":  1,
+                               "state":  "completed",
+                               "progress":  30,
+                               "materialsAllocated":  [
+                                                          {
+                                                              "itemId":  "item.wood-plank",
+                                                              "quantity":  1
+                                                          }
+                                                      ],
+                               "assignedWorkerId":  "mock-worker-1"
+                           },
+        "afterTemplateCancelOrder":  {
+                                         "id":  "independent-bed",
+                                         "definitionId":  "bed-wooden",
+                                         "location":  {
+                                                          "x":  11,
+                                                          "y":  9
+                                                      },
+                                         "placementSequence":  1,
+                                         "state":  "completed",
+                                         "progress":  30,
+                                         "materialsAllocated":  [
+                                                                    {
+                                                                        "itemId":  "item.wood-plank",
+                                                                        "quantity":  1
+                                                                    }
+                                                                ],
+                                         "assignedWorkerId":  "mock-worker-1"
+                                     }
+    },
+    {
+        "case":  "live-legal",
+        "originalFullCaptureSHA256":  "5B433829D3F0823F8DEBA064ECF621268030F069D54233D962E184440DFA96C7",
+        "base":  "d766477141",
+        "load":  false,
+        "conflict":  false,
+        "anchor":  {
+                       "x":  11,
+                       "y":  8
+                   },
+        "worldSquareAtIncomingFar":  0,
+        "physicalAtIncomingFar":  true,
+        "independentPhysical":  {
+                                    "placedObjectId":  "object:11:8",
+                                    "objectId":  "object.bed",
+                                    "anchorTile":  {
+                                                       "x":  11,
+                                                       "y":  8
+                                                   },
+                                    "orientation":  0,
+                                    "sourceOrderId":  "independent-bed"
+                                },
+        "balanceBefore":  25000,
+        "balanceCompleted":  23405,
+        "balanceAfterTemplateCancel":  23405,
+        "afterAdmissionOrder":  {
+                                    "id":  "independent-bed",
+                                    "definitionId":  "bed-wooden",
+                                    "location":  {
+                                                     "x":  11,
+                                                     "y":  8
+                                                 },
+                                    "placementSequence":  1,
+                                    "state":  "approved",
+                                    "progress":  0,
+                                    "materialsAllocated":  [
+
+                                                           ]
+                                },
+        "completedOrder":  {
+                               "id":  "independent-bed",
+                               "definitionId":  "bed-wooden",
+                               "location":  {
+                                                "x":  11,
+                                                "y":  8
+                                            },
+                               "placementSequence":  1,
+                               "state":  "completed",
+                               "progress":  30,
+                               "materialsAllocated":  [
+                                                          {
+                                                              "itemId":  "item.wood-plank",
+                                                              "quantity":  1
+                                                          }
+                                                      ],
+                               "assignedWorkerId":  "mock-worker-1"
+                           },
+        "afterTemplateCancelOrder":  {
+                                         "id":  "independent-bed",
+                                         "definitionId":  "bed-wooden",
+                                         "location":  {
+                                                          "x":  11,
+                                                          "y":  8
+                                                      },
+                                         "placementSequence":  1,
+                                         "state":  "completed",
+                                         "progress":  30,
+                                         "materialsAllocated":  [
+                                                                    {
+                                                                        "itemId":  "item.wood-plank",
+                                                                        "quantity":  1
+                                                                    }
+                                                                ],
+                                         "assignedWorkerId":  "mock-worker-1"
+                                     }
+    },
+    {
+        "case":  "load-legal",
+        "originalFullCaptureSHA256":  "B0F649FCD5234E4BAAD391DB22BB6DB916FA6F756B6A4AC30262A806EF98C125",
+        "base":  "d766477141",
+        "load":  true,
+        "conflict":  false,
+        "anchor":  {
+                       "x":  11,
+                       "y":  8
+                   },
+        "worldSquareAtIncomingFar":  0,
+        "physicalAtIncomingFar":  true,
+        "independentPhysical":  {
+                                    "placedObjectId":  "object:11:8",
+                                    "objectId":  "object.bed",
+                                    "anchorTile":  {
+                                                       "x":  11,
+                                                       "y":  8
+                                                   },
+                                    "orientation":  0,
+                                    "sourceOrderId":  "independent-bed"
+                                },
+        "balanceBefore":  25000,
+        "balanceCompleted":  23405,
+        "balanceAfterTemplateCancel":  23405,
+        "afterAdmissionOrder":  {
+                                    "id":  "independent-bed",
+                                    "definitionId":  "bed-wooden",
+                                    "location":  {
+                                                     "x":  11,
+                                                     "y":  8
+                                                 },
+                                    "placementSequence":  1,
+                                    "state":  "approved",
+                                    "progress":  0,
+                                    "materialsAllocated":  [
+
+                                                           ]
+                                },
+        "completedOrder":  {
+                               "id":  "independent-bed",
+                               "definitionId":  "bed-wooden",
+                               "location":  {
+                                                "x":  11,
+                                                "y":  8
+                                            },
+                               "placementSequence":  1,
+                               "state":  "completed",
+                               "progress":  30,
+                               "materialsAllocated":  [
+                                                          {
+                                                              "itemId":  "item.wood-plank",
+                                                              "quantity":  1
+                                                          }
+                                                      ],
+                               "assignedWorkerId":  "mock-worker-1"
+                           },
+        "afterTemplateCancelOrder":  {
+                                         "id":  "independent-bed",
+                                         "definitionId":  "bed-wooden",
+                                         "location":  {
+                                                          "x":  11,
+                                                          "y":  8
+                                                      },
+                                         "placementSequence":  1,
+                                         "state":  "completed",
+                                         "progress":  30,
+                                         "materialsAllocated":  [
+                                                                    {
+                                                                        "itemId":  "item.wood-plank",
+                                                                        "quantity":  1
+                                                                    }
+                                                                ],
+                                         "assignedWorkerId":  "mock-worker-1"
+                                     }
+    }
+]

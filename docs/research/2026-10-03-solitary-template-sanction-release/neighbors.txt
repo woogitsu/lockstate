@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-navigation-next-audit-20261003
+
+
+ Test Files  7 passed (7)
+      Tests  111 passed (111)
+   Start at  04:03:35
+   Duration  3.53s (transform 1.69s, setup 0ms, import 4.95s, tests 1.26s, environment 0ms)
+

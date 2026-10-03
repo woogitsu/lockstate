@@ -27,6 +27,7 @@ import { catalogueObjectId, isDrawnAsWorldEdge, type StructurePhase } from '../w
 import { mergeFloorRects, mergeTopEdgeRuns } from '../world/tile-art-runs';
 import { createTileSample, type WorldRenderView } from '../world/world-view';
 import type { EnvironmentTextureSet } from './environment-textures';
+import type { ObjectOrientation } from '../../simulation/objects/placed-object';
 
 /**
  * Draws the tile world: ground, ownership, zoning, and everything with height.
@@ -257,6 +258,7 @@ export class TileLayer {
       pooled.setSize(width, height);
       pooled.setVisible(true);
     }
+    sprite.setOrigin(0, 0).setRotation(0);
     sprite.setTileScale((repeatXPx ?? width) / size.width, (repeatYPx ?? height) / size.height);
     sprite.setDepth(depth);
     sprite.setAlpha(alpha);
@@ -512,7 +514,7 @@ export class TileLayer {
       // having an edge on that tile, so a save that predates #74 -- completed
       // orders, no edge values -- still gets its walls.
       if (isDrawnAsWorldEdge(structure) && edgeTileXs.has(structure.tileX)) continue;
-      const appearance = structureAppearance(structure.definitionId);
+      const appearance = structureAppearance(structure.definitionId, structure.orientation);
       const alpha = alphaFor(structure.phase);
       const footprint: Rect = {
         x: structure.tileX * TILE_SIZE_PX,
@@ -520,7 +522,7 @@ export class TileLayer {
         width: appearance.footprintTiles.width * TILE_SIZE_PX,
         height: appearance.footprintTiles.height * TILE_SIZE_PX,
       };
-      const sprite = this.acquireObjectSprite(depth, structure.definitionId, footprint, alpha);
+      const sprite = this.acquireObjectSprite(depth, structure.definitionId, footprint, alpha, structure.orientation);
       if (sprite !== undefined) {
         visual.sprites.push(sprite);
         continue;
@@ -564,13 +566,21 @@ export class TileLayer {
     definitionId: string,
     footprint: Rect,
     alpha: number,
+    orientation: ObjectOrientation = 0,
   ): Phaser.GameObjects.TileSprite | undefined {
     if (this.art === undefined) return undefined;
     const objectId = catalogueObjectId(definitionId);
     if (objectId === undefined) return undefined;
     const spriteId = objectSprite(objectId);
     if (spriteId === undefined) return undefined;
-    return this.acquireSprite(depth, footprint, spriteId, undefined, undefined, alpha);
+    const authoredRect = orientation % 2 === 0 ? footprint
+      : { ...footprint, width: footprint.height, height: footprint.width };
+    const sprite = this.acquireSprite(depth, authoredRect, spriteId, undefined, undefined, alpha);
+    if (sprite !== undefined && orientation !== 0) {
+      sprite.setOrigin(0.5, 0.5).setPosition(footprint.x + footprint.width / 2, footprint.y + footprint.height / 2)
+        .setRotation(orientation * Math.PI / 2);
+    }
+    return sprite;
   }
 
   /**

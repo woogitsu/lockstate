@@ -1,0 +1,164 @@
+
+Running 1 test using 1 worker
+
+  x  1 tests\browser\hud-minimap-identity.audit.ts:44:1 › opt-in actual paused minimap DOM identity across New, viewport, locale and Load (1.0m)
+
+
+  1) tests\browser\hud-minimap-identity.audit.ts:44:1 › opt-in actual paused minimap DOM identity across New, viewport, locale and Load 
+
+    Error: inactive
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+      30 |   const check = async (name: string) => {
+      31 |     const result = await observe(page); observations[name] = result;
+    > 32 |     expect.soft(result.sameChild, name).toBe(true); expect.soft(result.replacements, name).toBe(0);
+         |                                         ^
+      33 |     return result;
+      34 |   };
+      35 |   try {
+        at check (C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\tests\browser\hud-minimap-identity.audit.ts:32:41)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\tests\browser\hud-minimap-identity.audit.ts:39:5
+
+    Error: inactive
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m0[39m
+    Received: [31m12[39m
+
+      30 |   const check = async (name: string) => {
+      31 |     const result = await observe(page); observations[name] = result;
+    > 32 |     expect.soft(result.sameChild, name).toBe(true); expect.soft(result.replacements, name).toBe(0);
+         |                                                                                            ^
+      33 |     return result;
+      34 |   };
+      35 |   try {
+        at check (C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\tests\browser\hud-minimap-identity.audit.ts:32:92)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\tests\browser\hud-minimap-identity.audit.ts:39:5
+
+    Error: paused-active
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+      30 |   const check = async (name: string) => {
+      31 |     const result = await observe(page); observations[name] = result;
+    > 32 |     expect.soft(result.sameChild, name).toBe(true); expect.soft(result.replacements, name).toBe(0);
+         |                                         ^
+      33 |     return result;
+      34 |   };
+      35 |   try {
+        at check (C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\tests\browser\hud-minimap-identity.audit.ts:32:41)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\tests\browser\hud-minimap-identity.audit.ts:45:21
+
+    Error: paused-active
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m0[39m
+    Received: [31m12[39m
+
+      30 |   const check = async (name: string) => {
+      31 |     const result = await observe(page); observations[name] = result;
+    > 32 |     expect.soft(result.sameChild, name).toBe(true); expect.soft(result.replacements, name).toBe(0);
+         |                                                                                            ^
+      33 |     return result;
+      34 |   };
+      35 |   try {
+        at check (C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\tests\browser\hud-minimap-identity.audit.ts:32:92)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\tests\browser\hud-minimap-identity.audit.ts:45:21
+
+    Error: changed-viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+      30 |   const check = async (name: string) => {
+      31 |     const result = await observe(page); observations[name] = result;
+    > 32 |     expect.soft(result.sameChild, name).toBe(true); expect.soft(result.replacements, name).toBe(0);
+         |                                         ^
+      33 |     return result;
+      34 |   };
+      35 |   try {
+        at check (C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\tests\browser\hud-minimap-identity.audit.ts:32:41)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\tests\browser\hud-minimap-identity.audit.ts:48:5
+
+    Error: changed-viewport
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m0[39m
+    Received: [31m12[39m
+
+      30 |   const check = async (name: string) => {
+      31 |     const result = await observe(page); observations[name] = result;
+    > 32 |     expect.soft(result.sameChild, name).toBe(true); expect.soft(result.replacements, name).toBe(0);
+         |                                                                                            ^
+      33 |     return result;
+      34 |   };
+      35 |   try {
+        at check (C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\tests\browser\hud-minimap-identity.audit.ts:32:92)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\tests\browser\hud-minimap-identity.audit.ts:48:5
+
+    Error: loaded-paused
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+      30 |   const check = async (name: string) => {
+      31 |     const result = await observe(page); observations[name] = result;
+    > 32 |     expect.soft(result.sameChild, name).toBe(true); expect.soft(result.replacements, name).toBe(0);
+         |                                         ^
+      33 |     return result;
+      34 |   };
+      35 |   try {
+        at check (C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\tests\browser\hud-minimap-identity.audit.ts:32:41)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\tests\browser\hud-minimap-identity.audit.ts:53:5
+
+    Error: loaded-paused
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m0[39m
+    Received: [31m12[39m
+
+      30 |   const check = async (name: string) => {
+      31 |     const result = await observe(page); observations[name] = result;
+    > 32 |     expect.soft(result.sameChild, name).toBe(true); expect.soft(result.replacements, name).toBe(0);
+         |                                                                                            ^
+      33 |     return result;
+      34 |   };
+      35 |   try {
+        at check (C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\tests\browser\hud-minimap-identity.audit.ts:32:92)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\tests\browser\hud-minimap-identity.audit.ts:53:5
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: page.evaluate: Target page, context or browser has been closed
+
+       at oblique-demand-native-observers.ts:101
+
+       99 |       await Promise.all(pending);
+      100 |       return { requests, pngs, redirects, errors, catalogBytes,
+    > 101 |         images: await page.evaluate(() => (window as ProbeWindow).demandReadImages!()) };
+          |                            ^
+      102 |     },
+      103 |     async scripts() {
+      104 |       await Promise.all(pending);
+        at Object.read (C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\tests\browser\oblique-demand-native-observers.ts:101:28)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-steady-projection-audit-20261003\tests\browser\hud-minimap-identity.audit.ts:62:25
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-minimap-identity-20261003\baseline-actual\hud-minimap-identity.audit-9956e-ew-viewport-locale-and-Load\error-context.md
+
+  1 failed
+    tests\browser\hud-minimap-identity.audit.ts:44:1 › opt-in actual paused minimap DOM identity across New, viewport, locale and Load 

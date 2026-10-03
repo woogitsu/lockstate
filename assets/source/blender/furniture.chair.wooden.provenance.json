@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "originalSource": "assets/source/blender/environment.mvp.catalog.blend",
+  "originalSourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+  "collection": "furniture.chair.wooden",
+  "source": "assets/source/blender/furniture.chair.wooden.blend",
+  "sourceSha256": "dab33079c7a42b2967950bab72048953270520383adbf3873a65aeb8e1b6687d",
+  "footprintTiles": [
+    1,
+    1
+  ],
+  "sourceAlignmentTranslation": [
+    0,
+    0.017249390482902527,
+    0
+  ],
+  "minimum": [
+    -0.3859996795654297,
+    -0.485249400138855,
+    0.0
+  ],
+  "maximum": [
+    0.3859996795654297,
+    0.4852507412433624,
+    1.3200000524520874
+  ],
+  "meshes": [
+    {
+      "name": "Chair refinement.back bracket -0.32",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Chair refinement.back bracket 0.32",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Chair refinement.back edge highlight",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Chair refinement.dark back inset",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Chair refinement.front foot -0.32",
+      "evaluatedVertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Chair refinement.front foot 0.32",
+      "evaluatedVertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Chair refinement.front leg -0.32",
+      "evaluatedVertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Chair refinement.front leg 0.32",
+      "evaluatedVertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Chair refinement.front seat edge",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Chair refinement.rear foot -0.32",
+      "evaluatedVertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Chair refinement.rear foot 0.32",
+      "evaluatedVertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Chair refinement.rear post -0.32",
+      "evaluatedVertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Chair refinement.rear post 0.32",
+      "evaluatedVertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Chair refinement.seat underframe",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Chair refinement.walnut back rail",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    },
+    {
+      "name": "Chair refinement.wooden seat",
+      "evaluatedVertices": 56,
+      "modifiers": [
+        "BEVEL",
+        "WEIGHTED_NORMAL"
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "Canteen worn steel",
+      "diffuseRGBA": [
+        0.23999999463558197,
+        0.25999999046325684,
+        0.27000001072883606,
+        1.0
+      ]
+    },
+    {
+      "name": "Corridor bench worn wood plank 0",
+      "diffuseRGBA": [
+        0.47999998927116394,
+        0.27000001072883606,
+        0.10999999940395355,
+        1.0
+      ]
+    },
+    {
+      "name": "Corridor bench worn wood plank 1",
+      "diffuseRGBA": [
+        0.47999998927116394,
+        0.27000001072883606,
+        0.10999999940395355,
+        1.0
+      ]
+    },
+    {
+      "name": "shade",
+      "diffuseRGBA": [
+        0.03500000014901161,
+        0.03999999910593033,
+        0.04500000178813934,
+        1.0
+      ]
+    }
+  ]
+}

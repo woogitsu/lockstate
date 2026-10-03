@@ -1,0 +1,2783 @@
+{
+  "frozenSourceCommit": "42eabb9ad7a24c0b211ec761df72f40129fe37a7",
+  "baseCommit": "eeec3e844fc8ecca5668cfc0b4eb2d11d4c41307",
+  "fixture": "tests/browser/dedicated-office-desk-player-build.spec.ts",
+  "browserBudgets": {
+    "workers": 1,
+    "testTimeoutMs": 60000,
+    "expectTimeoutMs": 10000,
+    "retries": 0,
+    "port": 5201
+  },
+  "nativeRoute": "actual UI Storage5,5 +Delivery12,5 capacity saved in IndexedDB, separate actual Reception20,5 q0/q1 +Save now/Load",
+  "mutation": "remove only default object.desk mapping; Staff Room override unchanged",
+  "mutationsExpectedPaletteErrors": {
+    "q0": 4,
+    "q1": 4
+  },
+  "durationsSeconds": {
+    "baseline": [
+      "43.9",
+      "46.3",
+      "49.6"
+    ],
+    "mutation-q0": [
+      "43.4",
+      "46.1"
+    ],
+    "mutation-q1": [
+      "42.3",
+      "46.6"
+    ],
+    "restored": [
+      "43.3",
+      "45.0",
+      "45.6"
+    ]
+  },
+  "phaseReceipts": {
+    "baseline": {
+      "phase": "baseline",
+      "cases": [
+        {
+          "quarterTurns": 0,
+          "actualBefore": [
+            "object.desk@21,6:orientation=0"
+          ],
+          "actualAfter": [
+            "object.desk@21,6:orientation=0"
+          ],
+          "beforePixels": [
+            281,
+            111
+          ],
+          "afterPixels": [
+            281,
+            111
+          ],
+          "commands": [
+            {
+              "type": "PlaceRoomTemplate",
+              "templateId": "reception-basic",
+              "origin": {
+                "x": 20,
+                "y": 5
+              }
+            }
+          ],
+          "placedObject": {
+            "placedObjectId": "object:21:6",
+            "objectId": "object.desk",
+            "anchorTile": {
+              "x": 21,
+              "y": 6
+            },
+            "orientation": 0,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          "completedSourceOrder": {
+            "id": "room-template-000000000002-2-object-000",
+            "definitionId": "desk-wooden",
+            "location": {
+              "x": 21,
+              "y": 6
+            },
+            "placementSequence": 2,
+            "state": "completed",
+            "progress": 60,
+            "materialsAllocated": [
+              {
+                "itemId": "item.wood-plank",
+                "quantity": 2
+              }
+            ],
+            "assignedWorkerId": "mock-worker-1"
+          },
+          "completeSnapshotDataEqualsLoaded": true,
+          "worldVersion": 1,
+          "loadedPlacedObject": {
+            "placedObjectId": "object:21:6",
+            "objectId": "object.desk",
+            "anchorTile": {
+              "x": 21,
+              "y": 6
+            },
+            "orientation": 0,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          "loadedCompletedSourceOrder": {
+            "id": "room-template-000000000002-2-object-000",
+            "definitionId": "desk-wooden",
+            "location": {
+              "x": 21,
+              "y": 6
+            },
+            "placementSequence": 2,
+            "state": "completed",
+            "progress": 60,
+            "materialsAllocated": [
+              {
+                "itemId": "item.wood-plank",
+                "quantity": 2
+              }
+            ],
+            "assignedWorkerId": "mock-worker-1"
+          },
+          "physicalOwnerPlanesPresent": false
+        },
+        {
+          "quarterTurns": 1,
+          "actualBefore": [
+            "object.desk@24,6:orientation=1"
+          ],
+          "actualAfter": [
+            "object.desk@24,6:orientation=1"
+          ],
+          "beforePixels": [
+            497,
+            455
+          ],
+          "afterPixels": [
+            497,
+            455
+          ],
+          "commands": [
+            {
+              "type": "PlaceRoomTemplate",
+              "templateId": "reception-basic",
+              "origin": {
+                "x": 20,
+                "y": 5
+              },
+              "quarterTurns": 1
+            }
+          ],
+          "placedObject": {
+            "placedObjectId": "object:24:6",
+            "objectId": "object.desk",
+            "anchorTile": {
+              "x": 24,
+              "y": 6
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          "completedSourceOrder": {
+            "id": "room-template-000000000002-2-object-000",
+            "definitionId": "desk-wooden",
+            "location": {
+              "x": 24,
+              "y": 6
+            },
+            "objectOrientation": 1,
+            "placementSequence": 2,
+            "state": "completed",
+            "progress": 60,
+            "materialsAllocated": [
+              {
+                "itemId": "item.wood-plank",
+                "quantity": 2
+              }
+            ],
+            "assignedWorkerId": "mock-worker-1"
+          },
+          "completeSnapshotDataEqualsLoaded": true,
+          "worldVersion": 1,
+          "loadedPlacedObject": {
+            "placedObjectId": "object:24:6",
+            "objectId": "object.desk",
+            "anchorTile": {
+              "x": 24,
+              "y": 6
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          "loadedCompletedSourceOrder": {
+            "id": "room-template-000000000002-2-object-000",
+            "definitionId": "desk-wooden",
+            "location": {
+              "x": 24,
+              "y": 6
+            },
+            "objectOrientation": 1,
+            "placementSequence": 2,
+            "state": "completed",
+            "progress": 60,
+            "materialsAllocated": [
+              {
+                "itemId": "item.wood-plank",
+                "quantity": 2
+              }
+            ],
+            "assignedWorkerId": "mock-worker-1"
+          },
+          "physicalOwnerPlanesPresent": false
+        }
+      ],
+      "files": [
+        {
+          "path": "src/rendering/assets/oblique-object-mapping.ts",
+          "bytes": 4802,
+          "sha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+          "actualSha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "assets/source/blender/furniture.office.desk.generic.blend",
+          "bytes": 103228,
+          "sha256": "87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b",
+          "actualSha256": "87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "assets/source/blender/furniture.office.desk.generic.angled-detail.blend",
+          "bytes": 134684,
+          "sha256": "486b83b5079698faeb1cd58e989d1a1dfe524996813474b04550dd4c82a2fd46",
+          "actualSha256": "486b83b5079698faeb1cd58e989d1a1dfe524996813474b04550dd4c82a2fd46",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/game-content/oblique-furniture-office-desk-generic.v1.json",
+          "bytes": 19269,
+          "sha256": "e6cddb25540a2dde9326bf4b15cae1767690100c4a4eb05312fdee430aa49164",
+          "actualSha256": "e6cddb25540a2dde9326bf4b15cae1767690100c4a4eb05312fdee430aa49164",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev20.8114f2826c80.png",
+          "bytes": 2968,
+          "sha256": "8114f2826c800234d560794dd0ca77fc5d14f04f7c094527637e6db1e3c03f77",
+          "actualSha256": "8114f2826c800234d560794dd0ca77fc5d14f04f7c094527637e6db1e3c03f77",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev30.c208d3e64606.png",
+          "bytes": 2897,
+          "sha256": "c208d3e64606fdad83db882457ff38961778ab2979d5fd88becaf6244b9cdbac",
+          "actualSha256": "c208d3e64606fdad83db882457ff38961778ab2979d5fd88becaf6244b9cdbac",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev40.855baa61c6a3.png",
+          "bytes": 2754,
+          "sha256": "855baa61c6a3a9a6d859f85c5d1baed846c3bdc1f5d2af6f7b557fbf4803c913",
+          "actualSha256": "855baa61c6a3a9a6d859f85c5d1baed846c3bdc1f5d2af6f7b557fbf4803c913",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev50.249b7e03d684.png",
+          "bytes": 2676,
+          "sha256": "249b7e03d684161c0133abd0664d9b3254db217c35cdef8dfce3939de5c5a90d",
+          "actualSha256": "249b7e03d684161c0133abd0664d9b3254db217c35cdef8dfce3939de5c5a90d",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev60.f8ae80fe2834.png",
+          "bytes": 3247,
+          "sha256": "f8ae80fe2834f24c190f2c64a86db83a34b3a84e825a8a217588db76bca7b824",
+          "actualSha256": "f8ae80fe2834f24c190f2c64a86db83a34b3a84e825a8a217588db76bca7b824",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev70.bc8a09389601.png",
+          "bytes": 3106,
+          "sha256": "bc8a0938960182d6891a40d4f427c5e20894506721b55a1800a922a9eebf85ea",
+          "actualSha256": "bc8a0938960182d6891a40d4f427c5e20894506721b55a1800a922a9eebf85ea",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev20.f84dd7559351.png",
+          "bytes": 5234,
+          "sha256": "f84dd755935129e75e3fdc358eea55cb15b7ae4bda223298d5cf9f231d5a0bd5",
+          "actualSha256": "f84dd755935129e75e3fdc358eea55cb15b7ae4bda223298d5cf9f231d5a0bd5",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev30.7e13b74a2ae6.png",
+          "bytes": 6388,
+          "sha256": "7e13b74a2ae6b8274231755eb4806f230e677535dc037363a60984081b7a19f9",
+          "actualSha256": "7e13b74a2ae6b8274231755eb4806f230e677535dc037363a60984081b7a19f9",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev40.d897abb62c60.png",
+          "bytes": 6394,
+          "sha256": "d897abb62c6016564105b476c4c69db2b6d159da8e409f32ee84e7c238098960",
+          "actualSha256": "d897abb62c6016564105b476c4c69db2b6d159da8e409f32ee84e7c238098960",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev50.fb7405ecbae5.png",
+          "bytes": 6241,
+          "sha256": "fb7405ecbae5c600984ec5b08027cb355c570dff87515bb297a73838b8b42427",
+          "actualSha256": "fb7405ecbae5c600984ec5b08027cb355c570dff87515bb297a73838b8b42427",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev60.b6b599db6486.png",
+          "bytes": 4571,
+          "sha256": "b6b599db6486f3161cddc53bc49d0665a5564249e93fc31772127cc2e15bda94",
+          "actualSha256": "b6b599db6486f3161cddc53bc49d0665a5564249e93fc31772127cc2e15bda94",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev70.7b4c036e749d.png",
+          "bytes": 6545,
+          "sha256": "7b4c036e749d51c88c817eed5002ccb78c13f1826b6aeb932136bc2af3b5daee",
+          "actualSha256": "7b4c036e749d51c88c817eed5002ccb78c13f1826b6aeb932136bc2af3b5daee",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev20.beaf52aa1331.png",
+          "bytes": 6273,
+          "sha256": "beaf52aa133122aca70631714a539de0082b32ddde5b87508b9aac83785fbf43",
+          "actualSha256": "beaf52aa133122aca70631714a539de0082b32ddde5b87508b9aac83785fbf43",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev30.9305aef2dee3.png",
+          "bytes": 6191,
+          "sha256": "9305aef2dee3259fd6160800ab7273d1f3ff30e019d6000e12b887f7545f29f1",
+          "actualSha256": "9305aef2dee3259fd6160800ab7273d1f3ff30e019d6000e12b887f7545f29f1",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev40.c3368a96d41a.png",
+          "bytes": 6640,
+          "sha256": "c3368a96d41acf35b14fbecf116d4273339ab012d262af48a5a5c332706f9443",
+          "actualSha256": "c3368a96d41acf35b14fbecf116d4273339ab012d262af48a5a5c332706f9443",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev50.23c241a5be50.png",
+          "bytes": 6378,
+          "sha256": "23c241a5be50e95d4b6b14a5a2417277a667d7a9563e17560430275b80f5e57a",
+          "actualSha256": "23c241a5be50e95d4b6b14a5a2417277a667d7a9563e17560430275b80f5e57a",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev60.c75afaa9335b.png",
+          "bytes": 4673,
+          "sha256": "c75afaa9335b1af095790e0dbe0952e0891e9f398c738c0c0cc628d119b2d6e2",
+          "actualSha256": "c75afaa9335b1af095790e0dbe0952e0891e9f398c738c0c0cc628d119b2d6e2",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev70.b5b6a804c756.png",
+          "bytes": 6828,
+          "sha256": "b5b6a804c756e3909fe411a3ea9d03e7e549c7eb0d65916a00c8fc2e17dc8717",
+          "actualSha256": "b5b6a804c756e3909fe411a3ea9d03e7e549c7eb0d65916a00c8fc2e17dc8717",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev20.b5ae04afcb99.png",
+          "bytes": 3235,
+          "sha256": "b5ae04afcb992489347944d270a18613f8adaf81e8b4f5319b4114c52ecf73f8",
+          "actualSha256": "b5ae04afcb992489347944d270a18613f8adaf81e8b4f5319b4114c52ecf73f8",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev30.9eeb59b131fa.png",
+          "bytes": 3209,
+          "sha256": "9eeb59b131fa59ee1f169df8b980a816deb1acb3cdaa3424154e9908e6ea5816",
+          "actualSha256": "9eeb59b131fa59ee1f169df8b980a816deb1acb3cdaa3424154e9908e6ea5816",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev40.357e48784e77.png",
+          "bytes": 3476,
+          "sha256": "357e48784e77dcd7fa89997b640c68c72998a9d27b840bbd945cc556292bbf68",
+          "actualSha256": "357e48784e77dcd7fa89997b640c68c72998a9d27b840bbd945cc556292bbf68",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev50.54f99026e336.png",
+          "bytes": 3422,
+          "sha256": "54f99026e336e5206ec9aa70d36b46d0622a7dbf81ef16d8df897c4f19283ba3",
+          "actualSha256": "54f99026e336e5206ec9aa70d36b46d0622a7dbf81ef16d8df897c4f19283ba3",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev60.bd64d7cf07b1.png",
+          "bytes": 3453,
+          "sha256": "bd64d7cf07b18b55447e3d013a0ccbd7e7de28c948b6414322dd75e36393ed76",
+          "actualSha256": "bd64d7cf07b18b55447e3d013a0ccbd7e7de28c948b6414322dd75e36393ed76",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev70.a4a9c42fdbb9.png",
+          "bytes": 3377,
+          "sha256": "a4a9c42fdbb97132e06a8648e8de2da731cf774d3012e74c440ca87f986fa692",
+          "actualSha256": "a4a9c42fdbb97132e06a8648e8de2da731cf774d3012e74c440ca87f986fa692",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev20.c0caf4f3ecd7.png",
+          "bytes": 6046,
+          "sha256": "c0caf4f3ecd74e1d94bed9e2817b038e2bbf3f3d3bb5fccec17da6d213b98b02",
+          "actualSha256": "c0caf4f3ecd74e1d94bed9e2817b038e2bbf3f3d3bb5fccec17da6d213b98b02",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev30.03195595157e.png",
+          "bytes": 6481,
+          "sha256": "03195595157e900e5c57238eaf7199ae0098032b558056360c9287a8f6ca19ac",
+          "actualSha256": "03195595157e900e5c57238eaf7199ae0098032b558056360c9287a8f6ca19ac",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev40.d811d1d3d2af.png",
+          "bytes": 6888,
+          "sha256": "d811d1d3d2af4cffed28b46b418549090e0ea02eeedf715c7d4aa509c69ed488",
+          "actualSha256": "d811d1d3d2af4cffed28b46b418549090e0ea02eeedf715c7d4aa509c69ed488",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev50.9d5c2e654661.png",
+          "bytes": 6249,
+          "sha256": "9d5c2e654661cdfb298842fa53890757d52ba0aa4513ca24c759404fad61205e",
+          "actualSha256": "9d5c2e654661cdfb298842fa53890757d52ba0aa4513ca24c759404fad61205e",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev60.db06e7a53dfa.png",
+          "bytes": 4801,
+          "sha256": "db06e7a53dfa58f1dece51cec4ecc152019512ca02f17d3eb349ef21931944de",
+          "actualSha256": "db06e7a53dfa58f1dece51cec4ecc152019512ca02f17d3eb349ef21931944de",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev70.340a614d551f.png",
+          "bytes": 7000,
+          "sha256": "340a614d551f4fbf51b5a29b03589bf5937e668fee1e33c09743a55f05cc7cf7",
+          "actualSha256": "340a614d551f4fbf51b5a29b03589bf5937e668fee1e33c09743a55f05cc7cf7",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev20.4a9d55868b2c.png",
+          "bytes": 6574,
+          "sha256": "4a9d55868b2cd6a805296702e87bb05849903008ebb43b99c14d107bc29c5fb2",
+          "actualSha256": "4a9d55868b2cd6a805296702e87bb05849903008ebb43b99c14d107bc29c5fb2",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev30.d2acc94da20a.png",
+          "bytes": 6797,
+          "sha256": "d2acc94da20ae382bf9765a2b89085a4374d0906ce99417c719d5a8c87ae4ebd",
+          "actualSha256": "d2acc94da20ae382bf9765a2b89085a4374d0906ce99417c719d5a8c87ae4ebd",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev40.44cc91f253eb.png",
+          "bytes": 7101,
+          "sha256": "44cc91f253eb4b2f1bd84eeecb6b5ffd0d950775babea81b507bd340e866e239",
+          "actualSha256": "44cc91f253eb4b2f1bd84eeecb6b5ffd0d950775babea81b507bd340e866e239",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev50.10f2984e9784.png",
+          "bytes": 6833,
+          "sha256": "10f2984e97843a3b05e9df29a6807860d5cd7d11efeffd870c816383be756d92",
+          "actualSha256": "10f2984e97843a3b05e9df29a6807860d5cd7d11efeffd870c816383be756d92",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev60.e17e3399a7cc.png",
+          "bytes": 4982,
+          "sha256": "e17e3399a7ccacf9ddc21adf163e50c03905fed08325cbdc432c408942792dc4",
+          "actualSha256": "e17e3399a7ccacf9ddc21adf163e50c03905fed08325cbdc432c408942792dc4",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev70.d74278891520.png",
+          "bytes": 6830,
+          "sha256": "d7427889152033d15aeaf692ea59645354d61be421aff7341702ce5b9b6014f5",
+          "actualSha256": "d7427889152033d15aeaf692ea59645354d61be421aff7341702ce5b9b6014f5",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev20.2bc7e40c2ef5.png",
+          "bytes": 3337,
+          "sha256": "2bc7e40c2ef5836700ee4db3d89917870fe27b2daedf9d21d740191ab8ac428c",
+          "actualSha256": "2bc7e40c2ef5836700ee4db3d89917870fe27b2daedf9d21d740191ab8ac428c",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev30.76796b5db1bf.png",
+          "bytes": 3582,
+          "sha256": "76796b5db1bfcc752c7f2c08651d94e32802a84173e6a6b5cf6c3af04ac05796",
+          "actualSha256": "76796b5db1bfcc752c7f2c08651d94e32802a84173e6a6b5cf6c3af04ac05796",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev40.24afe104d134.png",
+          "bytes": 3601,
+          "sha256": "24afe104d134848fdbdb2371402d0a2075167cd8211c6dd386b7327c1e5c2343",
+          "actualSha256": "24afe104d134848fdbdb2371402d0a2075167cd8211c6dd386b7327c1e5c2343",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev50.4974c267743a.png",
+          "bytes": 3471,
+          "sha256": "4974c267743a71a0fc119af4e9d7620de736c8fa11991061d0fa3a49e6bfbb8c",
+          "actualSha256": "4974c267743a71a0fc119af4e9d7620de736c8fa11991061d0fa3a49e6bfbb8c",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev60.7ab0ae41bdaf.png",
+          "bytes": 3654,
+          "sha256": "7ab0ae41bdaf4db8081599ad0c708df7c4ce3d71a115fbb0c3b5ca09109b84ef",
+          "actualSha256": "7ab0ae41bdaf4db8081599ad0c708df7c4ce3d71a115fbb0c3b5ca09109b84ef",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev70.6457b37301b2.png",
+          "bytes": 3440,
+          "sha256": "6457b37301b289c6a5d009e3150a9022c06af136ef90de330687bbfb58459104",
+          "actualSha256": "6457b37301b289c6a5d009e3150a9022c06af136ef90de330687bbfb58459104",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev20.61c116450bf4.png",
+          "bytes": 6124,
+          "sha256": "61c116450bf474ce16e113e13821c057435714a96c0b58a4dce9907671f19c74",
+          "actualSha256": "61c116450bf474ce16e113e13821c057435714a96c0b58a4dce9907671f19c74",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev30.898de0c1dc81.png",
+          "bytes": 7349,
+          "sha256": "898de0c1dc8166dd3d37bb327b1b0df2d1f3da5a2757da51773ae040577d733e",
+          "actualSha256": "898de0c1dc8166dd3d37bb327b1b0df2d1f3da5a2757da51773ae040577d733e",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev40.8eee1733c8fc.png",
+          "bytes": 7635,
+          "sha256": "8eee1733c8fc010fe0712b8baa40ebdf8d3595f463471fe3921432e8671dc9ed",
+          "actualSha256": "8eee1733c8fc010fe0712b8baa40ebdf8d3595f463471fe3921432e8671dc9ed",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev50.5eb4c6a0b79a.png",
+          "bytes": 6932,
+          "sha256": "5eb4c6a0b79a006d247e7c995c53dfd0ad1574d00c93cdbf837adc890bcab847",
+          "actualSha256": "5eb4c6a0b79a006d247e7c995c53dfd0ad1574d00c93cdbf837adc890bcab847",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev60.3609f405c846.png",
+          "bytes": 5085,
+          "sha256": "3609f405c846fc8e3d75ef51e189402610de5617d39e6f90f3f7667de2a783cc",
+          "actualSha256": "3609f405c846fc8e3d75ef51e189402610de5617d39e6f90f3f7667de2a783cc",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev70.7a7851fd4e52.png",
+          "bytes": 6870,
+          "sha256": "7a7851fd4e52fb0a295e8346636eef2e3463c8f4d8763c83742150d36c96bdb9",
+          "actualSha256": "7a7851fd4e52fb0a295e8346636eef2e3463c8f4d8763c83742150d36c96bdb9",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev20.d9974053a695.png",
+          "bytes": 6511,
+          "sha256": "d9974053a695fe422068d005e6527b396db75a4441e22505877b5cb08d91e14d",
+          "actualSha256": "d9974053a695fe422068d005e6527b396db75a4441e22505877b5cb08d91e14d",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev30.f02065cb30ab.png",
+          "bytes": 6842,
+          "sha256": "f02065cb30abd0f5a38c93dc68ad0bb40ac69391abe0f5c4108d5bcd067b5aac",
+          "actualSha256": "f02065cb30abd0f5a38c93dc68ad0bb40ac69391abe0f5c4108d5bcd067b5aac",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev40.f2672d54949d.png",
+          "bytes": 6807,
+          "sha256": "f2672d54949dda07d760fed4e56ae8249d703ca5d4a36159c10f8afb66d15108",
+          "actualSha256": "f2672d54949dda07d760fed4e56ae8249d703ca5d4a36159c10f8afb66d15108",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev50.a61e7ba4a1a9.png",
+          "bytes": 6534,
+          "sha256": "a61e7ba4a1a9e98df29986e87df4d5242b8d362fb5ff604044a27b40069fb307",
+          "actualSha256": "a61e7ba4a1a9e98df29986e87df4d5242b8d362fb5ff604044a27b40069fb307",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev60.ff1944868242.png",
+          "bytes": 4697,
+          "sha256": "ff194486824242732842152e9af7b9edd4f36f3b0156ba0ef2cd997224fc4884",
+          "actualSha256": "ff194486824242732842152e9af7b9edd4f36f3b0156ba0ef2cd997224fc4884",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev70.e07fc11ddae9.png",
+          "bytes": 6954,
+          "sha256": "e07fc11ddae9cbe108e2b0ee45d6c9ab0e8bd70f112398967ca3d73558eaec39",
+          "actualSha256": "e07fc11ddae9cbe108e2b0ee45d6c9ab0e8bd70f112398967ca3d73558eaec39",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev20.7109e5683d31.png",
+          "bytes": 2995,
+          "sha256": "7109e5683d31f7f3af5956065ccb0d9c738e143205cc3ddceb6d74b79d385411",
+          "actualSha256": "7109e5683d31f7f3af5956065ccb0d9c738e143205cc3ddceb6d74b79d385411",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev30.ec5ad3d8713d.png",
+          "bytes": 2883,
+          "sha256": "ec5ad3d8713db54105743d4428ff2059b304a8901c261b70d71bdc854ecb4e62",
+          "actualSha256": "ec5ad3d8713db54105743d4428ff2059b304a8901c261b70d71bdc854ecb4e62",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev40.9f51f170d303.png",
+          "bytes": 3222,
+          "sha256": "9f51f170d3039897b034289ecdc0081344f72fff1adcaecf5975466ec305c9fc",
+          "actualSha256": "9f51f170d3039897b034289ecdc0081344f72fff1adcaecf5975466ec305c9fc",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev50.08d507bcd80e.png",
+          "bytes": 3226,
+          "sha256": "08d507bcd80e516f604fea9ac24758d92360667e0447948e520899cbc64dacb9",
+          "actualSha256": "08d507bcd80e516f604fea9ac24758d92360667e0447948e520899cbc64dacb9",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev60.f588cd6475ad.png",
+          "bytes": 3414,
+          "sha256": "f588cd6475ada7245090528baca713f99cdb268b1417fdb51c35d77b6c5eac9f",
+          "actualSha256": "f588cd6475ada7245090528baca713f99cdb268b1417fdb51c35d77b6c5eac9f",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev70.64f5fc2fdd38.png",
+          "bytes": 3322,
+          "sha256": "64f5fc2fdd38177f1c5d7d9d06419fbdb32c0cf143481489d223be22532c6c3b",
+          "actualSha256": "64f5fc2fdd38177f1c5d7d9d06419fbdb32c0cf143481489d223be22532c6c3b",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev20.da3deb66e835.png",
+          "bytes": 5194,
+          "sha256": "da3deb66e8352b98dc66b693b1084dad99043828782ef2d6e17392bfa9aaab69",
+          "actualSha256": "da3deb66e8352b98dc66b693b1084dad99043828782ef2d6e17392bfa9aaab69",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev30.1242665b8df9.png",
+          "bytes": 6089,
+          "sha256": "1242665b8df992fc6dd924212c76dcd24a76e9adc2f9a9588360f0a5573f5843",
+          "actualSha256": "1242665b8df992fc6dd924212c76dcd24a76e9adc2f9a9588360f0a5573f5843",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev40.4b149587d26e.png",
+          "bytes": 6829,
+          "sha256": "4b149587d26e459fdd9c90c17ff890c189081e0be9803f19be7f46b3a5cdab0f",
+          "actualSha256": "4b149587d26e459fdd9c90c17ff890c189081e0be9803f19be7f46b3a5cdab0f",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev50.d0725f1d54c2.png",
+          "bytes": 6187,
+          "sha256": "d0725f1d54c2a0e329e3b8b2b845fd1c5add496c357ef8bea37ae1b2e58b349e",
+          "actualSha256": "d0725f1d54c2a0e329e3b8b2b845fd1c5add496c357ef8bea37ae1b2e58b349e",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev60.5d0c69582cd2.png",
+          "bytes": 4650,
+          "sha256": "5d0c69582cd28ab060fb712546edcaf683413471febdeb93dd00b1e6de496d35",
+          "actualSha256": "5d0c69582cd28ab060fb712546edcaf683413471febdeb93dd00b1e6de496d35",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev70.6dda9a43b3f5.png",
+          "bytes": 6739,
+          "sha256": "6dda9a43b3f52949d4da18e72ad3d3094e709b197bc657d074e12d86679ae04b",
+          "actualSha256": "6dda9a43b3f52949d4da18e72ad3d3094e709b197bc657d074e12d86679ae04b",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev20.814f31224734.png",
+          "bytes": 5466,
+          "sha256": "814f31224734c2b102b52d31341bbb76f628997ed4b4519982089fcccf9ec24d",
+          "actualSha256": "814f31224734c2b102b52d31341bbb76f628997ed4b4519982089fcccf9ec24d",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev30.0c7028f29af2.png",
+          "bytes": 5700,
+          "sha256": "0c7028f29af28c7353f1e489983ffbb15dee2661157cbdd6c99b728d2605075c",
+          "actualSha256": "0c7028f29af28c7353f1e489983ffbb15dee2661157cbdd6c99b728d2605075c",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev40.655aa5c1f32c.png",
+          "bytes": 5783,
+          "sha256": "655aa5c1f32ccdf14f2a46ef5069936b34ce79fa50215cdf3af6a5de0a6b8163",
+          "actualSha256": "655aa5c1f32ccdf14f2a46ef5069936b34ce79fa50215cdf3af6a5de0a6b8163",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev50.06b2b41f2b95.png",
+          "bytes": 6296,
+          "sha256": "06b2b41f2b951023e1aa91d5a185f13a8fbaae89dff54c3c7685d759f494ff65",
+          "actualSha256": "06b2b41f2b951023e1aa91d5a185f13a8fbaae89dff54c3c7685d759f494ff65",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev60.f401565e0802.png",
+          "bytes": 4530,
+          "sha256": "f401565e0802c09423831ac103448ad96ae14052dd360bf1c97360ca1dd48711",
+          "actualSha256": "f401565e0802c09423831ac103448ad96ae14052dd360bf1c97360ca1dd48711",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev70.3a0c9c377f0b.png",
+          "bytes": 6692,
+          "sha256": "3a0c9c377f0b5424294e8f5e5ebcca552318ea40d193fee78d1f92135825d9b8",
+          "actualSha256": "3a0c9c377f0b5424294e8f5e5ebcca552318ea40d193fee78d1f92135825d9b8",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "dist/client/assets/worker-BFatYFme.js",
+          "bytes": 436941,
+          "sha256": "91b05a3aa36520578758b2f3a5a3b5f4f336d33c5b98de13e726f5cd86c03a48",
+          "actualSha256": "91b05a3aa36520578758b2f3a5a3b5f4f336d33c5b98de13e726f5cd86c03a48",
+          "directBytesEqualBaseline": true
+        }
+      ]
+    },
+    "mutation-q0": {
+      "phase": "mutation-q0",
+      "cases": [
+        {
+          "quarterTurns": 0,
+          "actualBefore": [
+            "object.desk@21,6:orientation=0"
+          ],
+          "actualAfter": [
+            "object.desk@21,6:orientation=0"
+          ],
+          "beforePixels": [
+            0,
+            0
+          ],
+          "afterPixels": [
+            0,
+            0
+          ],
+          "commands": [
+            {
+              "type": "PlaceRoomTemplate",
+              "templateId": "reception-basic",
+              "origin": {
+                "x": 20,
+                "y": 5
+              }
+            }
+          ],
+          "placedObject": {
+            "placedObjectId": "object:21:6",
+            "objectId": "object.desk",
+            "anchorTile": {
+              "x": 21,
+              "y": 6
+            },
+            "orientation": 0,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          "completedSourceOrder": {
+            "id": "room-template-000000000002-2-object-000",
+            "definitionId": "desk-wooden",
+            "location": {
+              "x": 21,
+              "y": 6
+            },
+            "placementSequence": 2,
+            "state": "completed",
+            "progress": 60,
+            "materialsAllocated": [
+              {
+                "itemId": "item.wood-plank",
+                "quantity": 2
+              }
+            ],
+            "assignedWorkerId": "mock-worker-1"
+          },
+          "completeSnapshotDataEqualsLoaded": true,
+          "worldVersion": 1,
+          "loadedPlacedObject": {
+            "placedObjectId": "object:21:6",
+            "objectId": "object.desk",
+            "anchorTile": {
+              "x": 21,
+              "y": 6
+            },
+            "orientation": 0,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          "loadedCompletedSourceOrder": {
+            "id": "room-template-000000000002-2-object-000",
+            "definitionId": "desk-wooden",
+            "location": {
+              "x": 21,
+              "y": 6
+            },
+            "placementSequence": 2,
+            "state": "completed",
+            "progress": 60,
+            "materialsAllocated": [
+              {
+                "itemId": "item.wood-plank",
+                "quantity": 2
+              }
+            ],
+            "assignedWorkerId": "mock-worker-1"
+          },
+          "physicalOwnerPlanesPresent": false
+        }
+      ],
+      "files": [
+        {
+          "path": "src/rendering/assets/oblique-object-mapping.ts",
+          "bytes": 4802,
+          "sha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+          "actualSha256": "73f315442b700c415d5b2c9d2d03d379b958fcf407a8895bd0517799104b96e7",
+          "directBytesEqualBaseline": false
+        },
+        {
+          "path": "assets/source/blender/furniture.office.desk.generic.blend",
+          "bytes": 103228,
+          "sha256": "87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b",
+          "actualSha256": "87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "assets/source/blender/furniture.office.desk.generic.angled-detail.blend",
+          "bytes": 134684,
+          "sha256": "486b83b5079698faeb1cd58e989d1a1dfe524996813474b04550dd4c82a2fd46",
+          "actualSha256": "486b83b5079698faeb1cd58e989d1a1dfe524996813474b04550dd4c82a2fd46",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/game-content/oblique-furniture-office-desk-generic.v1.json",
+          "bytes": 19269,
+          "sha256": "e6cddb25540a2dde9326bf4b15cae1767690100c4a4eb05312fdee430aa49164",
+          "actualSha256": "e6cddb25540a2dde9326bf4b15cae1767690100c4a4eb05312fdee430aa49164",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev20.8114f2826c80.png",
+          "bytes": 2968,
+          "sha256": "8114f2826c800234d560794dd0ca77fc5d14f04f7c094527637e6db1e3c03f77",
+          "actualSha256": "8114f2826c800234d560794dd0ca77fc5d14f04f7c094527637e6db1e3c03f77",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev30.c208d3e64606.png",
+          "bytes": 2897,
+          "sha256": "c208d3e64606fdad83db882457ff38961778ab2979d5fd88becaf6244b9cdbac",
+          "actualSha256": "c208d3e64606fdad83db882457ff38961778ab2979d5fd88becaf6244b9cdbac",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev40.855baa61c6a3.png",
+          "bytes": 2754,
+          "sha256": "855baa61c6a3a9a6d859f85c5d1baed846c3bdc1f5d2af6f7b557fbf4803c913",
+          "actualSha256": "855baa61c6a3a9a6d859f85c5d1baed846c3bdc1f5d2af6f7b557fbf4803c913",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev50.249b7e03d684.png",
+          "bytes": 2676,
+          "sha256": "249b7e03d684161c0133abd0664d9b3254db217c35cdef8dfce3939de5c5a90d",
+          "actualSha256": "249b7e03d684161c0133abd0664d9b3254db217c35cdef8dfce3939de5c5a90d",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev60.f8ae80fe2834.png",
+          "bytes": 3247,
+          "sha256": "f8ae80fe2834f24c190f2c64a86db83a34b3a84e825a8a217588db76bca7b824",
+          "actualSha256": "f8ae80fe2834f24c190f2c64a86db83a34b3a84e825a8a217588db76bca7b824",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev70.bc8a09389601.png",
+          "bytes": 3106,
+          "sha256": "bc8a0938960182d6891a40d4f427c5e20894506721b55a1800a922a9eebf85ea",
+          "actualSha256": "bc8a0938960182d6891a40d4f427c5e20894506721b55a1800a922a9eebf85ea",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev20.f84dd7559351.png",
+          "bytes": 5234,
+          "sha256": "f84dd755935129e75e3fdc358eea55cb15b7ae4bda223298d5cf9f231d5a0bd5",
+          "actualSha256": "f84dd755935129e75e3fdc358eea55cb15b7ae4bda223298d5cf9f231d5a0bd5",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev30.7e13b74a2ae6.png",
+          "bytes": 6388,
+          "sha256": "7e13b74a2ae6b8274231755eb4806f230e677535dc037363a60984081b7a19f9",
+          "actualSha256": "7e13b74a2ae6b8274231755eb4806f230e677535dc037363a60984081b7a19f9",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev40.d897abb62c60.png",
+          "bytes": 6394,
+          "sha256": "d897abb62c6016564105b476c4c69db2b6d159da8e409f32ee84e7c238098960",
+          "actualSha256": "d897abb62c6016564105b476c4c69db2b6d159da8e409f32ee84e7c238098960",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev50.fb7405ecbae5.png",
+          "bytes": 6241,
+          "sha256": "fb7405ecbae5c600984ec5b08027cb355c570dff87515bb297a73838b8b42427",
+          "actualSha256": "fb7405ecbae5c600984ec5b08027cb355c570dff87515bb297a73838b8b42427",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev60.b6b599db6486.png",
+          "bytes": 4571,
+          "sha256": "b6b599db6486f3161cddc53bc49d0665a5564249e93fc31772127cc2e15bda94",
+          "actualSha256": "b6b599db6486f3161cddc53bc49d0665a5564249e93fc31772127cc2e15bda94",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev70.7b4c036e749d.png",
+          "bytes": 6545,
+          "sha256": "7b4c036e749d51c88c817eed5002ccb78c13f1826b6aeb932136bc2af3b5daee",
+          "actualSha256": "7b4c036e749d51c88c817eed5002ccb78c13f1826b6aeb932136bc2af3b5daee",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev20.beaf52aa1331.png",
+          "bytes": 6273,
+          "sha256": "beaf52aa133122aca70631714a539de0082b32ddde5b87508b9aac83785fbf43",
+          "actualSha256": "beaf52aa133122aca70631714a539de0082b32ddde5b87508b9aac83785fbf43",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev30.9305aef2dee3.png",
+          "bytes": 6191,
+          "sha256": "9305aef2dee3259fd6160800ab7273d1f3ff30e019d6000e12b887f7545f29f1",
+          "actualSha256": "9305aef2dee3259fd6160800ab7273d1f3ff30e019d6000e12b887f7545f29f1",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev40.c3368a96d41a.png",
+          "bytes": 6640,
+          "sha256": "c3368a96d41acf35b14fbecf116d4273339ab012d262af48a5a5c332706f9443",
+          "actualSha256": "c3368a96d41acf35b14fbecf116d4273339ab012d262af48a5a5c332706f9443",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev50.23c241a5be50.png",
+          "bytes": 6378,
+          "sha256": "23c241a5be50e95d4b6b14a5a2417277a667d7a9563e17560430275b80f5e57a",
+          "actualSha256": "23c241a5be50e95d4b6b14a5a2417277a667d7a9563e17560430275b80f5e57a",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev60.c75afaa9335b.png",
+          "bytes": 4673,
+          "sha256": "c75afaa9335b1af095790e0dbe0952e0891e9f398c738c0c0cc628d119b2d6e2",
+          "actualSha256": "c75afaa9335b1af095790e0dbe0952e0891e9f398c738c0c0cc628d119b2d6e2",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev70.b5b6a804c756.png",
+          "bytes": 6828,
+          "sha256": "b5b6a804c756e3909fe411a3ea9d03e7e549c7eb0d65916a00c8fc2e17dc8717",
+          "actualSha256": "b5b6a804c756e3909fe411a3ea9d03e7e549c7eb0d65916a00c8fc2e17dc8717",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev20.b5ae04afcb99.png",
+          "bytes": 3235,
+          "sha256": "b5ae04afcb992489347944d270a18613f8adaf81e8b4f5319b4114c52ecf73f8",
+          "actualSha256": "b5ae04afcb992489347944d270a18613f8adaf81e8b4f5319b4114c52ecf73f8",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev30.9eeb59b131fa.png",
+          "bytes": 3209,
+          "sha256": "9eeb59b131fa59ee1f169df8b980a816deb1acb3cdaa3424154e9908e6ea5816",
+          "actualSha256": "9eeb59b131fa59ee1f169df8b980a816deb1acb3cdaa3424154e9908e6ea5816",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev40.357e48784e77.png",
+          "bytes": 3476,
+          "sha256": "357e48784e77dcd7fa89997b640c68c72998a9d27b840bbd945cc556292bbf68",
+          "actualSha256": "357e48784e77dcd7fa89997b640c68c72998a9d27b840bbd945cc556292bbf68",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev50.54f99026e336.png",
+          "bytes": 3422,
+          "sha256": "54f99026e336e5206ec9aa70d36b46d0622a7dbf81ef16d8df897c4f19283ba3",
+          "actualSha256": "54f99026e336e5206ec9aa70d36b46d0622a7dbf81ef16d8df897c4f19283ba3",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev60.bd64d7cf07b1.png",
+          "bytes": 3453,
+          "sha256": "bd64d7cf07b18b55447e3d013a0ccbd7e7de28c948b6414322dd75e36393ed76",
+          "actualSha256": "bd64d7cf07b18b55447e3d013a0ccbd7e7de28c948b6414322dd75e36393ed76",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev70.a4a9c42fdbb9.png",
+          "bytes": 3377,
+          "sha256": "a4a9c42fdbb97132e06a8648e8de2da731cf774d3012e74c440ca87f986fa692",
+          "actualSha256": "a4a9c42fdbb97132e06a8648e8de2da731cf774d3012e74c440ca87f986fa692",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev20.c0caf4f3ecd7.png",
+          "bytes": 6046,
+          "sha256": "c0caf4f3ecd74e1d94bed9e2817b038e2bbf3f3d3bb5fccec17da6d213b98b02",
+          "actualSha256": "c0caf4f3ecd74e1d94bed9e2817b038e2bbf3f3d3bb5fccec17da6d213b98b02",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev30.03195595157e.png",
+          "bytes": 6481,
+          "sha256": "03195595157e900e5c57238eaf7199ae0098032b558056360c9287a8f6ca19ac",
+          "actualSha256": "03195595157e900e5c57238eaf7199ae0098032b558056360c9287a8f6ca19ac",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev40.d811d1d3d2af.png",
+          "bytes": 6888,
+          "sha256": "d811d1d3d2af4cffed28b46b418549090e0ea02eeedf715c7d4aa509c69ed488",
+          "actualSha256": "d811d1d3d2af4cffed28b46b418549090e0ea02eeedf715c7d4aa509c69ed488",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev50.9d5c2e654661.png",
+          "bytes": 6249,
+          "sha256": "9d5c2e654661cdfb298842fa53890757d52ba0aa4513ca24c759404fad61205e",
+          "actualSha256": "9d5c2e654661cdfb298842fa53890757d52ba0aa4513ca24c759404fad61205e",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev60.db06e7a53dfa.png",
+          "bytes": 4801,
+          "sha256": "db06e7a53dfa58f1dece51cec4ecc152019512ca02f17d3eb349ef21931944de",
+          "actualSha256": "db06e7a53dfa58f1dece51cec4ecc152019512ca02f17d3eb349ef21931944de",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev70.340a614d551f.png",
+          "bytes": 7000,
+          "sha256": "340a614d551f4fbf51b5a29b03589bf5937e668fee1e33c09743a55f05cc7cf7",
+          "actualSha256": "340a614d551f4fbf51b5a29b03589bf5937e668fee1e33c09743a55f05cc7cf7",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev20.4a9d55868b2c.png",
+          "bytes": 6574,
+          "sha256": "4a9d55868b2cd6a805296702e87bb05849903008ebb43b99c14d107bc29c5fb2",
+          "actualSha256": "4a9d55868b2cd6a805296702e87bb05849903008ebb43b99c14d107bc29c5fb2",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev30.d2acc94da20a.png",
+          "bytes": 6797,
+          "sha256": "d2acc94da20ae382bf9765a2b89085a4374d0906ce99417c719d5a8c87ae4ebd",
+          "actualSha256": "d2acc94da20ae382bf9765a2b89085a4374d0906ce99417c719d5a8c87ae4ebd",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev40.44cc91f253eb.png",
+          "bytes": 7101,
+          "sha256": "44cc91f253eb4b2f1bd84eeecb6b5ffd0d950775babea81b507bd340e866e239",
+          "actualSha256": "44cc91f253eb4b2f1bd84eeecb6b5ffd0d950775babea81b507bd340e866e239",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev50.10f2984e9784.png",
+          "bytes": 6833,
+          "sha256": "10f2984e97843a3b05e9df29a6807860d5cd7d11efeffd870c816383be756d92",
+          "actualSha256": "10f2984e97843a3b05e9df29a6807860d5cd7d11efeffd870c816383be756d92",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev60.e17e3399a7cc.png",
+          "bytes": 4982,
+          "sha256": "e17e3399a7ccacf9ddc21adf163e50c03905fed08325cbdc432c408942792dc4",
+          "actualSha256": "e17e3399a7ccacf9ddc21adf163e50c03905fed08325cbdc432c408942792dc4",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev70.d74278891520.png",
+          "bytes": 6830,
+          "sha256": "d7427889152033d15aeaf692ea59645354d61be421aff7341702ce5b9b6014f5",
+          "actualSha256": "d7427889152033d15aeaf692ea59645354d61be421aff7341702ce5b9b6014f5",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev20.2bc7e40c2ef5.png",
+          "bytes": 3337,
+          "sha256": "2bc7e40c2ef5836700ee4db3d89917870fe27b2daedf9d21d740191ab8ac428c",
+          "actualSha256": "2bc7e40c2ef5836700ee4db3d89917870fe27b2daedf9d21d740191ab8ac428c",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev30.76796b5db1bf.png",
+          "bytes": 3582,
+          "sha256": "76796b5db1bfcc752c7f2c08651d94e32802a84173e6a6b5cf6c3af04ac05796",
+          "actualSha256": "76796b5db1bfcc752c7f2c08651d94e32802a84173e6a6b5cf6c3af04ac05796",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev40.24afe104d134.png",
+          "bytes": 3601,
+          "sha256": "24afe104d134848fdbdb2371402d0a2075167cd8211c6dd386b7327c1e5c2343",
+          "actualSha256": "24afe104d134848fdbdb2371402d0a2075167cd8211c6dd386b7327c1e5c2343",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev50.4974c267743a.png",
+          "bytes": 3471,
+          "sha256": "4974c267743a71a0fc119af4e9d7620de736c8fa11991061d0fa3a49e6bfbb8c",
+          "actualSha256": "4974c267743a71a0fc119af4e9d7620de736c8fa11991061d0fa3a49e6bfbb8c",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev60.7ab0ae41bdaf.png",
+          "bytes": 3654,
+          "sha256": "7ab0ae41bdaf4db8081599ad0c708df7c4ce3d71a115fbb0c3b5ca09109b84ef",
+          "actualSha256": "7ab0ae41bdaf4db8081599ad0c708df7c4ce3d71a115fbb0c3b5ca09109b84ef",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev70.6457b37301b2.png",
+          "bytes": 3440,
+          "sha256": "6457b37301b289c6a5d009e3150a9022c06af136ef90de330687bbfb58459104",
+          "actualSha256": "6457b37301b289c6a5d009e3150a9022c06af136ef90de330687bbfb58459104",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev20.61c116450bf4.png",
+          "bytes": 6124,
+          "sha256": "61c116450bf474ce16e113e13821c057435714a96c0b58a4dce9907671f19c74",
+          "actualSha256": "61c116450bf474ce16e113e13821c057435714a96c0b58a4dce9907671f19c74",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev30.898de0c1dc81.png",
+          "bytes": 7349,
+          "sha256": "898de0c1dc8166dd3d37bb327b1b0df2d1f3da5a2757da51773ae040577d733e",
+          "actualSha256": "898de0c1dc8166dd3d37bb327b1b0df2d1f3da5a2757da51773ae040577d733e",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev40.8eee1733c8fc.png",
+          "bytes": 7635,
+          "sha256": "8eee1733c8fc010fe0712b8baa40ebdf8d3595f463471fe3921432e8671dc9ed",
+          "actualSha256": "8eee1733c8fc010fe0712b8baa40ebdf8d3595f463471fe3921432e8671dc9ed",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev50.5eb4c6a0b79a.png",
+          "bytes": 6932,
+          "sha256": "5eb4c6a0b79a006d247e7c995c53dfd0ad1574d00c93cdbf837adc890bcab847",
+          "actualSha256": "5eb4c6a0b79a006d247e7c995c53dfd0ad1574d00c93cdbf837adc890bcab847",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev60.3609f405c846.png",
+          "bytes": 5085,
+          "sha256": "3609f405c846fc8e3d75ef51e189402610de5617d39e6f90f3f7667de2a783cc",
+          "actualSha256": "3609f405c846fc8e3d75ef51e189402610de5617d39e6f90f3f7667de2a783cc",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev70.7a7851fd4e52.png",
+          "bytes": 6870,
+          "sha256": "7a7851fd4e52fb0a295e8346636eef2e3463c8f4d8763c83742150d36c96bdb9",
+          "actualSha256": "7a7851fd4e52fb0a295e8346636eef2e3463c8f4d8763c83742150d36c96bdb9",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev20.d9974053a695.png",
+          "bytes": 6511,
+          "sha256": "d9974053a695fe422068d005e6527b396db75a4441e22505877b5cb08d91e14d",
+          "actualSha256": "d9974053a695fe422068d005e6527b396db75a4441e22505877b5cb08d91e14d",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev30.f02065cb30ab.png",
+          "bytes": 6842,
+          "sha256": "f02065cb30abd0f5a38c93dc68ad0bb40ac69391abe0f5c4108d5bcd067b5aac",
+          "actualSha256": "f02065cb30abd0f5a38c93dc68ad0bb40ac69391abe0f5c4108d5bcd067b5aac",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev40.f2672d54949d.png",
+          "bytes": 6807,
+          "sha256": "f2672d54949dda07d760fed4e56ae8249d703ca5d4a36159c10f8afb66d15108",
+          "actualSha256": "f2672d54949dda07d760fed4e56ae8249d703ca5d4a36159c10f8afb66d15108",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev50.a61e7ba4a1a9.png",
+          "bytes": 6534,
+          "sha256": "a61e7ba4a1a9e98df29986e87df4d5242b8d362fb5ff604044a27b40069fb307",
+          "actualSha256": "a61e7ba4a1a9e98df29986e87df4d5242b8d362fb5ff604044a27b40069fb307",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev60.ff1944868242.png",
+          "bytes": 4697,
+          "sha256": "ff194486824242732842152e9af7b9edd4f36f3b0156ba0ef2cd997224fc4884",
+          "actualSha256": "ff194486824242732842152e9af7b9edd4f36f3b0156ba0ef2cd997224fc4884",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev70.e07fc11ddae9.png",
+          "bytes": 6954,
+          "sha256": "e07fc11ddae9cbe108e2b0ee45d6c9ab0e8bd70f112398967ca3d73558eaec39",
+          "actualSha256": "e07fc11ddae9cbe108e2b0ee45d6c9ab0e8bd70f112398967ca3d73558eaec39",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev20.7109e5683d31.png",
+          "bytes": 2995,
+          "sha256": "7109e5683d31f7f3af5956065ccb0d9c738e143205cc3ddceb6d74b79d385411",
+          "actualSha256": "7109e5683d31f7f3af5956065ccb0d9c738e143205cc3ddceb6d74b79d385411",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev30.ec5ad3d8713d.png",
+          "bytes": 2883,
+          "sha256": "ec5ad3d8713db54105743d4428ff2059b304a8901c261b70d71bdc854ecb4e62",
+          "actualSha256": "ec5ad3d8713db54105743d4428ff2059b304a8901c261b70d71bdc854ecb4e62",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev40.9f51f170d303.png",
+          "bytes": 3222,
+          "sha256": "9f51f170d3039897b034289ecdc0081344f72fff1adcaecf5975466ec305c9fc",
+          "actualSha256": "9f51f170d3039897b034289ecdc0081344f72fff1adcaecf5975466ec305c9fc",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev50.08d507bcd80e.png",
+          "bytes": 3226,
+          "sha256": "08d507bcd80e516f604fea9ac24758d92360667e0447948e520899cbc64dacb9",
+          "actualSha256": "08d507bcd80e516f604fea9ac24758d92360667e0447948e520899cbc64dacb9",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev60.f588cd6475ad.png",
+          "bytes": 3414,
+          "sha256": "f588cd6475ada7245090528baca713f99cdb268b1417fdb51c35d77b6c5eac9f",
+          "actualSha256": "f588cd6475ada7245090528baca713f99cdb268b1417fdb51c35d77b6c5eac9f",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev70.64f5fc2fdd38.png",
+          "bytes": 3322,
+          "sha256": "64f5fc2fdd38177f1c5d7d9d06419fbdb32c0cf143481489d223be22532c6c3b",
+          "actualSha256": "64f5fc2fdd38177f1c5d7d9d06419fbdb32c0cf143481489d223be22532c6c3b",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev20.da3deb66e835.png",
+          "bytes": 5194,
+          "sha256": "da3deb66e8352b98dc66b693b1084dad99043828782ef2d6e17392bfa9aaab69",
+          "actualSha256": "da3deb66e8352b98dc66b693b1084dad99043828782ef2d6e17392bfa9aaab69",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev30.1242665b8df9.png",
+          "bytes": 6089,
+          "sha256": "1242665b8df992fc6dd924212c76dcd24a76e9adc2f9a9588360f0a5573f5843",
+          "actualSha256": "1242665b8df992fc6dd924212c76dcd24a76e9adc2f9a9588360f0a5573f5843",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev40.4b149587d26e.png",
+          "bytes": 6829,
+          "sha256": "4b149587d26e459fdd9c90c17ff890c189081e0be9803f19be7f46b3a5cdab0f",
+          "actualSha256": "4b149587d26e459fdd9c90c17ff890c189081e0be9803f19be7f46b3a5cdab0f",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev50.d0725f1d54c2.png",
+          "bytes": 6187,
+          "sha256": "d0725f1d54c2a0e329e3b8b2b845fd1c5add496c357ef8bea37ae1b2e58b349e",
+          "actualSha256": "d0725f1d54c2a0e329e3b8b2b845fd1c5add496c357ef8bea37ae1b2e58b349e",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev60.5d0c69582cd2.png",
+          "bytes": 4650,
+          "sha256": "5d0c69582cd28ab060fb712546edcaf683413471febdeb93dd00b1e6de496d35",
+          "actualSha256": "5d0c69582cd28ab060fb712546edcaf683413471febdeb93dd00b1e6de496d35",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev70.6dda9a43b3f5.png",
+          "bytes": 6739,
+          "sha256": "6dda9a43b3f52949d4da18e72ad3d3094e709b197bc657d074e12d86679ae04b",
+          "actualSha256": "6dda9a43b3f52949d4da18e72ad3d3094e709b197bc657d074e12d86679ae04b",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev20.814f31224734.png",
+          "bytes": 5466,
+          "sha256": "814f31224734c2b102b52d31341bbb76f628997ed4b4519982089fcccf9ec24d",
+          "actualSha256": "814f31224734c2b102b52d31341bbb76f628997ed4b4519982089fcccf9ec24d",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev30.0c7028f29af2.png",
+          "bytes": 5700,
+          "sha256": "0c7028f29af28c7353f1e489983ffbb15dee2661157cbdd6c99b728d2605075c",
+          "actualSha256": "0c7028f29af28c7353f1e489983ffbb15dee2661157cbdd6c99b728d2605075c",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev40.655aa5c1f32c.png",
+          "bytes": 5783,
+          "sha256": "655aa5c1f32ccdf14f2a46ef5069936b34ce79fa50215cdf3af6a5de0a6b8163",
+          "actualSha256": "655aa5c1f32ccdf14f2a46ef5069936b34ce79fa50215cdf3af6a5de0a6b8163",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev50.06b2b41f2b95.png",
+          "bytes": 6296,
+          "sha256": "06b2b41f2b951023e1aa91d5a185f13a8fbaae89dff54c3c7685d759f494ff65",
+          "actualSha256": "06b2b41f2b951023e1aa91d5a185f13a8fbaae89dff54c3c7685d759f494ff65",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev60.f401565e0802.png",
+          "bytes": 4530,
+          "sha256": "f401565e0802c09423831ac103448ad96ae14052dd360bf1c97360ca1dd48711",
+          "actualSha256": "f401565e0802c09423831ac103448ad96ae14052dd360bf1c97360ca1dd48711",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev70.3a0c9c377f0b.png",
+          "bytes": 6692,
+          "sha256": "3a0c9c377f0b5424294e8f5e5ebcca552318ea40d193fee78d1f92135825d9b8",
+          "actualSha256": "3a0c9c377f0b5424294e8f5e5ebcca552318ea40d193fee78d1f92135825d9b8",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "dist/client/assets/worker-BFatYFme.js",
+          "bytes": 436941,
+          "sha256": "91b05a3aa36520578758b2f3a5a3b5f4f336d33c5b98de13e726f5cd86c03a48",
+          "actualSha256": "91b05a3aa36520578758b2f3a5a3b5f4f336d33c5b98de13e726f5cd86c03a48",
+          "directBytesEqualBaseline": true
+        }
+      ]
+    },
+    "mutation-q1": {
+      "phase": "mutation-q1",
+      "cases": [
+        {
+          "quarterTurns": 1,
+          "actualBefore": [
+            "object.desk@24,6:orientation=1"
+          ],
+          "actualAfter": [
+            "object.desk@24,6:orientation=1"
+          ],
+          "beforePixels": [
+            0,
+            0
+          ],
+          "afterPixels": [
+            0,
+            0
+          ],
+          "commands": [
+            {
+              "type": "PlaceRoomTemplate",
+              "templateId": "reception-basic",
+              "origin": {
+                "x": 20,
+                "y": 5
+              },
+              "quarterTurns": 1
+            }
+          ],
+          "placedObject": {
+            "placedObjectId": "object:24:6",
+            "objectId": "object.desk",
+            "anchorTile": {
+              "x": 24,
+              "y": 6
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          "loadedPlacedObject": {
+            "placedObjectId": "object:24:6",
+            "objectId": "object.desk",
+            "anchorTile": {
+              "x": 24,
+              "y": 6
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          "completedSourceOrder": {
+            "id": "room-template-000000000002-2-object-000",
+            "definitionId": "desk-wooden",
+            "location": {
+              "x": 24,
+              "y": 6
+            },
+            "objectOrientation": 1,
+            "placementSequence": 2,
+            "state": "completed",
+            "progress": 60,
+            "materialsAllocated": [
+              {
+                "itemId": "item.wood-plank",
+                "quantity": 2
+              }
+            ],
+            "assignedWorkerId": "mock-worker-1"
+          },
+          "loadedCompletedSourceOrder": {
+            "id": "room-template-000000000002-2-object-000",
+            "definitionId": "desk-wooden",
+            "location": {
+              "x": 24,
+              "y": 6
+            },
+            "objectOrientation": 1,
+            "placementSequence": 2,
+            "state": "completed",
+            "progress": 60,
+            "materialsAllocated": [
+              {
+                "itemId": "item.wood-plank",
+                "quantity": 2
+              }
+            ],
+            "assignedWorkerId": "mock-worker-1"
+          },
+          "completeSnapshotDataEqualsLoaded": true,
+          "worldVersion": 1,
+          "physicalOwnerPlanesPresent": false
+        }
+      ],
+      "files": [
+        {
+          "path": "src/rendering/assets/oblique-object-mapping.ts",
+          "bytes": 4802,
+          "sha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+          "actualSha256": "73f315442b700c415d5b2c9d2d03d379b958fcf407a8895bd0517799104b96e7",
+          "directBytesEqualBaseline": false
+        },
+        {
+          "path": "assets/source/blender/furniture.office.desk.generic.blend",
+          "bytes": 103228,
+          "sha256": "87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b",
+          "actualSha256": "87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "assets/source/blender/furniture.office.desk.generic.angled-detail.blend",
+          "bytes": 134684,
+          "sha256": "486b83b5079698faeb1cd58e989d1a1dfe524996813474b04550dd4c82a2fd46",
+          "actualSha256": "486b83b5079698faeb1cd58e989d1a1dfe524996813474b04550dd4c82a2fd46",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/game-content/oblique-furniture-office-desk-generic.v1.json",
+          "bytes": 19269,
+          "sha256": "e6cddb25540a2dde9326bf4b15cae1767690100c4a4eb05312fdee430aa49164",
+          "actualSha256": "e6cddb25540a2dde9326bf4b15cae1767690100c4a4eb05312fdee430aa49164",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev20.8114f2826c80.png",
+          "bytes": 2968,
+          "sha256": "8114f2826c800234d560794dd0ca77fc5d14f04f7c094527637e6db1e3c03f77",
+          "actualSha256": "8114f2826c800234d560794dd0ca77fc5d14f04f7c094527637e6db1e3c03f77",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev30.c208d3e64606.png",
+          "bytes": 2897,
+          "sha256": "c208d3e64606fdad83db882457ff38961778ab2979d5fd88becaf6244b9cdbac",
+          "actualSha256": "c208d3e64606fdad83db882457ff38961778ab2979d5fd88becaf6244b9cdbac",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev40.855baa61c6a3.png",
+          "bytes": 2754,
+          "sha256": "855baa61c6a3a9a6d859f85c5d1baed846c3bdc1f5d2af6f7b557fbf4803c913",
+          "actualSha256": "855baa61c6a3a9a6d859f85c5d1baed846c3bdc1f5d2af6f7b557fbf4803c913",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev50.249b7e03d684.png",
+          "bytes": 2676,
+          "sha256": "249b7e03d684161c0133abd0664d9b3254db217c35cdef8dfce3939de5c5a90d",
+          "actualSha256": "249b7e03d684161c0133abd0664d9b3254db217c35cdef8dfce3939de5c5a90d",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev60.f8ae80fe2834.png",
+          "bytes": 3247,
+          "sha256": "f8ae80fe2834f24c190f2c64a86db83a34b3a84e825a8a217588db76bca7b824",
+          "actualSha256": "f8ae80fe2834f24c190f2c64a86db83a34b3a84e825a8a217588db76bca7b824",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev70.bc8a09389601.png",
+          "bytes": 3106,
+          "sha256": "bc8a0938960182d6891a40d4f427c5e20894506721b55a1800a922a9eebf85ea",
+          "actualSha256": "bc8a0938960182d6891a40d4f427c5e20894506721b55a1800a922a9eebf85ea",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev20.f84dd7559351.png",
+          "bytes": 5234,
+          "sha256": "f84dd755935129e75e3fdc358eea55cb15b7ae4bda223298d5cf9f231d5a0bd5",
+          "actualSha256": "f84dd755935129e75e3fdc358eea55cb15b7ae4bda223298d5cf9f231d5a0bd5",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev30.7e13b74a2ae6.png",
+          "bytes": 6388,
+          "sha256": "7e13b74a2ae6b8274231755eb4806f230e677535dc037363a60984081b7a19f9",
+          "actualSha256": "7e13b74a2ae6b8274231755eb4806f230e677535dc037363a60984081b7a19f9",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev40.d897abb62c60.png",
+          "bytes": 6394,
+          "sha256": "d897abb62c6016564105b476c4c69db2b6d159da8e409f32ee84e7c238098960",
+          "actualSha256": "d897abb62c6016564105b476c4c69db2b6d159da8e409f32ee84e7c238098960",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev50.fb7405ecbae5.png",
+          "bytes": 6241,
+          "sha256": "fb7405ecbae5c600984ec5b08027cb355c570dff87515bb297a73838b8b42427",
+          "actualSha256": "fb7405ecbae5c600984ec5b08027cb355c570dff87515bb297a73838b8b42427",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev60.b6b599db6486.png",
+          "bytes": 4571,
+          "sha256": "b6b599db6486f3161cddc53bc49d0665a5564249e93fc31772127cc2e15bda94",
+          "actualSha256": "b6b599db6486f3161cddc53bc49d0665a5564249e93fc31772127cc2e15bda94",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev70.7b4c036e749d.png",
+          "bytes": 6545,
+          "sha256": "7b4c036e749d51c88c817eed5002ccb78c13f1826b6aeb932136bc2af3b5daee",
+          "actualSha256": "7b4c036e749d51c88c817eed5002ccb78c13f1826b6aeb932136bc2af3b5daee",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev20.beaf52aa1331.png",
+          "bytes": 6273,
+          "sha256": "beaf52aa133122aca70631714a539de0082b32ddde5b87508b9aac83785fbf43",
+          "actualSha256": "beaf52aa133122aca70631714a539de0082b32ddde5b87508b9aac83785fbf43",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev30.9305aef2dee3.png",
+          "bytes": 6191,
+          "sha256": "9305aef2dee3259fd6160800ab7273d1f3ff30e019d6000e12b887f7545f29f1",
+          "actualSha256": "9305aef2dee3259fd6160800ab7273d1f3ff30e019d6000e12b887f7545f29f1",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev40.c3368a96d41a.png",
+          "bytes": 6640,
+          "sha256": "c3368a96d41acf35b14fbecf116d4273339ab012d262af48a5a5c332706f9443",
+          "actualSha256": "c3368a96d41acf35b14fbecf116d4273339ab012d262af48a5a5c332706f9443",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev50.23c241a5be50.png",
+          "bytes": 6378,
+          "sha256": "23c241a5be50e95d4b6b14a5a2417277a667d7a9563e17560430275b80f5e57a",
+          "actualSha256": "23c241a5be50e95d4b6b14a5a2417277a667d7a9563e17560430275b80f5e57a",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev60.c75afaa9335b.png",
+          "bytes": 4673,
+          "sha256": "c75afaa9335b1af095790e0dbe0952e0891e9f398c738c0c0cc628d119b2d6e2",
+          "actualSha256": "c75afaa9335b1af095790e0dbe0952e0891e9f398c738c0c0cc628d119b2d6e2",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev70.b5b6a804c756.png",
+          "bytes": 6828,
+          "sha256": "b5b6a804c756e3909fe411a3ea9d03e7e549c7eb0d65916a00c8fc2e17dc8717",
+          "actualSha256": "b5b6a804c756e3909fe411a3ea9d03e7e549c7eb0d65916a00c8fc2e17dc8717",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev20.b5ae04afcb99.png",
+          "bytes": 3235,
+          "sha256": "b5ae04afcb992489347944d270a18613f8adaf81e8b4f5319b4114c52ecf73f8",
+          "actualSha256": "b5ae04afcb992489347944d270a18613f8adaf81e8b4f5319b4114c52ecf73f8",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev30.9eeb59b131fa.png",
+          "bytes": 3209,
+          "sha256": "9eeb59b131fa59ee1f169df8b980a816deb1acb3cdaa3424154e9908e6ea5816",
+          "actualSha256": "9eeb59b131fa59ee1f169df8b980a816deb1acb3cdaa3424154e9908e6ea5816",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev40.357e48784e77.png",
+          "bytes": 3476,
+          "sha256": "357e48784e77dcd7fa89997b640c68c72998a9d27b840bbd945cc556292bbf68",
+          "actualSha256": "357e48784e77dcd7fa89997b640c68c72998a9d27b840bbd945cc556292bbf68",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev50.54f99026e336.png",
+          "bytes": 3422,
+          "sha256": "54f99026e336e5206ec9aa70d36b46d0622a7dbf81ef16d8df897c4f19283ba3",
+          "actualSha256": "54f99026e336e5206ec9aa70d36b46d0622a7dbf81ef16d8df897c4f19283ba3",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev60.bd64d7cf07b1.png",
+          "bytes": 3453,
+          "sha256": "bd64d7cf07b18b55447e3d013a0ccbd7e7de28c948b6414322dd75e36393ed76",
+          "actualSha256": "bd64d7cf07b18b55447e3d013a0ccbd7e7de28c948b6414322dd75e36393ed76",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev70.a4a9c42fdbb9.png",
+          "bytes": 3377,
+          "sha256": "a4a9c42fdbb97132e06a8648e8de2da731cf774d3012e74c440ca87f986fa692",
+          "actualSha256": "a4a9c42fdbb97132e06a8648e8de2da731cf774d3012e74c440ca87f986fa692",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev20.c0caf4f3ecd7.png",
+          "bytes": 6046,
+          "sha256": "c0caf4f3ecd74e1d94bed9e2817b038e2bbf3f3d3bb5fccec17da6d213b98b02",
+          "actualSha256": "c0caf4f3ecd74e1d94bed9e2817b038e2bbf3f3d3bb5fccec17da6d213b98b02",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev30.03195595157e.png",
+          "bytes": 6481,
+          "sha256": "03195595157e900e5c57238eaf7199ae0098032b558056360c9287a8f6ca19ac",
+          "actualSha256": "03195595157e900e5c57238eaf7199ae0098032b558056360c9287a8f6ca19ac",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev40.d811d1d3d2af.png",
+          "bytes": 6888,
+          "sha256": "d811d1d3d2af4cffed28b46b418549090e0ea02eeedf715c7d4aa509c69ed488",
+          "actualSha256": "d811d1d3d2af4cffed28b46b418549090e0ea02eeedf715c7d4aa509c69ed488",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev50.9d5c2e654661.png",
+          "bytes": 6249,
+          "sha256": "9d5c2e654661cdfb298842fa53890757d52ba0aa4513ca24c759404fad61205e",
+          "actualSha256": "9d5c2e654661cdfb298842fa53890757d52ba0aa4513ca24c759404fad61205e",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev60.db06e7a53dfa.png",
+          "bytes": 4801,
+          "sha256": "db06e7a53dfa58f1dece51cec4ecc152019512ca02f17d3eb349ef21931944de",
+          "actualSha256": "db06e7a53dfa58f1dece51cec4ecc152019512ca02f17d3eb349ef21931944de",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev70.340a614d551f.png",
+          "bytes": 7000,
+          "sha256": "340a614d551f4fbf51b5a29b03589bf5937e668fee1e33c09743a55f05cc7cf7",
+          "actualSha256": "340a614d551f4fbf51b5a29b03589bf5937e668fee1e33c09743a55f05cc7cf7",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev20.4a9d55868b2c.png",
+          "bytes": 6574,
+          "sha256": "4a9d55868b2cd6a805296702e87bb05849903008ebb43b99c14d107bc29c5fb2",
+          "actualSha256": "4a9d55868b2cd6a805296702e87bb05849903008ebb43b99c14d107bc29c5fb2",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev30.d2acc94da20a.png",
+          "bytes": 6797,
+          "sha256": "d2acc94da20ae382bf9765a2b89085a4374d0906ce99417c719d5a8c87ae4ebd",
+          "actualSha256": "d2acc94da20ae382bf9765a2b89085a4374d0906ce99417c719d5a8c87ae4ebd",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev40.44cc91f253eb.png",
+          "bytes": 7101,
+          "sha256": "44cc91f253eb4b2f1bd84eeecb6b5ffd0d950775babea81b507bd340e866e239",
+          "actualSha256": "44cc91f253eb4b2f1bd84eeecb6b5ffd0d950775babea81b507bd340e866e239",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev50.10f2984e9784.png",
+          "bytes": 6833,
+          "sha256": "10f2984e97843a3b05e9df29a6807860d5cd7d11efeffd870c816383be756d92",
+          "actualSha256": "10f2984e97843a3b05e9df29a6807860d5cd7d11efeffd870c816383be756d92",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev60.e17e3399a7cc.png",
+          "bytes": 4982,
+          "sha256": "e17e3399a7ccacf9ddc21adf163e50c03905fed08325cbdc432c408942792dc4",
+          "actualSha256": "e17e3399a7ccacf9ddc21adf163e50c03905fed08325cbdc432c408942792dc4",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev70.d74278891520.png",
+          "bytes": 6830,
+          "sha256": "d7427889152033d15aeaf692ea59645354d61be421aff7341702ce5b9b6014f5",
+          "actualSha256": "d7427889152033d15aeaf692ea59645354d61be421aff7341702ce5b9b6014f5",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev20.2bc7e40c2ef5.png",
+          "bytes": 3337,
+          "sha256": "2bc7e40c2ef5836700ee4db3d89917870fe27b2daedf9d21d740191ab8ac428c",
+          "actualSha256": "2bc7e40c2ef5836700ee4db3d89917870fe27b2daedf9d21d740191ab8ac428c",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev30.76796b5db1bf.png",
+          "bytes": 3582,
+          "sha256": "76796b5db1bfcc752c7f2c08651d94e32802a84173e6a6b5cf6c3af04ac05796",
+          "actualSha256": "76796b5db1bfcc752c7f2c08651d94e32802a84173e6a6b5cf6c3af04ac05796",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev40.24afe104d134.png",
+          "bytes": 3601,
+          "sha256": "24afe104d134848fdbdb2371402d0a2075167cd8211c6dd386b7327c1e5c2343",
+          "actualSha256": "24afe104d134848fdbdb2371402d0a2075167cd8211c6dd386b7327c1e5c2343",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev50.4974c267743a.png",
+          "bytes": 3471,
+          "sha256": "4974c267743a71a0fc119af4e9d7620de736c8fa11991061d0fa3a49e6bfbb8c",
+          "actualSha256": "4974c267743a71a0fc119af4e9d7620de736c8fa11991061d0fa3a49e6bfbb8c",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev60.7ab0ae41bdaf.png",
+          "bytes": 3654,
+          "sha256": "7ab0ae41bdaf4db8081599ad0c708df7c4ce3d71a115fbb0c3b5ca09109b84ef",
+          "actualSha256": "7ab0ae41bdaf4db8081599ad0c708df7c4ce3d71a115fbb0c3b5ca09109b84ef",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev70.6457b37301b2.png",
+          "bytes": 3440,
+          "sha256": "6457b37301b289c6a5d009e3150a9022c06af136ef90de330687bbfb58459104",
+          "actualSha256": "6457b37301b289c6a5d009e3150a9022c06af136ef90de330687bbfb58459104",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev20.61c116450bf4.png",
+          "bytes": 6124,
+          "sha256": "61c116450bf474ce16e113e13821c057435714a96c0b58a4dce9907671f19c74",
+          "actualSha256": "61c116450bf474ce16e113e13821c057435714a96c0b58a4dce9907671f19c74",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev30.898de0c1dc81.png",
+          "bytes": 7349,
+          "sha256": "898de0c1dc8166dd3d37bb327b1b0df2d1f3da5a2757da51773ae040577d733e",
+          "actualSha256": "898de0c1dc8166dd3d37bb327b1b0df2d1f3da5a2757da51773ae040577d733e",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev40.8eee1733c8fc.png",
+          "bytes": 7635,
+          "sha256": "8eee1733c8fc010fe0712b8baa40ebdf8d3595f463471fe3921432e8671dc9ed",
+          "actualSha256": "8eee1733c8fc010fe0712b8baa40ebdf8d3595f463471fe3921432e8671dc9ed",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev50.5eb4c6a0b79a.png",
+          "bytes": 6932,
+          "sha256": "5eb4c6a0b79a006d247e7c995c53dfd0ad1574d00c93cdbf837adc890bcab847",
+          "actualSha256": "5eb4c6a0b79a006d247e7c995c53dfd0ad1574d00c93cdbf837adc890bcab847",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev60.3609f405c846.png",
+          "bytes": 5085,
+          "sha256": "3609f405c846fc8e3d75ef51e189402610de5617d39e6f90f3f7667de2a783cc",
+          "actualSha256": "3609f405c846fc8e3d75ef51e189402610de5617d39e6f90f3f7667de2a783cc",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev70.7a7851fd4e52.png",
+          "bytes": 6870,
+          "sha256": "7a7851fd4e52fb0a295e8346636eef2e3463c8f4d8763c83742150d36c96bdb9",
+          "actualSha256": "7a7851fd4e52fb0a295e8346636eef2e3463c8f4d8763c83742150d36c96bdb9",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev20.d9974053a695.png",
+          "bytes": 6511,
+          "sha256": "d9974053a695fe422068d005e6527b396db75a4441e22505877b5cb08d91e14d",
+          "actualSha256": "d9974053a695fe422068d005e6527b396db75a4441e22505877b5cb08d91e14d",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev30.f02065cb30ab.png",
+          "bytes": 6842,
+          "sha256": "f02065cb30abd0f5a38c93dc68ad0bb40ac69391abe0f5c4108d5bcd067b5aac",
+          "actualSha256": "f02065cb30abd0f5a38c93dc68ad0bb40ac69391abe0f5c4108d5bcd067b5aac",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev40.f2672d54949d.png",
+          "bytes": 6807,
+          "sha256": "f2672d54949dda07d760fed4e56ae8249d703ca5d4a36159c10f8afb66d15108",
+          "actualSha256": "f2672d54949dda07d760fed4e56ae8249d703ca5d4a36159c10f8afb66d15108",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev50.a61e7ba4a1a9.png",
+          "bytes": 6534,
+          "sha256": "a61e7ba4a1a9e98df29986e87df4d5242b8d362fb5ff604044a27b40069fb307",
+          "actualSha256": "a61e7ba4a1a9e98df29986e87df4d5242b8d362fb5ff604044a27b40069fb307",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev60.ff1944868242.png",
+          "bytes": 4697,
+          "sha256": "ff194486824242732842152e9af7b9edd4f36f3b0156ba0ef2cd997224fc4884",
+          "actualSha256": "ff194486824242732842152e9af7b9edd4f36f3b0156ba0ef2cd997224fc4884",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev70.e07fc11ddae9.png",
+          "bytes": 6954,
+          "sha256": "e07fc11ddae9cbe108e2b0ee45d6c9ab0e8bd70f112398967ca3d73558eaec39",
+          "actualSha256": "e07fc11ddae9cbe108e2b0ee45d6c9ab0e8bd70f112398967ca3d73558eaec39",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev20.7109e5683d31.png",
+          "bytes": 2995,
+          "sha256": "7109e5683d31f7f3af5956065ccb0d9c738e143205cc3ddceb6d74b79d385411",
+          "actualSha256": "7109e5683d31f7f3af5956065ccb0d9c738e143205cc3ddceb6d74b79d385411",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev30.ec5ad3d8713d.png",
+          "bytes": 2883,
+          "sha256": "ec5ad3d8713db54105743d4428ff2059b304a8901c261b70d71bdc854ecb4e62",
+          "actualSha256": "ec5ad3d8713db54105743d4428ff2059b304a8901c261b70d71bdc854ecb4e62",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev40.9f51f170d303.png",
+          "bytes": 3222,
+          "sha256": "9f51f170d3039897b034289ecdc0081344f72fff1adcaecf5975466ec305c9fc",
+          "actualSha256": "9f51f170d3039897b034289ecdc0081344f72fff1adcaecf5975466ec305c9fc",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev50.08d507bcd80e.png",
+          "bytes": 3226,
+          "sha256": "08d507bcd80e516f604fea9ac24758d92360667e0447948e520899cbc64dacb9",
+          "actualSha256": "08d507bcd80e516f604fea9ac24758d92360667e0447948e520899cbc64dacb9",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev60.f588cd6475ad.png",
+          "bytes": 3414,
+          "sha256": "f588cd6475ada7245090528baca713f99cdb268b1417fdb51c35d77b6c5eac9f",
+          "actualSha256": "f588cd6475ada7245090528baca713f99cdb268b1417fdb51c35d77b6c5eac9f",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev70.64f5fc2fdd38.png",
+          "bytes": 3322,
+          "sha256": "64f5fc2fdd38177f1c5d7d9d06419fbdb32c0cf143481489d223be22532c6c3b",
+          "actualSha256": "64f5fc2fdd38177f1c5d7d9d06419fbdb32c0cf143481489d223be22532c6c3b",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev20.da3deb66e835.png",
+          "bytes": 5194,
+          "sha256": "da3deb66e8352b98dc66b693b1084dad99043828782ef2d6e17392bfa9aaab69",
+          "actualSha256": "da3deb66e8352b98dc66b693b1084dad99043828782ef2d6e17392bfa9aaab69",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev30.1242665b8df9.png",
+          "bytes": 6089,
+          "sha256": "1242665b8df992fc6dd924212c76dcd24a76e9adc2f9a9588360f0a5573f5843",
+          "actualSha256": "1242665b8df992fc6dd924212c76dcd24a76e9adc2f9a9588360f0a5573f5843",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev40.4b149587d26e.png",
+          "bytes": 6829,
+          "sha256": "4b149587d26e459fdd9c90c17ff890c189081e0be9803f19be7f46b3a5cdab0f",
+          "actualSha256": "4b149587d26e459fdd9c90c17ff890c189081e0be9803f19be7f46b3a5cdab0f",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev50.d0725f1d54c2.png",
+          "bytes": 6187,
+          "sha256": "d0725f1d54c2a0e329e3b8b2b845fd1c5add496c357ef8bea37ae1b2e58b349e",
+          "actualSha256": "d0725f1d54c2a0e329e3b8b2b845fd1c5add496c357ef8bea37ae1b2e58b349e",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev60.5d0c69582cd2.png",
+          "bytes": 4650,
+          "sha256": "5d0c69582cd28ab060fb712546edcaf683413471febdeb93dd00b1e6de496d35",
+          "actualSha256": "5d0c69582cd28ab060fb712546edcaf683413471febdeb93dd00b1e6de496d35",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev70.6dda9a43b3f5.png",
+          "bytes": 6739,
+          "sha256": "6dda9a43b3f52949d4da18e72ad3d3094e709b197bc657d074e12d86679ae04b",
+          "actualSha256": "6dda9a43b3f52949d4da18e72ad3d3094e709b197bc657d074e12d86679ae04b",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev20.814f31224734.png",
+          "bytes": 5466,
+          "sha256": "814f31224734c2b102b52d31341bbb76f628997ed4b4519982089fcccf9ec24d",
+          "actualSha256": "814f31224734c2b102b52d31341bbb76f628997ed4b4519982089fcccf9ec24d",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev30.0c7028f29af2.png",
+          "bytes": 5700,
+          "sha256": "0c7028f29af28c7353f1e489983ffbb15dee2661157cbdd6c99b728d2605075c",
+          "actualSha256": "0c7028f29af28c7353f1e489983ffbb15dee2661157cbdd6c99b728d2605075c",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev40.655aa5c1f32c.png",
+          "bytes": 5783,
+          "sha256": "655aa5c1f32ccdf14f2a46ef5069936b34ce79fa50215cdf3af6a5de0a6b8163",
+          "actualSha256": "655aa5c1f32ccdf14f2a46ef5069936b34ce79fa50215cdf3af6a5de0a6b8163",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev50.06b2b41f2b95.png",
+          "bytes": 6296,
+          "sha256": "06b2b41f2b951023e1aa91d5a185f13a8fbaae89dff54c3c7685d759f494ff65",
+          "actualSha256": "06b2b41f2b951023e1aa91d5a185f13a8fbaae89dff54c3c7685d759f494ff65",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev60.f401565e0802.png",
+          "bytes": 4530,
+          "sha256": "f401565e0802c09423831ac103448ad96ae14052dd360bf1c97360ca1dd48711",
+          "actualSha256": "f401565e0802c09423831ac103448ad96ae14052dd360bf1c97360ca1dd48711",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev70.3a0c9c377f0b.png",
+          "bytes": 6692,
+          "sha256": "3a0c9c377f0b5424294e8f5e5ebcca552318ea40d193fee78d1f92135825d9b8",
+          "actualSha256": "3a0c9c377f0b5424294e8f5e5ebcca552318ea40d193fee78d1f92135825d9b8",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "dist/client/assets/worker-BFatYFme.js",
+          "bytes": 436941,
+          "sha256": "91b05a3aa36520578758b2f3a5a3b5f4f336d33c5b98de13e726f5cd86c03a48",
+          "actualSha256": "91b05a3aa36520578758b2f3a5a3b5f4f336d33c5b98de13e726f5cd86c03a48",
+          "directBytesEqualBaseline": true
+        }
+      ]
+    },
+    "restored": {
+      "phase": "restored",
+      "cases": [
+        {
+          "quarterTurns": 0,
+          "actualBefore": [
+            "object.desk@21,6:orientation=0"
+          ],
+          "actualAfter": [
+            "object.desk@21,6:orientation=0"
+          ],
+          "beforePixels": [
+            281,
+            111
+          ],
+          "afterPixels": [
+            281,
+            111
+          ],
+          "commands": [
+            {
+              "type": "PlaceRoomTemplate",
+              "templateId": "reception-basic",
+              "origin": {
+                "x": 20,
+                "y": 5
+              }
+            }
+          ],
+          "placedObject": {
+            "placedObjectId": "object:21:6",
+            "objectId": "object.desk",
+            "anchorTile": {
+              "x": 21,
+              "y": 6
+            },
+            "orientation": 0,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          "loadedPlacedObject": {
+            "placedObjectId": "object:21:6",
+            "objectId": "object.desk",
+            "anchorTile": {
+              "x": 21,
+              "y": 6
+            },
+            "orientation": 0,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          "completedSourceOrder": {
+            "id": "room-template-000000000002-2-object-000",
+            "definitionId": "desk-wooden",
+            "location": {
+              "x": 21,
+              "y": 6
+            },
+            "placementSequence": 2,
+            "state": "completed",
+            "progress": 60,
+            "materialsAllocated": [
+              {
+                "itemId": "item.wood-plank",
+                "quantity": 2
+              }
+            ],
+            "assignedWorkerId": "mock-worker-1"
+          },
+          "loadedCompletedSourceOrder": {
+            "id": "room-template-000000000002-2-object-000",
+            "definitionId": "desk-wooden",
+            "location": {
+              "x": 21,
+              "y": 6
+            },
+            "placementSequence": 2,
+            "state": "completed",
+            "progress": 60,
+            "materialsAllocated": [
+              {
+                "itemId": "item.wood-plank",
+                "quantity": 2
+              }
+            ],
+            "assignedWorkerId": "mock-worker-1"
+          },
+          "completeSnapshotDataEqualsLoaded": true,
+          "worldVersion": 1,
+          "physicalOwnerPlanesPresent": false
+        },
+        {
+          "quarterTurns": 1,
+          "actualBefore": [
+            "object.desk@24,6:orientation=1"
+          ],
+          "actualAfter": [
+            "object.desk@24,6:orientation=1"
+          ],
+          "beforePixels": [
+            497,
+            455
+          ],
+          "afterPixels": [
+            497,
+            455
+          ],
+          "commands": [
+            {
+              "type": "PlaceRoomTemplate",
+              "templateId": "reception-basic",
+              "origin": {
+                "x": 20,
+                "y": 5
+              },
+              "quarterTurns": 1
+            }
+          ],
+          "placedObject": {
+            "placedObjectId": "object:24:6",
+            "objectId": "object.desk",
+            "anchorTile": {
+              "x": 24,
+              "y": 6
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          "loadedPlacedObject": {
+            "placedObjectId": "object:24:6",
+            "objectId": "object.desk",
+            "anchorTile": {
+              "x": 24,
+              "y": 6
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          "completedSourceOrder": {
+            "id": "room-template-000000000002-2-object-000",
+            "definitionId": "desk-wooden",
+            "location": {
+              "x": 24,
+              "y": 6
+            },
+            "objectOrientation": 1,
+            "placementSequence": 2,
+            "state": "completed",
+            "progress": 60,
+            "materialsAllocated": [
+              {
+                "itemId": "item.wood-plank",
+                "quantity": 2
+              }
+            ],
+            "assignedWorkerId": "mock-worker-1"
+          },
+          "loadedCompletedSourceOrder": {
+            "id": "room-template-000000000002-2-object-000",
+            "definitionId": "desk-wooden",
+            "location": {
+              "x": 24,
+              "y": 6
+            },
+            "objectOrientation": 1,
+            "placementSequence": 2,
+            "state": "completed",
+            "progress": 60,
+            "materialsAllocated": [
+              {
+                "itemId": "item.wood-plank",
+                "quantity": 2
+              }
+            ],
+            "assignedWorkerId": "mock-worker-1"
+          },
+          "completeSnapshotDataEqualsLoaded": true,
+          "worldVersion": 1,
+          "physicalOwnerPlanesPresent": false
+        }
+      ],
+      "files": [
+        {
+          "path": "src/rendering/assets/oblique-object-mapping.ts",
+          "bytes": 4802,
+          "sha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+          "actualSha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "assets/source/blender/furniture.office.desk.generic.blend",
+          "bytes": 103228,
+          "sha256": "87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b",
+          "actualSha256": "87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "assets/source/blender/furniture.office.desk.generic.angled-detail.blend",
+          "bytes": 134684,
+          "sha256": "486b83b5079698faeb1cd58e989d1a1dfe524996813474b04550dd4c82a2fd46",
+          "actualSha256": "486b83b5079698faeb1cd58e989d1a1dfe524996813474b04550dd4c82a2fd46",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/game-content/oblique-furniture-office-desk-generic.v1.json",
+          "bytes": 19269,
+          "sha256": "e6cddb25540a2dde9326bf4b15cae1767690100c4a4eb05312fdee430aa49164",
+          "actualSha256": "e6cddb25540a2dde9326bf4b15cae1767690100c4a4eb05312fdee430aa49164",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev20.8114f2826c80.png",
+          "bytes": 2968,
+          "sha256": "8114f2826c800234d560794dd0ca77fc5d14f04f7c094527637e6db1e3c03f77",
+          "actualSha256": "8114f2826c800234d560794dd0ca77fc5d14f04f7c094527637e6db1e3c03f77",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev30.c208d3e64606.png",
+          "bytes": 2897,
+          "sha256": "c208d3e64606fdad83db882457ff38961778ab2979d5fd88becaf6244b9cdbac",
+          "actualSha256": "c208d3e64606fdad83db882457ff38961778ab2979d5fd88becaf6244b9cdbac",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev40.855baa61c6a3.png",
+          "bytes": 2754,
+          "sha256": "855baa61c6a3a9a6d859f85c5d1baed846c3bdc1f5d2af6f7b557fbf4803c913",
+          "actualSha256": "855baa61c6a3a9a6d859f85c5d1baed846c3bdc1f5d2af6f7b557fbf4803c913",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev50.249b7e03d684.png",
+          "bytes": 2676,
+          "sha256": "249b7e03d684161c0133abd0664d9b3254db217c35cdef8dfce3939de5c5a90d",
+          "actualSha256": "249b7e03d684161c0133abd0664d9b3254db217c35cdef8dfce3939de5c5a90d",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev60.f8ae80fe2834.png",
+          "bytes": 3247,
+          "sha256": "f8ae80fe2834f24c190f2c64a86db83a34b3a84e825a8a217588db76bca7b824",
+          "actualSha256": "f8ae80fe2834f24c190f2c64a86db83a34b3a84e825a8a217588db76bca7b824",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+00-elev70.bc8a09389601.png",
+          "bytes": 3106,
+          "sha256": "bc8a0938960182d6891a40d4f427c5e20894506721b55a1800a922a9eebf85ea",
+          "actualSha256": "bc8a0938960182d6891a40d4f427c5e20894506721b55a1800a922a9eebf85ea",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev20.f84dd7559351.png",
+          "bytes": 5234,
+          "sha256": "f84dd755935129e75e3fdc358eea55cb15b7ae4bda223298d5cf9f231d5a0bd5",
+          "actualSha256": "f84dd755935129e75e3fdc358eea55cb15b7ae4bda223298d5cf9f231d5a0bd5",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev30.7e13b74a2ae6.png",
+          "bytes": 6388,
+          "sha256": "7e13b74a2ae6b8274231755eb4806f230e677535dc037363a60984081b7a19f9",
+          "actualSha256": "7e13b74a2ae6b8274231755eb4806f230e677535dc037363a60984081b7a19f9",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev40.d897abb62c60.png",
+          "bytes": 6394,
+          "sha256": "d897abb62c6016564105b476c4c69db2b6d159da8e409f32ee84e7c238098960",
+          "actualSha256": "d897abb62c6016564105b476c4c69db2b6d159da8e409f32ee84e7c238098960",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev50.fb7405ecbae5.png",
+          "bytes": 6241,
+          "sha256": "fb7405ecbae5c600984ec5b08027cb355c570dff87515bb297a73838b8b42427",
+          "actualSha256": "fb7405ecbae5c600984ec5b08027cb355c570dff87515bb297a73838b8b42427",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev60.b6b599db6486.png",
+          "bytes": 4571,
+          "sha256": "b6b599db6486f3161cddc53bc49d0665a5564249e93fc31772127cc2e15bda94",
+          "actualSha256": "b6b599db6486f3161cddc53bc49d0665a5564249e93fc31772127cc2e15bda94",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev70.7b4c036e749d.png",
+          "bytes": 6545,
+          "sha256": "7b4c036e749d51c88c817eed5002ccb78c13f1826b6aeb932136bc2af3b5daee",
+          "actualSha256": "7b4c036e749d51c88c817eed5002ccb78c13f1826b6aeb932136bc2af3b5daee",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev20.beaf52aa1331.png",
+          "bytes": 6273,
+          "sha256": "beaf52aa133122aca70631714a539de0082b32ddde5b87508b9aac83785fbf43",
+          "actualSha256": "beaf52aa133122aca70631714a539de0082b32ddde5b87508b9aac83785fbf43",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev30.9305aef2dee3.png",
+          "bytes": 6191,
+          "sha256": "9305aef2dee3259fd6160800ab7273d1f3ff30e019d6000e12b887f7545f29f1",
+          "actualSha256": "9305aef2dee3259fd6160800ab7273d1f3ff30e019d6000e12b887f7545f29f1",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev40.c3368a96d41a.png",
+          "bytes": 6640,
+          "sha256": "c3368a96d41acf35b14fbecf116d4273339ab012d262af48a5a5c332706f9443",
+          "actualSha256": "c3368a96d41acf35b14fbecf116d4273339ab012d262af48a5a5c332706f9443",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev50.23c241a5be50.png",
+          "bytes": 6378,
+          "sha256": "23c241a5be50e95d4b6b14a5a2417277a667d7a9563e17560430275b80f5e57a",
+          "actualSha256": "23c241a5be50e95d4b6b14a5a2417277a667d7a9563e17560430275b80f5e57a",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev60.c75afaa9335b.png",
+          "bytes": 4673,
+          "sha256": "c75afaa9335b1af095790e0dbe0952e0891e9f398c738c0c0cc628d119b2d6e2",
+          "actualSha256": "c75afaa9335b1af095790e0dbe0952e0891e9f398c738c0c0cc628d119b2d6e2",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+60-elev70.b5b6a804c756.png",
+          "bytes": 6828,
+          "sha256": "b5b6a804c756e3909fe411a3ea9d03e7e549c7eb0d65916a00c8fc2e17dc8717",
+          "actualSha256": "b5b6a804c756e3909fe411a3ea9d03e7e549c7eb0d65916a00c8fc2e17dc8717",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev20.b5ae04afcb99.png",
+          "bytes": 3235,
+          "sha256": "b5ae04afcb992489347944d270a18613f8adaf81e8b4f5319b4114c52ecf73f8",
+          "actualSha256": "b5ae04afcb992489347944d270a18613f8adaf81e8b4f5319b4114c52ecf73f8",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev30.9eeb59b131fa.png",
+          "bytes": 3209,
+          "sha256": "9eeb59b131fa59ee1f169df8b980a816deb1acb3cdaa3424154e9908e6ea5816",
+          "actualSha256": "9eeb59b131fa59ee1f169df8b980a816deb1acb3cdaa3424154e9908e6ea5816",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev40.357e48784e77.png",
+          "bytes": 3476,
+          "sha256": "357e48784e77dcd7fa89997b640c68c72998a9d27b840bbd945cc556292bbf68",
+          "actualSha256": "357e48784e77dcd7fa89997b640c68c72998a9d27b840bbd945cc556292bbf68",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev50.54f99026e336.png",
+          "bytes": 3422,
+          "sha256": "54f99026e336e5206ec9aa70d36b46d0622a7dbf81ef16d8df897c4f19283ba3",
+          "actualSha256": "54f99026e336e5206ec9aa70d36b46d0622a7dbf81ef16d8df897c4f19283ba3",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev60.bd64d7cf07b1.png",
+          "bytes": 3453,
+          "sha256": "bd64d7cf07b18b55447e3d013a0ccbd7e7de28c948b6414322dd75e36393ed76",
+          "actualSha256": "bd64d7cf07b18b55447e3d013a0ccbd7e7de28c948b6414322dd75e36393ed76",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+90-elev70.a4a9c42fdbb9.png",
+          "bytes": 3377,
+          "sha256": "a4a9c42fdbb97132e06a8648e8de2da731cf774d3012e74c440ca87f986fa692",
+          "actualSha256": "a4a9c42fdbb97132e06a8648e8de2da731cf774d3012e74c440ca87f986fa692",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev20.c0caf4f3ecd7.png",
+          "bytes": 6046,
+          "sha256": "c0caf4f3ecd74e1d94bed9e2817b038e2bbf3f3d3bb5fccec17da6d213b98b02",
+          "actualSha256": "c0caf4f3ecd74e1d94bed9e2817b038e2bbf3f3d3bb5fccec17da6d213b98b02",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev30.03195595157e.png",
+          "bytes": 6481,
+          "sha256": "03195595157e900e5c57238eaf7199ae0098032b558056360c9287a8f6ca19ac",
+          "actualSha256": "03195595157e900e5c57238eaf7199ae0098032b558056360c9287a8f6ca19ac",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev40.d811d1d3d2af.png",
+          "bytes": 6888,
+          "sha256": "d811d1d3d2af4cffed28b46b418549090e0ea02eeedf715c7d4aa509c69ed488",
+          "actualSha256": "d811d1d3d2af4cffed28b46b418549090e0ea02eeedf715c7d4aa509c69ed488",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev50.9d5c2e654661.png",
+          "bytes": 6249,
+          "sha256": "9d5c2e654661cdfb298842fa53890757d52ba0aa4513ca24c759404fad61205e",
+          "actualSha256": "9d5c2e654661cdfb298842fa53890757d52ba0aa4513ca24c759404fad61205e",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev60.db06e7a53dfa.png",
+          "bytes": 4801,
+          "sha256": "db06e7a53dfa58f1dece51cec4ecc152019512ca02f17d3eb349ef21931944de",
+          "actualSha256": "db06e7a53dfa58f1dece51cec4ecc152019512ca02f17d3eb349ef21931944de",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+120-elev70.340a614d551f.png",
+          "bytes": 7000,
+          "sha256": "340a614d551f4fbf51b5a29b03589bf5937e668fee1e33c09743a55f05cc7cf7",
+          "actualSha256": "340a614d551f4fbf51b5a29b03589bf5937e668fee1e33c09743a55f05cc7cf7",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev20.4a9d55868b2c.png",
+          "bytes": 6574,
+          "sha256": "4a9d55868b2cd6a805296702e87bb05849903008ebb43b99c14d107bc29c5fb2",
+          "actualSha256": "4a9d55868b2cd6a805296702e87bb05849903008ebb43b99c14d107bc29c5fb2",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev30.d2acc94da20a.png",
+          "bytes": 6797,
+          "sha256": "d2acc94da20ae382bf9765a2b89085a4374d0906ce99417c719d5a8c87ae4ebd",
+          "actualSha256": "d2acc94da20ae382bf9765a2b89085a4374d0906ce99417c719d5a8c87ae4ebd",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev40.44cc91f253eb.png",
+          "bytes": 7101,
+          "sha256": "44cc91f253eb4b2f1bd84eeecb6b5ffd0d950775babea81b507bd340e866e239",
+          "actualSha256": "44cc91f253eb4b2f1bd84eeecb6b5ffd0d950775babea81b507bd340e866e239",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev50.10f2984e9784.png",
+          "bytes": 6833,
+          "sha256": "10f2984e97843a3b05e9df29a6807860d5cd7d11efeffd870c816383be756d92",
+          "actualSha256": "10f2984e97843a3b05e9df29a6807860d5cd7d11efeffd870c816383be756d92",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev60.e17e3399a7cc.png",
+          "bytes": 4982,
+          "sha256": "e17e3399a7ccacf9ddc21adf163e50c03905fed08325cbdc432c408942792dc4",
+          "actualSha256": "e17e3399a7ccacf9ddc21adf163e50c03905fed08325cbdc432c408942792dc4",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+150-elev70.d74278891520.png",
+          "bytes": 6830,
+          "sha256": "d7427889152033d15aeaf692ea59645354d61be421aff7341702ce5b9b6014f5",
+          "actualSha256": "d7427889152033d15aeaf692ea59645354d61be421aff7341702ce5b9b6014f5",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev20.2bc7e40c2ef5.png",
+          "bytes": 3337,
+          "sha256": "2bc7e40c2ef5836700ee4db3d89917870fe27b2daedf9d21d740191ab8ac428c",
+          "actualSha256": "2bc7e40c2ef5836700ee4db3d89917870fe27b2daedf9d21d740191ab8ac428c",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev30.76796b5db1bf.png",
+          "bytes": 3582,
+          "sha256": "76796b5db1bfcc752c7f2c08651d94e32802a84173e6a6b5cf6c3af04ac05796",
+          "actualSha256": "76796b5db1bfcc752c7f2c08651d94e32802a84173e6a6b5cf6c3af04ac05796",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev40.24afe104d134.png",
+          "bytes": 3601,
+          "sha256": "24afe104d134848fdbdb2371402d0a2075167cd8211c6dd386b7327c1e5c2343",
+          "actualSha256": "24afe104d134848fdbdb2371402d0a2075167cd8211c6dd386b7327c1e5c2343",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev50.4974c267743a.png",
+          "bytes": 3471,
+          "sha256": "4974c267743a71a0fc119af4e9d7620de736c8fa11991061d0fa3a49e6bfbb8c",
+          "actualSha256": "4974c267743a71a0fc119af4e9d7620de736c8fa11991061d0fa3a49e6bfbb8c",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev60.7ab0ae41bdaf.png",
+          "bytes": 3654,
+          "sha256": "7ab0ae41bdaf4db8081599ad0c708df7c4ce3d71a115fbb0c3b5ca09109b84ef",
+          "actualSha256": "7ab0ae41bdaf4db8081599ad0c708df7c4ce3d71a115fbb0c3b5ca09109b84ef",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+180-elev70.6457b37301b2.png",
+          "bytes": 3440,
+          "sha256": "6457b37301b289c6a5d009e3150a9022c06af136ef90de330687bbfb58459104",
+          "actualSha256": "6457b37301b289c6a5d009e3150a9022c06af136ef90de330687bbfb58459104",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev20.61c116450bf4.png",
+          "bytes": 6124,
+          "sha256": "61c116450bf474ce16e113e13821c057435714a96c0b58a4dce9907671f19c74",
+          "actualSha256": "61c116450bf474ce16e113e13821c057435714a96c0b58a4dce9907671f19c74",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev30.898de0c1dc81.png",
+          "bytes": 7349,
+          "sha256": "898de0c1dc8166dd3d37bb327b1b0df2d1f3da5a2757da51773ae040577d733e",
+          "actualSha256": "898de0c1dc8166dd3d37bb327b1b0df2d1f3da5a2757da51773ae040577d733e",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev40.8eee1733c8fc.png",
+          "bytes": 7635,
+          "sha256": "8eee1733c8fc010fe0712b8baa40ebdf8d3595f463471fe3921432e8671dc9ed",
+          "actualSha256": "8eee1733c8fc010fe0712b8baa40ebdf8d3595f463471fe3921432e8671dc9ed",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev50.5eb4c6a0b79a.png",
+          "bytes": 6932,
+          "sha256": "5eb4c6a0b79a006d247e7c995c53dfd0ad1574d00c93cdbf837adc890bcab847",
+          "actualSha256": "5eb4c6a0b79a006d247e7c995c53dfd0ad1574d00c93cdbf837adc890bcab847",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev60.3609f405c846.png",
+          "bytes": 5085,
+          "sha256": "3609f405c846fc8e3d75ef51e189402610de5617d39e6f90f3f7667de2a783cc",
+          "actualSha256": "3609f405c846fc8e3d75ef51e189402610de5617d39e6f90f3f7667de2a783cc",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+210-elev70.7a7851fd4e52.png",
+          "bytes": 6870,
+          "sha256": "7a7851fd4e52fb0a295e8346636eef2e3463c8f4d8763c83742150d36c96bdb9",
+          "actualSha256": "7a7851fd4e52fb0a295e8346636eef2e3463c8f4d8763c83742150d36c96bdb9",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev20.d9974053a695.png",
+          "bytes": 6511,
+          "sha256": "d9974053a695fe422068d005e6527b396db75a4441e22505877b5cb08d91e14d",
+          "actualSha256": "d9974053a695fe422068d005e6527b396db75a4441e22505877b5cb08d91e14d",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev30.f02065cb30ab.png",
+          "bytes": 6842,
+          "sha256": "f02065cb30abd0f5a38c93dc68ad0bb40ac69391abe0f5c4108d5bcd067b5aac",
+          "actualSha256": "f02065cb30abd0f5a38c93dc68ad0bb40ac69391abe0f5c4108d5bcd067b5aac",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev40.f2672d54949d.png",
+          "bytes": 6807,
+          "sha256": "f2672d54949dda07d760fed4e56ae8249d703ca5d4a36159c10f8afb66d15108",
+          "actualSha256": "f2672d54949dda07d760fed4e56ae8249d703ca5d4a36159c10f8afb66d15108",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev50.a61e7ba4a1a9.png",
+          "bytes": 6534,
+          "sha256": "a61e7ba4a1a9e98df29986e87df4d5242b8d362fb5ff604044a27b40069fb307",
+          "actualSha256": "a61e7ba4a1a9e98df29986e87df4d5242b8d362fb5ff604044a27b40069fb307",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev60.ff1944868242.png",
+          "bytes": 4697,
+          "sha256": "ff194486824242732842152e9af7b9edd4f36f3b0156ba0ef2cd997224fc4884",
+          "actualSha256": "ff194486824242732842152e9af7b9edd4f36f3b0156ba0ef2cd997224fc4884",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+240-elev70.e07fc11ddae9.png",
+          "bytes": 6954,
+          "sha256": "e07fc11ddae9cbe108e2b0ee45d6c9ab0e8bd70f112398967ca3d73558eaec39",
+          "actualSha256": "e07fc11ddae9cbe108e2b0ee45d6c9ab0e8bd70f112398967ca3d73558eaec39",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev20.7109e5683d31.png",
+          "bytes": 2995,
+          "sha256": "7109e5683d31f7f3af5956065ccb0d9c738e143205cc3ddceb6d74b79d385411",
+          "actualSha256": "7109e5683d31f7f3af5956065ccb0d9c738e143205cc3ddceb6d74b79d385411",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev30.ec5ad3d8713d.png",
+          "bytes": 2883,
+          "sha256": "ec5ad3d8713db54105743d4428ff2059b304a8901c261b70d71bdc854ecb4e62",
+          "actualSha256": "ec5ad3d8713db54105743d4428ff2059b304a8901c261b70d71bdc854ecb4e62",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev40.9f51f170d303.png",
+          "bytes": 3222,
+          "sha256": "9f51f170d3039897b034289ecdc0081344f72fff1adcaecf5975466ec305c9fc",
+          "actualSha256": "9f51f170d3039897b034289ecdc0081344f72fff1adcaecf5975466ec305c9fc",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev50.08d507bcd80e.png",
+          "bytes": 3226,
+          "sha256": "08d507bcd80e516f604fea9ac24758d92360667e0447948e520899cbc64dacb9",
+          "actualSha256": "08d507bcd80e516f604fea9ac24758d92360667e0447948e520899cbc64dacb9",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev60.f588cd6475ad.png",
+          "bytes": 3414,
+          "sha256": "f588cd6475ada7245090528baca713f99cdb268b1417fdb51c35d77b6c5eac9f",
+          "actualSha256": "f588cd6475ada7245090528baca713f99cdb268b1417fdb51c35d77b6c5eac9f",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+270-elev70.64f5fc2fdd38.png",
+          "bytes": 3322,
+          "sha256": "64f5fc2fdd38177f1c5d7d9d06419fbdb32c0cf143481489d223be22532c6c3b",
+          "actualSha256": "64f5fc2fdd38177f1c5d7d9d06419fbdb32c0cf143481489d223be22532c6c3b",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev20.da3deb66e835.png",
+          "bytes": 5194,
+          "sha256": "da3deb66e8352b98dc66b693b1084dad99043828782ef2d6e17392bfa9aaab69",
+          "actualSha256": "da3deb66e8352b98dc66b693b1084dad99043828782ef2d6e17392bfa9aaab69",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev30.1242665b8df9.png",
+          "bytes": 6089,
+          "sha256": "1242665b8df992fc6dd924212c76dcd24a76e9adc2f9a9588360f0a5573f5843",
+          "actualSha256": "1242665b8df992fc6dd924212c76dcd24a76e9adc2f9a9588360f0a5573f5843",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev40.4b149587d26e.png",
+          "bytes": 6829,
+          "sha256": "4b149587d26e459fdd9c90c17ff890c189081e0be9803f19be7f46b3a5cdab0f",
+          "actualSha256": "4b149587d26e459fdd9c90c17ff890c189081e0be9803f19be7f46b3a5cdab0f",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev50.d0725f1d54c2.png",
+          "bytes": 6187,
+          "sha256": "d0725f1d54c2a0e329e3b8b2b845fd1c5add496c357ef8bea37ae1b2e58b349e",
+          "actualSha256": "d0725f1d54c2a0e329e3b8b2b845fd1c5add496c357ef8bea37ae1b2e58b349e",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev60.5d0c69582cd2.png",
+          "bytes": 4650,
+          "sha256": "5d0c69582cd28ab060fb712546edcaf683413471febdeb93dd00b1e6de496d35",
+          "actualSha256": "5d0c69582cd28ab060fb712546edcaf683413471febdeb93dd00b1e6de496d35",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev70.6dda9a43b3f5.png",
+          "bytes": 6739,
+          "sha256": "6dda9a43b3f52949d4da18e72ad3d3094e709b197bc657d074e12d86679ae04b",
+          "actualSha256": "6dda9a43b3f52949d4da18e72ad3d3094e709b197bc657d074e12d86679ae04b",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev20.814f31224734.png",
+          "bytes": 5466,
+          "sha256": "814f31224734c2b102b52d31341bbb76f628997ed4b4519982089fcccf9ec24d",
+          "actualSha256": "814f31224734c2b102b52d31341bbb76f628997ed4b4519982089fcccf9ec24d",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev30.0c7028f29af2.png",
+          "bytes": 5700,
+          "sha256": "0c7028f29af28c7353f1e489983ffbb15dee2661157cbdd6c99b728d2605075c",
+          "actualSha256": "0c7028f29af28c7353f1e489983ffbb15dee2661157cbdd6c99b728d2605075c",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev40.655aa5c1f32c.png",
+          "bytes": 5783,
+          "sha256": "655aa5c1f32ccdf14f2a46ef5069936b34ce79fa50215cdf3af6a5de0a6b8163",
+          "actualSha256": "655aa5c1f32ccdf14f2a46ef5069936b34ce79fa50215cdf3af6a5de0a6b8163",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev50.06b2b41f2b95.png",
+          "bytes": 6296,
+          "sha256": "06b2b41f2b951023e1aa91d5a185f13a8fbaae89dff54c3c7685d759f494ff65",
+          "actualSha256": "06b2b41f2b951023e1aa91d5a185f13a8fbaae89dff54c3c7685d759f494ff65",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev60.f401565e0802.png",
+          "bytes": 4530,
+          "sha256": "f401565e0802c09423831ac103448ad96ae14052dd360bf1c97360ca1dd48711",
+          "actualSha256": "f401565e0802c09423831ac103448ad96ae14052dd360bf1c97360ca1dd48711",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "public/assets/environment/oblique/furniture.office.desk.generic-yaw+330-elev70.3a0c9c377f0b.png",
+          "bytes": 6692,
+          "sha256": "3a0c9c377f0b5424294e8f5e5ebcca552318ea40d193fee78d1f92135825d9b8",
+          "actualSha256": "3a0c9c377f0b5424294e8f5e5ebcca552318ea40d193fee78d1f92135825d9b8",
+          "directBytesEqualBaseline": true
+        },
+        {
+          "path": "dist/client/assets/worker-BFatYFme.js",
+          "bytes": 436941,
+          "sha256": "91b05a3aa36520578758b2f3a5a3b5f4f336d33c5b98de13e726f5cd86c03a48",
+          "actualSha256": "91b05a3aa36520578758b2f3a5a3b5f4f336d33c5b98de13e726f5cd86c03a48",
+          "directBytesEqualBaseline": true
+        }
+      ]
+    }
+  },
+  "images": [
+    {
+      "path": "native-q0-loaded-fullhd.png",
+      "bytes": 1479398,
+      "sha256": "d5362a7d416ad16758f6759d4178c0d3a1fe1d97fe2b3feb4526367d83a37f44"
+    },
+    {
+      "path": "native-q0-worker-completed-fullhd.png",
+      "bytes": 1513235,
+      "sha256": "99672871592beb8da0d40ee479d25bbc1cf8aa149101752f7d6b51061ec20a74"
+    },
+    {
+      "path": "native-q0-hardware-loaded-fullhd.png",
+      "bytes": 1475740,
+      "sha256": "6972e623b12d0933029d0d164ba88c3b23807ef38564ad863673039aa1d85ad7"
+    },
+    {
+      "path": "native-q1-loaded-fullhd.png",
+      "bytes": 1477763,
+      "sha256": "6ac21ee8a63c6859550e2bf5d29e3d305fbbd0942485b68372b25abde1c2fbb9"
+    },
+    {
+      "path": "native-q1-worker-completed-fullhd.png",
+      "bytes": 1511536,
+      "sha256": "49fdd2aed27595bf0c4f6dd640c0a61e246744984c510989d02ca95df2771918"
+    },
+    {
+      "path": "native-q1-hardware-loaded-fullhd.png",
+      "bytes": 1494887,
+      "sha256": "744239fcd356411ac5edcf39df9f5a8e74a73c718f84e925909d95e0e26770e2"
+    }
+  ],
+  "acceptanceBoundary": "new-source art consumer +live/completed sourceOrder provenance and full snapshot data Load equality; older worldversion1 has no physical owner planes, so no integrated V8 physical plane ownership or hosted claim",
+  "visualInspection": "Four final primary FullHDs and two hardware view FullHDs inspected. Separate keys visible in both orientations; actual opposite-side q1 shows three raised teal drawer pulls. Palette guards do not individually count every tiny new geometry component."
+}

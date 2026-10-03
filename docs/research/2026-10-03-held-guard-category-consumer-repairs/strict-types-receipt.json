@@ -1,0 +1,4 @@
+{
+  "command": "node node_modules/typescript/bin/tsc -p tsconfig.json --pretty false",
+  "exitCode": 0
+}

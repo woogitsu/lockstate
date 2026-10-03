@@ -1,0 +1,339 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-common-room-connectivity-integration-20261003\\assets\\intermediate\\small-prison-showcase\\playwright.showcase.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-small-prison-canonical-frames-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/native-small-prison-showcase\\.recipe\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5184 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-common-room-connectivity-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5184/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "native-small-prison-showcase.recipe.ts",
+      "file": "native-small-prison-showcase.recipe.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "01 public Storage Room and Delivery Bay capacity",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43814,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T11:16:46.831Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "84d74af1ac1268b18b1c-4a3d86bab426146203d6",
+          "file": "native-small-prison-showcase.recipe.ts",
+          "line": 166,
+          "column": 3
+        },
+        {
+          "title": "02 horizontal four-cell wing and two-tile corridor",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [
+                {
+                  "type": "slow",
+                  "location": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-common-room-connectivity-integration-20261003\\tests\\browser\\native-small-prison-showcase.recipe.ts",
+                    "line": 104,
+                    "column": 27
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 63587,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T11:17:30.710Z",
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-common-room-connectivity-integration-20261003\\tests\\browser\\native-small-prison-showcase.recipe.ts",
+                        "line": 104,
+                        "column": 27
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "84d74af1ac1268b18b1c-a74597a6f64d33b5befa",
+          "file": "native-small-prison-showcase.recipe.ts",
+          "line": 166,
+          "column": 3
+        },
+        {
+          "title": "03 completed Kitchen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 39056,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T11:18:34.305Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "84d74af1ac1268b18b1c-5b2697a6c47c847e9e78",
+          "file": "native-small-prison-showcase.recipe.ts",
+          "line": 166,
+          "column": 3
+        },
+        {
+          "title": "04 completed Shower room",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 37048,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T11:19:13.368Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "84d74af1ac1268b18b1c-789763b883e8b964362b",
+          "file": "native-small-prison-showcase.recipe.ts",
+          "line": 166,
+          "column": 3
+        },
+        {
+          "title": "05 completed Canteen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 53855,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T11:19:50.423Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "84d74af1ac1268b18b1c-ce50614e96f00d909fe8",
+          "file": "native-small-prison-showcase.recipe.ts",
+          "line": 166,
+          "column": 3
+        },
+        {
+          "title": "06 completed outdoor Yard",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 26354,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T11:20:44.285Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "84d74af1ac1268b18b1c-d8b18d9a4a771b7fffd7",
+          "file": "native-small-prison-showcase.recipe.ts",
+          "line": 166,
+          "column": 3
+        },
+        {
+          "title": "07 same completed prison at three public camera poses and whole paused Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 25118,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T11:21:10.647Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "84d74af1ac1268b18b1c-95a58a69dbf05ee734e6",
+          "file": "native-small-prison-showcase.recipe.ts",
+          "line": 231,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T11:16:44.676Z",
+    "duration": 291539.85500000004,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

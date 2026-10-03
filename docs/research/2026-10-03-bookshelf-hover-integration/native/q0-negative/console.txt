@@ -1,0 +1,343 @@
+node : [2m[WebServer] [22m(node:15772) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:46 char:2
++  node --experimental-transform-types --disable-warning=ExperimentalWa ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 10 tests using 1 worker
+
+(node:24484) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:24484) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\browser\bookshelf-player-build.spec.ts:159:1 › player creates storage and delivery capacity before Classroom (43.4s)
+  x   2 tests\browser\bookshelf-player-build.spec.ts:222:3 › player builds the bookshelf in Classroom at quarterTurns0 and keeps it after Save/Load (46.1s)
+(node:26596) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:26596) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   3 tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI100% world replacement keeps stationary rotated plan after old worker reply (16.0s)
+(node:26372) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:26372) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   4 tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI100% world replacement keeps stationary rotated/mirrored plan after old worker reply (16.2s)
+(node:22352) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22352) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   5 tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI100% oblique replacement keeps stationary rotated plan after old worker reply (15.3s)
+(node:23236) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:23236) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   6 tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI100% oblique replacement keeps stationary rotated/mirrored plan after old worker reply (15.5s)
+(node:55852) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55852) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   7 tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI200% world replacement keeps stationary rotated plan after old worker reply (15.9s)
+(node:38804) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:38804) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   8 tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI200% world replacement keeps stationary rotated/mirrored plan after old worker reply (16.2s)
+(node:33680) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:33680) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x   9 tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI200% oblique replacement keeps stationary rotated plan after old worker reply (14.7s)
+(node:29724) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29724) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  10 tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI200% oblique replacement keeps stationary rotated/mirrored plan after old worker reply (15.1s)
+
+
+  1) tests\browser\bookshelf-player-build.spec.ts:222:3 › player builds the bookshelf in Classroom at quarterTurns0 and keeps it after Save/Load 
+
+    Error: authored book spines after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      170 |   assertOwnedObjectOrders(completedData, 'object.bookshelf', 'bookshelf-wooden', owned);
+      171 |   const beforePixels = await authoredBookPixels(page, completed, quarterTurns);
+    > 172 |   expect.soft(beforePixels, 'authored book spines after construction').toBeGreaterThan(100);
+          |                                                                        ^
+      173 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      174 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      175 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bookshelf-hover-integration-20261003\tests\browser\bookshelf-player-build.spec.ts:172:72
+
+    Error: authored book spines after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      184 |   expect(loadedData).toEqual(completedData);
+      185 |   const afterPixels = await authoredBookPixels(page, loaded, quarterTurns);
+    > 186 |   expect.soft(afterPixels, 'authored book spines after Load').toBeGreaterThan(100);
+          |                                                               ^
+      187 |   expect(afterPixels).toBe(beforePixels);
+      188 |   await writeFile(info.outputPath('bookshelf-worker-and-save-evidence.json'), JSON.stringify({ quarterTurns, owned, beforePixels, afterPixels,
+      189 |     commands: (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate') }, null, 2));
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bookshelf-hover-integration-20261003\tests\browser\bookshelf-player-build.spec.ts:186:63
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\error-context.md
+
+  2) tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI100% world replacement keeps stationary rotated plan after old worker reply 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('.room-template-world-ghost')
+    Expected: visible
+    Received: hidden
+    Timeout:  10000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('.room-template-world-ghost')[22m
+    [2m    13 × locator resolved to <div hidden="" class="room-template-world-ghost">…</div>[22m
+    [2m       - unexpected value "hidden"[22m
+
+
+      100 |     // The app must independently pick and inspect this still-armed plan in the
+      101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.
+    > 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');
+          |                         ^
+      103 |     await expect(ghost.locator('polygon')).toHaveCount(28);
+      104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');
+      105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bookshelf-hover-integration-20261003\tests\browser\room-template-renderer-stationary-hover.spec.ts:102:25
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\room-template-renderer-sta-77a54-plan-after-old-worker-reply\error-context.md
+
+  3) tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI100% world replacement keeps stationary rotated/mirrored plan after old worker reply 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('.room-template-world-ghost')
+    Expected: visible
+    Received: hidden
+    Timeout:  10000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('.room-template-world-ghost')[22m
+    [2m    13 × locator resolved to <div hidden="" class="room-template-world-ghost">…</div>[22m
+    [2m       - unexpected value "hidden"[22m
+
+
+      100 |     // The app must independently pick and inspect this still-armed plan in the
+      101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.
+    > 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');
+          |                         ^
+      103 |     await expect(ghost.locator('polygon')).toHaveCount(28);
+      104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');
+      105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bookshelf-hover-integration-20261003\tests\browser\room-template-renderer-stationary-hover.spec.ts:102:25
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\room-template-renderer-sta-6d37d-plan-after-old-worker-reply\error-context.md
+
+  4) tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI100% oblique replacement keeps stationary rotated plan after old worker reply 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('.room-template-world-ghost')
+    Expected: visible
+    Received: hidden
+    Timeout:  10000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('.room-template-world-ghost')[22m
+    [2m    13 × locator resolved to <div hidden="" class="room-template-world-ghost">…</div>[22m
+    [2m       - unexpected value "hidden"[22m
+
+
+      100 |     // The app must independently pick and inspect this still-armed plan in the
+      101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.
+    > 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');
+          |                         ^
+      103 |     await expect(ghost.locator('polygon')).toHaveCount(28);
+      104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');
+      105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bookshelf-hover-integration-20261003\tests\browser\room-template-renderer-stationary-hover.spec.ts:102:25
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\room-template-renderer-sta-67f41-plan-after-old-worker-reply\error-context.md
+
+  5) tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI100% oblique replacement keeps stationary rotated/mirrored plan after old worker reply 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('.room-template-world-ghost')
+    Expected: visible
+    Received: hidden
+    Timeout:  10000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('.room-template-world-ghost')[22m
+    [2m    13 × locator resolved to <div hidden="" class="room-template-world-ghost">…</div>[22m
+    [2m       - unexpected value "hidden"[22m
+
+
+      100 |     // The app must independently pick and inspect this still-armed plan in the
+      101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.
+    > 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');
+          |                         ^
+      103 |     await expect(ghost.locator('polygon')).toHaveCount(28);
+      104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');
+      105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bookshelf-hover-integration-20261003\tests\browser\room-template-renderer-stationary-hover.spec.ts:102:25
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\room-template-renderer-sta-04dc9-plan-after-old-worker-reply\error-context.md
+
+  6) tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI200% world replacement keeps stationary rotated plan after old worker reply 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('.room-template-world-ghost')
+    Expected: visible
+    Received: hidden
+    Timeout:  10000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('.room-template-world-ghost')[22m
+    [2m    13 × locator resolved to <div hidden="" class="room-template-world-ghost">…</div>[22m
+    [2m       - unexpected value "hidden"[22m
+
+
+      100 |     // The app must independently pick and inspect this still-armed plan in the
+      101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.
+    > 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');
+          |                         ^
+      103 |     await expect(ghost.locator('polygon')).toHaveCount(28);
+      104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');
+      105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bookshelf-hover-integration-20261003\tests\browser\room-template-renderer-stationary-hover.spec.ts:102:25
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\room-template-renderer-sta-b779b-plan-after-old-worker-reply\error-context.md
+
+  7) tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI200% world replacement keeps stationary rotated/mirrored plan after old worker reply 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('.room-template-world-ghost')
+    Expected: visible
+    Received: hidden
+    Timeout:  10000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('.room-template-world-ghost')[22m
+    [2m    13 × locator resolved to <div hidden="" class="room-template-world-ghost">…</div>[22m
+    [2m       - unexpected value "hidden"[22m
+
+
+      100 |     // The app must independently pick and inspect this still-armed plan in the
+      101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.
+    > 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');
+          |                         ^
+      103 |     await expect(ghost.locator('polygon')).toHaveCount(28);
+      104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');
+      105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bookshelf-hover-integration-20261003\tests\browser\room-template-renderer-stationary-hover.spec.ts:102:25
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\room-template-renderer-sta-53bea-plan-after-old-worker-reply\error-context.md
+
+  8) tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI200% oblique replacement keeps stationary rotated plan after old worker reply 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('.room-template-world-ghost')
+    Expected: visible
+    Received: hidden
+    Timeout:  10000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('.room-template-world-ghost')[22m
+    [2m    13 × locator resolved to <div hidden="" class="room-template-world-ghost">…</div>[22m
+    [2m       - unexpected value "hidden"[22m
+
+
+      100 |     // The app must independently pick and inspect this still-armed plan in the
+      101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.
+    > 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');
+          |                         ^
+      103 |     await expect(ghost.locator('polygon')).toHaveCount(28);
+      104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');
+      105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bookshelf-hover-integration-20261003\tests\browser\room-template-renderer-stationary-hover.spec.ts:102:25
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\room-template-renderer-sta-db3df-plan-after-old-worker-reply\error-context.md
+
+  9) tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI200% oblique replacement keeps stationary rotated/mirrored plan after old worker reply 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('.room-template-world-ghost')
+    Expected: visible
+    Received: hidden
+    Timeout:  10000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 10000ms[22m
+    [2m  - waiting for locator('.room-template-world-ghost')[22m
+    [2m    13 × locator resolved to <div hidden="" class="room-template-world-ghost">…</div>[22m
+    [2m       - unexpected value "hidden"[22m
+
+
+      100 |     // The app must independently pick and inspect this still-armed plan in the
+      101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.
+    > 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');
+          |                         ^
+      103 |     await expect(ghost.locator('polygon')).toHaveCount(28);
+      104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');
+      105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bookshelf-hover-integration-20261003\tests\browser\room-template-renderer-stationary-hover.spec.ts:102:25
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\room-template-renderer-sta-35acb-plan-after-old-worker-reply\error-context.md
+
+  9 failed
+    tests\browser\bookshelf-player-build.spec.ts:222:3 › player builds the bookshelf in Classroom at quarterTurns0 and keeps it after Save/Load 
+    tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI100% world replacement keeps stationary rotated plan after old worker reply 
+    tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI100% world replacement keeps stationary rotated/mirrored plan after old worker reply 
+    tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI100% oblique replacement keeps stationary rotated plan after old worker reply 
+    tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI100% oblique replacement keeps stationary rotated/mirrored plan after old worker reply 
+    tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI200% world replacement keeps stationary rotated plan after old worker reply 
+    tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI200% world replacement keeps stationary rotated/mirrored plan after old worker reply 
+    tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI200% oblique replacement keeps stationary rotated plan after old worker reply 
+    tests\browser\room-template-renderer-stationary-hover.spec.ts:77:3 › FullHD UI200% oblique replacement keeps stationary rotated/mirrored plan after old worker reply 
+  1 passed (3.7m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+

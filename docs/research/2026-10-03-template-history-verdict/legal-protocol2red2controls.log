@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-history-verdict-audit-20261003
+
+stdout | tests/unit/ui-template-history-verdict.test.ts > world: stationary blocked ghost must refresh after actual public Undo removes completed template
+HISTORY_GHOST_STALE {"mode":"world","origin":{"x":11,"y":11},"command":[{"type":"Undo"}],"oldQueries":4,"afterPaintQueries":4,"actualVerdict":{"ok":true},"ghostReady":"blocked","afterOrders":[{"id":"room-template-000000000000-0-wall-000","state":"cancelled"},{"id":"room-template-000000000000-0-wall-001","state":"cancelled"},{"id":"room-template-000000000000-0-wall-002","state":"cancelled"},{"id":"room-template-000000000000-0-wall-003","state":"cancelled"},{"id":"room-template-000000000000-0-wall-004","state":"cancelled"},{"id":"room-template-000000000000-0-wall-005","state":"cancelled"},{"id":"room-template-000000000000-0-wall-006","state":"cancelled"},{"id":"room-template-000000000000-0-wall-007","state":"cancelled"},{"id":"room-template-000000000000-0-wall-008","state":"cancelled"},{"id":"room-template-000000000000-0-wall-009","state":"cancelled"},{"id":"room-template-000000000000-0-wall-010","state":"cancelled"},{"id":"room-template-000000000000-0-wall-011","state":"cancelled"},{"id":"room-template-000000000000-0-wall-012","state":"cancelled"},{"id":"room-template-000000000000-0-wall-013","state":"cancelled"},{"id":"room-template-000000000000-0-wall-014","state":"cancelled"},{"id":"room-template-000000000000-0-wall-015","state":"cancelled"},{"id":"room-template-000000000000-0-wall-016","state":"cancelled"},{"id":"room-template-000000000000-1-door-000","state":"cancelled"},{"id":"room-template-000000000000-2-object-000","state":"cancelled"},{"id":"room-template-000000000000-2-object-001","state":"cancelled"}],"afterObjects":[],"afterHistory":{"version":1,"pending":[],"undone":[{"templateId":"cell-basic","origin":{"x":11,"y":11},"mirrorX":false,"quarterTurns":1,"sequence":0}]}}
+
+stdout | tests/unit/ui-template-history-verdict.test.ts > oblique: stationary blocked ghost must refresh after actual public Undo removes completed template
+HISTORY_GHOST_STALE {"mode":"oblique","origin":{"x":10,"y":11},"command":[{"type":"Undo"}],"oldQueries":4,"afterPaintQueries":4,"actualVerdict":{"ok":true},"ghostReady":"blocked","afterOrders":[{"id":"room-template-000000000000-0-wall-000","state":"cancelled"},{"id":"room-template-000000000000-0-wall-001","state":"cancelled"},{"id":"room-template-000000000000-0-wall-002","state":"cancelled"},{"id":"room-template-000000000000-0-wall-003","state":"cancelled"},{"id":"room-template-000000000000-0-wall-004","state":"cancelled"},{"id":"room-template-000000000000-0-wall-005","state":"cancelled"},{"id":"room-template-000000000000-0-wall-006","state":"cancelled"},{"id":"room-template-000000000000-0-wall-007","state":"cancelled"},{"id":"room-template-000000000000-0-wall-008","state":"cancelled"},{"id":"room-template-000000000000-0-wall-009","state":"cancelled"},{"id":"room-template-000000000000-0-wall-010","state":"cancelled"},{"id":"room-template-000000000000-0-wall-011","state":"cancelled"},{"id":"room-template-000000000000-0-wall-012","state":"cancelled"},{"id":"room-template-000000000000-0-wall-013","state":"cancelled"},{"id":"room-template-000000000000-0-wall-014","state":"cancelled"},{"id":"room-template-000000000000-0-wall-015","state":"cancelled"},{"id":"room-template-000000000000-0-wall-016","state":"cancelled"},{"id":"room-template-000000000000-1-door-000","state":"cancelled"},{"id":"room-template-000000000000-2-object-000","state":"cancelled"},{"id":"room-template-000000000000-2-object-001","state":"cancelled"}],"afterObjects":[],"afterHistory":{"version":1,"pending":[],"undone":[{"templateId":"cell-basic","origin":{"x":10,"y":11},"mirrorX":false,"quarterTurns":1,"sequence":0}]}}
+
+ ❯ tests/unit/ui-template-history-verdict.test.ts (4 tests | 2 failed) 278ms
+   × world: stationary blocked ghost must refresh after actual public Undo removes completed template 103ms
+   × oblique: stationary blocked ghost must refresh after actual public Undo removes completed template 53ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  07:40:38
+   Duration  3.58s (transform 1.19s, setup 0ms, import 3.18s, tests 278ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-history-verdict.test.ts > world: stationary blocked ghost must refresh after actual public Undo removes completed template
+ FAIL  tests/unit/ui-template-history-verdict.test.ts > oblique: stationary blocked ghost must refresh after actual public Undo removes completed template
+AssertionError: real current worker is clear after Undo, but cached ghost remains blocked; prior queries 4 current 5: expected 'blocked' to be 'clear' // Object.is equality
+
+Expected: "clear"
+Received: "blocked"
+
+ ❯ tests/unit/ui-template-history-verdict.test.ts:202:165
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+

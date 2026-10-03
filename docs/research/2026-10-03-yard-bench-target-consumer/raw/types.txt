@@ -1,0 +1,2 @@
+application tsc -b --pretty false exit=0
+tools tsc -b tsconfig.tools.json --pretty false exit=0

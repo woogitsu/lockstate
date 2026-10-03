@@ -1,0 +1,36 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-preflight-session-20261003
+
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts (9 tests | 1 failed) 155ms
+   × standing down a numeric unarmed request discards its actual late clear result 16ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)
+   Start at  06:01:54
+   Duration  3.54s (transform 1.37s, setup 0ms, import 3.17s, tests 155ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > standing down a numeric unarmed request discards its actual late clear result
+AssertionError: expected { ok: true } to deeply equal { ok: false, reason: 'busy' }
+
+- Expected
++ Received
+
+  {
+-   "ok": false,
+-   "reason": "busy",
++   "ok": true,
+  }
+
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:193:27
+    191|   h.tool.standDown(); h.clients[0]!.release();
+    192|   try {
+    193|     expect(await pending).toEqual({ ok: false, reason: 'busy' });
+       |                           ^
+    194|     expect(await h.host.capture()).toEqual(before);
+    195|     expect(h.clients[0]!.sent.filter(message => message.kind === 'simu…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

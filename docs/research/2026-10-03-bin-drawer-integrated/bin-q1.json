@@ -1,0 +1,146 @@
+{
+  "quarterTurns": 1,
+  "actualBefore": [
+    "object.waste-bin@22,6:orientation=1",
+    "object.waste-bin@22,7:orientation=1"
+  ],
+  "actualAfter": [
+    "object.waste-bin@22,6:orientation=1",
+    "object.waste-bin@22,7:orientation=1"
+  ],
+  "ownershipBefore": [
+    {
+      "objectId": "object.waste-bin",
+      "sourceOrderId": "room-template-000000000002-2-object-000",
+      "anchorTile": {
+        "x": 22,
+        "y": 6
+      },
+      "orientation": 1,
+      "order": {
+        "id": "room-template-000000000002-2-object-000",
+        "definitionId": "waste-bin-brick",
+        "location": {
+          "x": 22,
+          "y": 6
+        },
+        "objectOrientation": 1,
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 30,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 1
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      }
+    },
+    {
+      "objectId": "object.waste-bin",
+      "sourceOrderId": "room-template-000000000002-2-object-001",
+      "anchorTile": {
+        "x": 22,
+        "y": 7
+      },
+      "orientation": 1,
+      "order": {
+        "id": "room-template-000000000002-2-object-001",
+        "definitionId": "waste-bin-brick",
+        "location": {
+          "x": 22,
+          "y": 7
+        },
+        "objectOrientation": 1,
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 30,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 1
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      }
+    }
+  ],
+  "ownershipAfter": [
+    {
+      "objectId": "object.waste-bin",
+      "sourceOrderId": "room-template-000000000002-2-object-000",
+      "anchorTile": {
+        "x": 22,
+        "y": 6
+      },
+      "orientation": 1,
+      "order": {
+        "id": "room-template-000000000002-2-object-000",
+        "definitionId": "waste-bin-brick",
+        "location": {
+          "x": 22,
+          "y": 6
+        },
+        "objectOrientation": 1,
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 30,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 1
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      }
+    },
+    {
+      "objectId": "object.waste-bin",
+      "sourceOrderId": "room-template-000000000002-2-object-001",
+      "anchorTile": {
+        "x": 22,
+        "y": 7
+      },
+      "orientation": 1,
+      "order": {
+        "id": "room-template-000000000002-2-object-001",
+        "definitionId": "waste-bin-brick",
+        "location": {
+          "x": 22,
+          "y": 7
+        },
+        "objectOrientation": 1,
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 30,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 1
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      }
+    }
+  ],
+  "beforePixels": [
+    334,
+    370
+  ],
+  "afterPixels": [
+    334,
+    370
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "garbage-room-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      },
+      "quarterTurns": 1
+    }
+  ]
+}

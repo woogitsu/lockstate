@@ -28,6 +28,7 @@ import {
   migrateSaveEnvelopeV4ToV5,
   migrateSaveEnvelopeV5ToV6,
   migrateSaveEnvelopeV6ToV7,
+  migrateSaveEnvelopeV7ToV8,
 } from './save-migrations';
 import type { KernelSnapshot } from '../simulation/kernel/kernel';
 import type { WorldSnapshotV1 } from '../simulation/world/sparse-world';
@@ -37,7 +38,7 @@ import { MAX_ZONE_DIMENSION_TILES } from '../simulation/rooms/zoning';
 import { ACTOR_IDENTITY_SNAPSHOT_VERSION, ACTOR_KINDS, type ActorIdentitySnapshot } from '../simulation/identity/actor-identity';
 
 /** The version every newly written save carries. Older versions are still readable via `saveMigrationChain`. */
-export const SAVE_SCHEMA_VERSION = 7 as const;
+export const SAVE_SCHEMA_VERSION = 8 as const;
 
 // --- Kernel / RNG ---
 
@@ -186,6 +187,8 @@ const buildOrderSchema = z
      */
     edge: z.enum(['north', 'west']).optional(),
     footprint: z.literal('square').optional(),
+    // Owner-approved additive state: older queued objects retain orientation 0.
+    objectOrientation: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).optional(),
     /**
      * Where the order sits in the sequence of gestures the player made
      * ([ADR 0082](../../docs/adr/0082-what-order-build-orders-are-carried-out-in.md),
@@ -1646,6 +1649,13 @@ const contrabandSectionV7Schema = contrabandSectionSchema.extend({
     ])),
   }).strict(),
 }).strict();
+const roomTemplateRequestV7Schema = z.object({
+  templateId: z.enum(['cell-basic', 'cell-large', 'shower-room', 'canteen-basic', 'kitchen-basic', 'cell-row-four', 'holding-cell-basic', 'solitary-cell-basic', 'reception-basic', 'laundry-basic', 'yard-basic', 'common-room-basic', 'classroom-basic', 'infirmary-basic', 'security-office-basic', 'staff-room-basic', 'storage-room-basic', 'delivery-bay-basic', 'garbage-room-basic', 'utility-room-basic']),
+  origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
+  mirrorX: z.boolean(),
+  quarterTurns: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).optional(),
+  sequence: z.number().int().nonnegative(),
+}).strict();
 const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({
   prisoners: prisonersSectionV7Schema,
   navigation: navigationSectionSchema.omit({ work: true }),
@@ -1656,12 +1666,17 @@ const sessionSystemsV7Schema = sessionSystemsV6Schema.extend({
   // planner to migrate its own queue contract without changing that meaning.
   roomTemplates: z.object({
     version: z.literal(1),
-    pending: z.array(z.object({
-      templateId: z.enum(['cell-basic', 'cell-large', 'shower-room']),
-      origin: z.object({ x: z.number().int().safe(), y: z.number().int().safe() }).strict(),
-      mirrorX: z.boolean(),
-      sequence: z.number().int().nonnegative(),
-    }).strict()),
+    pending: z.array(roomTemplateRequestV7Schema),
+    // Optional additive state; earlier saves had no room-plan undo metadata.
+    undone: z.array(roomTemplateRequestV7Schema).optional(),
+    completed: z.array(roomTemplateRequestV7Schema).optional(),
+  }).strict().optional(),
+}).strict();
+
+/** V8 records successful placement provenance; V1-V7 objects remain frozen. */
+const sessionSystemsV8Schema = sessionSystemsV7Schema.extend({
+  objects: objectsSectionSchema.extend({
+    placedObjects: z.array(placedObjectSchema.extend({ sourceOrderId: z.string().min(1).optional() }).strict()),
   }).strict().optional(),
 }).strict();
 
@@ -1858,9 +1873,12 @@ export type SavePayloadV4 = DeepReadonly<z.infer<typeof savePayloadV4Schema>>;
 export type SavePayloadV5 = DeepReadonly<z.infer<typeof savePayloadV5Schema>>;
 /** Historical V6 shape, including the optional legacy travel paths. */
 export type SavePayloadV6 = DeepReadonly<z.infer<typeof savePayloadV6Schema>>;
+const savePayloadV8Schema = savePayloadV7Schema.extend({ simulation: sessionSystemsV8Schema.optional() }).strict();
+
 export type SavePayloadV7 = DeepReadonly<z.infer<typeof savePayloadV7Schema>>;
+export type SavePayloadV8 = DeepReadonly<z.infer<typeof savePayloadV8Schema>>;
 /** The payload shape newly written saves use. Prefer this over the versioned alias at call sites that just mean "a save payload". */
-export type SavePayload = SavePayloadV7;
+export type SavePayload = SavePayloadV8;
 
 /**
  * The envelope's own fields, without `payload`. Kept separate so the two
@@ -1932,12 +1950,17 @@ const saveEnvelopeV6ObjectSchema = z
 const saveEnvelopeV6Schema = withOrderedTimestamps(saveEnvelopeV6ObjectSchema);
 
 const saveEnvelopeV7ObjectSchema = z
-  .object({ ...saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION), payload: savePayloadV7Schema })
+  .object({ ...saveEnvelopeMetadataShape(7), payload: savePayloadV7Schema })
   .strict();
 const saveEnvelopeV7Schema = withOrderedTimestamps(saveEnvelopeV7ObjectSchema);
 
+const saveEnvelopeV8ObjectSchema = z.object({
+  ...saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION), payload: savePayloadV8Schema,
+}).strict();
+const saveEnvelopeV8Schema = withOrderedTimestamps(saveEnvelopeV8ObjectSchema);
+
 /** Validates only metadata; the large payload is parsed independently. */
-const saveEnvelopeMetadataV7Schema = withOrderedTimestamps(
+const saveEnvelopeMetadataV8Schema = withOrderedTimestamps(
   z.object(saveEnvelopeMetadataShape(SAVE_SCHEMA_VERSION)).strict(),
 );
 
@@ -1954,12 +1977,13 @@ export type SaveEnvelopeV5 = DeepReadonly<z.infer<typeof saveEnvelopeV5ObjectSch
 /** Historical V6 envelope shape; `migrateSaveEnvelopeV6ToV7` reads it. */
 export type SaveEnvelopeV6 = DeepReadonly<z.infer<typeof saveEnvelopeV6ObjectSchema>>;
 export type SaveEnvelopeV7 = DeepReadonly<z.infer<typeof saveEnvelopeV7ObjectSchema>>;
+export type SaveEnvelopeV8 = DeepReadonly<z.infer<typeof saveEnvelopeV8ObjectSchema>>;
 /**
  * The envelope shape newly written saves use. Call sites that simply mean "a
  * save envelope" use this alias, so the next version bump does not sweep a
  * rename through the repository the way bumping to V2 did.
  */
-export type SaveEnvelope = SaveEnvelopeV7;
+export type SaveEnvelope = SaveEnvelopeV8;
 
 // --- Migration chain ---
 // Every historical version registers its schema once and is never edited;
@@ -1974,7 +1998,8 @@ saveMigrationChain.registerSchema(zodVersionSchema(3, saveEnvelopeV3Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(4, saveEnvelopeV4Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(5, saveEnvelopeV5Schema));
 saveMigrationChain.registerSchema(zodVersionSchema(6, saveEnvelopeV6Schema));
-saveMigrationChain.registerSchema(zodVersionSchema(SAVE_SCHEMA_VERSION, saveEnvelopeV7Schema));
+saveMigrationChain.registerSchema(zodVersionSchema(7, saveEnvelopeV7Schema));
+saveMigrationChain.registerSchema(zodVersionSchema(SAVE_SCHEMA_VERSION, saveEnvelopeV8Schema));
 saveMigrationChain.registerMigration({
   fromVersion: 1,
   toVersion: 2,
@@ -2004,6 +2029,11 @@ saveMigrationChain.registerMigration({
   fromVersion: 6,
   toVersion: 7,
   migrate: (input) => migrateSaveEnvelopeV6ToV7(input as SaveEnvelopeV6),
+});
+
+saveMigrationChain.registerMigration({
+  fromVersion: 7, toVersion: 8,
+  migrate: (input) => migrateSaveEnvelopeV7ToV8(input as SaveEnvelopeV7),
 });
 
 export type SaveDecodeErrorCode = MigrationErrorCode | 'checksum-mismatch';
@@ -2244,7 +2274,7 @@ export interface CreateSaveEnvelopeInput {
  * live runtime snapshots.
  *
  * The payload is validated **exactly once** here. The envelope's own fields
- * are validated separately by `saveEnvelopeMetadataV7Schema`, which does not
+ * are validated separately by `saveEnvelopeMetadataV8Schema`, which does not
  * re-walk the payload it was just handed; the composed result is then marked
  * trusted so `PrisonSaveRepository.save` does not walk it a third time (#49).
  *
@@ -2252,7 +2282,7 @@ export interface CreateSaveEnvelopeInput {
  * before — validity is still proven, just not proven repeatedly.
  */
 export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveEnvelope {
-  const payload = savePayloadV7Schema.parse({
+  const payload = savePayloadV8Schema.parse({
     ...(input.masterSeed === undefined ? {} : { masterSeed: input.masterSeed }),
     kernel: input.kernel,
     world: input.world,
@@ -2262,7 +2292,7 @@ export function createSaveEnvelope(input: CreateSaveEnvelopeInput): TrustedSaveE
     ...(input.identity === undefined ? {} : { identity: input.identity }),
   });
 
-  const metadata = saveEnvelopeMetadataV7Schema.parse({
+  const metadata = saveEnvelopeMetadataV8Schema.parse({
     saveSchemaVersion: SAVE_SCHEMA_VERSION,
     gameVersion: input.gameVersion,
     prisonId: input.prisonId,

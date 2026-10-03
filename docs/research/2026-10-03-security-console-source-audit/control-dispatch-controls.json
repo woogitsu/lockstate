@@ -1,0 +1,22 @@
+{
+  "controls": [
+    {
+      "control": "control-dispatch-old-inward-source",
+      "exitCode": 1,
+      "error": "ValueError: Security console retained/authored mesh set changed"
+    },
+    {
+      "control": "control-dispatch-wrong-fit",
+      "exitCode": 1,
+      "error": "ValueError: Security declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "control-dispatch-wrong-target",
+      "exitCode": 1,
+      "error": "ValueError: Security declared occupied rectangle/source fit/accepted target changed"
+    }
+  ],
+  "exactRestoredVerifyExitCode": 0,
+  "wrapperSha256": "d7c113cd6a0a9f8e8be1a6b3000b911c2d02736312bb8401c65ddee103a1b6d0",
+  "verificationOnlySecurity": "--verify-security, no Utility render or source modification"
+}

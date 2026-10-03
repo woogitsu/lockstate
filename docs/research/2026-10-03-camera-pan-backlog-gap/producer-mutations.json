@@ -1,0 +1,47 @@
+[
+  {
+    "mutation": "main-pan-disconnected",
+    "source": "src\\main.ts",
+    "occurrences": 1,
+    "negativeExitCode": 1,
+    "restoredExitCode": 0,
+    "byteExactRestore": true,
+    "sourceSHA256": "727e687e4f08e7b71ce69cf88c783ca35db4e025bdf15ee5ea781553c6e426c1"
+  },
+  {
+    "mutation": "world-pan-zero",
+    "source": "src\\rendering\\scene\\world-scene.ts",
+    "occurrences": 1,
+    "negativeExitCode": 1,
+    "restoredExitCode": 0,
+    "byteExactRestore": true,
+    "sourceSHA256": "d24eef81648157c3194beef383f722eee36ce9accb1d7aade89aa54a23be0ec5"
+  },
+  {
+    "mutation": "angled-pan-zero",
+    "source": "src\\rendering\\scene\\oblique-world-scene.ts",
+    "occurrences": 1,
+    "negativeExitCode": 1,
+    "restoredExitCode": 0,
+    "byteExactRestore": true,
+    "sourceSHA256": "fdf15c74e7e8d65d3d33e1d02825d79bcc564975596ebeee0cc0fdeda40a43e7"
+  },
+  {
+    "mutation": "world-preview-skipped",
+    "source": "src\\rendering\\scene\\world-scene.ts",
+    "occurrences": 1,
+    "negativeExitCode": 1,
+    "restoredExitCode": 0,
+    "byteExactRestore": true,
+    "sourceSHA256": "d24eef81648157c3194beef383f722eee36ce9accb1d7aade89aa54a23be0ec5"
+  },
+  {
+    "mutation": "angled-preview-skipped",
+    "source": "src\\rendering\\scene\\oblique-world-scene.ts",
+    "occurrences": 1,
+    "negativeExitCode": 1,
+    "restoredExitCode": 0,
+    "byteExactRestore": true,
+    "sourceSHA256": "fdf15c74e7e8d65d3d33e1d02825d79bcc564975596ebeee0cc0fdeda40a43e7"
+  }
+]

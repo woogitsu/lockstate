@@ -1,0 +1,5 @@
+Listing tests:
+  canteen-dining-table-player-build.spec.ts:167:1 › player creates storage and delivery capacity before Canteen
+  canteen-dining-table-player-build.spec.ts:231:3 › player builds Canteen at quarterTurns0 and retains authored plates after Save/Load
+  canteen-dining-table-player-build.spec.ts:231:3 › player builds Canteen at quarterTurns1 and retains authored plates after Save/Load
+Total: 3 tests in 1 file

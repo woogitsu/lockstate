@@ -49,6 +49,7 @@ test('Full HD room plan blocks the non-anchor square of an in-flight desk', asyn
   await expect(page.locator('.ui-panel.hud-build')).toHaveAttribute('data-queued', '1');
   await page.getByRole('button', { name: 'Room plans', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Room plans' });
+  if (!await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).isVisible()) await dialog.getByText('Enter coordinates', { exact: true }).click();
   await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).fill('10');
   await dialog.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('10');
   await expect(dialog.getByRole('status')).toContainText('(10, 10)');

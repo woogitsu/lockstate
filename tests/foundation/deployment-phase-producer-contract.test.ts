@@ -70,7 +70,7 @@ function literalWrites(setter: string): ReadonlyMap<string, number> {
     const body = readFileSync(file, 'utf8');
     for (const match of body.matchAll(pattern)) {
       if (match[1] === undefined) continue;
-      const key = `${relative(REPOSITORY_ROOT, file)}: ${match[1]}`;
+      const key = `${relative(REPOSITORY_ROOT, file).replace(/\\/g, '/')}: ${match[1]}`;
       writes.set(key, (writes.get(key) ?? 0) + 1);
     }
   }

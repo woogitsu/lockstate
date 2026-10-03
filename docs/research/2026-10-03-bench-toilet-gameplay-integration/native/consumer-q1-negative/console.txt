@@ -1,0 +1,246 @@
+node : [2m[WebServer] [22m(node:10120) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At C:\Users\matma\AppData\Local\Temp\lockstate-bench-toilet-numeric-consumer-controls-20261003.ps1:47 char:2
++  node --experimental-transform-types --disable-warning=ExperimentalWa ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 4 tests using 1 worker
+
+(node:59760) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59760) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\dedicated-cell-toilet-player-build.spec.ts:197:1 › player creates storage and delivery capacity before Basic cell (42.4s)
+  x  2 tests\browser\dedicated-cell-toilet-player-build.spec.ts:263:3 › player builds Basic cell at quarterTurns1 and retains toilet palettes and anchors after Save/Load (52.0s)
+(node:20956) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:20956) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 tests\browser\wooden-bench-player-build.spec.ts:178:1 › player creates storage and delivery capacity before Holding Cell (42.6s)
+  x  4 tests\browser\wooden-bench-player-build.spec.ts:244:3 › player builds Holding Cell at quarterTurns1 and retains authored timber palette after Save/Load (50.3s)
+
+
+  1) tests\browser\dedicated-cell-toilet-player-build.spec.ts:263:3 › player builds Basic cell at quarterTurns1 and retains toilet palettes and anchors after Save/Load 
+
+    Error: toilet 1 authored palette after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      235 |   }, null, 2));
+      236 |   beforePixels.forEach((count, index) => expect.soft(count, `toilet ${index + 1} authored palette after construction`)
+    > 237 |     .toBeGreaterThan(index === 0 ? 100 : 8));
+          |      ^
+      238 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      239 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      240 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\dedicated-cell-toilet-player-build.spec.ts:237:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\dedicated-cell-toilet-player-build.spec.ts:236:16
+
+    Error: toilet 2 authored palette after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m8[39m
+    Received:   [31m0[39m
+
+      235 |   }, null, 2));
+      236 |   beforePixels.forEach((count, index) => expect.soft(count, `toilet ${index + 1} authored palette after construction`)
+    > 237 |     .toBeGreaterThan(index === 0 ? 100 : 8));
+          |      ^
+      238 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      239 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      240 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\dedicated-cell-toilet-player-build.spec.ts:237:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\dedicated-cell-toilet-player-build.spec.ts:236:16
+
+    Error: toilet 1 authored palette after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      256 |   const afterPixels = await toiletPalettePixels(page, loaded, quarterTurns);
+      257 |   afterPixels.forEach((count, index) => expect.soft(count, `toilet ${index + 1} authored palette after Load`)
+    > 258 |     .toBeGreaterThan(index === 0 ? 100 : 8));
+          |      ^
+      259 |   expect(afterPixels).toEqual(beforePixels);
+      260 |   const evidencePath = info.outputPath('dedicated-cell-toilet-worker-and-save-evidence.json');
+      261 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\dedicated-cell-toilet-player-build.spec.ts:258:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\dedicated-cell-toilet-player-build.spec.ts:257:15
+
+    Error: toilet 2 authored palette after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m8[39m
+    Received:   [31m0[39m
+
+      256 |   const afterPixels = await toiletPalettePixels(page, loaded, quarterTurns);
+      257 |   afterPixels.forEach((count, index) => expect.soft(count, `toilet ${index + 1} authored palette after Load`)
+    > 258 |     .toBeGreaterThan(index === 0 ? 100 : 8));
+          |      ^
+      259 |   expect(afterPixels).toEqual(beforePixels);
+      260 |   const evidencePath = info.outputPath('dedicated-cell-toilet-worker-and-save-evidence.json');
+      261 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\dedicated-cell-toilet-player-build.spec.ts:258:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\dedicated-cell-toilet-player-build.spec.ts:257:15
+
+    Error: native default Toilet consumer must request its detailed descriptor and exposed45/40 PNG
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+    Call Log:
+    - Timeout 10000ms exceeded while waiting on the predicate
+
+       at cell-toilet-flush-neck-evidence.ts:84
+
+      82 |     async evidence(info: TestInfo, quarterTurns: 0 | 1) {
+      83 |       try {
+    > 84 |         await expect.poll(() => bodies.has(descriptorPath) && bodies.has(exposedFrame),
+         |         ^
+      85 |           {message:'native default Toilet consumer must request its detailed descriptor and exposed45/40 PNG'}).toBe(true);
+      86 |       } finally {
+      87 |         await Promise.all(pending);
+        at Object.evidence (C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\cell-toilet-flush-neck-evidence.ts:84:9)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\dedicated-cell-toilet-player-build.spec.ts:279:25
+
+    attachment #1: dedicated-cell-toilet-worker-and-save-evidence (application/json) ───────────────
+    ..\..\..\AppData\Local\Temp\lockstate-bench-toilet-complement-negative-20261003\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\attachments\dedicated-cell-toilet-worker-and-save-evidence-57426833e0999dcd0c2a69f3e795096fb6e4704f.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-bench-toilet-complement-negative-20261003\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\error-context.md
+
+  2) tests\browser\wooden-bench-player-build.spec.ts:244:3 › player builds Holding Cell at quarterTurns1 and retains authored timber palette after Save/Load 
+
+    Error: fixture1 authored timber assembly after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m300[39m
+    Received:   [31m0[39m
+
+      197 |   }, null, 2));
+      198 |   beforePixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored timber assembly after construction`)
+    > 199 |     .toBeGreaterThan(300));
+          |      ^
+      200 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      201 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      202 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\wooden-bench-player-build.spec.ts:199:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\wooden-bench-player-build.spec.ts:198:16
+
+    Error: fixture2 authored timber assembly after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m300[39m
+    Received:   [31m0[39m
+
+      197 |   }, null, 2));
+      198 |   beforePixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored timber assembly after construction`)
+    > 199 |     .toBeGreaterThan(300));
+          |      ^
+      200 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      201 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      202 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\wooden-bench-player-build.spec.ts:199:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\wooden-bench-player-build.spec.ts:198:16
+
+    Error: fixture1 authored timber assembly after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m300[39m
+    Received:   [31m0[39m
+
+      214 |   const afterPixels = await timberPixels(page, loaded, quarterTurns);
+      215 |   afterPixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored timber assembly after Load`)
+    > 216 |     .toBeGreaterThan(300));
+          |      ^
+      217 |   expect(afterPixels).toEqual(beforePixels);
+      218 |   const evidencePath = info.outputPath('wooden-bench-worker-and-pixel-evidence.json');
+      219 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\wooden-bench-player-build.spec.ts:216:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\wooden-bench-player-build.spec.ts:215:15
+
+    Error: fixture2 authored timber assembly after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m300[39m
+    Received:   [31m0[39m
+
+      214 |   const afterPixels = await timberPixels(page, loaded, quarterTurns);
+      215 |   afterPixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored timber assembly after Load`)
+    > 216 |     .toBeGreaterThan(300));
+          |      ^
+      217 |   expect(afterPixels).toEqual(beforePixels);
+      218 |   const evidencePath = info.outputPath('wooden-bench-worker-and-pixel-evidence.json');
+      219 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\wooden-bench-player-build.spec.ts:216:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\wooden-bench-player-build.spec.ts:215:15
+
+    Error: native default Bench consumer must request its detailed descriptor and exposed60/40 PNG
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+    Call Log:
+    - Timeout 10000ms exceeded while waiting on the predicate
+
+       at wooden-bench-crossrails-evidence.ts:88
+
+      86 |     async evidence(info: TestInfo, quarterTurns: 0 | 1) {
+      87 |       try {
+    > 88 |         await expect.poll(() => bodies.has(descriptorPath) && bodies.has(exposedFrame),
+         |         ^
+      89 |           {message:'native default Bench consumer must request its detailed descriptor and exposed60/40 PNG'}).toBe(true);
+      90 |       } finally {
+      91 |         await Promise.all(pending);
+        at Object.evidence (C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\wooden-bench-crossrails-evidence.ts:88:9)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-bench-gameplay-integration-20261003\tests\browser\wooden-bench-player-build.spec.ts:237:27
+
+    attachment #1: wooden-bench-worker-and-pixel-evidence (application/json) ───────────────────────
+    ..\..\..\AppData\Local\Temp\lockstate-bench-toilet-complement-negative-20261003\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\attachments\wooden-bench-worker-and-pixel-evidence-0ffc1f83a6dfeb7e7bf023988b32d952b8715743.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-bench-toilet-complement-negative-20261003\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\error-context.md
+
+  2 failed
+    tests\browser\dedicated-cell-toilet-player-build.spec.ts:263:3 › player builds Basic cell at quarterTurns1 and retains toilet palettes and anchors after Save/Load 
+    tests\browser\wooden-bench-player-build.spec.ts:244:3 › player builds Holding Cell at quarterTurns1 and retains authored timber palette after Save/Load 
+  2 passed (3.2m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+

@@ -1,0 +1,18 @@
+const fs=require('node:fs'),cp=require('node:child_process');
+const dir='docs/research/2026-10-03-washer-service-grip-native-preparation';
+const commands=[
+ ['final-types',['node_modules/typescript/bin/tsc','-b','--pretty','false']],
+ ['final-collection',['node_modules/@playwright/test/cli.js','test','--config','tests/browser/playwright.artifact.config.ts','tests/browser/dedicated-laundry-washing-machine-player-build.spec.ts','--list']],
+];
+const receipt=JSON.parse(fs.readFileSync(`${dir}/receipt.json`,'utf8'));
+receipt.followUpGates=[];
+for(const [name,args] of commands){
+ const r=cp.spawnSync(process.execPath,args,{encoding:'utf8'});
+ fs.writeFileSync(`${dir}/${name}.txt`,r.stdout+r.stderr);
+ process.stdout.write(`${name}: exit=${r.status}\n`+r.stdout+r.stderr);
+ receipt.followUpGates.push({name,status:r.status});
+ if(r.status!==0)throw Error('Final fixture gate failed');
+}
+receipt.correctedOrderField='placementSequence';
+receipt.pendingAndCompletedMetadataField='sequence';
+fs.writeFileSync(`${dir}/receipt.json`,JSON.stringify(receipt,null,2)+'\n');

@@ -1,0 +1,263 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-washer-cot-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-history-hire-initial-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-washer-cot-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build|dedicated-security-console-player-build|dedicated-medical-bed-player-build|dedicated-loading-dock-door-player-build|dedicated-camera-pan-player|oblique-pending-wall-player|room-template-renderer-stationary-hover|world-construction-chord-release|room-template-session-preflight|world-build-session-ownership|cell-cot-player-build|room-template-second-touch-ownership|hired-guard-player-build|room-template-history-verdict-player)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5184 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5184/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "hired-guard-player-build.spec.ts",
+      "file": "hired-guard-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "a publicly hired Guard keeps actual identity and visible authored body through paused Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 17578,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T06:34:44.696Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "actual public Guard worker and loader evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-hire-initial-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\attachments\\actual-public-Guard-worker-and-loader-evidence-b861e8755dc1d35dd71707f90deb8ee976671fbf.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6b6564f13a2c26940098-18590f6cbe4eb6eb0d56",
+          "file": "hired-guard-player-build.spec.ts",
+          "line": 15,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "room-template-history-verdict-player.spec.ts",
+      "file": "room-template-history-verdict-player.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player completes and saves actual Storage/Delivery capacity before stationary Cell history cases",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 40285,
+                  "error": {
+                    "message": "Error: Actual queued counter absent or malformed",
+                    "stack": "Error: Actual queued counter absent or malformed\n    at Object.queued (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts:117:131)\n    at finish (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts:120:5)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts:177:161",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts",
+                      "column": 131,
+                      "line": 117
+                    },
+                    "snippet": "  115 | async function finish(page: Page): Promise<void> {\n  116 |   const panel = page.locator('.hud-build');\n> 117 |   const queued = async () => { const value=await panel.getAttribute('data-queued'); if(value===null||!/^\\d+$/u.test(value)) throw Error('Actual queued counter absent or malformed'); return Number(value); };\n      |                                                                                                                                   ^\n  118 |   let count = await queued();\n  119 |   while (count > 0) {\n  120 |     await expect.poll(queued, { message: `actual construction advances from ${count} queued orders` }).toBeLessThan(count);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts",
+                        "column": 131,
+                        "line": 117
+                      },
+                      "message": "Error: Actual queued counter absent or malformed\n\n  115 | async function finish(page: Page): Promise<void> {\n  116 |   const panel = page.locator('.hud-build');\n> 117 |   const queued = async () => { const value=await panel.getAttribute('data-queued'); if(value===null||!/^\\d+$/u.test(value)) throw Error('Actual queued counter absent or malformed'); return Number(value); };\n      |                                                                                                                                   ^\n  118 |   let count = await queued();\n  119 |   while (count > 0) {\n  120 |     await expect.poll(queued, { message: `actual construction advances from ${count} queued orders` }).toBeLessThan(count);\n    at Object.queued (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts:117:131)\n    at finish (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts:120:5)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts:177:161"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T06:35:02.355Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-hire-initial-20261003\\room-template-history-verd-aa149-ationary-Cell-history-cases\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts",
+                    "column": 131,
+                    "line": 117
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "89339ddd74f99ca79aa7-47f3edf3640520d3027d",
+          "file": "room-template-history-verdict-player.spec.ts",
+          "line": 332,
+          "column": 1
+        },
+        {
+          "title": "world FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T06:35:42.695Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "89339ddd74f99ca79aa7-32c9d218012c8ff0f9fc",
+          "file": "room-template-history-verdict-player.spec.ts",
+          "line": 430,
+          "column": 42
+        },
+        {
+          "title": "oblique FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T06:35:42.696Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "89339ddd74f99ca79aa7-8e69968e37fc5fda1781",
+          "file": "room-template-history-verdict-player.spec.ts",
+          "line": 430,
+          "column": 42
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T06:34:42.165Z",
+    "duration": 60998.651000000005,
+    "expected": 1,
+    "skipped": 2,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

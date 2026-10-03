@@ -1,0 +1,20 @@
+﻿const fs=require('node:fs'),crypto=require('node:crypto'),cp=require('node:child_process');
+const record='docs/research/2026-10-03-object-preflight-session-arm-review/raw/';
+const source='src/ui/object-tool.ts',before=fs.readFileSync(source);
+const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+const previous=JSON.parse(fs.readFileSync(record+'mutation-restoration.json','utf8'));
+const entry={label:'negative-old-preview-owner',beforeSha:hash(before)};
+try{
+ const s=before.toString('utf8');
+ const changed=s.replace(/(public resetPreview\(\): void \{\r?\n)    this\.clearPreview\(\);/,(_match,prefix)=>prefix+'    // deliberate old preview owner retained');
+ if(changed===s)throw Error('Expected exact producer absent');
+ fs.writeFileSync(source,changed);entry.mutatedSha=hash(fs.readFileSync(source));
+ const r=cp.spawnSync(process.execPath,['node_modules/vitest/vitest.mjs','run','tests/unit/ui-object-preflight-session-arm.test.ts','--maxWorkers=2'],{encoding:'utf8'});
+ entry.status=r.status;fs.writeFileSync(record+'negative-old-preview-owner.txt',(r.stdout||'')+(r.stderr||''));
+ if(r.status===0 || !(r.stdout||'').includes('4 tests'))throw Error('Expected genuine executed failing test, not import/syntax failure');
+}finally{
+ fs.writeFileSync(source,before);entry.restoredSha=hash(fs.readFileSync(source));
+ previous.records=[previous.records[0],entry];
+ previous.restored[1]={path:source,sha:hash(fs.readFileSync(source)),exact:fs.readFileSync(source).equals(before)};
+ fs.writeFileSync(record+'mutation-restoration.json',JSON.stringify(previous,null,2)+'\n');
+}

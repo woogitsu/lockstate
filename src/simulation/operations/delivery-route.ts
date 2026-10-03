@@ -43,11 +43,12 @@ export const STORAGE_ROOM_ROOM_CATALOG_ID = 'room.storage-room';
  * with no loading dock door is not a delivery bay yet; a storeroom with no
  * racks is not a storeroom yet.
  *
- * That dissolves the bootstrap by construction rather than by a number: the
- * door and the racks are themselves build orders, so they are paid for by
- * deliveries that still land directly -- and by the time both ends are
- * furnished the prison has a population that can work them. It also introduces
- * no balance value, which is what ADR 0017 decision 5 reserves.
+ * Furnishing both ends is necessary but not proof of a carrier: ready-made
+ * room plans let a player build the bay and storeroom before the first Cell.
+ * The route also falls back to direct deposit while there are no living
+ * prisoners. Without that gate the first bed's materials would wait on a
+ * carry only that bed can make possible. This introduces no balance value,
+ * which is what ADR 0017 decision 5 reserves.
  *
  * **Both capabilities are the ones this repository wrote down as waiting for
  * exactly this consumer**, which is why neither is invented here.
@@ -177,13 +178,18 @@ export class DeliveryBayCarryRoute implements DeliveryCarryRoute {
     private readonly board: JobBoard,
     /** `CONSTRUCTION_MATERIALS_CONTAINER_ID`, passed in rather than imported: the constant lives in the composition root, which imports this module. */
     private readonly storageContainerId: string,
+    /** A furnished route cannot move goods while the prison has no living carrier. */
+    private readonly hasLivingPrisoner: () => boolean,
+    /** Existing fixed room anchors must be valid navigation destinations. */
+    private readonly isEligibleEndpoint: (tile: TilePosition) => boolean = () => true,
   ) {}
 
   /** The bay a delivery lands in, with its container created on first use. */
   private bay(): { readonly containerId: string; readonly tile: TilePosition } | undefined {
     const instance = this.roomInstances
       .allByRoomCatalogId(DELIVERY_BAY_ROOM_CATALOG_ID)
-      .find((candidate) => candidate.objectCapabilities.includes(DELIVERY_BAY_CAPABILITY));
+      .find((candidate) => candidate.objectCapabilities.includes(DELIVERY_BAY_CAPABILITY)
+        && this.isEligibleEndpoint(candidate.anchorTile));
     if (instance === undefined) return undefined;
     const containerId = deliveryBayContainerId(instance.instanceId);
     if (this.containers.getById(containerId) === undefined) this.containers.register(new Container(containerId));
@@ -194,12 +200,18 @@ export class DeliveryBayCarryRoute implements DeliveryCarryRoute {
   private storeroom(): { readonly containerId: string; readonly tile: TilePosition } | undefined {
     const instance = this.roomInstances
       .allByRoomCatalogId(STORAGE_ROOM_ROOM_CATALOG_ID)
-      .find((candidate) => candidate.objectCapabilities.includes(STORAGE_ROOM_CAPABILITY));
+      .find((candidate) => candidate.objectCapabilities.includes(STORAGE_ROOM_CAPABILITY)
+        && this.isEligibleEndpoint(candidate.anchorTile));
     if (instance === undefined) return undefined;
     return { containerId: this.storageContainerId, tile: instance.anchorTile };
   }
 
   public landAndRaiseCarry(orderId: string, itemId: string, quantity: number, tick: number): boolean {
+    // Ready-made bay and storage plans can both finish before the first Cell.
+    // Sending its bed materials into the bay would strand them forever:
+    // admission needs the bed and only admitted prisoners can carry. Keep the
+    // existing direct-deposit bootstrap until one prisoner actually exists.
+    if (!this.hasLivingPrisoner()) return false;
     const bay = this.bay();
     const storeroom = this.storeroom();
     if (bay === undefined || storeroom === undefined) return false;

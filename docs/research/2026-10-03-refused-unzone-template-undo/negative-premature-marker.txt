@@ -1,0 +1,32 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-next-construction-audit-20261003
+
+ ❯ tests/integration/refused-unzone-template-undo.test.ts (6 tests | 2 failed) 361ms
+   × manual template unzone preserves truthful independent Undo: saved=false surface='refused' 58ms
+   × manual template unzone preserves truthful independent Undo: saved=true surface='refused' 50ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 4 passed (6)
+   Start at  04:43:23
+   Duration  2.67s (transform 815ms, setup 0ms, import 2.19s, tests 361ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/refused-unzone-template-undo.test.ts > manual template unzone preserves truthful independent Undo: saved=false surface='refused'
+ FAIL  tests/integration/refused-unzone-template-undo.test.ts > manual template unzone preserves truthful independent Undo: saved=true surface='refused'
+AssertionError: expected 'completed' to be 'cancelled' // Object.is equality
+
+Expected: "cancelled"
+Received: "completed"
+
+ ❯ tests/integration/refused-unzone-template-undo.test.ts:65:77
+     63|     }
+     64|     send(runtime, { type: 'Undo' });
+     65|     expect(runtime.construction.getOrder('latest-independent-wall')?.s…
+       |                                                                             ^
+     66|     expect(runtime.placedObjects.getSnapshot()).toEqual(owners);
+     67|     expect(runtime.roomTemplates.snapshot()).toEqual(templates);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+

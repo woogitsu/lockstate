@@ -1,0 +1,25 @@
+node : [2m[WebServer] [22m(node:38500) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:2 char:149
++ ... ORT='5417'; node --experimental-transform-types --disable-warning=Exp ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m23:46:08 [vite] (client) Re-optimizing dependencies because vite config has changed
+[2m[WebServer] [22m
+[2m[WebServer] [22m  VITE v8.2.2  ready in 586 ms
+[2m[WebServer] [22m
+[2m[WebServer] [22m  ➜  Local:   http://127.0.0.1:5417/
+[2m[WebServer] [22m23:46:11 [vite] (client) [optimizer] scanning dependencies...
+LOCKSTATE_BROWSER_PREWARM_READY elapsedMs=47659
+
+Running 1 test using 1 worker
+
+(node:34828) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:34828) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\oblique-room-template-picking.spec.ts:5:1 › angled room plan ghost and mouse placement agree through four yaw directions (35.9s)
+
+  1 passed (1.5m)

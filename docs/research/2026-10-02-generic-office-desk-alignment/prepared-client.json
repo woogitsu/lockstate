@@ -1,0 +1,10 @@
+{
+  "productionBuildExitCode": 0,
+  "publicAssetHydration": "actual decoded files from shared LFS cache",
+  "workerBytes": 430480,
+  "workerSha256": "0d741e15327b63aa3befd50d9b822e2059cf6bcd543ba1bd6ff4447028eceabb",
+  "nativeBrowserLaunched": false,
+  "nativePixelCalibration": "pending",
+  "fixtureTypeScript": "app and tools TypeScript passed",
+  "browserLease": "root exclusive; desk queued"
+}

@@ -1,0 +1,379 @@
+{
+  "sourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+  "origin": [
+    28.0,
+    28.0,
+    0.0
+  ],
+  "meshCount": 62,
+  "meshes": [
+    {
+      "name": "Table underframe",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Trestle.-1.13",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Floor plate.-1.13",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Trestle.1.13",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Floor plate.1.13",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Stool support rail",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Deep bolted tabletop rim",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Dark tabletop inset",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Individual walnut tabletop plank.0",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Recessed tabletop bolt.0.-1.27",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed tabletop bolt.0.1.27",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Individual walnut tabletop plank.1",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Recessed tabletop bolt.1.-1.27",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed tabletop bolt.1.1.27",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Individual walnut tabletop plank.2",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Recessed tabletop bolt.2.-1.27",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed tabletop bolt.2.1.27",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Individual walnut tabletop plank.3",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Recessed tabletop bolt.3.-1.27",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed tabletop bolt.3.1.27",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Meal tray shadow.0",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Brushed meal tray.0",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Enamel plate rim.0",
+      "vertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed plate well.0",
+      "vertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Fork.0",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Spoon.0",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Meal tray shadow.1",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Brushed meal tray.1",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Enamel plate rim.1",
+      "vertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed plate well.1",
+      "vertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Fork.1",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Spoon.1",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Meal tray shadow.2",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Brushed meal tray.2",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Enamel plate rim.2",
+      "vertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Recessed plate well.2",
+      "vertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Fork.2",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Spoon.2",
+      "vertices": 56,
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Stool floor mount.0",
+      "vertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Stool floor bolt.0.-0.08",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool floor bolt.0.0.08",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool post.0",
+      "vertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Stool dark rim.0",
+      "vertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Worn wooden stool seat.0",
+      "vertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Stool seat rivet.0.-0.18",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool seat rivet.0.0.18",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool floor mount.1",
+      "vertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Stool floor bolt.1.-0.08",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool floor bolt.1.0.08",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool post.1",
+      "vertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Stool dark rim.1",
+      "vertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Worn wooden stool seat.1",
+      "vertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Stool seat rivet.1.-0.18",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool seat rivet.1.0.18",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool floor mount.2",
+      "vertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Stool floor bolt.2.-0.08",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool floor bolt.2.0.08",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool post.2",
+      "vertices": 32,
+      "modifiers": []
+    },
+    {
+      "name": "Stool dark rim.2",
+      "vertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Worn wooden stool seat.2",
+      "vertices": 64,
+      "modifiers": []
+    },
+    {
+      "name": "Stool seat rivet.2.-0.18",
+      "vertices": 24,
+      "modifiers": []
+    },
+    {
+      "name": "Stool seat rivet.2.0.18",
+      "vertices": 24,
+      "modifiers": []
+    }
+  ],
+  "minimum": [
+    -1.4199999570846558,
+    -0.8600004315376282,
+    0.0
+  ],
+  "maximum": [
+    1.4199999570846558,
+    0.9600005149841309,
+    0.9449999928474426
+  ]
+}

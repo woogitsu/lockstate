@@ -1,0 +1,44 @@
+{
+  "controls": [
+    {
+      "case": "wrong-runtime-manifest",
+      "exitCode": 1,
+      "error": "ValueError: Indoor bin exporter does not target the canonical runtime descriptor"
+    },
+    {
+      "case": "omit-authored-pedal",
+      "exitCode": 1,
+      "error": "ValueError: Indoor bin evaluated retained geometry changed"
+    },
+    {
+      "case": "move-authored-handle",
+      "exitCode": 1,
+      "error": "ValueError: Indoor bin evaluated retained geometry changed"
+    },
+    {
+      "case": "wrong-loaded-Y-scale",
+      "exitCode": 1,
+      "error": "ValueError: Indoor bin loaded transform must preserve unit geometry and min-corner anchor"
+    },
+    {
+      "case": "wrong-camera-span",
+      "exitCode": 1,
+      "error": "ValueError: Indoor waste bin actual camera scale is not 64 pixels per tile"
+    },
+    {
+      "case": "wrong-camera-vector",
+      "exitCode": 1,
+      "error": "ValueError: Indoor waste bin actual camera target/yaw basis differs from declared square pose"
+    },
+    {
+      "case": "wrong-measured-target",
+      "exitCode": 1,
+      "error": "ValueError: Indoor waste bin target does not match its evaluated source height"
+    }
+  ],
+  "exactRestoredVerifyExitCode": 0,
+  "wrapperSha256": "af5df8097a7de0d74cf2e9ef180a5341afcf44ba3d775287eea70406c9ab77ed",
+  "originalSourceSha256": "acac99dd51895f561f0b25b1e7453c0290141ed6c7953f123575b2cb8bb95963",
+  "preparedSourceSha256": "ff8f91f62e67ad69293c0560849664524a5e7cd34824137171f5cb3d740376c3",
+  "sourceBytesUnchanged": true
+}

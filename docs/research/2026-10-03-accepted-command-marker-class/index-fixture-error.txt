@@ -1,0 +1,34 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-accepted-command-marker-class-audit-20261003
+
+ ❯ tests/foundation/research-index-contract.test.ts (5 tests | 1 failed) 67ms
+     × keeps every row inside the one table 6ms
+
+ Test Files  1 failed | 7 passed (8)
+      Tests  1 failed | 61 passed (62)
+   Start at  05:18:43
+   Duration  5.00s (transform 113ms, setup 0ms, import 4.47s, tests 2.38s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/research-index-contract.test.ts > research index contract > keeps every row inside the one table
+AssertionError: a row sits outside the table. The index appends at one point and that point is the end of the table, not the end of the file: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "row \"2026-10-03 accepted command marker class\" is at line 367, outside the table that runs to line 365",
++ ]
+
+ ❯ tests/foundation/research-index-contract.test.ts:223:7
+    221|       stranded,
+    222|       'a row sits outside the table. The index appends at one point an…
+    223|     ).toEqual([]);
+       |       ^
+    224|   });
+    225| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

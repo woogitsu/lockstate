@@ -1,0 +1,88 @@
+{
+  "quarterTurns": 1,
+  "actualBefore": [
+    "object.toilet@22,7:orientation=1"
+  ],
+  "actualAfter": [
+    "object.toilet@22,7:orientation=1"
+  ],
+  "ownershipBefore": [
+    {
+      "objectId": "object.toilet",
+      "sourceOrderId": "room-template-000000000002-2-object-001",
+      "anchorTile": {
+        "x": 22,
+        "y": 7
+      },
+      "orientation": 1,
+      "order": {
+        "id": "room-template-000000000002-2-object-001",
+        "definitionId": "toilet-brick",
+        "location": {
+          "x": 22,
+          "y": 7
+        },
+        "objectOrientation": 1,
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 30,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 1
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      }
+    }
+  ],
+  "ownershipAfter": [
+    {
+      "objectId": "object.toilet",
+      "sourceOrderId": "room-template-000000000002-2-object-001",
+      "anchorTile": {
+        "x": 22,
+        "y": 7
+      },
+      "orientation": 1,
+      "order": {
+        "id": "room-template-000000000002-2-object-001",
+        "definitionId": "toilet-brick",
+        "location": {
+          "x": 22,
+          "y": 7
+        },
+        "objectOrientation": 1,
+        "placementSequence": 2,
+        "state": "completed",
+        "progress": 30,
+        "materialsAllocated": [
+          {
+            "itemId": "item.brick",
+            "quantity": 1
+          }
+        ],
+        "assignedWorkerId": "mock-worker-1"
+      }
+    }
+  ],
+  "beforePixels": [
+    201,
+    95
+  ],
+  "afterPixels": [
+    201,
+    95
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "cell-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      },
+      "quarterTurns": 1
+    }
+  ]
+}

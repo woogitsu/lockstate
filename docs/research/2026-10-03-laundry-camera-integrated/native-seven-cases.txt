@@ -1,0 +1,38 @@
+node : [2m[WebServer] [22m(node:20856) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:2 char:244
++ ... 1003.json"; node --experimental-transform-types --disable-warning=Exp ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 7 tests using 1 worker
+
+(node:2644) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2644) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\camera-wheel-axis-native.spec.ts:5:3 › world horizontal native wheel preserves the view and armed square (7.2s)
+  ok 2 tests\browser\camera-wheel-axis-native.spec.ts:5:3 › oblique horizontal native wheel preserves the view and armed square (10.1s)
+  ok 3 tests\browser\dedicated-laundry-washing-machine-player-build.spec.ts:184:1 › player creates storage and delivery capacity before Laundry (42.5s)
+  ok 4 tests\browser\dedicated-laundry-washing-machine-player-build.spec.ts:247:3 › player builds Laundry at quarterTurns0 and retains washing machine palettes and anchors after Save/Load (38.3s)
+  ok 5 tests\browser\dedicated-laundry-washing-machine-player-build.spec.ts:247:3 › player builds Laundry at quarterTurns1 and retains washing machine palettes and anchors after Save/Load (38.5s)
+  ok 6 tests\browser\oblique-camera-gameout-native.spec.ts:5:3 › native middle camera drag ends at HUD exit and cannot resume on reentry (8.9s)
+  ok 7 tests\browser\oblique-camera-gameout-native.spec.ts:5:3 › native right camera drag ends at HUD exit and cannot resume on reentry (8.8s)
+
+  7 passed (2.6m)

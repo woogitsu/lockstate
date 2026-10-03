@@ -1,0 +1,84 @@
+pnpm : $ vitest run "tests/integration/room-template-occupied-material-cancel.test.ts" "tests/foundation/research-index
+-contract.test.ts" "tests/foundation/documentation-links-contract.test.ts" "tests/foundation/typecheck-coverage-contrac
+t.test.ts" "tests/foundation/browser-suite-partition-contract.test.ts" "tests/foundation/documentation-version-claim-co
+ntract.test.ts" "tests/foundation/documentation-source-anchor-contract.test.ts" "tests/foundation/documentation-commit-
+citation-contract.test.ts" "tests/foundation/documentation-claims-contract.test.ts" "tests/foundation/documentation-anc
+hor-quotation-contract.test.ts" "--maxWorkers=2"
+At line:25 char:512
++ ... _FETCH='1'; pnpm --config.verify-deps-before-run=false test tests/int ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-safe-restore-integration-20261003
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts (8 tests | 2 failed) 14ms
+     × resolves every cited commit 4ms
+     × cites only commits this repository publishes, so CI reads the same history a reader can 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-commit-citation-contract.test.ts > a commit sha cited in prose names a commit tha
+t exists > resolves every cited commit
+AssertionError: these cite a commit that does not exist in this repository. A sha is how a claim about a tree stops exp
+iring, so a sha that names nothing is a claim that can never be checked -- and `git cat-file -e <sha>^{commit}` before 
+writing one is two seconds. If a citation is real but unreachable from any published branch or tag, it belongs in UNPUB
+LISHED_BY_ORIGIN with the reason, not here: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-office-desk-physical-detail/README.md:82 -> 9e2066aef7ef",
++ ]
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts:726:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/foundation/documentation-commit-citation-contract.test.ts > a commit sha cited in prose names a commit tha
+t exists > cites only commits this repository publishes, so CI reads the same history a reader can
+AssertionError: these cite a commit that exists on this disk and on no ref this repository publishes, so nobody else ca
+n check them and CI cannot either: `fetch-depth: 0` fetches all history for every published branch and tag and nothing 
+more. The usual cause is a sha read out of an agent's own worktree before the coordinator cherry-picked it, which rewri
+tes it -- `git branch -r --contains <sha>` tells you. Cite the commit as published, or record it in UNPUBLISHED_BY_ORIG
+IN with what it is and why the anchor cannot move: expected [ …(13) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/design/2026-09-28-adjustable-camera/native-camera-reference-20261003/README.md:3 -> 282f6413443d784e588ff4c5e
+c43095796e0244a",
++   "docs/research/2026-10-03-cell-utility-integrated/README.md:10 -> 282f6413443d784e588ff4c5ec43095796e0244a",
++   "docs/research/2026-10-03-cell-utility-integrated/README.md:11 -> 282f641",
++   "docs/research/2026-10-03-desk-cabinet-integrated/README.md:5 -> da685c52902e2a1318594017cf90a35b689005bc",
++   "docs/research/2026-10-03-medical-bed-physical-detail/README.md:3 -> da685c52902e2a1318594017cf90a35b689005bc",
++   "docs/research/2026-10-03-medicine-cabinet-physical-detail/README.md:3 -> 99999723d4e7355a30300faebf93aaa0b0259cf6"
+,
++   "docs/research/2026-10-03-office-desk-physical-detail/README.md:92 -> e2c7ff138fa6ffa38324e94a2372a46449cba52c",
++   "docs/research/2026-10-03-office-desk-physical-detail/README.md:130 -> ad2d373313bafb4c92c2e1e59355fbad9849ea8e",
++   "docs/research/2026-10-03-office-desk-physical-detail/README.md:144 -> 49bb6a22c2660ef4cecf11d4dc74d3995f01beac",
++   "docs/research/2026-10-03-office-desk-physical-detail/native-player-acceptance.md:4 -> 42eabb9ad7a24c0b211ec761df72
+f40129fe37a7",
++   "docs/research/2026-10-03-renderer-room-plan-receipt/README.md:3 -> 0a661e96825a67aea106f5f2712cceb2db4f64cf",
++   "docs/research/2026-10-03-security-console-source-audit/README.md:3 -> 3fabd094e086c3ab6836b50d995b755524cdd428",
++   "docs/research/2026-10-03-security-medical-integrated/README.md:5 -> bb521c103e786a768fd2545c97ded5b7eedcff50",
++ ]
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts:748:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 9 passed (10)
+      Tests  2 failed | 73 passed (75)
+   Start at  04:01:44
+   Duration  7.30s (transform 933ms, setup 0ms, import 7.14s, tests 4.67s, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

@@ -1,0 +1,42 @@
+pnpm : $ vitest run "tests/unit/ui-navigation-drawer-escape.test.ts" "--maxWorkers=2"
+At line:3 char:1
++ pnpm --config.verify-deps-before-run=false test tests/unit/ui-navigat ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-build-input-lifecycle-audit-20261003
+
+ ❯ tests/unit/ui-navigation-drawer-escape.test.ts (3 tests | 1 failed) 9ms
+   × navigation drawer Escape closes and returns focus without reaching armed world Build 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-navigation-drawer-escape.test.ts > navigation drawer Escape closes and returns focus without reach
+ing armed world Build
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/ui-navigation-drawer-escape.test.ts:113:26
+    111|   expect(actual.root.dataset['navigationDrawerOpen']).toBe('false');
+    112|   expect(document.activeElement).toBe(actual.trigger);
+    113|   expect(actual.armed()).toBe(true);
+       |                          ^
+    114|   expect(actual.standDown).not.toHaveBeenCalled();
+    115|   actual.shell.destroy();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  00:23:03
+   Duration  3.54s (transform 1.68s, setup 0ms, import 3.14s, tests 9ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

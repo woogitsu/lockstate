@@ -1,0 +1,73 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-construction-next-collision-audit-20261003
+
+ ❯ tests/integration/conflicting-imported-template-objects.test.ts (7 tests | 2 failed) 404ms
+   × equal legacy/exact-owner imported rows retain atomic unknown refusal in both permutations 44ms
+   × equal type and orientation imported owners retain deterministic old-template cancellation 49ms
+node : 
+At line:12 char:2
++  node node_modules/vitest/vitest.mjs run --maxWorkers=2 tests/integra ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/conflicting-imported-template-objects.test.ts > equal legacy/exact-owner imported rows retain 
+atomic unknown refusal in both permutations
+AssertionError: expected 'room-template-000000000000-2-object-0…' to be undefined
+
+- Expected:
+undefined
+
++ Received:
+"room-template-000000000000-2-object-000"
+
+ ❯ tests/integration/conflicting-imported-template-objects.test.ts:114:113
+    112|   for (const rows of [[bed!, legacyBed, toilet!], [legacyBed, bed!, to…
+    113|     const runtime = importRows(original, rows);
+    114|     expect(runtime.placedObjects.getSnapshot().find(object => object.o…
+       |                                                                                                               
+  ^
+    115|     const { kernel: _beforeKernel, ...before } = captureSessionSnapsho…
+    116|     const wall = runtime.construction.allOrders().find(order => order.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/integration/conflicting-imported-template-objects.test.ts > equal type and orientation imported owners ret
+ain deterministic old-template cancellation
+AssertionError: expected { placedObjects: [ { …(5) }, …(1) ] } to deeply equal { placedObjects: [ { …(5) }, …(1) ] }
+
+- Expected
++ Received
+
+@@ -6,11 +6,11 @@
+          "y": 11,
+        },
+        "objectId": "object.bed",
+        "orientation": 0,
+        "placedObjectId": "object:11:11",
+-       "sourceOrderId": "room-template-000000000000-2-object-000",
++       "sourceOrderId": "independent-rebuilt-bed",
+      },
+      {
+        "anchorTile": {
+          "x": 12,
+          "y": 14,
+
+ ❯ tests/integration/conflicting-imported-template-objects.test.ts:153:46
+    151|       firstAfter: captureSessionSnapshot(first), reversedAfter: captur…
+    152|   }
+    153|   expect(reversedBefore.simulation?.objects).toEqual(firstBefore.simul…
+       |                                              ^
+    154|   expect(reversed.placedObjects.getSnapshot()).toEqual(first.placedObj…
+    155|   expect(reversed.treasury.snapshot()).toEqual(first.treasury.snapshot…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 19 passed (21)
+   Start at  02:23:35
+   Duration  2.52s (transform 819ms, setup 0ms, import 2.24s, tests 409ms, environment 0ms)
+

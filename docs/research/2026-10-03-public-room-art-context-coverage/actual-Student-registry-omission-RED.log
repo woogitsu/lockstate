@@ -1,0 +1,45 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-classroom-coursebook-station-model-20261003
+
+································································································xxxxxxxx·····································································x·········
+
+ Test Files  1 failed (1)
+      Tests  9 failed | 174 passed (183)
+   Start at  16:23:06
+   Duration  900ms (transform 173ms, setup 0ms, import 478ms, tests 305ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+$ vitest run "tests/unit/public-room-oblique-context-coverage.test.ts" "--reporter=dot"
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room art > 'classroom-basic' q+0 mirror=false retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room art > 'classroom-basic' q+0 mirror=true retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room art > 'classroom-basic' q1 mirror=false retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room art > 'classroom-basic' q1 mirror=true retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room art > 'classroom-basic' q2 mirror=false retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room art > 'classroom-basic' q2 mirror=true retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room art > 'classroom-basic' q3 mirror=false retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room art > 'classroom-basic' q3 mirror=true retains owners, complete occupied squares and source-local poses
+AssertionError: the actually selected context model must be registered: expected undefined to be defined
+ ❯ tests/unit/public-room-oblique-context-coverage.test.ts:89:79
+     87|       expect(solid.assetYawRadians ?? camera.yawRadians).toBeCloseTo(c…
+     88|       const entry = registry.entries.find(candidate => candidate.asset…
+     89|       expect(entry, 'the actually selected context model must be regis…
+       |                                                                               ^
+     90|       if (entry === undefined) throw new Error('Intended room context …
+     91|       const catalog = parseObliqueModuleCatalog(json(entry.manifest.sl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room art > furniture.classroom.student-chair retains genuine source bytes and all canonical frame bodies
+AssertionError: selected actual template context must exist in registry: expected undefined to be defined
+ ❯ tests/unit/public-room-oblique-context-coverage.test.ts:103:78
+    101|   it.each([...new Set(Object.values(expected).flat())])('%s retains ge…
+    102|     const entry = registry.entries.find(candidate => candidate.assetId…
+    103|     expect(entry, 'selected actual template context must exist in regi…
+       |                                                                              ^
+    104|     if (entry === undefined) throw new Error('Template-selected descri…
+    105|     const catalog = parseObliqueModuleCatalog(json(entry.manifest.slic…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯

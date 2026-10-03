@@ -1,0 +1,63 @@
+{
+    "date":  "2026-10-03",
+    "sourceDiffAfterMutations":  0,
+    "appTypecheckExitCode":  0,
+    "fixedActor":  {
+                       "showerTicks":  1280,
+                       "target":  "room.shower-room:6:15",
+                       "routeFailures":  0,
+                       "liveAndV8":  true,
+                       "hygiene":  50440
+                   },
+    "toolsTypecheckExitCode":  0,
+    "diagnosis":  "1cc092c86fc70091e2528ac7da7b3dc3c1950d3c",
+    "limitations":  [
+                        "Physical component eligibility does not promise door permission or a future route",
+                        "Own accommodation and queued permission-aware routing unchanged",
+                        "No native or production build run"
+                    ],
+    "neighbors":  {
+                      "passed":  129,
+                      "files":  13
+                  },
+    "physicalQueryNegative":  {
+                                  "passed":  5,
+                                  "failed":  3
+                              },
+    "baselineTests":  {
+                          "passed":  2,
+                          "failed":  2
+                      },
+    "initialDocs":  {
+                        "cause":  "own new record collection needs continuous index row",
+                        "failed":  1,
+                        "passed":  19
+                    },
+    "physicalControls":  {
+                             "passed":  4
+                         },
+    "source":  "3c820f7bb3a7be8c8a3b8167a44b9d1fe2c02b85",
+    "browserRun":  false,
+    "mutationCheckpoint":  "d367aa24d5e221e182a565f3cf0bf31ebe8865ad",
+    "restored":  {
+                     "passed":  8,
+                     "files":  2
+                 },
+    "baseline":  "abcb2276f02acc685eca9ecd00899c3390031fb7",
+    "finalIndexAndDocs":  "complete",
+    "issue":  2014,
+    "actionConsumerNegative":  {
+                                   "passed":  6,
+                                   "failed":  2
+                               },
+    "fixed":  {
+                  "passed":  12,
+                  "files":  3
+              },
+    "finalDocs":  {
+                      "passed":  20,
+                      "files":  3
+                  },
+    "indexAddedRows":  1,
+    "indexRemovedRows":  0
+}

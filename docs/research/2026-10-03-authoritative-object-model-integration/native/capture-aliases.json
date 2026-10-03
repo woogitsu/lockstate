@@ -1,0 +1,898 @@
+[
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-authoritative-object-model-verify-20261003.txt",
+    "archived": "original-combined-verify/console.txt",
+    "sourceBytes": 67272,
+    "sourceSha256": "38748953e78b1931a102f00fcb3f69f4feb0262613fce24a422ae013400f45ee",
+    "archivedBytes": 34921,
+    "archivedSha256": "b7be704da6f51e0398e6bcd33294598c1230d1f81022b52a389b94e2c6ca2c15",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-placement-integration-native-20261003.json",
+    "archived": "placement-four-green/report.json",
+    "sourceBytes": 7764,
+    "sourceSha256": "5422be64c8b3c5749edb47654f7a87fd3ac804c27a5180a80152540479c4dd6c",
+    "archivedBytes": 7764,
+    "archivedSha256": "5422be64c8b3c5749edb47654f7a87fd3ac804c27a5180a80152540479c4dd6c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-placement-integration-native-20261003.txt",
+    "archived": "placement-four-green/console.txt",
+    "sourceBytes": 4642,
+    "sourceSha256": "b688ef5c53bfaa598446584f4e7a24109cf97cd960c63b7c80dbe7fe023ecadc",
+    "archivedBytes": 2332,
+    "archivedSha256": "72f28f8b98819a0a1fd0b2a532249957bf62bee32cef95eb3ec995e20fe361e6",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-placement-integration-native-20261003\\.last-run.json",
+    "archived": "placement-four-green/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-placement-integration-native-20261003\\yard-bench-player-build-pl-e93fb-hrough-Save-Load-at-Full-HD\\yard-bench-completed.png",
+    "archived": "placement-four-green/002-yard-bench-completed.png",
+    "sourceBytes": 1739961,
+    "sourceSha256": "722e9c4d3fa35a7393722ad43f1bddc75fd7e4e4cef96e59830d8617ba097ff2",
+    "archivedBytes": 1739961,
+    "archivedSha256": "722e9c4d3fa35a7393722ad43f1bddc75fd7e4e4cef96e59830d8617ba097ff2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-placement-integration-native-20261003\\yard-bench-player-build-pl-e93fb-hrough-Save-Load-at-Full-HD\\yard-bench-loaded.png",
+    "archived": "placement-four-green/003-yard-bench-loaded.png",
+    "sourceBytes": 1714033,
+    "sourceSha256": "60107845706dc79627ba826bb2ff4ea7c00ef9e6a289267d72b497ffe1c7b056",
+    "archivedBytes": 1714033,
+    "archivedSha256": "60107845706dc79627ba826bb2ff4ea7c00ef9e6a289267d72b497ffe1c7b056"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-authoritative-object-model-repaired-verify-20261003.txt",
+    "archived": "first-repair-verify/console.txt",
+    "sourceBytes": 3780,
+    "sourceSha256": "66e67a7db48cd024b1b5802e7646c7d631099561c155315a4e5589d4915c8b1d",
+    "archivedBytes": 1975,
+    "archivedSha256": "b6aaecbdda432014c97490b12de4bd1df339fac645324817199c176e6c842900",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-integration-native-20261003.json",
+    "archived": "original-ordinary-native/report.json",
+    "sourceBytes": 10408,
+    "sourceSha256": "495977cd012500db8c474022d2d8cecea96b2892013708d27f3f5af8d3b28845",
+    "archivedBytes": 10408,
+    "archivedSha256": "495977cd012500db8c474022d2d8cecea96b2892013708d27f3f5af8d3b28845"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-integration-native-20261003.txt",
+    "archived": "original-ordinary-native/console.txt",
+    "sourceBytes": 9892,
+    "sourceSha256": "36ac13fb1c170074b49cd54ed2d0f48dc5f747f019ec02293745f0fbfb4e3564",
+    "archivedBytes": 5572,
+    "archivedSha256": "5b33afb608a0dd17d3ae9cbd8c5bb487b451bf9fef4e5ec60bb6ee56f6f0e8fa",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-integration-native-20261003\\.last-run.json",
+    "archived": "original-ordinary-native/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "51ecb9b2b73a0903b790e4fd6114caa8fbe530f622523e112619f3734d6f8af1",
+    "archivedBytes": 96,
+    "archivedSha256": "51ecb9b2b73a0903b790e4fd6114caa8fbe530f622523e112619f3734d6f8af1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-integration-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\error-context.md",
+    "archived": "original-ordinary-native/002-error-context.md",
+    "sourceBytes": 14421,
+    "sourceSha256": "12567a0c0b9acc1f0d3a0d2e8c0a080c56b89f562714ccc8275e9948c099e47a",
+    "archivedBytes": 14421,
+    "archivedSha256": "12567a0c0b9acc1f0d3a0d2e8c0a080c56b89f562714ccc8275e9948c099e47a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-integration-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\test-failed-1.png",
+    "archived": "original-ordinary-native/003-test-failed-1.png",
+    "sourceBytes": 305260,
+    "sourceSha256": "b03deb0c25f2614879939af3b37860783f544fe7b10128174d0c46ed49cf9331",
+    "archivedBytes": 305260,
+    "archivedSha256": "b03deb0c25f2614879939af3b37860783f544fe7b10128174d0c46ed49cf9331"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-integration-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\trace.zip",
+    "archived": "original-ordinary-native/004-trace.zip",
+    "sourceBytes": 26977859,
+    "sourceSha256": "23f64321fca7af8cceb5cc7d70d1db08ff4f5d0a25af4b61fa1bd2aead57cce0",
+    "archivedBytes": 26977859,
+    "archivedSha256": "23f64321fca7af8cceb5cc7d70d1db08ff4f5d0a25af4b61fa1bd2aead57cce0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-authoritative-object-model-final-verify-20261003.txt",
+    "archived": "final-full-verify/console.txt",
+    "sourceBytes": 5382,
+    "sourceSha256": "77d64b2181346c1ff67832321717ca76bf679477a9278bb6c1ec89c452669811",
+    "archivedBytes": 2715,
+    "archivedSha256": "60ce278dae0127141cd588005e706100aa1b2f3416142cad452d685bb846b68c",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003.json",
+    "archived": "stationary-before-fresh-expectation/report.json",
+    "sourceBytes": 10242,
+    "sourceSha256": "221da0cabb1f941e6741a3684f5c0e770369980a28110f2406ed739994135dd0",
+    "archivedBytes": 10242,
+    "archivedSha256": "221da0cabb1f941e6741a3684f5c0e770369980a28110f2406ed739994135dd0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003.txt",
+    "archived": "stationary-before-fresh-expectation/console.txt",
+    "sourceBytes": 9820,
+    "sourceSha256": "6e82568e2d4942624d1aef6b0ee64c2ed5b1af0e07889888aff18af3902d7414",
+    "archivedBytes": 5536,
+    "archivedSha256": "05a627dec94cd134289c594f5f48fc2bdb9aa571487a4e26fc342696c30c9c28",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\.last-run.json",
+    "archived": "stationary-before-fresh-expectation/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "51ecb9b2b73a0903b790e4fd6114caa8fbe530f622523e112619f3734d6f8af1",
+    "archivedBytes": 96,
+    "archivedSha256": "51ecb9b2b73a0903b790e4fd6114caa8fbe530f622523e112619f3734d6f8af1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-loaded-original-primary-held.png",
+    "archived": "stationary-before-fresh-expectation/002-actual-loaded-original-primary-held.png",
+    "sourceBytes": 489473,
+    "sourceSha256": "2de656ece3686937b28347cc48a44cdc7160b4cfe67424ba31cc65faba626dfc",
+    "archivedBytes": 489473,
+    "archivedSha256": "2de656ece3686937b28347cc48a44cdc7160b4cfe67424ba31cc65faba626dfc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-one-pending-whole.json",
+    "archived": "stationary-before-fresh-expectation/003-actual-one-pending-whole.json",
+    "sourceBytes": 18260,
+    "sourceSha256": "617f445964e3580278b0355d89db4557b1ebbe91f95621b84b292734b6c4010b",
+    "archivedBytes": 18260,
+    "archivedSha256": "617f445964e3580278b0355d89db4557b1ebbe91f95621b84b292734b6c4010b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-paired-anchor-pixel-receipt.json",
+    "archived": "stationary-before-fresh-expectation/004-actual-paired-anchor-pixel-receipt.json",
+    "sourceBytes": 228,
+    "sourceSha256": "5708f56cc963b870a57528266702cfb4dfa46758c70a07944555ffe239cb826e",
+    "archivedBytes": 228,
+    "archivedSha256": "5708f56cc963b870a57528266702cfb4dfa46758c70a07944555ffe239cb826e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-stationary-allowed-fullhd.png",
+    "archived": "stationary-before-fresh-expectation/005-actual-stationary-allowed-fullhd.png",
+    "sourceBytes": 477064,
+    "sourceSha256": "07a366a4672c0070c3c0d7d4333c87cf7d4d6b6116e74c34a9e56f174a291394",
+    "archivedBytes": 477064,
+    "archivedSha256": "07a366a4672c0070c3c0d7d4333c87cf7d4d6b6116e74c34a9e56f174a291394"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-stationary-blocked-fullhd.png",
+    "archived": "stationary-before-fresh-expectation/006-actual-stationary-blocked-fullhd.png",
+    "sourceBytes": 511372,
+    "sourceSha256": "ad3c1b9f0ab00e50a161bd60a231d65a8eab820ac3d052be01a7130b6c3a2c18",
+    "archivedBytes": 511372,
+    "archivedSha256": "ad3c1b9f0ab00e50a161bd60a231d65a8eab820ac3d052be01a7130b6c3a2c18"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-stationary-disarmed-fullhd.png",
+    "archived": "stationary-before-fresh-expectation/007-actual-stationary-disarmed-fullhd.png",
+    "sourceBytes": 490288,
+    "sourceSha256": "b5cf67f62eae747c3b80867422af45a3a1a8347d5d69c9d03ffb56ac7f8dcac4",
+    "archivedBytes": 490288,
+    "archivedSha256": "b5cf67f62eae747c3b80867422af45a3a1a8347d5d69c9d03ffb56ac7f8dcac4"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-unclaimed-anchor-allowed.png",
+    "archived": "stationary-before-fresh-expectation/008-actual-unclaimed-anchor-allowed.png",
+    "sourceBytes": 7198,
+    "sourceSha256": "5fdc253cbee765fa3277969e890928c69aa2beffdf828148d28351edd83b5e7d",
+    "archivedBytes": 7198,
+    "archivedSha256": "5fdc253cbee765fa3277969e890928c69aa2beffdf828148d28351edd83b5e7d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-unclaimed-anchor-blocked.png",
+    "archived": "stationary-before-fresh-expectation/009-actual-unclaimed-anchor-blocked.png",
+    "sourceBytes": 7269,
+    "sourceSha256": "8401a336de3b18cb71e226257ba9fc4d70a1c68521cea5c6d8140832e7a5fd59",
+    "archivedBytes": 7269,
+    "archivedSha256": "8401a336de3b18cb71e226257ba9fc4d70a1c68521cea5c6d8140832e7a5fd59"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-unclaimed-anchor-disarmed.png",
+    "archived": "stationary-before-fresh-expectation/010-actual-unclaimed-anchor-disarmed.png",
+    "sourceBytes": 7872,
+    "sourceSha256": "d1fda11ea5a9609ab57ac99d752ffcc8444ad4097f8be720e65f50f1191a168f",
+    "archivedBytes": 7872,
+    "archivedSha256": "d1fda11ea5a9609ab57ac99d752ffcc8444ad4097f8be720e65f50f1191a168f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\error-context.md",
+    "archived": "stationary-before-fresh-expectation/011-error-context.md",
+    "sourceBytes": 15657,
+    "sourceSha256": "4be317f74bf017fe96734bb9e448b65fdd312118c05f945d287af8155760911a",
+    "archivedBytes": 15657,
+    "archivedSha256": "4be317f74bf017fe96734bb9e448b65fdd312118c05f945d287af8155760911a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\test-failed-1.png",
+    "archived": "stationary-before-fresh-expectation/012-test-failed-1.png",
+    "sourceBytes": 489473,
+    "sourceSha256": "2de656ece3686937b28347cc48a44cdc7160b4cfe67424ba31cc65faba626dfc",
+    "archivedBytes": 489473,
+    "archivedSha256": "2de656ece3686937b28347cc48a44cdc7160b4cfe67424ba31cc65faba626dfc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-unclipped-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\trace.zip",
+    "archived": "stationary-before-fresh-expectation/013-trace.zip",
+    "sourceBytes": 64988210,
+    "sourceSha256": "f0f507dd588839000bc3786d7066b98d2dd4cfa6efd4fe776fbc6a5c91eb43e6",
+    "archivedBytes": 64988210,
+    "archivedSha256": "f0f507dd588839000bc3786d7066b98d2dd4cfa6efd4fe776fbc6a5c91eb43e6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-fresh-native-20261003.json",
+    "archived": "ordinary-object-green/report.json",
+    "sourceBytes": 640411,
+    "sourceSha256": "e1aba37cd466e201d80fee1009f8ec2b8846d82224f4b6c2b32360c0d7a80891",
+    "archivedBytes": 640411,
+    "archivedSha256": "e1aba37cd466e201d80fee1009f8ec2b8846d82224f4b6c2b32360c0d7a80891"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-fresh-native-20261003.txt",
+    "archived": "ordinary-object-green/console.txt",
+    "sourceBytes": 3776,
+    "sourceSha256": "eda2451a049a56474ab4da8ef8e5954f9559f059c16674d43724276117cec1ae",
+    "archivedBytes": 1891,
+    "archivedSha256": "c34eb3978b0180233bbcd06a8fc0a254b0d5c9a9d659d7e5e494e5254bab2d4c",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-fresh-native-20261003\\.last-run.json",
+    "archived": "ordinary-object-green/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-fresh-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-load-fresh-purchase-whole.json",
+    "archived": "ordinary-object-green/002-actual-load-fresh-purchase-whole.json",
+    "sourceBytes": 18987,
+    "sourceSha256": "6ea177ba150e574a1a07badc23f831e71e25b0394960acd834145da523bb5b98",
+    "archivedBytes": 18987,
+    "archivedSha256": "6ea177ba150e574a1a07badc23f831e71e25b0394960acd834145da523bb5b98"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-fresh-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-loaded-original-primary-held.png",
+    "archived": "ordinary-object-green/003-actual-loaded-original-primary-held.png",
+    "sourceBytes": 489473,
+    "sourceSha256": "2de656ece3686937b28347cc48a44cdc7160b4cfe67424ba31cc65faba626dfc",
+    "archivedBytes": 489473,
+    "archivedSha256": "2de656ece3686937b28347cc48a44cdc7160b4cfe67424ba31cc65faba626dfc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-fresh-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-new-fresh-outside-room-whole.json",
+    "archived": "ordinary-object-green/004-actual-new-fresh-outside-room-whole.json",
+    "sourceBytes": 15590,
+    "sourceSha256": "f1717e55a53e6224a2882248804d7b213938cb63d581e9a8e5e272e053d1c137",
+    "archivedBytes": 15590,
+    "archivedSha256": "f1717e55a53e6224a2882248804d7b213938cb63d581e9a8e5e272e053d1c137"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-fresh-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-new-original-primary-held.png",
+    "archived": "ordinary-object-green/005-actual-new-original-primary-held.png",
+    "sourceBytes": 282441,
+    "sourceSha256": "17464d704c7daad0acd65155badae29a9eae74ee323ccf83557bc674a486cd47",
+    "archivedBytes": 282441,
+    "archivedSha256": "17464d704c7daad0acd65155badae29a9eae74ee323ccf83557bc674a486cd47"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-fresh-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-new-primary-held-whole.json",
+    "archived": "ordinary-object-green/006-actual-new-primary-held-whole.json",
+    "sourceBytes": 15590,
+    "sourceSha256": "c310f0810b6d8ef4f06f66135e180d962d25bb544d1b792abefbb23422d2a518",
+    "archivedBytes": 15590,
+    "archivedSha256": "c310f0810b6d8ef4f06f66135e180d962d25bb544d1b792abefbb23422d2a518"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-fresh-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-new-zoned-purchase-whole.json",
+    "archived": "ordinary-object-green/007-actual-new-zoned-purchase-whole.json",
+    "sourceBytes": 18267,
+    "sourceSha256": "0bbb2db3d226fca5eb8701a3b4eccaf97f16f2bf61fd7b24c895db66ba7ade81",
+    "archivedBytes": 18267,
+    "archivedSha256": "0bbb2db3d226fca5eb8701a3b4eccaf97f16f2bf61fd7b24c895db66ba7ade81"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-fresh-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-one-pending-whole.json",
+    "archived": "ordinary-object-green/008-actual-one-pending-whole.json",
+    "sourceBytes": 18260,
+    "sourceSha256": "3ade7e6e0e42753eada1152f580b92a8c60525bb2b395baa7e7f98014137958e",
+    "archivedBytes": 18260,
+    "archivedSha256": "3ade7e6e0e42753eada1152f580b92a8c60525bb2b395baa7e7f98014137958e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-fresh-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-paired-anchor-pixel-receipt.json",
+    "archived": "ordinary-object-green/009-actual-paired-anchor-pixel-receipt.json",
+    "sourceBytes": 228,
+    "sourceSha256": "5708f56cc963b870a57528266702cfb4dfa46758c70a07944555ffe239cb826e",
+    "archivedBytes": 228,
+    "archivedSha256": "5708f56cc963b870a57528266702cfb4dfa46758c70a07944555ffe239cb826e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-fresh-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-public-native-receipt.json",
+    "archived": "ordinary-object-green/010-actual-public-native-receipt.json",
+    "sourceBytes": 77978,
+    "sourceSha256": "46941703b3c59ca14e31e580bcfa28407aa29ce7088f4e952bb3e4c6b56a16cd",
+    "archivedBytes": 77978,
+    "archivedSha256": "46941703b3c59ca14e31e580bcfa28407aa29ce7088f4e952bb3e4c6b56a16cd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-fresh-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-stationary-allowed-fullhd.png",
+    "archived": "ordinary-object-green/011-actual-stationary-allowed-fullhd.png",
+    "sourceBytes": 477220,
+    "sourceSha256": "42df603ca2bdf6291df42ec65b514d93e93ed33e5968a70c7994df68d3d65709",
+    "archivedBytes": 477220,
+    "archivedSha256": "42df603ca2bdf6291df42ec65b514d93e93ed33e5968a70c7994df68d3d65709"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-fresh-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-stationary-blocked-fullhd.png",
+    "archived": "ordinary-object-green/012-actual-stationary-blocked-fullhd.png",
+    "sourceBytes": 511534,
+    "sourceSha256": "806e9c127b624381920aa683b0ea8dac74b2d1d5081023e53ab50ddf0e314245",
+    "archivedBytes": 511534,
+    "archivedSha256": "806e9c127b624381920aa683b0ea8dac74b2d1d5081023e53ab50ddf0e314245"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-fresh-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-stationary-disarmed-fullhd.png",
+    "archived": "ordinary-object-green/013-actual-stationary-disarmed-fullhd.png",
+    "sourceBytes": 490440,
+    "sourceSha256": "104f3174bfc5c473a94b6d9b2763553ee5c786f5db087ec70885630fa4077883",
+    "archivedBytes": 490440,
+    "archivedSha256": "104f3174bfc5c473a94b6d9b2763553ee5c786f5db087ec70885630fa4077883"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-fresh-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-unclaimed-anchor-allowed.png",
+    "archived": "ordinary-object-green/014-actual-unclaimed-anchor-allowed.png",
+    "sourceBytes": 7198,
+    "sourceSha256": "5fdc253cbee765fa3277969e890928c69aa2beffdf828148d28351edd83b5e7d",
+    "archivedBytes": 7198,
+    "archivedSha256": "5fdc253cbee765fa3277969e890928c69aa2beffdf828148d28351edd83b5e7d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-fresh-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-unclaimed-anchor-blocked.png",
+    "archived": "ordinary-object-green/015-actual-unclaimed-anchor-blocked.png",
+    "sourceBytes": 7269,
+    "sourceSha256": "8401a336de3b18cb71e226257ba9fc4d70a1c68521cea5c6d8140832e7a5fd59",
+    "archivedBytes": 7269,
+    "archivedSha256": "8401a336de3b18cb71e226257ba9fc4d70a1c68521cea5c6d8140832e7a5fd59"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ordinary-object-fresh-native-20261003\\ordinary-object-preflight.-3a35b-se-and-fresh-accepted-press\\actual-unclaimed-anchor-disarmed.png",
+    "archived": "ordinary-object-green/016-actual-unclaimed-anchor-disarmed.png",
+    "sourceBytes": 7872,
+    "sourceSha256": "d1fda11ea5a9609ab57ac99d752ffcc8444ad4097f8be720e65f50f1191a168f",
+    "archivedBytes": 7872,
+    "archivedSha256": "d1fda11ea5a9609ab57ac99d752ffcc8444ad4097f8be720e65f50f1191a168f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003.json",
+    "archived": "reception-models-three-green/report.json",
+    "sourceBytes": 5923,
+    "sourceSha256": "c28bcd1b9bbd57d836bb5d012dc3f128eff5006c9bc0f0d69002484e527c1220",
+    "archivedBytes": 5923,
+    "archivedSha256": "c28bcd1b9bbd57d836bb5d012dc3f128eff5006c9bc0f0d69002484e527c1220"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003.txt",
+    "archived": "reception-models-three-green/console.txt",
+    "sourceBytes": 4204,
+    "sourceSha256": "51f3e13840c85688279cb26c34152b45f625644302a5ab7e9d98ff9228a1b74a",
+    "archivedBytes": 2109,
+    "archivedSha256": "1c5af3f78042e4e4b2f7b37ffcae3867f14e2c0edca814c4f20ee175eb85d64a",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\.last-run.json",
+    "archived": "reception-models-three-green/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-13948-strap-for-Reception-seating\\actual-public-capacity-whole-paused.json",
+    "archived": "reception-models-three-green/002-actual-public-capacity-whole-paused.json",
+    "sourceBytes": 54463,
+    "sourceSha256": "af0694f130c6592a8e1c29c70f2269cc200a9b36e90f9225b610efdd0a395aa6",
+    "archivedBytes": 54463,
+    "archivedSha256": "af0694f130c6592a8e1c29c70f2269cc200a9b36e90f9225b610efdd0a395aa6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\actual-reception-completed-whole-paused.json",
+    "archived": "reception-models-three-green/003-actual-reception-completed-whole-paused.json",
+    "sourceBytes": 76812,
+    "sourceSha256": "f5f4d1e65c7ea22f86f105bc9518dbfccfee1e74ffb38cfbff057b4461e3b221",
+    "archivedBytes": 76812,
+    "archivedSha256": "f5f4d1e65c7ea22f86f105bc9518dbfccfee1e74ffb38cfbff057b4461e3b221"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\actual-reception-queued-whole-paused.json",
+    "archived": "reception-models-three-green/004-actual-reception-queued-whole-paused.json",
+    "sourceBytes": 63958,
+    "sourceSha256": "473066381175a28e5dffde03d81fefbf0ded220ccc1172b0b169301d23bf2e39",
+    "archivedBytes": 63958,
+    "archivedSha256": "473066381175a28e5dffde03d81fefbf0ded220ccc1172b0b169301d23bf2e39"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\actual-reception-whole-paused-after-save-load.json",
+    "archived": "reception-models-three-green/005-actual-reception-whole-paused-after-save-load.json",
+    "sourceBytes": 76812,
+    "sourceSha256": "ff0eb905d294104b1bd57234604d8b52b2f86a78aeff8c5df9bcb17f5f0926eb",
+    "archivedBytes": 76812,
+    "archivedSha256": "ff0eb905d294104b1bd57234604d8b52b2f86a78aeff8c5df9bcb17f5f0926eb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\reception-registration-desk-actual200-source60-elev40.png",
+    "archived": "reception-models-three-green/006-reception-registration-desk-actual200-source60-elev40.png",
+    "sourceBytes": 7646,
+    "sourceSha256": "bac55a0b3bacc977eeca707eaf444e58f8661171391a8d1c1d430e521204febe",
+    "archivedBytes": 7646,
+    "archivedSha256": "bac55a0b3bacc977eeca707eaf444e58f8661171391a8d1c1d430e521204febe"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\reception-room-actual-after-load-canvas.png",
+    "archived": "reception-models-three-green/007-reception-room-actual-after-load-canvas.png",
+    "sourceBytes": 1495699,
+    "sourceSha256": "e543cde5e9fd204e485448fc2388439ffb93554a441183207511fa6cc8f71f77",
+    "archivedBytes": 1495699,
+    "archivedSha256": "e543cde5e9fd204e485448fc2388439ffb93554a441183207511fa6cc8f71f77"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\reception-room-actual-after-load-fullhd.png",
+    "archived": "reception-models-three-green/008-reception-room-actual-after-load-fullhd.png",
+    "sourceBytes": 1495699,
+    "sourceSha256": "e543cde5e9fd204e485448fc2388439ffb93554a441183207511fa6cc8f71f77",
+    "archivedBytes": 1495699,
+    "archivedSha256": "e543cde5e9fd204e485448fc2388439ffb93554a441183207511fa6cc8f71f77"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\reception-room-actual-before-save-canvas.png",
+    "archived": "reception-models-three-green/009-reception-room-actual-before-save-canvas.png",
+    "sourceBytes": 1522254,
+    "sourceSha256": "4af70d4be6b5cf267cda9ded9e66f89bcb6f5f657bd45a6aaf8a08161849b7d2",
+    "archivedBytes": 1522254,
+    "archivedSha256": "4af70d4be6b5cf267cda9ded9e66f89bcb6f5f657bd45a6aaf8a08161849b7d2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\reception-room-actual-before-save-fullhd.png",
+    "archived": "reception-models-three-green/010-reception-room-actual-before-save-fullhd.png",
+    "sourceBytes": 1522254,
+    "sourceSha256": "4af70d4be6b5cf267cda9ded9e66f89bcb6f5f657bd45a6aaf8a08161849b7d2",
+    "archivedBytes": 1522254,
+    "archivedSha256": "4af70d4be6b5cf267cda9ded9e66f89bcb6f5f657bd45a6aaf8a08161849b7d2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\reception-room-actual-network-and-decoder-receipt.json",
+    "archived": "reception-models-three-green/011-reception-room-actual-network-and-decoder-receipt.json",
+    "sourceBytes": 91666,
+    "sourceSha256": "2a54d7f10af108c807ecdf853cd03e7e5686753e2481b43116c913660a1d1d91",
+    "archivedBytes": 91666,
+    "archivedSha256": "2a54d7f10af108c807ecdf853cd03e7e5686753e2481b43116c913660a1d1d91"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\reception-room-actual-network.json",
+    "archived": "reception-models-three-green/012-reception-room-actual-network.json",
+    "sourceBytes": 6948,
+    "sourceSha256": "2164fdacc0916ed7bacef02dc0a422fc0c8bcb8f27c37d459896843a14a2a5e3",
+    "archivedBytes": 6948,
+    "archivedSha256": "2164fdacc0916ed7bacef02dc0a422fc0c8bcb8f27c37d459896843a14a2a5e3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\reception-room-actual200-source60-elev40.png",
+    "archived": "reception-models-three-green/013-reception-room-actual200-source60-elev40.png",
+    "sourceBytes": 7901,
+    "sourceSha256": "4e6ee8fdb156be06a9d023f8806d90aede0b12552d048dcdba383c5f68b4cb0d",
+    "archivedBytes": 7901,
+    "archivedSha256": "4e6ee8fdb156be06a9d023f8806d90aede0b12552d048dcdba383c5f68b4cb0d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\reception-room-native-prepared-route-receipt.json",
+    "archived": "reception-models-three-green/014-reception-room-native-prepared-route-receipt.json",
+    "sourceBytes": 290287,
+    "sourceSha256": "7c68651d6dc89502654dbcd986f85311b3fbbbe8e3e9efc28746ad843525121e",
+    "archivedBytes": 290287,
+    "archivedSha256": "7c68651d6dc89502654dbcd986f85311b3fbbbe8e3e9efc28746ad843525121e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\actual-reception-completed-whole-paused.json",
+    "archived": "reception-models-three-green/015-actual-reception-completed-whole-paused.json",
+    "sourceBytes": 76975,
+    "sourceSha256": "5cbffa219d79424de602edd2f6365cf6cf7ce7b5a5b3ac839a5e153b47c6981d",
+    "archivedBytes": 76975,
+    "archivedSha256": "5cbffa219d79424de602edd2f6365cf6cf7ce7b5a5b3ac839a5e153b47c6981d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\actual-reception-queued-whole-paused.json",
+    "archived": "reception-models-three-green/016-actual-reception-queued-whole-paused.json",
+    "sourceBytes": 63924,
+    "sourceSha256": "00ad25d9e98b8f312d91ac30fc17cd5b2283aa6e27eefbdbf063f68bc4e5a77e",
+    "archivedBytes": 63924,
+    "archivedSha256": "00ad25d9e98b8f312d91ac30fc17cd5b2283aa6e27eefbdbf063f68bc4e5a77e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\actual-reception-whole-paused-after-save-load.json",
+    "archived": "reception-models-three-green/017-actual-reception-whole-paused-after-save-load.json",
+    "sourceBytes": 76975,
+    "sourceSha256": "e15d2376654976653572f990a93e081843a67876e7fd261d8d8054185adc10d8",
+    "archivedBytes": 76975,
+    "archivedSha256": "e15d2376654976653572f990a93e081843a67876e7fd261d8d8054185adc10d8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\reception-registration-desk-actual200-source60-elev40.png",
+    "archived": "reception-models-three-green/018-reception-registration-desk-actual200-source60-elev40.png",
+    "sourceBytes": 7646,
+    "sourceSha256": "bac55a0b3bacc977eeca707eaf444e58f8661171391a8d1c1d430e521204febe",
+    "archivedBytes": 7646,
+    "archivedSha256": "bac55a0b3bacc977eeca707eaf444e58f8661171391a8d1c1d430e521204febe"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\reception-room-actual-after-load-canvas.png",
+    "archived": "reception-models-three-green/019-reception-room-actual-after-load-canvas.png",
+    "sourceBytes": 1521686,
+    "sourceSha256": "70656222d2c61364e5bfc39bbb4ec33b0ef2762d10f70e7973fc8117b6c530ca",
+    "archivedBytes": 1521686,
+    "archivedSha256": "70656222d2c61364e5bfc39bbb4ec33b0ef2762d10f70e7973fc8117b6c530ca"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\reception-room-actual-after-load-fullhd.png",
+    "archived": "reception-models-three-green/020-reception-room-actual-after-load-fullhd.png",
+    "sourceBytes": 1521686,
+    "sourceSha256": "70656222d2c61364e5bfc39bbb4ec33b0ef2762d10f70e7973fc8117b6c530ca",
+    "archivedBytes": 1521686,
+    "archivedSha256": "70656222d2c61364e5bfc39bbb4ec33b0ef2762d10f70e7973fc8117b6c530ca"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\reception-room-actual-before-save-canvas.png",
+    "archived": "reception-models-three-green/021-reception-room-actual-before-save-canvas.png",
+    "sourceBytes": 1561441,
+    "sourceSha256": "9e4570462cb7fb5d7762c2d3d9d48c238980ad75ab6497b1bf6ee67b8919944e",
+    "archivedBytes": 1561441,
+    "archivedSha256": "9e4570462cb7fb5d7762c2d3d9d48c238980ad75ab6497b1bf6ee67b8919944e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\reception-room-actual-before-save-fullhd.png",
+    "archived": "reception-models-three-green/022-reception-room-actual-before-save-fullhd.png",
+    "sourceBytes": 1561441,
+    "sourceSha256": "9e4570462cb7fb5d7762c2d3d9d48c238980ad75ab6497b1bf6ee67b8919944e",
+    "archivedBytes": 1561441,
+    "archivedSha256": "9e4570462cb7fb5d7762c2d3d9d48c238980ad75ab6497b1bf6ee67b8919944e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\reception-room-actual-network-and-decoder-receipt.json",
+    "archived": "reception-models-three-green/023-reception-room-actual-network-and-decoder-receipt.json",
+    "sourceBytes": 104638,
+    "sourceSha256": "ab8464d391bfc90c9500a39364afa7712f9d480c4cf7bee656fec196b38f4e79",
+    "archivedBytes": 104638,
+    "archivedSha256": "ab8464d391bfc90c9500a39364afa7712f9d480c4cf7bee656fec196b38f4e79"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\reception-room-actual-network.json",
+    "archived": "reception-models-three-green/024-reception-room-actual-network.json",
+    "sourceBytes": 11531,
+    "sourceSha256": "0d8d7d576065f4c46cb87a65fa179d677f50cd86e647a97e1289b8eaf0ad471d",
+    "archivedBytes": 11531,
+    "archivedSha256": "0d8d7d576065f4c46cb87a65fa179d677f50cd86e647a97e1289b8eaf0ad471d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\reception-room-actual200-source60-elev40.png",
+    "archived": "reception-models-three-green/025-reception-room-actual200-source60-elev40.png",
+    "sourceBytes": 7901,
+    "sourceSha256": "4e6ee8fdb156be06a9d023f8806d90aede0b12552d048dcdba383c5f68b4cb0d",
+    "archivedBytes": 7901,
+    "archivedSha256": "4e6ee8fdb156be06a9d023f8806d90aede0b12552d048dcdba383c5f68b4cb0d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-desk-integration-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\reception-room-native-prepared-route-receipt.json",
+    "archived": "reception-models-three-green/026-reception-room-native-prepared-route-receipt.json",
+    "sourceBytes": 304004,
+    "sourceSha256": "6aa4638ae1b07b435c28174ed24e9f658a588b249153e86288b969af8292c7fc",
+    "archivedBytes": 304004,
+    "archivedSha256": "6aa4638ae1b07b435c28174ed24e9f658a588b249153e86288b969af8292c7fc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-complete-angled-integration-final-verify-20261003.txt",
+    "archived": "original-final-combined-verify/console.txt",
+    "sourceBytes": 6590,
+    "sourceSha256": "307d1bb6c7f109b8cb7c4e96cf85ddc41c18a8f9c0a53a0237a51b1ad9fc7452",
+    "archivedBytes": 3433,
+    "archivedSha256": "94d4efbefe12542360d21d22ce986a007644a32c3dff4fa828b4789229df28fe",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-complete-angled-integration-final-verify-restored-20261003.txt",
+    "archived": "original-final-document-scan-timeout/console.txt",
+    "sourceBytes": 3870,
+    "sourceSha256": "2e7355238ebb921e2b8e67b055063f802d3b1734828ce5b4707b950c21c57e09",
+    "archivedBytes": 2022,
+    "archivedSha256": "3b914aca5ae5dcafa782bb9b691302a21cb962e0d589560806a4e93c8a2a307e",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-document-scan-single-measurement-20261003.txt",
+    "archived": "single-document-measurement/console.txt",
+    "sourceBytes": 578,
+    "sourceSha256": "c59ab757ab74cf3edc878c223384c900a6ae2750936ba8790400ec47e464c889",
+    "archivedBytes": 289,
+    "archivedSha256": "3e1ee9cf4ed77a5826c746073c8e856f3b4837acaff84096c7b2891a3edbbe29",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-document-scan-producer-control-20261003\\actual-source-exact-restoration-green.stderr.txt",
+    "archived": "actual-document-producer-control/001-actual-source-exact-restoration-green.stderr.txt",
+    "sourceBytes": 0,
+    "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "archivedBytes": 0,
+    "archivedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-document-scan-producer-control-20261003\\actual-source-exact-restoration-green.stdout.txt",
+    "archived": "actual-document-producer-control/002-actual-source-exact-restoration-green.stdout.txt",
+    "sourceBytes": 276,
+    "sourceSha256": "976d269919c95642a23b87bc2f163d0222edbf220ee51efd80c25b8f8ef891e8",
+    "archivedBytes": 276,
+    "archivedSha256": "976d269919c95642a23b87bc2f163d0222edbf220ee51efd80c25b8f8ef891e8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-document-scan-producer-control-20261003\\actual-source-omission-red.stderr.txt",
+    "archived": "actual-document-producer-control/003-actual-source-omission-red.stderr.txt",
+    "sourceBytes": 1120,
+    "sourceSha256": "f14bb66be364a1b954775157b480d9df80a4567bc6a658d8d8a04f37dc39a3c9",
+    "archivedBytes": 1120,
+    "archivedSha256": "f14bb66be364a1b954775157b480d9df80a4567bc6a658d8d8a04f37dc39a3c9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-document-scan-producer-control-20261003\\actual-source-omission-red.stdout.txt",
+    "archived": "actual-document-producer-control/004-actual-source-omission-red.stdout.txt",
+    "sourceBytes": 490,
+    "sourceSha256": "1ffbcc183902568a867d9b5938b4970d58f24d491b7c8db4813a5b54ec3f6707",
+    "archivedBytes": 490,
+    "archivedSha256": "1ffbcc183902568a867d9b5938b4970d58f24d491b7c8db4813a5b54ec3f6707"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-document-scan-producer-control-20261003\\control-receipt.json",
+    "archived": "actual-document-producer-control/005-control-receipt.json",
+    "sourceBytes": 671,
+    "sourceSha256": "4687016a10e3d02961e2d7d40b48046deb556735883b69af3bd0d6fee15c655e",
+    "archivedBytes": 671,
+    "archivedSha256": "4687016a10e3d02961e2d7d40b48046deb556735883b69af3bd0d6fee15c655e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-document-scan-producer-control-20261003\\executed-producer-control.cjs.txt",
+    "archived": "actual-document-producer-control/006-executed-producer-control.cjs.txt",
+    "sourceBytes": 2244,
+    "sourceSha256": "94035cba4389a853da2abb70a857ab9064156c8f07a95402909526b31f745a8b",
+    "archivedBytes": 2244,
+    "archivedSha256": "94035cba4389a853da2abb70a857ab9064156c8f07a95402909526b31f745a8b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-complete-angled-integration-final-verify-scanned-once-20261003.txt",
+    "archived": "original-final-default-source-scan-timeout/console.txt",
+    "sourceBytes": 3930,
+    "sourceSha256": "6a0c814537eef28b21bf2a37a333e9aecb9b86e6881724e2721a8fc79d296d14",
+    "archivedBytes": 2052,
+    "archivedSha256": "9ef1a9e300cfca08eb277541ce7bd47eb0e27dc92faab2b4eb5cf6fab6442e48",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-complete-angled-integration-final-bounded-workers-20261003.txt",
+    "archived": "complete-final-stage-green/console.txt",
+    "sourceBytes": 5864,
+    "sourceSha256": "5c6e07f2553fd55f16088eaa2c31102f26c886ed276e693b5a1d31a7c32d9cbe",
+    "archivedBytes": 2956,
+    "archivedSha256": "d80e5607200b94ec4c85391895b3353838df3846712728dfe9df6352ca84fe0d",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-final-angled-asset-catalog-20261003.txt",
+    "archived": "asset-catalog-green/console.txt",
+    "sourceBytes": 1298,
+    "sourceSha256": "8f3bcfdfa44b4b7cefbb01be3fe80e22036144420571f6e4b568bd92e15da9bc",
+    "archivedBytes": 649,
+    "archivedSha256": "fc6b072e1b84836d6d51fdccdf698123f09837fa3158a638685e4f1e17d72a54",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003.json",
+    "archived": "north-door-three-green/report.json",
+    "sourceBytes": 7423,
+    "sourceSha256": "5c8b4495a9c835de791d8a2e858bb8d173e6011968697950b16ce5a372a80925",
+    "archivedBytes": 7423,
+    "archivedSha256": "5c8b4495a9c835de791d8a2e858bb8d173e6011968697950b16ce5a372a80925"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003.txt",
+    "archived": "north-door-three-green/console.txt",
+    "sourceBytes": 4192,
+    "sourceSha256": "b6fdfe32e14c70c541e382f854f44d59c03419f90203ee8019c3ab5c42c96cca",
+    "archivedBytes": 2103,
+    "archivedSha256": "92d12ad0712b60f8156db6b10bc1653d95c3f80afd8f2e4b6ebacf3523df5839",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\.last-run.json",
+    "archived": "north-door-three-green/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\attachments\\cell-cot-owner-loader-save-evidence-7247ff3ac9c0eed173236151b8523cd5119c6e38.json",
+    "archived": "north-door-three-green/002-cell-cot-owner-loader-save-evidence-7247ff3ac9c0eed173236151b852.json",
+    "sourceBytes": 169259,
+    "sourceSha256": "51a45bd785ddd0da969a3b0e351ff7b467eb3b3c304bcccd94bb3fd4f222f3be",
+    "archivedBytes": 169259,
+    "archivedSha256": "51a45bd785ddd0da969a3b0e351ff7b467eb3b3c304bcccd94bb3fd4f222f3be"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-headboard-pending-calibration-fullhd.png",
+    "archived": "north-door-three-green/003-cell-cot-headboard-pending-calibration-fullhd.png",
+    "sourceBytes": 1499648,
+    "sourceSha256": "f95528c64171aa6009d36a984f3d63e22b4dbffb8d0396ef67e423fabe7503bf",
+    "archivedBytes": 1499648,
+    "archivedSha256": "f95528c64171aa6009d36a984f3d63e22b4dbffb8d0396ef67e423fabe7503bf"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-loaded-fullhd.png",
+    "archived": "north-door-three-green/004-cell-cot-loaded-fullhd.png",
+    "sourceBytes": 1374426,
+    "sourceSha256": "9bab0456cc3fd3fd6fe1c352f35d50750d9580ac41f80d79a8ea5b01340d5a07",
+    "archivedBytes": 1374426,
+    "archivedSha256": "9bab0456cc3fd3fd6fe1c352f35d50750d9580ac41f80d79a8ea5b01340d5a07"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-owner-loader-save-evidence.json",
+    "archived": "north-door-three-green/005-cell-cot-owner-loader-save-evidence.json",
+    "sourceBytes": 169259,
+    "sourceSha256": "51a45bd785ddd0da969a3b0e351ff7b467eb3b3c304bcccd94bb3fd4f222f3be",
+    "archivedBytes": 169259,
+    "archivedSha256": "51a45bd785ddd0da969a3b0e351ff7b467eb3b3c304bcccd94bb3fd4f222f3be"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-worker-completed-fullhd.png",
+    "archived": "north-door-three-green/006-cell-cot-worker-completed-fullhd.png",
+    "sourceBytes": 1405931,
+    "sourceSha256": "70d2cc46ee5f6d12d5c8f2a9e92be54c2411af913441674446734e9128572dbe",
+    "archivedBytes": 1405931,
+    "archivedSha256": "70d2cc46ee5f6d12d5c8f2a9e92be54c2411af913441674446734e9128572dbe"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\attachments\\cell-cot-owner-loader-save-evidence-d803f19fa1bf055fbb6a95af667ca7add6319fb4.json",
+    "archived": "north-door-three-green/007-cell-cot-owner-loader-save-evidence-d803f19fa1bf055fbb6a95af667c.json",
+    "sourceBytes": 216597,
+    "sourceSha256": "73f262eaddba91325a07e6a0ecdbdd1989dd9a2db929916b08f4ac790daf1921",
+    "archivedBytes": 216597,
+    "archivedSha256": "73f262eaddba91325a07e6a0ecdbdd1989dd9a2db929916b08f4ac790daf1921"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\attachments\\north-door-public-backside-loader-evidence-418f0d4a9fc9841d3692302d0aefcbefbf56c964.json",
+    "archived": "north-door-three-green/008-north-door-public-backside-loader-evidence-418f0d4a9fc9841d36923.json",
+    "sourceBytes": 148996,
+    "sourceSha256": "804e5990a8571709e74a27b43b6161f2516ffeeab79f746ce70249e679040444",
+    "archivedBytes": 148996,
+    "archivedSha256": "804e5990a8571709e74a27b43b6161f2516ffeeab79f746ce70249e679040444"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-headboard-pending-calibration-fullhd.png",
+    "archived": "north-door-three-green/009-cell-cot-headboard-pending-calibration-fullhd.png",
+    "sourceBytes": 1596717,
+    "sourceSha256": "5203faee347dbc80d17cadb81dcadd4634f439f957bd9cbd14ac0a81e3d89f6d",
+    "archivedBytes": 1596717,
+    "archivedSha256": "5203faee347dbc80d17cadb81dcadd4634f439f957bd9cbd14ac0a81e3d89f6d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-loaded-fullhd.png",
+    "archived": "north-door-three-green/010-cell-cot-loaded-fullhd.png",
+    "sourceBytes": 1430263,
+    "sourceSha256": "fc7cc6dfe2c784be3d48b3a884aea556a304266fb62a1a25bcd1675594cbd711",
+    "archivedBytes": 1430263,
+    "archivedSha256": "fc7cc6dfe2c784be3d48b3a884aea556a304266fb62a1a25bcd1675594cbd711"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-owner-loader-save-evidence.json",
+    "archived": "north-door-three-green/011-cell-cot-owner-loader-save-evidence.json",
+    "sourceBytes": 216597,
+    "sourceSha256": "73f262eaddba91325a07e6a0ecdbdd1989dd9a2db929916b08f4ac790daf1921",
+    "archivedBytes": 216597,
+    "archivedSha256": "73f262eaddba91325a07e6a0ecdbdd1989dd9a2db929916b08f4ac790daf1921"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-worker-completed-fullhd.png",
+    "archived": "north-door-three-green/012-cell-cot-worker-completed-fullhd.png",
+    "sourceBytes": 1460795,
+    "sourceSha256": "1b089e86f18436612681f585fb528ecdb2ee853331acc83fb7f34fcf347af414",
+    "archivedBytes": 1460795,
+    "archivedSha256": "1b089e86f18436612681f585fb528ecdb2ee853331acc83fb7f34fcf347af414"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\north-door-camera135-source135-elev45.png",
+    "archived": "north-door-three-green/013-north-door-camera135-source135-elev45.png",
+    "sourceBytes": 1445661,
+    "sourceSha256": "66807bb8d64c1bd7a55fc35fd551716f04dd290c3f2b8a58a0c25e22b443aeda",
+    "archivedBytes": 1445661,
+    "archivedSha256": "66807bb8d64c1bd7a55fc35fd551716f04dd290c3f2b8a58a0c25e22b443aeda"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\north-door-camera225-source-135-elev45.png",
+    "archived": "north-door-three-green/014-north-door-camera225-source-135-elev45.png",
+    "sourceBytes": 1479037,
+    "sourceSha256": "c8823ffca9dd5a6c4340ec001b7d869b7bc36a52b70479e189e1d94c39db988f",
+    "archivedBytes": 1479037,
+    "archivedSha256": "c8823ffca9dd5a6c4340ec001b7d869b7bc36a52b70479e189e1d94c39db988f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-north-door-final-combined-native-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\north-door-public-backside-loader-evidence.json",
+    "archived": "north-door-three-green/015-north-door-public-backside-loader-evidence.json",
+    "sourceBytes": 148996,
+    "sourceSha256": "804e5990a8571709e74a27b43b6161f2516ffeeab79f746ce70249e679040444",
+    "archivedBytes": 148996,
+    "archivedSha256": "804e5990a8571709e74a27b43b6161f2516ffeeab79f746ce70249e679040444"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-final-angled-proof-receipt-20261003\\actual-freeze-receipt.json",
+    "archived": "actual-final-freeze-review/001-actual-freeze-receipt.json",
+    "sourceBytes": 4141,
+    "sourceSha256": "aa129617178add1452277775c601ca20fbd5127844416ec3d8b824796ad9ff99",
+    "archivedBytes": 4141,
+    "archivedSha256": "aa129617178add1452277775c601ca20fbd5127844416ec3d8b824796ad9ff99"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-final-angled-proof-receipt-20261003\\executed-receipt-collector.cjs.txt",
+    "archived": "actual-final-freeze-review/002-executed-receipt-collector.cjs.txt",
+    "sourceBytes": 3675,
+    "sourceSha256": "f3802a8bacd371009fbcf6536e25eede7f2053c963f0b5e10dbd53e5f24bea45",
+    "archivedBytes": 3675,
+    "archivedSha256": "f3802a8bacd371009fbcf6536e25eede7f2053c963f0b5e10dbd53e5f24bea45"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-final-angled-proof-receipt-20261003\\independent-release-review.cjs.txt",
+    "archived": "actual-final-freeze-review/003-independent-release-review.cjs.txt",
+    "sourceBytes": 4665,
+    "sourceSha256": "c8b0ec11bba4cbcfebb534e3f0a51775fe8b6e22191fa06ea33635e970a46e87",
+    "archivedBytes": 4665,
+    "archivedSha256": "c8b0ec11bba4cbcfebb534e3f0a51775fe8b6e22191fa06ea33635e970a46e87"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-final-angled-proof-receipt-20261003\\independent-release-review.initial-relative-source-resolution-error.json",
+    "archived": "actual-final-freeze-review/004-independent-release-review.initial-relative-source-resolution-er.json",
+    "sourceBytes": 14234,
+    "sourceSha256": "751862f44709e3fe43971f854d769ec139c4d7128ed9347fc64ae30e03a642cd",
+    "archivedBytes": 14234,
+    "archivedSha256": "751862f44709e3fe43971f854d769ec139c4d7128ed9347fc64ae30e03a642cd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-final-angled-proof-receipt-20261003\\independent-release-review.json",
+    "archived": "actual-final-freeze-review/005-independent-release-review.json",
+    "sourceBytes": 11572,
+    "sourceSha256": "79182d524d5fd4d00fc4692b2860bc6a157a285e5f2b2370a7f129c1f7b7fc3c",
+    "archivedBytes": 11572,
+    "archivedSha256": "79182d524d5fd4d00fc4692b2860bc6a157a285e5f2b2370a7f129c1f7b7fc3c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-final-angled-proof-document-gates-20261003.txt",
+    "archived": "final-proof-document-gates-green/console.txt",
+    "sourceBytes": 580,
+    "sourceSha256": "2b8635dbf6c2e376855cf6039e210ef0bb79ef772252ae76f767bc728f1569ed",
+    "archivedBytes": 290,
+    "archivedSha256": "39586f4d69a8588036d6f0dd1bc8d3ecae2052e74fe2b10521e74386814e1b49",
+    "conversion": "UTF16LE console to UTF8"
+  }
+]

@@ -1,0 +1,14 @@
+﻿const fs=require('fs'),cp=require('child_process');
+function git(args,allow=false){const r=cp.spawnSync('git',['-c','core.longpaths=true',...args],{encoding:'utf8'});if(r.status!==0&&!allow)throw Error(args.join(' ')+'\n'+r.stdout+r.stderr);return r;}
+function resolve(keys){const p='docs/research/README.md';const files=git(['diff','--name-only','--diff-filter=U']).stdout.trim().split('\n');if(files.length!==1||files[0]!==p)throw Error('Unexpected conflicts '+files);const ours=git(['show',':2:'+p]).stdout.split('\n'),theirs=git(['show',':3:'+p]).stdout.split('\n'),base=git(['show',':1:'+p]).stdout.split('\n');for(const row of theirs.filter(x=>x.startsWith('|')&&!base.includes(x))){const match=row.match(/(2026-10-03-[\w-]+)\/README\.md/);if(!match||!keys.includes(match[1]))throw Error('Out-of-scope incoming index row '+row);let at=ours.findIndex(x=>x.startsWith('|')&&x.includes(match[1]));if(at>=0)ours[at]=row;else{at=ours.findIndex(x=>x.startsWith('| [2026-10-03')||x.startsWith('| ./2026-10-03'));if(at<0)throw Error('No current research table');ours.splice(at,0,row);}}
+fs.writeFileSync(p,ours.join('\n'));git(['add',p]);git(['cherry-pick','--continue']);}
+const picks=[
+['4007aa76e799677fd4784141294311d3ced16037',['2026-10-03-cell-cot-native-preparation','2026-10-03-cell-cot-headboard-connections']],
+['9cfea52f8a493a9c3f899ca59a7c59d7047b0017',['2026-10-03-cell-cot-native-preparation']],
+['c766f2d7199fcc6b0447d2324a1a1a68de4c1fb9',['2026-10-03-template-chord-release']],
+['142561d40866a68e7b43614c30827a41b1eaaf5a',['2026-10-03-template-chord-release']],
+['899e3e514777ccf60400b62e04fe43fe46085c97',['2026-10-03-template-chord-release']],
+['7eb73f999c9fa162d5a6282bfd2b191602c82a16',['2026-10-03-guard-rear-belt-connections']],
+['7dbb2ea5b8e9ba924d04058e941cf6c6b8399582',['2026-10-03-guard-rear-belt-connections']],
+['c1459094256c42704d266fd0ff422597de389faf',['2026-10-03-guard-rear-belt-connections']]];
+for(const[sha,keys]of picks){const r=git(['cherry-pick',sha],true);if(r.status!==0)resolve(keys);process.stdout.write(git(['log','-1','--format=%h %s']).stdout);}

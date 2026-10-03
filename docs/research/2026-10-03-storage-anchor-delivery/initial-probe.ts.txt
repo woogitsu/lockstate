@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import {writeFileSync} from 'node:fs';
+import {join} from 'node:path';
+import {createNewSimulationRuntime, CONSTRUCTION_MATERIALS_CONTAINER_ID} from './src/simulation/runtime/new-session';
+import {captureSessionSnapshot,restoreSimulationRuntime} from './src/simulation/runtime/restore-session';
+import {createSaveEnvelope,decodeSaveEnvelope} from './src/persistence/save-schema';
+import {packCommand} from './src/simulation/protocol/commands';
+const results=[];
+function send(r,c){const n=r.kernel.expectedSequence;r.kernel.submitCommand('storage-probe-'+n,n,r.kernel.tick,packCommand(c));assert.equal(r.kernel.dispatchDueCommands(),1);}
+function until(r,p,label){for(let n=0;n<20000&&!p();n++)r.kernel.step();assert(p(),label);}
+function reload(r){const e=createSaveEnvelope({...captureSessionSnapshot(r),gameVersion:'probe',prisonId:'storage-anchor',revision:1,createdAt:0,updatedAt:1});const d=decodeSaveEnvelope(JSON.parse(JSON.stringify(e)));assert(d.ok);assert.equal(d.value.saveSchemaVersion,8);return restoreSimulationRuntime(d.value.payload).runtime;}
+for(const offset of [0,1])for(const load of [false,true]){
+ let r=createNewSimulationRuntime(73);
+ for(const [templateId,x,y]of [['storage-room-basic',5,5],['delivery-bay-basic',12,5],['cell-basic',20,5]])send(r,{type:'PlaceRoomTemplate',templateId,origin:{x,y}});
+ until(r,()=>r.roomTemplates.snapshot().pending.length===0&&r.construction.allOrders().every(o=>o.state==='completed'),'actual templates complete');
+ const room=r.prisoners.roomInstances.allByRoomCatalogId('room.storage-room')[0];assert.deepEqual(room.anchorTile,{x:6,y:6});
+ const rack=r.placedObjects.objectAt({x:6,y:6});assert.equal(rack?.objectId,'object.storage-rack');assert(rack.sourceOrderId);
+ send(r,{type:'RemoveObject',x:6,y:6});assert(!r.placedObjects.isTileOccupied({x:6,y:6}));assert(room.objectCapabilities.includes('item-storage'));
+ send(r,{type:'PlaceBuildOrder',definitionId:'wall-brick',orderId:'storage-anchor-wall',x:6,y:6+offset,footprint:'square'});
+ until(r,()=>r.construction.getOrder('storage-anchor-wall')?.state==='completed','actual ordinary wall');assert.equal(r.world.getSquareStructure({x:6,y:6+offset}),1);
+ send(r,{type:'HireStaff',staffRoleId:'staff-role.guard',x:16,y:16});send(r,{type:'AdmitPrisoner',sentenceLengthTicks:100000,priorIncidents:0,x:16,y:16});until(r,()=>r.prisoners.roomInstances.totalOccupancy===1,'actual intake');
+ for(const b of r.prisoners.regimes.all().find(x=>x.classificationGroupId==='general-population').blocks)send(r,{type:'EditRegimeBlock',classificationGroupId:'general-population',startTickOfDay:b.startTickOfDay,allowedCategories:['work']});
+ if(load)r=reload(r);
+ r.navigation.requestRoute('anchor-route',{x:16,y:16},{x:6,y:6},{role:'prisoner',securityClearance:0},0,r.kernel.tick);until(r,()=>r.navigation.getResult('anchor-route')!==undefined,'independent route');const path=r.navigation.getResult('anchor-route');r.navigation.clearResult('anchor-route');
+ const beforeStock=r.constructionMaterials.quantityOf('item.wood-plank');const beforeMetrics=r.prisoners.actionSystem.getMetrics();const beforeTreasury=r.treasury.snapshot();
+ send(r,{type:'PurchaseMaterials',orderId:'measured-new-planks',itemId:'item.wood-plank',quantity:3});
+ for(let n=0;n<6000;n++)r.kernel.step();
+ const result={offset,load,tick:r.kernel.tick,room:r.prisoners.roomInstances.getById(room.instanceId),path,beforeStock,afterStock:r.constructionMaterials.quantityOf('item.wood-plank'),beforeTreasury,afterTreasury:r.treasury.snapshot(),beforeMetrics,afterMetrics:r.prisoners.actionSystem.getMetrics(),jobs:r.jobs.getSnapshot(),containers:r.containers.all().map(c=>c.getSnapshot()),construction:r.construction.getOrder('storage-anchor-wall')};results.push(result);console.log(JSON.stringify(result));
+}
+writeFileSync(join(process.env.TEMP,'lockstate-storage-anchor-delivery-audit-20261003','measured-results.json'),JSON.stringify(results,null,2));

@@ -6,5 +6,12 @@
     "noImplicitAny": false,
     "noUncheckedIndexedAccess": false
   },
-  "include": ["benchmarks", "scripts", "tooling"]
+  "include": [
+    "benchmarks",
+    "scripts",
+    "tooling",
+    "docs/research/2026-10-03-ci2010-ui-source2-diagnosis",
+    "docs/research/2026-10-03-world-roving-native-prep",
+    "docs/research/2026-10-03-ordinary-object-preflight-native-prep"
+  ]
 }

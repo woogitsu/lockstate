@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-reception-registration-desk-model-20261003
+
+
+ Test Files  10 passed (10)
+      Tests  70 passed | 1 skipped (71)
+   Start at  15:57:11
+   Duration  865ms (transform 890ms, setup 0ms, import 2.61s, tests 1.46s, environment 1ms)
+
+$ vitest run "tests/unit/oblique-reception-registration-desk-context.test.ts" "tests/unit/oblique-reception-registration-desk-art.test.ts" "tests/unit/oblique-reception-chair-context.test.ts" "tests/unit/oblique-reception-waiting-armchair-art.test.ts" "tests/unit/oblique-garbage-classroom-context.test.ts" "tests/unit/oblique-classroom-chair-context.test.ts" "tests/unit/oblique-classroom-teacher-desk-art.test.ts" "tests/unit/oblique-object-mapping.test.ts" "tests/unit/oblique-demand-texture-lifecycle.test.ts" "tests/determinism/art-pipeline-determinism.test.ts"

@@ -1,0 +1,39 @@
+pnpm : $ pnpm typecheck && pnpm test && node scripts/cloudflare-task.mjs build production
+At line:2 char:329
++ ... 61003.txt'; pnpm --config.verify-deps-before-run=false verify *> $log ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ pnpm typechec...uild production:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+$ tsc -b --pretty false && tsc -b tsconfig.tools.json --pretty false
+$ vitest run
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-integration-20261003
+
+ ❯ tests/foundation/documented-wire-schema-membership-contract.test.ts (4 tests | 1 failed) 10236ms
+     × still sees brace enumerations in the documents, so a regex that stops matching fails 5008ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documented-wire-schema-membership-contract.test.ts > documented wire schema membership > still 
+sees brace enumerations in the documents, so a regex that stops matching fails
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/foundation/documented-wire-schema-membership-contract.test.ts:308:3
+    306|   });
+    307|
+    308|   it('still sees brace enumerations in the documents, so a regex that …
+       |   ^
+    309|     const { enumerationsSeen } = await collectResolutions();
+    310|     expect(enumerationsSeen).toBeGreaterThanOrEqual(MINIMUM_DOCUMENT_E…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 707 passed (708)
+      Tests  1 failed | 8447 passed | 2 skipped (8450)
+   Start at  18:05:31
+   Duration  36.86s (transform 35.91s, setup 0ms, import 217.29s, tests 418.45s, environment 70ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+[ELIFECYCLE] Command failed with exit code 1.

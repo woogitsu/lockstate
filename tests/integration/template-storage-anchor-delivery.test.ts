@@ -1,0 +1,150 @@
+import { expect, it } from 'vitest';
+import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
+import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
+import { CONSTRUCTION_MATERIALS_CONTAINER_ID, createNewSimulationRuntime, type SimulationRuntime } from '../../src/simulation/runtime/new-session';
+import { captureSessionSnapshot, restoreSimulationRuntime, type SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
+
+const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
+function send(runtime: SimulationRuntime, value: SimulationCommand): void {
+  const sequence = runtime.kernel.expectedSequence;
+  runtime.kernel.submitCommand(`storage-${sequence}`, sequence, runtime.kernel.tick, packCommand(value));
+  expect(runtime.kernel.dispatchDueCommands()).toBe(1);
+}
+function until(runtime: SimulationRuntime, predicate: () => boolean): void {
+  for (let tick = 0; tick < 20_000 && !predicate(); tick += 1) runtime.kernel.step();
+  expect(predicate()).toBe(true);
+}
+function reload(runtime: SimulationRuntime): SimulationRuntime {
+  const envelope = createSaveEnvelope({ ...captureSessionSnapshot(runtime),
+    gameVersion: 'test', prisonId: 'storage-anchor', revision: 1, createdAt: 0, updatedAt: 1 });
+  const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
+  expect(decoded.ok).toBe(true);
+  if (!decoded.ok) throw new Error('Actual V8 snapshot must decode');
+  expect(decoded.value.saveSchemaVersion).toBe(8);
+  return restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
+}
+
+function complete(runtime: SimulationRuntime): void {
+  until(runtime, () => runtime.roomTemplates.snapshot().pending.length === 0
+    && runtime.construction.allOrders().every(order => order.state === 'completed'));
+}
+
+function admitCarrier(runtime: SimulationRuntime): void {
+  send(runtime, { type: 'HireStaff', staffRoleId: 'staff-role.guard', x: 16, y: 16 });
+  send(runtime, { type: 'AdmitPrisoner', sentenceLengthTicks: 100_000, priorIncidents: 0, x: 16, y: 16 });
+  until(runtime, () => runtime.prisoners.roomInstances.totalOccupancy === 1);
+  const schedule = runtime.prisoners.regimes.all().find(row => row.classificationGroupId === 'general-population');
+  if (schedule === undefined) throw new Error('Default regime must exist');
+  for (const block of schedule.blocks) send(runtime, { type: 'EditRegimeBlock',
+    classificationGroupId: 'general-population', startTickOfDay: block.startTickOfDay, allowedCategories: ['work'] });
+}
+
+function buyAndWait(runtime: SimulationRuntime): void {
+  const balance = runtime.treasury.snapshot().balanceMinorUnits;
+  send(runtime, { type: 'PurchaseMaterials', orderId: 'new-planks', itemId: 'item.wood-plank', quantity: 3 });
+  expect(runtime.treasury.snapshot().balanceMinorUnits).toBe(balance - 195);
+  for (let tick = 0; tick < 6_000; tick += 1) runtime.kernel.step();
+  expect(runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID).quantityOf('item.wood-plank')).toBe(3);
+  expect(runtime.jobs.getSnapshot().some(job => job.state === 'failed')).toBe(false);
+}
+
+it.each([[0, false], [0, true], [1, false], [1, true]] as const)(
+  'delivers a real purchase with storage wall offset%s / V8%s', (offset, load) => {
+    let runtime = createNewSimulationRuntime(73);
+    for (const [templateId, x, y] of [
+      ['storage-room-basic', 5, 5], ['delivery-bay-basic', 12, 5], ['cell-basic', 20, 5],
+    ] as const) send(runtime, { type: 'PlaceRoomTemplate', templateId, origin: tile(x, y) });
+    until(runtime, () => runtime.roomTemplates.snapshot().pending.length === 0
+      && runtime.construction.allOrders().every(order => order.state === 'completed'));
+    const storage = runtime.prisoners.roomInstances.allByRoomCatalogId('room.storage-room')[0];
+    if (storage === undefined) throw new Error('Actual furnished Storage must complete');
+    expect(storage.anchorTile).toEqual(tile(6, 6));
+    expect(runtime.placedObjects.objectAt(tile(6, 6))).toMatchObject({ objectId: 'object.storage-rack',
+      sourceOrderId: 'room-template-000000000000-2-object-000' });
+    send(runtime, { type: 'RemoveObject', x: 6, y: 6 });
+    expect(runtime.placedObjects.isTileOccupied(tile(6, 6))).toBe(false);
+    expect(storage.objectCapabilities).toContain('item-storage');
+    send(runtime, { type: 'PlaceBuildOrder', definitionId: 'wall-brick', orderId: 'storage-wall',
+      x: 6, y: 6 + offset, footprint: 'square' });
+    until(runtime, () => runtime.construction.getOrder('storage-wall')?.state === 'completed');
+    expect(runtime.world.getSquareStructure(tile(6, 6 + offset))).toBe(1);
+    send(runtime, { type: 'HireStaff', staffRoleId: 'staff-role.guard', x: 16, y: 16 });
+    send(runtime, { type: 'AdmitPrisoner', sentenceLengthTicks: 100_000, priorIncidents: 0, x: 16, y: 16 });
+    until(runtime, () => runtime.prisoners.roomInstances.totalOccupancy === 1);
+    const schedule = runtime.prisoners.regimes.all().find(row => row.classificationGroupId === 'general-population');
+    if (schedule === undefined) throw new Error('Default regime must exist');
+    for (const block of schedule.blocks) send(runtime, { type: 'EditRegimeBlock',
+      classificationGroupId: 'general-population', startTickOfDay: block.startTickOfDay, allowedCategories: ['work'] });
+    if (load) runtime = reload(runtime);
+    runtime.navigation.requestRoute('independent-anchor', tile(16, 16), tile(6, 6),
+      { role: 'prisoner', securityClearance: 0 }, 0, runtime.kernel.tick);
+    until(runtime, () => runtime.navigation.getResult('independent-anchor') !== undefined);
+    const route = runtime.navigation.getResult('independent-anchor')?.result;
+    expect(route?.ok).toBe(offset === 1);
+    if (offset === 0) expect(route).toMatchObject({ ok: false, failure: { reason: 'invalid-destination' } });
+    runtime.navigation.clearResult('independent-anchor');
+    const stock = runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_ID);
+    expect(stock.quantityOf('item.wood-plank')).toBe(0);
+    send(runtime, { type: 'PurchaseMaterials', orderId: 'new-planks', itemId: 'item.wood-plank', quantity: 3 });
+    for (let tick = 0; tick < 6_000; tick += 1) runtime.kernel.step();
+    // Genuine carried or fallback goods must reach the exact container the
+    // construction material provider consumes; a completed procurement is not enough.
+    expect(stock.quantityOf('item.wood-plank')).toBe(3);
+    expect(runtime.jobs.getSnapshot().some(job => job.state === 'failed')).toBe(false);
+    if (offset === 1) expect(runtime.jobs.getSnapshot()).toEqual([
+      expect.objectContaining({ itemId: 'item.wood-plank', quantity: 3, state: 'completed',
+        destinationTile: tile(6, 6), destinationContainerId: CONSTRUCTION_MATERIALS_CONTAINER_ID }),
+    ]);
+    else expect(runtime.jobs.getSnapshot()).toEqual([]);
+  });
+
+it.each([false, true])('physically carries to the next eligible Storage after blocked first anchor / V8%s', load => {
+  let runtime = createNewSimulationRuntime(73);
+  for (const [templateId, x, y] of [
+    ['storage-room-basic', 5, 5], ['storage-room-basic', 8, 13],
+    ['delivery-bay-basic', 12, 5], ['cell-basic', 20, 5],
+  ] as const) send(runtime, { type: 'PlaceRoomTemplate', templateId, origin: tile(x, y) });
+  complete(runtime);
+  expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.storage-room').map(room => room.anchorTile))
+    .toEqual([tile(6, 6), tile(9, 14)]);
+  send(runtime, { type: 'RemoveObject', x: 6, y: 6 });
+  send(runtime, { type: 'PlaceBuildOrder', definitionId: 'wall-brick', orderId: 'first-storage-wall',
+    x: 6, y: 6, footprint: 'square' });
+  complete(runtime);
+  admitCarrier(runtime);
+  if (load) runtime = reload(runtime);
+  buyAndWait(runtime);
+  expect(runtime.jobs.getSnapshot()).toEqual([
+    expect.objectContaining({ state: 'completed', sourceTile: tile(13, 6), destinationTile: tile(9, 14) }),
+  ]);
+});
+
+it.each([[0, false], [0, true], [2, false], [2, true]] as const)(
+  'rejects an invalid fixed Bay anchor while retaining the relocated dock / wall offset%s / V8%s', (offset, load) => {
+    let runtime = createNewSimulationRuntime(73);
+    for (const [templateId, x, y] of [
+      ['storage-room-basic', 5, 5], ['delivery-bay-basic', 12, 5], ['cell-basic', 20, 5],
+    ] as const) send(runtime, { type: 'PlaceRoomTemplate', templateId, origin: tile(x, y) });
+    complete(runtime);
+    expect(runtime.placedObjects.objectAt(tile(13, 6))?.objectId).toBe('object.loading-dock-door');
+    send(runtime, { type: 'RemoveObject', x: 13, y: 6 });
+    send(runtime, { type: 'PlaceObject', orderId: 'relocated-dock', definitionId: 'loading-dock-door-wooden', x: 13, y: 7 });
+    complete(runtime);
+    expect(runtime.placedObjects.objectAt(tile(15, 7))).toMatchObject({
+      objectId: 'object.loading-dock-door', sourceOrderId: 'relocated-dock' });
+    send(runtime, { type: 'PlaceBuildOrder', definitionId: 'wall-brick', orderId: 'bay-wall',
+      x: 13, y: 6 + offset, footprint: 'square' });
+    complete(runtime);
+    admitCarrier(runtime);
+    if (load) runtime = reload(runtime);
+    const bay = runtime.prisoners.roomInstances.allByRoomCatalogId('room.delivery-bay')[0];
+    expect(bay?.anchorTile).toEqual(tile(13, 6));
+    expect(bay?.objectCapabilities).toContain('delivery-access');
+    expect(runtime.navigation.getGraph().tileToRegion.has('13,6')).toBe(offset !== 0);
+    buyAndWait(runtime);
+    if (offset === 0) expect(runtime.jobs.getSnapshot()).toEqual([]);
+    else expect(runtime.jobs.getSnapshot()).toEqual([
+      expect.objectContaining({ state: 'completed', sourceTile: tile(13, 6), destinationTile: tile(6, 6) }),
+    ]);
+  });

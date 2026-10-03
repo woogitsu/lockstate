@@ -1,0 +1,85 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-construction-next-collision-audit-20261003
+
+ ❯ tests/integration/conflicting-imported-template-objects.test.ts (3 tests | 2 failed) 211ms
+   × accepted conflicting imported 'object type' rows restore independently of array order 89ms
+   × accepted conflicting imported 'same object orientation' rows restore independently of array order 60ms
+node : 
+At line:3 char:1
++ node node_modules/vitest/vitest.mjs run --maxWorkers=2 tests/integrat ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/conflicting-imported-template-objects.test.ts > accepted conflicting imported 'object type' ro
+ws restore independently of array order
+AssertionError: expected { placedObjects: [ { …(5) } ] } to deeply equal { placedObjects: [ { …(5) } ] }
+
+- Expected
++ Received
+
+@@ -3,12 +3,12 @@
+      {
+        "anchorTile": {
+          "x": 11,
+          "y": 11,
+        },
+-       "objectId": "object.bed",
++       "objectId": "object.toilet",
+        "orientation": 0,
+        "placedObjectId": "object:11:11",
+-       "sourceOrderId": "room-template-000000000000-2-object-000",
++       "sourceOrderId": "room-template-000000000000-2-object-001",
+      },
+    ],
+  }
+
+ ❯ tests/integration/conflicting-imported-template-objects.test.ts:60:48
+     58|       }, null, 2));
+     59|     }
+     60|     expect(reversedBefore.simulation?.objects).toEqual(firstBefore.sim…
+       |                                                ^
+     61|     expect(reversed.placedObjects.getSnapshot()).toEqual(first.placedO…
+     62|     expect(reversed.treasury.snapshot()).toEqual(first.treasury.snapsh…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/integration/conflicting-imported-template-objects.test.ts > accepted conflicting imported 'same object ori
+entation' rows restore independently of array order
+AssertionError: expected { placedObjects: [ { …(5) } ] } to deeply equal { placedObjects: [ { …(5) } ] }
+
+- Expected
++ Received
+
+@@ -4,11 +4,11 @@
+        "anchorTile": {
+          "x": 11,
+          "y": 11,
+        },
+        "objectId": "object.bed",
+-       "orientation": 0,
++       "orientation": 1,
+        "placedObjectId": "object:11:11",
+        "sourceOrderId": "room-template-000000000000-2-object-000",
+      },
+    ],
+  }
+
+ ❯ tests/integration/conflicting-imported-template-objects.test.ts:60:48
+     58|       }, null, 2));
+     59|     }
+     60|     expect(reversedBefore.simulation?.objects).toEqual(firstBefore.sim…
+       |                                                ^
+     61|     expect(reversed.placedObjects.getSnapshot()).toEqual(first.placedO…
+     62|     expect(reversed.treasury.snapshot()).toEqual(first.treasury.snapsh…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed (3)
+   Start at  02:14:48
+   Duration  2.49s (transform 811ms, setup 0ms, import 2.16s, tests 211ms, environment 0ms)
+

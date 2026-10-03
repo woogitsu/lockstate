@@ -1,0 +1,19 @@
+{
+  "sourceCommit": "8ae264c3142becb0331a1602ca66273e72309b6e",
+  "typecheckExitCode": 0,
+  "focusedFinalUnit": {
+    "filesPassed": 3,
+    "testsPassed": 6,
+    "testsSkipped": 1
+  },
+  "productionBuildExitCode": 0,
+  "worker": {
+    "path": "dist/client/assets/worker-DvtS8eKl.js",
+    "bytes": 438431,
+    "sha256": "e14365b70109a279efeb3502a511e7dce132ef067ad0e112577f653575dfd356"
+  },
+  "sourceSha256": "0cb6861e636324cf4d1e6ad35c1739cbac6068f32eb702244f5ddb196715f3d5",
+  "descriptorSha256": "df999685950069063f99784dc204567207d962918e2204bcea2c89c638d624d7",
+  "nativeBrowserStarted": false,
+  "serverStarted": false
+}

@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-reception-registration-desk-model-20261003
+
+ ❯ tests/unit/oblique-reception-registration-desk-context.test.ts (7 tests | 1 failed) 25ms
+     × registers the selected asset once with its real source and complete descriptor 11ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  15:57:09
+   Duration  674ms (transform 191ms, setup 0ms, import 523ms, tests 25ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+$ vitest run "tests/unit/oblique-reception-registration-desk-context.test.ts"
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-reception-registration-desk-context.test.ts > Reception registration ObjectDesk context in the actual world projection > registers the selected asset once with its real source and complete descriptor
+AssertionError: actual runtime Reception registration desk registry entry: expected [] to deeply equal [ { …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "assetId": "furniture.reception.registration-desk",
+-     "manifest": "/game-content/oblique-furniture-reception-registration-desk.v1.json",
+-   },
+- ]
++ []
+
+ ❯ tests/unit/oblique-reception-registration-desk-context.test.ts:107:82
+    105|     const registry = parseObliqueModuleRegistry(JSON.parse(readFileSyn…
+    106|     const entries = registry.entries.filter(entry => entry.assetId ===…
+    107|     expect(entries, 'actual runtime Reception registration desk regist…
+       |                                                                                  ^
+    108|       manifest: '/game-content/oblique-furniture-reception-registratio…
+    109|     const entry = entries[0];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

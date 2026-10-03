@@ -1,0 +1,22 @@
+{
+  "source": "src/ui/room-template-tool.ts",
+  "branch": "codex/template-preflight-session-audit-20261003",
+  "byteExactRestore": true,
+  "productionDiffEmpty": true,
+  "sha256": "34d63c43892c698005fe93abde19cca2b7f8cd33ace93e283373dfde152d8317",
+  "outcomes": [
+    {
+      "name": "negative-reset",
+      "status": 1
+    },
+    {
+      "name": "negative-finally",
+      "status": 1
+    },
+    {
+      "name": "negative-revision",
+      "status": 1
+    }
+  ],
+  "restoredStatus": 0
+}

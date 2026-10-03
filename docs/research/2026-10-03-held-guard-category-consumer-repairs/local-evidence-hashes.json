@@ -1,0 +1,82 @@
+{
+  "actual-strict-types.stderr.txt": {
+    "length": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "actual-strict-types.stdout.txt": {
+    "length": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "category-consumer-restoration.json": {
+    "length": 302,
+    "sha256": "fe9e2a66f6a7b735e64f6083d297f664ae23e1f90cefe6f781c25ba23c32e623"
+  },
+  "category-fixed.txt": {
+    "length": 562,
+    "sha256": "f0596db29d3acf939c110d655cda6b703afa174f78f6a28931a4bfd6f05ed1e3"
+  },
+  "category-original-observer-negative.stderr.txt": {
+    "length": 638,
+    "sha256": "9808da221ad0f04dceab7ad646a902b374afb0081a1684440b471687e0303cff"
+  },
+  "category-original-observer-negative.stdout.txt": {
+    "length": 455,
+    "sha256": "44fe5321c30ee6f41bf637980362c433af5e361ce78dd99f8771a9f075010794"
+  },
+  "category-original.txt": {
+    "length": 2698,
+    "sha256": "95bf47b2d9e5e7e4357eb38118eef9bd0697039f46e11444cdeb5b0f60e8dd22"
+  },
+  "combined-final-restored.stderr.txt": {
+    "length": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "combined-final-restored.stdout.txt": {
+    "length": 277,
+    "sha256": "d04bc34b3a35557af66578e4c3fc7565010a416f31876d40eca87a7e2cb71965"
+  },
+  "executed-category-probe.test.ts.txt": {
+    "length": 1803,
+    "sha256": "9a95659cc1abf8fd8b751309026b0f5c11843675d6a500da61563dd3880bc7a1"
+  },
+  "executed-corrected-guard-probe.test.ts.txt": {
+    "length": 3924,
+    "sha256": "ceced9500a12328da4ef9081d8e3061570bacad864a00f53308ec754cae5591d"
+  },
+  "guard-consumer-restoration.json": {
+    "length": 309,
+    "sha256": "a99a29745f3a33f7485f7ce86b678f0f366e6c839276c254a1e72d79c997796f"
+  },
+  "guard-final-restored.stderr.txt": {
+    "length": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "guard-final-restored.stdout.txt": {
+    "length": 274,
+    "sha256": "2c1b02ee62614ac4460ac950001c4b52686cd3f7fef708b7c132516351176eb0"
+  },
+  "guard-original-helper-negative.stderr.txt": {
+    "length": 1796,
+    "sha256": "8f77bc4ac2a039e430226d9e76a0ea21dc92bc59dcae8ce26f3598f1f552e9e5"
+  },
+  "guard-original-helper-negative.stdout.txt": {
+    "length": 652,
+    "sha256": "81f110768e3dfee84e13604b0c2f562d819ba5ea87d9f442f07b2de83c09d3da"
+  },
+  "guard-square-fixed-corrected-fixture.txt": {
+    "length": 566,
+    "sha256": "c859dbe84ebcd737c684892e799c55b4f52a96d86a621c4d935d18ce120d03eb"
+  },
+  "guard-square-fixed.txt": {
+    "length": 3496,
+    "sha256": "68c442fbc17168297c4db014c7cbabe29efe9315d530b75b32faedc20de70d01"
+  },
+  "guard-square-original.txt": {
+    "length": 5308,
+    "sha256": "68d290119bdb9507ba86010a6e9c5d29ea3a904179a6451c7b61c8714172f7bf"
+  },
+  "strict-types-receipt.json": {
+    "length": 104,
+    "sha256": "9dcf519138406bf8e4d319764aa8d51fdc6b24da1627edcec4a5228609063f1e"
+  }
+}

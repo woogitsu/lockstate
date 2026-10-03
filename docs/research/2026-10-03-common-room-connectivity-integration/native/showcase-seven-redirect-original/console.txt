@@ -1,0 +1,147 @@
+node : [2m[WebServer] [22m(node:62728) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:2 char:602
++ ... 1003.json'; node node_modules/@playwright/test/cli.js test --config a ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 7 tests using 1 worker
+
+(node:40900) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40900) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\native-small-prison-showcase.recipe.ts:166:3 › 01 public Storage Room and Delivery Bay capacity (43.7s)
+  ok 2 tests\browser\native-small-prison-showcase.recipe.ts:166:3 › 02 horizontal four-cell wing and two-tile corridor (1.1m)
+  ok 3 tests\browser\native-small-prison-showcase.recipe.ts:166:3 › 03 completed Kitchen (39.4s)
+  ok 4 tests\browser\native-small-prison-showcase.recipe.ts:166:3 › 04 completed Shower room (36.9s)
+  ok 5 tests\browser\native-small-prison-showcase.recipe.ts:166:3 › 05 completed Canteen (53.6s)
+  ok 6 tests\browser\native-small-prison-showcase.recipe.ts:166:3 › 06 completed outdoor Yard (26.7s)
+  x  7 tests\browser\native-small-prison-showcase.recipe.ts:231:1 › 07 same completed prison at three public camera poses and whole paused Save/Load (21.0s)
+
+
+  1) tests\browser\native-small-prison-showcase.recipe.ts:231:1 › 07 same completed prison at three public camera poses and whole paused Save/Load 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 83[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+   "Error: response.body: Response body is unavailable for redirect responses",[39m
+    [31m+ ][39m
+
+       at native-small-prison-showcase-evidence.ts:135
+
+      133 |     const decoded = await readDecodedImages();
+      134 |     if (requireAll) {
+    > 135 |       expect(errors).toEqual([]);
+          |                      ^
+      136 |       expect(decoded.errors).toEqual([]);
+      137 |       for (const [file, assetId, sourceSha256] of SHOWCASE_ASSETS) {
+      138 |         const descriptor = descriptors.find(row => row.url === `/game-content/${file}`);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-connectivity-integration-20261003\tests\browser\native-small-prison-showcase-evidence.ts:135:22
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-connectivity-integration-20261003\tests\browser\native-small-prison-showcase.recipe.ts:175:15
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-small-prison-seven-20261003\native-small-prison-showca-38e13--and-whole-paused-Save-Load\error-context.md
+
+  1 failed
+    tests\browser\native-small-prison-showcase.recipe.ts:231:1 › 07 same completed prison at three public camera poses and whole paused Save/Load 
+  6 passed (4.8m)

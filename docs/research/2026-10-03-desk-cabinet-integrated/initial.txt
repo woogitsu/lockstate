@@ -1,0 +1,124 @@
+node : [2m[WebServer] [22m(node:18380) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:7 char:1
++ node --experimental-transform-types --disable-warning=ExperimentalWar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 10 tests using 1 worker
+
+(node:15836) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15836) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 tests\browser\dedicated-medicine-cabinet-player-build.spec.ts:199:1 › player creates actual storage and delivery capacity before detailed Infirmary (43.1s)
+  ok  2 tests\browser\dedicated-medicine-cabinet-player-build.spec.ts:262:3 › player builds Infirmary at quarterTurns0 and retains the authored cabinet inset palette and anchors after Save/Load (44.9s)
+  ok  3 tests\browser\dedicated-medicine-cabinet-player-build.spec.ts:262:3 › player builds Infirmary at quarterTurns1 and retains the authored cabinet inset palette and anchors after Save/Load (45.7s)
+  ok  4 tests\browser\dedicated-office-desk-player-build.spec.ts:205:1 › player creates actual storage and delivery capacity before detailed Reception (43.0s)
+  ok  5 tests\browser\dedicated-office-desk-player-build.spec.ts:268:3 › player builds Reception at quarterTurns0 and retains dedicated authored desktop and detail palettes and anchors after Save/Load (46.2s)
+  ok  6 tests\browser\dedicated-office-desk-player-build.spec.ts:268:3 › player builds Reception at quarterTurns1 and retains dedicated authored desktop and detail palettes and anchors after Save/Load (46.1s)
+  x   7 tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD world: renderer replacement during genuine preflight stands down accepted cell (15.4s)
+(node:22540) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22540) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+RENDERER_PLAN_PREFLIGHT_RECEIPT {"initialMode":"world","rearm":true,"chosen":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":14,"y":13}},"ok":true}}
+  ok  8 tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD world: renderer replacement during genuine preflight protects rearmed Yard (7.6s)
+  x   9 tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD oblique: renderer replacement during genuine preflight stands down accepted cell (14.8s)
+(node:20484) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:20484) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+RENDERER_PLAN_PREFLIGHT_RECEIPT {"initialMode":"oblique","rearm":true,"chosen":{"target":{"kind":"room-template","templateId":"cell-basic","origin":{"x":17,"y":13}},"ok":true}}
+  ok 10 tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD oblique: renderer replacement during genuine preflight protects rearmed Yard (6.6s)
+
+
+  1) tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD world: renderer replacement during genuine preflight stands down accepted cell 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 0[39m
+
+    [33m@@ -1,8 +1,7 @@[39m
+    [2m  Array [[22m
+    [2m    Object {[22m
+    [32m-     "kind": "room-template",[39m
+    [2m      "origin": Object {[22m
+    [2m        "x": 14,[22m
+    [2m        "y": 13,[22m
+    [2m      },[22m
+    [2m      "templateId": "cell-basic",[22m
+
+    Call Log:
+    - Timeout 10000ms exceeded while waiting on the predicate
+
+      105 |       reply.target.templateId === 'cell-basic' && reply.target.origin.x === target.origin.x && reply.target.origin.y === target.origin.y).length, chosen.target)).toBeGreaterThanOrEqual(2);
+      106 |     if (!rearm) {
+    > 107 |       await expect.poll(async () => (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toEqual([
+          |       ^
+      108 |         { type: 'PlaceRoomTemplate', ...chosen.target },
+      109 |       ]);
+      110 |       await expect.poll(() => page.evaluate(() => (Reflect.get(window, 'rendererPlanPreflight') as Probe).commandResults)).toEqual([{ status: 'queued' }]);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-desk-camera-integration-20261003\tests\browser\room-template-renderer-preflight-receipt.spec.ts:107:7
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-desk-cabinet-renderer-combined-results-20261003\room-template-renderer-pre-413f2-t-stands-down-accepted-cell\error-context.md
+
+  2) tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD oblique: renderer replacement during genuine preflight stands down accepted cell 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 0[39m
+
+    [33m@@ -1,8 +1,7 @@[39m
+    [2m  Array [[22m
+    [2m    Object {[22m
+    [32m-     "kind": "room-template",[39m
+    [2m      "origin": Object {[22m
+    [2m        "x": 17,[22m
+    [2m        "y": 13,[22m
+    [2m      },[22m
+    [2m      "templateId": "cell-basic",[22m
+
+    Call Log:
+    - Timeout 10000ms exceeded while waiting on the predicate
+
+      105 |       reply.target.templateId === 'cell-basic' && reply.target.origin.x === target.origin.x && reply.target.origin.y === target.origin.y).length, chosen.target)).toBeGreaterThanOrEqual(2);
+      106 |     if (!rearm) {
+    > 107 |       await expect.poll(async () => (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toEqual([
+          |       ^
+      108 |         { type: 'PlaceRoomTemplate', ...chosen.target },
+      109 |       ]);
+      110 |       await expect.poll(() => page.evaluate(() => (Reflect.get(window, 'rendererPlanPreflight') as Probe).commandResults)).toEqual([{ status: 'queued' }]);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-desk-camera-integration-20261003\tests\browser\room-template-renderer-preflight-receipt.spec.ts:107:7
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-desk-cabinet-renderer-combined-results-20261003\room-template-renderer-pre-dea29-t-stands-down-accepted-cell\error-context.md
+
+  2 failed
+    tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD world: renderer replacement during genuine preflight stands down accepted cell 
+    tests\browser\room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD oblique: renderer replacement during genuine preflight stands down accepted cell 
+  8 passed (5.3m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+

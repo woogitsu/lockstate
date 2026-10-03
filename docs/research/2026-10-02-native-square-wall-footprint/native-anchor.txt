@@ -1,0 +1,191 @@
+pnpm : $ node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite a
+rtifact "--config" "tests/browser/.local-integrated-layout.config.ts" "--workers=1" "--output=C:\\Users\\matma\\Documen
+ts\\Rozwój gier\\hud-angle-panel-review-runtime\\wall-native-anchor-mutation"
+At line:2 char:298
++ ... \bash.exe'; pnpm test:artifact --config tests/browser/.local-integrat ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ node --experi...nchor-mutation":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(node:62216) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 6 tests using 1 worker
+
+(node:41396) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41396) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed full Brick wall occupies its chosen whole square at -45/45 (19.7s)
+(node:48648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:48648) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed full Brick wall occupies its chosen whole square at 45/65 (22.1s)
+(node:49088) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49088) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed full Brick wall occupies its chosen whole square at 45/80 (22.9s)
+(node:2992) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2992) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed cutaway Brick wall occupies its chosen whole square at -45/45 (19.4s)
+(node:25592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:25592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  5 tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed cutaway Brick wall occupies its chosen whole square at 45/65 (21.8s)
+(node:55192) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55192) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  6 tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed cutaway Brick wall occupies its chosen whole square at 45/80 (21.9s)
+
+
+  1) tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed full Brick wall occupies its chosen whole square at -45/45 
+
+    Error: visible masonry must fit the horizontal span of its occupied1×1 square; height and shadows cannot justify sideways spill
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m20[39m
+    Received:    [31m3685[39m
+
+      181 |   ]);
+      182 |   expect(measured.masonryInside,'actual wall material must be visible in the occupied volume').toBeGreaterThan(200);
+    > 183 |   expect(measured.masonryOutsideGroundSpan,'visible masonry must fit the horizontal span of its occupied1×1 square; height and shadows cannot justify sideways spill').toBeLessThanOrEqual(20);
+          |                                                                                                                                                                        ^
+      184 |   expect(measured.masonryOutsideAuthoredHull,'nearest authored frame must pivot at the occupied square ground centre, preserving accepted elevation quantization').toBeLessThanOrEqual(20);
+      185 | });
+      186 |
+        at C:\Users\matma\Documents\Rozwój gier\hud-square-brick-calibration-20261002\tests\browser\oblique-square-wall-native-footprint.spec.ts:183:168
+
+    Error Context: ..\hud-angle-panel-review-runtime\wall-native-anchor-mutation\oblique-square-wall-native-28939-osen-whole-square-at--45-45\error-context.md
+
+  2) tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed full Brick wall occupies its chosen whole square at 45/65 
+
+    Error: nearest authored frame must pivot at the occupied square ground centre, preserving accepted elevation quantization
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m20[39m
+    Received:    [31m4087[39m
+
+      182 |   expect(measured.masonryInside,'actual wall material must be visible in the occupied volume').toBeGreaterThan(200);
+      183 |   expect(measured.masonryOutsideGroundSpan,'visible masonry must fit the horizontal span of its occupied1×1 square; height and shadows cannot justify sideways spill').toBeLessThanOrEqual(20);
+    > 184 |   expect(measured.masonryOutsideAuthoredHull,'nearest authored frame must pivot at the occupied square ground centre, preserving accepted elevation quantization').toBeLessThanOrEqual(20);
+          |                                                                                                                                                                    ^
+      185 | });
+      186 |
+        at C:\Users\matma\Documents\Rozwój gier\hud-square-brick-calibration-20261002\tests\browser\oblique-square-wall-native-footprint.spec.ts:184:164
+
+    Error Context: ..\hud-angle-panel-review-runtime\wall-native-anchor-mutation\oblique-square-wall-native-53ce2-hosen-whole-square-at-45-65\error-context.md
+
+  3) tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed full Brick wall occupies its chosen whole square at 45/80 
+
+    Error: nearest authored frame must pivot at the occupied square ground centre, preserving accepted elevation quantization
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m20[39m
+    Received:    [31m4356[39m
+
+      182 |   expect(measured.masonryInside,'actual wall material must be visible in the occupied volume').toBeGreaterThan(200);
+      183 |   expect(measured.masonryOutsideGroundSpan,'visible masonry must fit the horizontal span of its occupied1×1 square; height and shadows cannot justify sideways spill').toBeLessThanOrEqual(20);
+    > 184 |   expect(measured.masonryOutsideAuthoredHull,'nearest authored frame must pivot at the occupied square ground centre, preserving accepted elevation quantization').toBeLessThanOrEqual(20);
+          |                                                                                                                                                                    ^
+      185 | });
+      186 |
+        at C:\Users\matma\Documents\Rozwój gier\hud-square-brick-calibration-20261002\tests\browser\oblique-square-wall-native-footprint.spec.ts:184:164
+
+    Error Context: ..\hud-angle-panel-review-runtime\wall-native-anchor-mutation\oblique-square-wall-native-330cc-hosen-whole-square-at-45-80\error-context.md
+
+  4) tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed cutaway Brick wall occupies its chosen whole square at -45/45 
+
+    Error: visible masonry must fit the horizontal span of its occupied1×1 square; height and shadows cannot justify sideways spill
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m20[39m
+    Received:    [31m2568[39m
+
+      181 |   ]);
+      182 |   expect(measured.masonryInside,'actual wall material must be visible in the occupied volume').toBeGreaterThan(200);
+    > 183 |   expect(measured.masonryOutsideGroundSpan,'visible masonry must fit the horizontal span of its occupied1×1 square; height and shadows cannot justify sideways spill').toBeLessThanOrEqual(20);
+          |                                                                                                                                                                        ^
+      184 |   expect(measured.masonryOutsideAuthoredHull,'nearest authored frame must pivot at the occupied square ground centre, preserving accepted elevation quantization').toBeLessThanOrEqual(20);
+      185 | });
+      186 |
+        at C:\Users\matma\Documents\Rozwój gier\hud-square-brick-calibration-20261002\tests\browser\oblique-square-wall-native-footprint.spec.ts:183:168
+
+    Error Context: ..\hud-angle-panel-review-runtime\wall-native-anchor-mutation\oblique-square-wall-native-da6a9-osen-whole-square-at--45-45\error-context.md
+
+  5) tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed cutaway Brick wall occupies its chosen whole square at 45/65 
+
+    Error: nearest authored frame must pivot at the occupied square ground centre, preserving accepted elevation quantization
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m20[39m
+    Received:    [31m4012[39m
+
+      182 |   expect(measured.masonryInside,'actual wall material must be visible in the occupied volume').toBeGreaterThan(200);
+      183 |   expect(measured.masonryOutsideGroundSpan,'visible masonry must fit the horizontal span of its occupied1×1 square; height and shadows cannot justify sideways spill').toBeLessThanOrEqual(20);
+    > 184 |   expect(measured.masonryOutsideAuthoredHull,'nearest authored frame must pivot at the occupied square ground centre, preserving accepted elevation quantization').toBeLessThanOrEqual(20);
+          |                                                                                                                                                                    ^
+      185 | });
+      186 |
+        at C:\Users\matma\Documents\Rozwój gier\hud-square-brick-calibration-20261002\tests\browser\oblique-square-wall-native-footprint.spec.ts:184:164
+
+    Error Context: ..\hud-angle-panel-review-runtime\wall-native-anchor-mutation\oblique-square-wall-native-a885b-hosen-whole-square-at-45-65\error-context.md
+
+  6) tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed cutaway Brick wall occupies its chosen whole square at 45/80 
+
+    Error: nearest authored frame must pivot at the occupied square ground centre, preserving accepted elevation quantization
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m20[39m
+    Received:    [31m4274[39m
+
+      182 |   expect(measured.masonryInside,'actual wall material must be visible in the occupied volume').toBeGreaterThan(200);
+      183 |   expect(measured.masonryOutsideGroundSpan,'visible masonry must fit the horizontal span of its occupied1×1 square; height and shadows cannot justify sideways spill').toBeLessThanOrEqual(20);
+    > 184 |   expect(measured.masonryOutsideAuthoredHull,'nearest authored frame must pivot at the occupied square ground centre, preserving accepted elevation quantization').toBeLessThanOrEqual(20);
+          |                                                                                                                                                                    ^
+      185 | });
+      186 |
+        at C:\Users\matma\Documents\Rozwój gier\hud-square-brick-calibration-20261002\tests\browser\oblique-square-wall-native-footprint.spec.ts:184:164
+
+    Error Context: ..\hud-angle-panel-review-runtime\wall-native-anchor-mutation\oblique-square-wall-native-d19fd-hosen-whole-square-at-45-80\error-context.md
+
+  6 failed
+    tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed full Brick wall occupies its chosen whole square at -45/45 
+    tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed full Brick wall occupies its chosen whole square at 45/65 
+    tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed full Brick wall occupies its chosen whole square at 45/80 
+    tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed cutaway Brick wall occupies its chosen whole square at -45/45 
+    tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed cutaway Brick wall occupies its chosen whole square at 45/65 
+    tests\browser\oblique-square-wall-native-footprint.spec.ts:185:64 › native completed cutaway Brick wall occupies its chosen whole square at 45/80 
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+
+[ELIFECYCLE] Command failed with exit code 1.

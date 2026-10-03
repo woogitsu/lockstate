@@ -41,7 +41,7 @@ import { InsolvencyRungSystem, JustInTimeMaterialsService, LoanBook, PayrollSyst
 import { SimulationEventLog } from '../events';
 import { createIntakeHousedNotice } from '../events/intake-housed-notice';
 import { createResidentRelocationNotice } from '../events/resident-relocation-notice';
-import { RefusalLog, materialsFundingSupersessionKey } from '../refusals';
+import { RefusalLog, ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS, materialsFundingSupersessionKey } from '../refusals';
 import { StaffDismissalService, StaffHiringService } from '../staff';
 import { createSessionCommandHandler } from './session-commands';
 import { ACTOR_IDENTITY_RNG_STREAM, ActorIdentityRegistry } from '../identity';
@@ -74,7 +74,7 @@ import {
   SecuritySectorRegistry,
   type DeploymentSchedule,
 } from '../security';
-import { chunkCoordinate, tileCoordinate, type ChunkPosition, type TilePosition } from '../world/coordinates';
+import { chunkCoordinate, tileCoordinate, tileKey, type ChunkPosition, type TilePosition } from '../world/coordinates';
 import { SparseWorld } from '../world/sparse-world';
 
 /** Well-known container id every session's `ConstructionSystem` draws build materials from -- session/scenario setup deposits into it (directly, or via delivery jobs from other containers) to make construction orders actually wait for and consume real materials (issue #25). */
@@ -835,7 +835,13 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
    * already draws from, so **nothing about either binding is persisted** and
    * `ContainerMaterialsProvider` and `ConstructionSystem` are untouched.
    */
-  const deliveryCarryRoute = new DeliveryBayCarryRoute(prisoners.roomInstances, containers, jobs, CONSTRUCTION_MATERIALS_CONTAINER_ID);
+  const deliveryCarryRoute = new DeliveryBayCarryRoute(prisoners.roomInstances, containers, jobs,
+    CONSTRUCTION_MATERIALS_CONTAINER_ID, () => {
+      for (let index = 0; index <= prisoners.entityStore.maxActiveIndex; index += 1) {
+        if (prisoners.entityStore.isIndexAlive(index)) return true;
+      }
+      return false;
+    }, (tile) => navigation.getGraph().tileToRegion.has(tileKey(tile)));
   const procurement = new ProcurementSystem(treasury, constructionMaterials, deliveryCarryRoute);
   /*
    * The treasury is the third argument since #703 ruling 12: an order is funded
@@ -848,8 +854,8 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     world,
     new ContainerMaterialsProvider(constructionMaterials),
     {
-      onOrderCompleted: (objectId, anchor) => objectPlacement?.onOrderCompleted(objectId, anchor) ?? false,
-      onOrderReverted: (objectId, anchor) => objectPlacement?.onOrderReverted(objectId, anchor) ?? false,
+      onOrderCompleted: (objectId, anchor, orientation, sourceOrderId) => objectPlacement?.onOrderCompleted(objectId, anchor, orientation, sourceOrderId) ?? false,
+      onOrderReverted: (objectId, anchor, sourceOrderId) => objectPlacement?.onOrderReverted(objectId, anchor, sourceOrderId) ?? false,
     },
     doorConstruction,
     justInTimeMaterials,
@@ -1249,7 +1255,17 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
     return location;
   };
 
-  const searchSystem = new SearchSystem(securityGuards, navigation, contraband, intelligence, confiscations, searchPolicies, categoryConcealment, categoryNameKey, locateSearchTarget, events);
+  const searchTargetExists = (target: SearchTarget): boolean => {
+    if (target.holderKind === 'prisoner' || target.holderKind === 'staff') {
+      const id = Number(target.holderId);
+      // isAlive checks the full generation, not just the reused slot index.
+      if (!Number.isInteger(id) || id < 0 || id > 0xffff_ffff) return false;
+      return (target.holderKind === 'prisoner' ? prisoners.entityStore : securityGuards.entityStore).isAlive(id);
+    }
+    if (target.holderKind === 'cell') return prisoners.roomInstances.getById(target.holderId) !== undefined;
+    return containers.getById(target.holderId) !== undefined && searchContainerLocations.has(target.holderId);
+  };
+  const searchSystem = new SearchSystem(securityGuards, navigation, contraband, intelligence, confiscations, searchPolicies, categoryConcealment, categoryNameKey, locateSearchTarget, events, undefined, searchTargetExists);
 
   // Issue #28's incident pipeline: no gangs, no tunnels and no incidents until
   // a session/scenario registers them -- same "no fabricated default content"
@@ -1619,6 +1635,22 @@ export function createNewSimulationRuntime(masterSeed: number = 0, options: Simu
 
   kernel.registerSystem(construction);
   const roomTemplates = new RoomTemplateCoordinator(world, construction, roomZoning, placedObjects, objectPlacement);
+  construction.setCancellationSequenceReader(orderId => roomTemplates.previewCancellationOrderIds(orderId));
+  construction.setPendingRoomTemplateClaims((tile, sequence) => roomTemplates.claimsPendingFootprint(tile, sequence));
+  construction.setPendingRoomTemplateDoorApproachClaims((order) => roomTemplates.claimsRoomDoorApproach(order));
+  construction.setObjectFootprintClaims(objectPlacement.claimsObjectFootprint.bind(objectPlacement));
+  construction.setRoomDoorApproachTileClaims((tile) => roomTemplates.claimsRoomDoorApproachTile(tile));
+  objectPlacement.setPendingRoomDoorApproachClaim((tile) => roomTemplates.claimsRoomDoorApproachTile(tile));
+  construction.setUndoPreparation((orderIds) => {
+    const key = 'room-template-undo';
+    const refusal = roomTemplates.prepareUndo(orderIds, kernel.tick);
+    if (refusal !== undefined) {
+      refusals.record(ROOM_TEMPLATE_REVERSAL_REFUSAL_REASONS[refusal.reason], kernel.tick, key);
+      return false;
+    }
+    refusals.supersede(key);
+    return true;
+  });
   kernel.registerSystem(roomTemplates);
   kernel.registerSystem(procurement);
   kernel.registerSystem(stateIncome);

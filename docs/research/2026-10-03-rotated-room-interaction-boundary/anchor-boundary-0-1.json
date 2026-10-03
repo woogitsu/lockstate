@@ -1,0 +1,697 @@
+{
+  "result": "bounded actual completed/rotated physical footprint, room-anchor path, encoded V8 and actual admitted action measurement",
+  "results": [
+    {
+      "quarterTurns": 1,
+      "mirrorX": false,
+      "bootstrapTicks": 2531,
+      "completionTicks": 4840,
+      "live": [
+        {
+          "roomId": "room.canteen",
+          "instanceId": "room.canteen:21:6",
+          "actualActionDestination": {
+            "x": 21,
+            "y": 6
+          },
+          "objects": [
+            {
+              "objectId": "object.dining-table",
+              "anchor": {
+                "x": 25,
+                "y": 6
+              },
+              "tiles": [
+                {
+                  "x": 26,
+                  "y": 6
+                },
+                {
+                  "x": 26,
+                  "y": 7
+                },
+                {
+                  "x": 26,
+                  "y": 8
+                },
+                {
+                  "x": 25,
+                  "y": 6
+                },
+                {
+                  "x": 25,
+                  "y": 7
+                },
+                {
+                  "x": 25,
+                  "y": 8
+                }
+              ],
+              "sourceOrderId": "room-template-000000000002-2-object-000"
+            },
+            {
+              "objectId": "object.dining-table",
+              "anchor": {
+                "x": 25,
+                "y": 9
+              },
+              "tiles": [
+                {
+                  "x": 26,
+                  "y": 9
+                },
+                {
+                  "x": 26,
+                  "y": 10
+                },
+                {
+                  "x": 26,
+                  "y": 11
+                },
+                {
+                  "x": 25,
+                  "y": 9
+                },
+                {
+                  "x": 25,
+                  "y": 10
+                },
+                {
+                  "x": 25,
+                  "y": 11
+                }
+              ],
+              "sourceOrderId": "room-template-000000000002-2-object-001"
+            }
+          ],
+          "capabilities": [
+            [
+              "dining",
+              6
+            ],
+            [
+              "recreation",
+              8
+            ],
+            [
+              "seating",
+              8
+            ]
+          ],
+          "routeWaypointCount": 16,
+          "routeCost": 15.5
+        },
+        {
+          "roomId": "room.laundry",
+          "instanceId": "room.laundry:21:17",
+          "actualActionDestination": {
+            "x": 21,
+            "y": 17
+          },
+          "objects": [
+            {
+              "objectId": "object.washing-machine",
+              "anchor": {
+                "x": 24,
+                "y": 17
+              },
+              "tiles": [
+                {
+                  "x": 24,
+                  "y": 17
+                },
+                {
+                  "x": 24,
+                  "y": 18
+                }
+              ],
+              "sourceOrderId": "room-template-000000000003-2-object-000"
+            },
+            {
+              "objectId": "object.washing-machine",
+              "anchor": {
+                "x": 24,
+                "y": 19
+              },
+              "tiles": [
+                {
+                  "x": 24,
+                  "y": 19
+                },
+                {
+                  "x": 24,
+                  "y": 20
+                }
+              ],
+              "sourceOrderId": "room-template-000000000003-2-object-001"
+            }
+          ],
+          "capabilities": [
+            [
+              "laundry",
+              4
+            ]
+          ],
+          "routeWaypointCount": 9,
+          "routeCost": 8.5
+        },
+        {
+          "roomId": "room.cell",
+          "instanceId": "room.cell:6:21",
+          "actualActionDestination": {
+            "x": 6,
+            "y": 21
+          },
+          "objects": [
+            {
+              "objectId": "object.bed",
+              "anchor": {
+                "x": 9,
+                "y": 21
+              },
+              "tiles": [
+                {
+                  "x": 10,
+                  "y": 21
+                },
+                {
+                  "x": 9,
+                  "y": 21
+                }
+              ],
+              "sourceOrderId": "room-template-000000000004-2-object-000"
+            },
+            {
+              "objectId": "object.toilet",
+              "anchor": {
+                "x": 7,
+                "y": 22
+              },
+              "tiles": [
+                {
+                  "x": 7,
+                  "y": 22
+                }
+              ],
+              "sourceOrderId": "room-template-000000000004-2-object-001"
+            }
+          ],
+          "capabilities": [
+            [
+              "sanitation",
+              1
+            ],
+            [
+              "sleep-surface",
+              1
+            ]
+          ],
+          "routeWaypointCount": 20,
+          "routeCost": 19.5
+        }
+      ],
+      "loaded": [
+        {
+          "roomId": "room.canteen",
+          "instanceId": "room.canteen:21:6",
+          "actualActionDestination": {
+            "x": 21,
+            "y": 6
+          },
+          "objects": [
+            {
+              "objectId": "object.dining-table",
+              "anchor": {
+                "x": 25,
+                "y": 6
+              },
+              "tiles": [
+                {
+                  "x": 26,
+                  "y": 6
+                },
+                {
+                  "x": 26,
+                  "y": 7
+                },
+                {
+                  "x": 26,
+                  "y": 8
+                },
+                {
+                  "x": 25,
+                  "y": 6
+                },
+                {
+                  "x": 25,
+                  "y": 7
+                },
+                {
+                  "x": 25,
+                  "y": 8
+                }
+              ],
+              "sourceOrderId": "room-template-000000000002-2-object-000"
+            },
+            {
+              "objectId": "object.dining-table",
+              "anchor": {
+                "x": 25,
+                "y": 9
+              },
+              "tiles": [
+                {
+                  "x": 26,
+                  "y": 9
+                },
+                {
+                  "x": 26,
+                  "y": 10
+                },
+                {
+                  "x": 26,
+                  "y": 11
+                },
+                {
+                  "x": 25,
+                  "y": 9
+                },
+                {
+                  "x": 25,
+                  "y": 10
+                },
+                {
+                  "x": 25,
+                  "y": 11
+                }
+              ],
+              "sourceOrderId": "room-template-000000000002-2-object-001"
+            }
+          ],
+          "capabilities": [
+            [
+              "dining",
+              6
+            ],
+            [
+              "recreation",
+              8
+            ],
+            [
+              "seating",
+              8
+            ]
+          ],
+          "routeWaypointCount": 16,
+          "routeCost": 15.5
+        },
+        {
+          "roomId": "room.laundry",
+          "instanceId": "room.laundry:21:17",
+          "actualActionDestination": {
+            "x": 21,
+            "y": 17
+          },
+          "objects": [
+            {
+              "objectId": "object.washing-machine",
+              "anchor": {
+                "x": 24,
+                "y": 17
+              },
+              "tiles": [
+                {
+                  "x": 24,
+                  "y": 17
+                },
+                {
+                  "x": 24,
+                  "y": 18
+                }
+              ],
+              "sourceOrderId": "room-template-000000000003-2-object-000"
+            },
+            {
+              "objectId": "object.washing-machine",
+              "anchor": {
+                "x": 24,
+                "y": 19
+              },
+              "tiles": [
+                {
+                  "x": 24,
+                  "y": 19
+                },
+                {
+                  "x": 24,
+                  "y": 20
+                }
+              ],
+              "sourceOrderId": "room-template-000000000003-2-object-001"
+            }
+          ],
+          "capabilities": [
+            [
+              "laundry",
+              4
+            ]
+          ],
+          "routeWaypointCount": 9,
+          "routeCost": 8.5
+        },
+        {
+          "roomId": "room.cell",
+          "instanceId": "room.cell:6:21",
+          "actualActionDestination": {
+            "x": 6,
+            "y": 21
+          },
+          "objects": [
+            {
+              "objectId": "object.bed",
+              "anchor": {
+                "x": 9,
+                "y": 21
+              },
+              "tiles": [
+                {
+                  "x": 10,
+                  "y": 21
+                },
+                {
+                  "x": 9,
+                  "y": 21
+                }
+              ],
+              "sourceOrderId": "room-template-000000000004-2-object-000"
+            },
+            {
+              "objectId": "object.toilet",
+              "anchor": {
+                "x": 7,
+                "y": 22
+              },
+              "tiles": [
+                {
+                  "x": 7,
+                  "y": 22
+                }
+              ],
+              "sourceOrderId": "room-template-000000000004-2-object-001"
+            }
+          ],
+          "capabilities": [
+            [
+              "sanitation",
+              1
+            ],
+            [
+              "sleep-surface",
+              1
+            ]
+          ],
+          "routeWaypointCount": 20,
+          "routeCost": 19.5
+        }
+      ],
+      "actions": [
+        {
+          "categories": [
+            "meal"
+          ],
+          "performing": [
+            {
+              "id": "action.eat-meal",
+              "target": "room.canteen:21:6",
+              "position": {
+                "x": 21,
+                "y": 6
+              }
+            }
+          ]
+        },
+        {
+          "categories": [
+            "work"
+          ],
+          "performing": [
+            {
+              "id": "action.laundry-work",
+              "target": "room.laundry:21:17",
+              "position": {
+                "x": 21,
+                "y": 17
+              }
+            }
+          ]
+        },
+        {
+          "categories": [
+            "sleep"
+          ],
+          "performing": [
+            {
+              "id": "action.laundry-work",
+              "target": "room.laundry:21:17",
+              "position": {
+                "x": 21,
+                "y": 17
+              }
+            },
+            {
+              "id": "action.sleep",
+              "target": "room.cell:6:21",
+              "position": {
+                "x": 6,
+                "y": 21
+              }
+            }
+          ]
+        },
+        {
+          "categories": [
+            "hygiene"
+          ],
+          "performing": [
+            {
+              "id": "action.use-toilet",
+              "target": "room.cell:6:21",
+              "position": {
+                "x": 6,
+                "y": 21
+              }
+            }
+          ]
+        }
+      ],
+      "wall": {
+        "order": {
+          "id": "actual-later-canteen-anchor-wall",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 21,
+            "y": 6
+          },
+          "footprint": "square",
+          "placementSequence": 57,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        "treasuryBefore": 15775,
+        "treasuryAfter": 16455
+      },
+      "routes": [
+        {
+          "to": {
+            "x": 21,
+            "y": 6
+          },
+          "result": {
+            "ok": false,
+            "failure": {
+              "reason": "invalid-destination"
+            }
+          }
+        },
+        {
+          "to": {
+            "x": 21,
+            "y": 7
+          },
+          "result": {
+            "ok": true,
+            "route": {
+              "segments": [
+                {
+                  "regionId": 1,
+                  "waypoints": [
+                    {
+                      "x": 16,
+                      "y": 16
+                    },
+                    {
+                      "x": 16,
+                      "y": 15
+                    },
+                    {
+                      "x": 16,
+                      "y": 14
+                    },
+                    {
+                      "x": 16,
+                      "y": 13
+                    },
+                    {
+                      "x": 16,
+                      "y": 12
+                    },
+                    {
+                      "x": 16,
+                      "y": 11
+                    },
+                    {
+                      "x": 17,
+                      "y": 11
+                    },
+                    {
+                      "x": 18,
+                      "y": 11
+                    },
+                    {
+                      "x": 18,
+                      "y": 10
+                    },
+                    {
+                      "x": 18,
+                      "y": 9
+                    },
+                    {
+                      "x": 18,
+                      "y": 8
+                    },
+                    {
+                      "x": 19,
+                      "y": 8
+                    },
+                    {
+                      "x": 20,
+                      "y": 8
+                    }
+                  ]
+                },
+                {
+                  "regionId": 4,
+                  "waypoints": [
+                    {
+                      "x": 21,
+                      "y": 8
+                    },
+                    {
+                      "x": 21,
+                      "y": 7
+                    }
+                  ],
+                  "enteredViaDoorId": "door:left:21:8"
+                }
+              ],
+              "totalCost": 14.5
+            }
+          }
+        }
+      ],
+      "roomAfterWall": {
+        "instanceId": "room.canteen:21:6",
+        "roomCatalogId": "room.canteen",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "width": 6,
+        "height": 6,
+        "residentCapacity": 0,
+        "concurrentUseCapacity": 14,
+        "objectCapabilities": [
+          "dining",
+          "recreation",
+          "seating"
+        ],
+        "openArea": false,
+        "concurrentUseCapacityByCapability": [
+          [
+            "dining",
+            6
+          ],
+          [
+            "recreation",
+            8
+          ],
+          [
+            "seating",
+            8
+          ]
+        ]
+      },
+      "candidateAfterWall": {
+        "instanceId": "room.canteen:21:6",
+        "roomCatalogId": "room.canteen",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "width": 6,
+        "height": 6,
+        "residentCapacity": 0,
+        "concurrentUseCapacity": 14,
+        "objectCapabilities": [
+          "dining",
+          "recreation",
+          "seating"
+        ],
+        "openArea": false,
+        "concurrentUseCapacityByCapability": [
+          [
+            "dining",
+            6
+          ],
+          [
+            "recreation",
+            8
+          ],
+          [
+            "seating",
+            8
+          ]
+        ]
+      },
+      "freshId": 1048576,
+      "beforeWatchMetrics": {
+        "unmetDemandCycles": 0,
+        "actionsStarted": 0,
+        "actionsCompleted": 0,
+        "routeFailures": 0,
+        "substitutionCycles": 0,
+        "contendedSubstitutionCycles": 0,
+        "substitutionsCountedSinceTick": 17421
+      },
+      "afterWatchMetrics": {
+        "unmetDemandCycles": 225,
+        "actionsStarted": 225,
+        "actionsCompleted": 0,
+        "routeFailures": 225,
+        "substitutionCycles": 0,
+        "contendedSubstitutionCycles": 0,
+        "substitutionsCountedSinceTick": 17421
+      },
+      "beforeHunger": 50800,
+      "afterHunger": 0,
+      "afterWallActions": []
+    }
+  ]
+}

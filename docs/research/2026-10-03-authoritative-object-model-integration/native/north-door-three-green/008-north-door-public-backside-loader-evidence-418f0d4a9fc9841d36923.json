@@ -1,0 +1,4596 @@
+{
+  "expectedInitialCamera": {
+    "yaw": -45,
+    "elevation": 45
+  },
+  "shots": [
+    {
+      "cameraYaw": 135,
+      "sourceYaw": 135,
+      "screenshot": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-common-room-connectivity-integration-20261003\\assets\\intermediate\\interior-north-door-native\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\north-door-camera135-source135-elev45.png"
+    },
+    {
+      "cameraYaw": 225,
+      "sourceYaw": -135,
+      "screenshot": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-common-room-connectivity-integration-20261003\\assets\\intermediate\\interior-north-door-native\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\north-door-camera225-source-135-elev45.png"
+    }
+  ],
+  "expectedRestoredCamera": {
+    "yaw": -45,
+    "elevation": 45
+  },
+  "publicRightClicks": [
+    12,
+    6,
+    6
+  ],
+  "northDoorOwner": "room-template-000000000002-1-door-000",
+  "northDoorAnchor": {
+    "x": 21,
+    "y": 11
+  },
+  "pausedSnapshot": {
+    "masterSeed": 165336937,
+    "kernel": {
+      "tick": 4093,
+      "expectedSequence": 3,
+      "rngStates": [
+        {
+          "name": "contraband.detection",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              3143554732,
+              109946904,
+              1863320132,
+              2601127082
+            ]
+          }
+        },
+        {
+          "name": "contraband.intelligence",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              1687932031,
+              1689266586,
+              1722820256,
+              578604541
+            ]
+          }
+        },
+        {
+          "name": "contraband.introduction",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2931889994,
+              2208437984,
+              123406961,
+              2689563535
+            ]
+          }
+        },
+        {
+          "name": "identity.actor-name",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2900317086,
+              792652268,
+              731531006,
+              2781413843
+            ]
+          }
+        },
+        {
+          "name": "prisoners.classification",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              4037519642,
+              1012296125,
+              3782097149,
+              2126373926
+            ]
+          }
+        },
+        {
+          "name": "prisoners.sentence",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              4043066342,
+              2729545013,
+              1334210986,
+              2791318621
+            ]
+          }
+        }
+      ],
+      "commands": []
+    },
+    "world": {
+      "version": 1,
+      "chunkSize": 32,
+      "ownedChunks": [
+        {
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "chunks": [
+        {
+          "x": 0,
+          "y": 0,
+          "lifecycle": "loaded",
+          "geometryRevision": 59,
+          "contentRevision": 35,
+          "dirty": true,
+          "terrain": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "topEdge": [
+            [
+              0,
+              295
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              0,
+              38
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              0,
+              38
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              0,
+              650
+            ]
+          ],
+          "leftEdge": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "squareStructure": [
+            [
+              0,
+              165
+            ],
+            [
+              1,
+              5
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              6
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              0,
+              13
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              13
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              13
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              13
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              20
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              28
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              0,
+              648
+            ]
+          ],
+          "zoning": [
+            [
+              0,
+              198
+            ],
+            [
+              15,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              16,
+              4
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              0,
+              15
+            ],
+            [
+              15,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              16,
+              4
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              0,
+              15
+            ],
+            [
+              15,
+              3
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              16,
+              4
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              0,
+              22
+            ],
+            [
+              16,
+              4
+            ],
+            [
+              0,
+              4
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              0,
+              30
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              0,
+              681
+            ]
+          ]
+        }
+      ]
+    },
+    "construction": {
+      "orders": [
+        {
+          "id": "room-template-000000000000-0-wall-000",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 5,
+            "y": 5
+          },
+          "footprint": "square",
+          "placementSequence": 0,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000000-0-wall-001",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 6,
+            "y": 5
+          },
+          "footprint": "square",
+          "placementSequence": 0,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000000-0-wall-002",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 7,
+            "y": 5
+          },
+          "footprint": "square",
+          "placementSequence": 0,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000000-0-wall-003",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 8,
+            "y": 5
+          },
+          "footprint": "square",
+          "placementSequence": 0,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000000-0-wall-004",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 9,
+            "y": 5
+          },
+          "footprint": "square",
+          "placementSequence": 0,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000000-0-wall-005",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 5,
+            "y": 6
+          },
+          "footprint": "square",
+          "placementSequence": 0,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000000-0-wall-006",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 9,
+            "y": 6
+          },
+          "footprint": "square",
+          "placementSequence": 0,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000000-0-wall-007",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 5,
+            "y": 7
+          },
+          "footprint": "square",
+          "placementSequence": 0,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000000-0-wall-008",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 9,
+            "y": 7
+          },
+          "footprint": "square",
+          "placementSequence": 0,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000000-0-wall-009",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 5,
+            "y": 8
+          },
+          "footprint": "square",
+          "placementSequence": 0,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000000-0-wall-010",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 9,
+            "y": 8
+          },
+          "footprint": "square",
+          "placementSequence": 0,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000000-0-wall-011",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 5,
+            "y": 9
+          },
+          "footprint": "square",
+          "placementSequence": 0,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000000-0-wall-012",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 6,
+            "y": 9
+          },
+          "footprint": "square",
+          "placementSequence": 0,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000000-0-wall-013",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 8,
+            "y": 9
+          },
+          "footprint": "square",
+          "placementSequence": 0,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000000-0-wall-014",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 9,
+            "y": 9
+          },
+          "footprint": "square",
+          "placementSequence": 0,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000000-1-door-000",
+          "definitionId": "door-wooden",
+          "location": {
+            "x": 7,
+            "y": 9
+          },
+          "edge": "north",
+          "placementSequence": 0,
+          "state": "completed",
+          "progress": 30,
+          "materialsAllocated": [
+            {
+              "itemId": "item.wood-plank",
+              "quantity": 1
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000000-2-object-000",
+          "definitionId": "storage-rack-wooden",
+          "location": {
+            "x": 6,
+            "y": 6
+          },
+          "placementSequence": 0,
+          "state": "completed",
+          "progress": 30,
+          "materialsAllocated": [
+            {
+              "itemId": "item.wood-plank",
+              "quantity": 1
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000000-2-object-001",
+          "definitionId": "storage-rack-wooden",
+          "location": {
+            "x": 8,
+            "y": 6
+          },
+          "placementSequence": 0,
+          "state": "completed",
+          "progress": 30,
+          "materialsAllocated": [
+            {
+              "itemId": "item.wood-plank",
+              "quantity": 1
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-000",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 12,
+            "y": 5
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-001",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 13,
+            "y": 5
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-002",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 14,
+            "y": 5
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-003",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 15,
+            "y": 5
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-004",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 16,
+            "y": 5
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-005",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 17,
+            "y": 5
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-006",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 12,
+            "y": 6
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-007",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 17,
+            "y": 6
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-008",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 12,
+            "y": 7
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-009",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 17,
+            "y": 7
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-010",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 12,
+            "y": 8
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-011",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 17,
+            "y": 8
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-012",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 12,
+            "y": 9
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-013",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 17,
+            "y": 9
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-014",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 12,
+            "y": 10
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-015",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 13,
+            "y": 10
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-016",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 15,
+            "y": 10
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-017",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 16,
+            "y": 10
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-0-wall-018",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 17,
+            "y": 10
+          },
+          "footprint": "square",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-1-door-000",
+          "definitionId": "door-wooden",
+          "location": {
+            "x": 14,
+            "y": 10
+          },
+          "edge": "north",
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 30,
+          "materialsAllocated": [
+            {
+              "itemId": "item.wood-plank",
+              "quantity": 1
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000001-2-object-000",
+          "definitionId": "loading-dock-door-wooden",
+          "location": {
+            "x": 13,
+            "y": 6
+          },
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 90,
+          "materialsAllocated": [
+            {
+              "itemId": "item.wood-plank",
+              "quantity": 3
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-0-wall-000",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 20,
+            "y": 5
+          },
+          "footprint": "square",
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-0-wall-001",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 21,
+            "y": 5
+          },
+          "footprint": "square",
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-0-wall-002",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 22,
+            "y": 5
+          },
+          "footprint": "square",
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-0-wall-003",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 23,
+            "y": 5
+          },
+          "footprint": "square",
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-0-wall-004",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 20,
+            "y": 6
+          },
+          "footprint": "square",
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-0-wall-005",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 23,
+            "y": 6
+          },
+          "footprint": "square",
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-0-wall-006",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 20,
+            "y": 7
+          },
+          "footprint": "square",
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-0-wall-007",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 23,
+            "y": 7
+          },
+          "footprint": "square",
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-0-wall-008",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 20,
+            "y": 8
+          },
+          "footprint": "square",
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-0-wall-009",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 23,
+            "y": 8
+          },
+          "footprint": "square",
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-0-wall-010",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 20,
+            "y": 9
+          },
+          "footprint": "square",
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-0-wall-011",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 23,
+            "y": 9
+          },
+          "footprint": "square",
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-0-wall-012",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 20,
+            "y": 10
+          },
+          "footprint": "square",
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-0-wall-013",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 23,
+            "y": 10
+          },
+          "footprint": "square",
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-0-wall-014",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 20,
+            "y": 11
+          },
+          "footprint": "square",
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-0-wall-015",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 22,
+            "y": 11
+          },
+          "footprint": "square",
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-0-wall-016",
+          "definitionId": "wall-brick",
+          "location": {
+            "x": 23,
+            "y": 11
+          },
+          "footprint": "square",
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 50,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 2
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-1-door-000",
+          "definitionId": "door-wooden",
+          "location": {
+            "x": 21,
+            "y": 11
+          },
+          "edge": "north",
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 30,
+          "materialsAllocated": [
+            {
+              "itemId": "item.wood-plank",
+              "quantity": 1
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-2-object-000",
+          "definitionId": "bed-wooden",
+          "location": {
+            "x": 21,
+            "y": 6
+          },
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 30,
+          "materialsAllocated": [
+            {
+              "itemId": "item.wood-plank",
+              "quantity": 1
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-2-object-001",
+          "definitionId": "toilet-brick",
+          "location": {
+            "x": 22,
+            "y": 9
+          },
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 30,
+          "materialsAllocated": [
+            {
+              "itemId": "item.brick",
+              "quantity": 1
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        }
+      ],
+      "undoStack": [
+        [
+          "room-template-000000000000-0-wall-000",
+          "room-template-000000000000-0-wall-001",
+          "room-template-000000000000-0-wall-002",
+          "room-template-000000000000-0-wall-003",
+          "room-template-000000000000-0-wall-004",
+          "room-template-000000000000-0-wall-005",
+          "room-template-000000000000-0-wall-006",
+          "room-template-000000000000-0-wall-007",
+          "room-template-000000000000-0-wall-008",
+          "room-template-000000000000-0-wall-009",
+          "room-template-000000000000-0-wall-010",
+          "room-template-000000000000-0-wall-011",
+          "room-template-000000000000-0-wall-012",
+          "room-template-000000000000-0-wall-013",
+          "room-template-000000000000-0-wall-014",
+          "room-template-000000000000-1-door-000",
+          "room-template-000000000000-2-object-000",
+          "room-template-000000000000-2-object-001"
+        ],
+        [
+          "room-template-000000000001-0-wall-000",
+          "room-template-000000000001-0-wall-001",
+          "room-template-000000000001-0-wall-002",
+          "room-template-000000000001-0-wall-003",
+          "room-template-000000000001-0-wall-004",
+          "room-template-000000000001-0-wall-005",
+          "room-template-000000000001-0-wall-006",
+          "room-template-000000000001-0-wall-007",
+          "room-template-000000000001-0-wall-008",
+          "room-template-000000000001-0-wall-009",
+          "room-template-000000000001-0-wall-010",
+          "room-template-000000000001-0-wall-011",
+          "room-template-000000000001-0-wall-012",
+          "room-template-000000000001-0-wall-013",
+          "room-template-000000000001-0-wall-014",
+          "room-template-000000000001-0-wall-015",
+          "room-template-000000000001-0-wall-016",
+          "room-template-000000000001-0-wall-017",
+          "room-template-000000000001-0-wall-018",
+          "room-template-000000000001-1-door-000",
+          "room-template-000000000001-2-object-000"
+        ]
+      ],
+      "redoStack": [],
+      "currentTransaction": [
+        "room-template-000000000002-0-wall-000",
+        "room-template-000000000002-0-wall-001",
+        "room-template-000000000002-0-wall-002",
+        "room-template-000000000002-0-wall-003",
+        "room-template-000000000002-0-wall-004",
+        "room-template-000000000002-0-wall-005",
+        "room-template-000000000002-0-wall-006",
+        "room-template-000000000002-0-wall-007",
+        "room-template-000000000002-0-wall-008",
+        "room-template-000000000002-0-wall-009",
+        "room-template-000000000002-0-wall-010",
+        "room-template-000000000002-0-wall-011",
+        "room-template-000000000002-0-wall-012",
+        "room-template-000000000002-0-wall-013",
+        "room-template-000000000002-0-wall-014",
+        "room-template-000000000002-0-wall-015",
+        "room-template-000000000002-0-wall-016",
+        "room-template-000000000002-1-door-000",
+        "room-template-000000000002-2-object-000",
+        "room-template-000000000002-2-object-001"
+      ],
+      "currentTransactionId": "room-template-2"
+    },
+    "entities": {
+      "capacity": 5000,
+      "nextAvailableIndex": 0,
+      "maxActiveIndex": -1,
+      "generations": [
+        [
+          0,
+          5000
+        ]
+      ],
+      "freeIndices": [],
+      "alive": [
+        [
+          0,
+          5000
+        ]
+      ]
+    },
+    "simulation": {
+      "regimeSchedules": [
+        {
+          "classificationGroupId": "general-population",
+          "blocks": [
+            {
+              "startTickOfDay": 0,
+              "endTickOfDay": 400,
+              "allowedCategories": [
+                "sleep"
+              ]
+            },
+            {
+              "startTickOfDay": 400,
+              "endTickOfDay": 500,
+              "allowedCategories": [
+                "meal",
+                "hygiene"
+              ]
+            },
+            {
+              "startTickOfDay": 500,
+              "endTickOfDay": 1000,
+              "allowedCategories": [
+                "work",
+                "education",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1000,
+              "endTickOfDay": 1200,
+              "allowedCategories": [
+                "recreation",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1200,
+              "endTickOfDay": 1300,
+              "allowedCategories": [
+                "meal"
+              ]
+            },
+            {
+              "startTickOfDay": 1300,
+              "endTickOfDay": 1800,
+              "allowedCategories": [
+                "work",
+                "education",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1800,
+              "endTickOfDay": 2000,
+              "allowedCategories": [
+                "recreation",
+                "hygiene",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2000,
+              "endTickOfDay": 2100,
+              "allowedCategories": [
+                "meal"
+              ]
+            },
+            {
+              "startTickOfDay": 2100,
+              "endTickOfDay": 2300,
+              "allowedCategories": [
+                "recreation",
+                "hygiene",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2300,
+              "endTickOfDay": 2400,
+              "allowedCategories": [
+                "sleep"
+              ]
+            }
+          ]
+        },
+        {
+          "classificationGroupId": "high-risk",
+          "blocks": [
+            {
+              "startTickOfDay": 0,
+              "endTickOfDay": 2000,
+              "allowedCategories": [
+                "sleep",
+                "meal",
+                "hygiene"
+              ]
+            },
+            {
+              "startTickOfDay": 2000,
+              "endTickOfDay": 2200,
+              "allowedCategories": [
+                "recreation",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2200,
+              "endTickOfDay": 2400,
+              "allowedCategories": [
+                "sleep",
+                "meal",
+                "hygiene"
+              ]
+            }
+          ]
+        }
+      ],
+      "prisoners": {
+        "components": {
+          "activeLength": 0,
+          "sentenceLengthTicks": [],
+          "priorIncidentsAtIntake": [],
+          "sentenceEndTick": [],
+          "riskTier": [],
+          "classificationGroupIndex": [],
+          "intakeStage": [],
+          "solitarySanctionEndTick": [],
+          "injured": [],
+          "needs": {
+            "hunger": [],
+            "sleep": [],
+            "hygiene": [],
+            "bladder": [],
+            "safety": [],
+            "recreation": []
+          },
+          "actionIndex": [],
+          "actionPhase": [],
+          "phaseStartedAtTick": [],
+          "needFulfilledLastTick": [],
+          "tileX": [],
+          "tileY": []
+        },
+        "coldState": {
+          "accommodationInstanceId": [],
+          "currentActionTargetInstanceId": []
+        },
+        "roomInstanceDefinitions": [
+          {
+            "instanceId": "room.cell:21:6",
+            "roomCatalogId": "room.cell",
+            "anchorTile": {
+              "x": 21,
+              "y": 6
+            },
+            "width": 2,
+            "height": 5
+          },
+          {
+            "instanceId": "room.delivery-bay:13:6",
+            "roomCatalogId": "room.delivery-bay",
+            "anchorTile": {
+              "x": 13,
+              "y": 6
+            },
+            "width": 4,
+            "height": 4
+          },
+          {
+            "instanceId": "room.storage-room:6:6",
+            "roomCatalogId": "room.storage-room",
+            "anchorTile": {
+              "x": 6,
+              "y": 6
+            },
+            "width": 3,
+            "height": 3
+          }
+        ],
+        "roomInstanceOccupancy": [
+          [
+            "room.cell:21:6",
+            []
+          ],
+          [
+            "room.delivery-bay:13:6",
+            []
+          ],
+          [
+            "room.storage-room:6:6",
+            []
+          ]
+        ]
+      },
+      "operations": {
+        "containers": [
+          [
+            "construction-materials",
+            []
+          ]
+        ],
+        "jobs": [],
+        "jobWorkers": {
+          "workers": [],
+          "busy": []
+        },
+        "electricity": {
+          "type": "electricity",
+          "nodes": [],
+          "connections": [],
+          "failedNodeIds": []
+        },
+        "water": {
+          "type": "water",
+          "nodes": [],
+          "connections": [],
+          "failedNodeIds": []
+        }
+      },
+      "navigation": {
+        "doors": [
+          {
+            "id": "door:top:14:10",
+            "position": {
+              "x": 14,
+              "y": 10
+            },
+            "side": "top",
+            "state": "closed",
+            "requiredSecurityClearance": 0,
+            "costMultiplier": 1
+          },
+          {
+            "id": "door:top:21:11",
+            "position": {
+              "x": 21,
+              "y": 11
+            },
+            "side": "top",
+            "state": "closed",
+            "requiredSecurityClearance": 0,
+            "costMultiplier": 1
+          },
+          {
+            "id": "door:top:7:9",
+            "position": {
+              "x": 7,
+              "y": 9
+            },
+            "side": "top",
+            "state": "closed",
+            "requiredSecurityClearance": 0,
+            "costMultiplier": 1
+          }
+        ]
+      },
+      "security": {
+        "sectorDefinitions": [
+          {
+            "id": "security-sector.prison",
+            "gradeId": "grade.general",
+            "doorIds": [],
+            "postTile": {
+              "x": 16,
+              "y": 16
+            }
+          }
+        ],
+        "sectorControlStates": [
+          [
+            "security-sector.prison",
+            "normal"
+          ]
+        ],
+        "guards": {
+          "entityStore": {
+            "capacity": 500,
+            "nextAvailableIndex": 0,
+            "maxActiveIndex": -1,
+            "generations": [
+              [
+                0,
+                500
+              ]
+            ],
+            "freeIndices": [],
+            "alive": [
+              [
+                0,
+                500
+              ]
+            ]
+          },
+          "records": []
+        },
+        "schedules": [
+          {
+            "sectorId": "security-sector.prison",
+            "blocks": [
+              {
+                "startTickOfDay": 0,
+                "endTickOfDay": 2400,
+                "requiredGuardCount": 1
+              }
+            ]
+          }
+        ],
+        "deployment": {
+          "metrics": {
+            "deploymentFailures": 0
+          }
+        },
+        "patrol": {
+          "metrics": {
+            "loopsCompletedOnTime": 0,
+            "loopsCompletedLate": 0,
+            "loopsMissed": 0
+          }
+        }
+      },
+      "contraband": {
+        "items": [],
+        "intelligence": [],
+        "intelligenceSequence": 0,
+        "informants": [],
+        "confiscations": [],
+        "searchPolicies": [
+          {
+            "scope": "cell",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 40,
+            "baseDetectionProbability": 0.7,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.2
+          },
+          {
+            "scope": "delivery",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 25,
+            "baseDetectionProbability": 0.6,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.15
+          },
+          {
+            "scope": "person",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 20,
+            "baseDetectionProbability": 0.75,
+            "concealmentPenaltyPerPoint": 0.06,
+            "intelligenceConfidenceBonus": 0.2
+          },
+          {
+            "scope": "sector",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 15,
+            "baseDetectionProbability": 0.5,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.25
+          }
+        ],
+        "searchContainerLocations": [],
+        "search": {
+          "queue": [],
+          "active": [],
+          "metrics": {
+            "itemsDiscovered": 0,
+            "itemsMissed": 0,
+            "searchesCompleted": 0,
+            "searchesCancelled": 0
+          }
+        }
+      },
+      "economy": {
+        "treasury": {
+          "balanceMinorUnits": 20295
+        },
+        "procurement": {
+          "pending": []
+        },
+        "payroll": {
+          "unpaidWagesMinorUnits": 0
+        }
+      },
+      "objects": {
+        "placedObjects": [
+          {
+            "placedObjectId": "object:6:6",
+            "objectId": "object.storage-rack",
+            "anchorTile": {
+              "x": 6,
+              "y": 6
+            },
+            "orientation": 0,
+            "sourceOrderId": "room-template-000000000000-2-object-000"
+          },
+          {
+            "placedObjectId": "object:8:6",
+            "objectId": "object.storage-rack",
+            "anchorTile": {
+              "x": 8,
+              "y": 6
+            },
+            "orientation": 0,
+            "sourceOrderId": "room-template-000000000000-2-object-001"
+          },
+          {
+            "placedObjectId": "object:13:6",
+            "objectId": "object.loading-dock-door",
+            "anchorTile": {
+              "x": 13,
+              "y": 6
+            },
+            "orientation": 0,
+            "sourceOrderId": "room-template-000000000001-2-object-000"
+          },
+          {
+            "placedObjectId": "object:21:6",
+            "objectId": "object.bed",
+            "anchorTile": {
+              "x": 21,
+              "y": 6
+            },
+            "orientation": 0,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          {
+            "placedObjectId": "object:22:9",
+            "objectId": "object.toilet",
+            "anchorTile": {
+              "x": 22,
+              "y": 9
+            },
+            "orientation": 0,
+            "sourceOrderId": "room-template-000000000002-2-object-001"
+          }
+        ]
+      },
+      "alerts": {
+        "sequence": 59,
+        "records": [
+          {
+            "sequence": 1,
+            "tick": 170,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 2,
+            "tick": 230,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 3,
+            "tick": 290,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 4,
+            "tick": 350,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 5,
+            "tick": 410,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 6,
+            "tick": 470,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 7,
+            "tick": 530,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 8,
+            "tick": 590,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 9,
+            "tick": 650,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 10,
+            "tick": 710,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 11,
+            "tick": 770,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 12,
+            "tick": 830,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 13,
+            "tick": 890,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 14,
+            "tick": 950,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 15,
+            "tick": 1010,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 16,
+            "tick": 1050,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 17,
+            "tick": 1110,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 18,
+            "tick": 1170,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 19,
+            "tick": 1210,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 20,
+            "tick": 1250,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 21,
+            "tick": 1310,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 22,
+            "tick": 1370,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 23,
+            "tick": 1430,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 24,
+            "tick": 1490,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 25,
+            "tick": 1550,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 26,
+            "tick": 1610,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 27,
+            "tick": 1670,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 28,
+            "tick": 1730,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 29,
+            "tick": 1790,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 30,
+            "tick": 1850,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 31,
+            "tick": 1910,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 32,
+            "tick": 1970,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 33,
+            "tick": 2030,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 34,
+            "tick": 2090,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 35,
+            "tick": 2150,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 36,
+            "tick": 2210,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 37,
+            "tick": 2270,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 38,
+            "tick": 2310,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 39,
+            "tick": 2530,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 40,
+            "tick": 2800,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 41,
+            "tick": 2860,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 42,
+            "tick": 2920,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 43,
+            "tick": 2980,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 44,
+            "tick": 3040,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 45,
+            "tick": 3100,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 46,
+            "tick": 3160,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 47,
+            "tick": 3220,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 48,
+            "tick": 3280,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 49,
+            "tick": 3340,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 50,
+            "tick": 3400,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 51,
+            "tick": 3460,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 52,
+            "tick": 3520,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 53,
+            "tick": 3580,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 54,
+            "tick": 3640,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 55,
+            "tick": 3700,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 56,
+            "tick": 3760,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 57,
+            "tick": 3800,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 58,
+            "tick": 3960,
+            "type": "construction.order-completed"
+          },
+          {
+            "sequence": 59,
+            "tick": 4000,
+            "type": "construction.order-completed"
+          }
+        ],
+        "dismissed": []
+      },
+      "inFlight": {
+        "navigation": {
+          "pending": [],
+          "results": []
+        },
+        "prisoners": {
+          "locomotion": {
+            "walks": [],
+            "headings": []
+          },
+          "pathRequestIds": [],
+          "requestSequence": 0
+        },
+        "guards": {
+          "locomotion": {
+            "walks": [],
+            "headings": []
+          },
+          "deploymentRequestSequence": 0,
+          "patrolRequestSequence": 0
+        },
+        "search": {
+          "requestSequence": 0,
+          "jobs": []
+        }
+      },
+      "roomTemplates": {
+        "version": 1,
+        "pending": [],
+        "completed": [
+          {
+            "templateId": "storage-room-basic",
+            "origin": {
+              "x": 5,
+              "y": 5
+            },
+            "mirrorX": false,
+            "sequence": 0
+          },
+          {
+            "templateId": "delivery-bay-basic",
+            "origin": {
+              "x": 12,
+              "y": 5
+            },
+            "mirrorX": false,
+            "sequence": 1
+          },
+          {
+            "templateId": "cell-basic",
+            "origin": {
+              "x": 20,
+              "y": 5
+            },
+            "mirrorX": false,
+            "sequence": 2
+          }
+        ]
+      },
+      "incidents": {
+        "log": [],
+        "sectorRisk": [
+          [
+            "security-sector.prison",
+            {
+              "latestScore": 0,
+              "consecutiveHotSamples": 0
+            }
+          ]
+        ],
+        "gangs": {
+          "definitions": [
+            {
+              "id": "gang.alpha",
+              "territorySectorIds": [
+                "security-sector.prison"
+              ]
+            },
+            {
+              "id": "gang.beta",
+              "territorySectorIds": [
+                "security-sector.prison"
+              ]
+            }
+          ],
+          "members": [],
+          "reputation": [
+            [
+              "gang.alpha",
+              0.5
+            ],
+            [
+              "gang.beta",
+              0.5
+            ]
+          ],
+          "grudges": []
+        },
+        "tunnels": [],
+        "watchedSectorIds": [
+          "security-sector.prison"
+        ],
+        "trigger": {
+          "metrics": {
+            "incidentsTriggered": 0,
+            "riotsTriggered": 0,
+            "retaliationsTriggered": 0
+          },
+          "sequence": 0
+        },
+        "response": {
+          "metrics": {
+            "incidentsResolved": 0,
+            "incidentsLapsed": 0,
+            "respondersDispatched": 0,
+            "routeFailures": 0
+          }
+        }
+      }
+    },
+    "identity": {
+      "version": 1,
+      "poolId": "placeholder.v1",
+      "entries": []
+    }
+  },
+  "delivered": {
+    "responses": [
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw-45-elev45.40921f961341.png",
+        "status": 200,
+        "sha256": "40921f9613417d04bd8ec9e842a93abf32982a48326bfecaf641153afbdfd2ec",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw-30-elev45.7f84cbde0f31.png",
+        "status": 200,
+        "sha256": "7f84cbde0f3117eccc812fd29c9cf802478834370e5a836eda27ee9c4e63e8cb",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw-15-elev45.45fbced644d4.png",
+        "status": 200,
+        "sha256": "45fbced644d40e4a2d472ddb177c6b56ad2d75977ee65cf0b93cf766c7c66b59",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw%2B00-elev45.66eaf497a384.png",
+        "status": 200,
+        "sha256": "66eaf497a3846d8295b98a47571e6bc236481a5b0cb1cb5194a8599ccabb48db",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw%2B15-elev45.272f48746c4c.png",
+        "status": 200,
+        "sha256": "272f48746c4c926d4bbbdc52873f6b26772742739169e71bd924603fac2c0e53",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw%2B30-elev45.5392d64abd54.png",
+        "status": 200,
+        "sha256": "5392d64abd547d0af2bb44bc9d1a7eb67b29c4b3c9d086140b5b3eca2b4ea8a8",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw%2B45-elev45.b4f70db7c66d.png",
+        "status": 200,
+        "sha256": "b4f70db7c66d29296479a34d38127045e13f55fb54d1dbac80e0c9d4e576187a",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw%2B60-elev45.ae5daf299751.png",
+        "status": 200,
+        "sha256": "ae5daf299751b572e66bf84280e411bb556a7ebc3d29f84dc6e447a237a3dbe7",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw%2B75-elev45.e8f66d2382f0.png",
+        "status": 200,
+        "sha256": "e8f66d2382f00a7b1fc3f607c9cff8ff12347a3042ed5e2be7a55407245caf76",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw%2B90-elev45.467aa443d876.png",
+        "status": 200,
+        "sha256": "467aa443d8767548dbb87ddde8982dd418801356fc94ccd059330cc44b076804",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw%2B105-elev45.c6fbf1d45280.png",
+        "status": 200,
+        "sha256": "c6fbf1d4528028e62b0e1ef3b24b24ebf5c1f099ac4b03f05e4a4642f6f15e44",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw%2B120-elev45.a9d798d93115.png",
+        "status": 200,
+        "sha256": "a9d798d93115aea8467ee4f6904ecd5eee76dd9e82101fc4b978c991b4034cf1",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw%2B135-elev45.1c1f8e0b7cbe.png",
+        "status": 200,
+        "sha256": "1c1f8e0b7cbe2a4d24543878c04474f40b95ba9888de2f940e0d5c8b9cf0dabb",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw%2B150-elev45.7d5ac04ccd25.png",
+        "status": 200,
+        "sha256": "7d5ac04ccd25f74f951841d3f6471dc69db90de261fcd76a758e69d6beaa18a2",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw%2B165-elev45.ded0d2ce8ff1.png",
+        "status": 200,
+        "sha256": "ded0d2ce8ff185a74f6710bc776c56afb45be074497520adbcd7e7970582df4f",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw-180-elev45.24c591d5bd30.png",
+        "status": 200,
+        "sha256": "24c591d5bd30fc4b0af36b9493b26e0b115e3ecd95799a6f7e22286f30f36443",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw-165-elev45.40776e7e2927.png",
+        "status": 200,
+        "sha256": "40776e7e2927223a3ffedd2d9df56b65f52e7aa362ab9bb9f2cd0d6a3a9a0f5b",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw-150-elev45.8996912fe893.png",
+        "status": 200,
+        "sha256": "8996912fe8939d3080e4477614b8262c5a884f5e3bfda5d7b2fb491893886807",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw-135-elev45.cae1519010fd.png",
+        "status": 200,
+        "sha256": "cae1519010fd4998ed914d4d384725bf7989c16509552a088d3bf02bfe9cecfc",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw-120-elev45.10079f920e38.png",
+        "status": 200,
+        "sha256": "10079f920e38d7fcf3aa69205b953b5a01d1116a659d280447c28e8f85a27170",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw-105-elev45.eabcdda17eac.png",
+        "status": 200,
+        "sha256": "eabcdda17eac151be31799d88f059109f45874ecc737993168e202847308af67",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw-90-elev45.dd2f57d4a41c.png",
+        "status": 200,
+        "sha256": "dd2f57d4a41c67843d7b298cf2b3f7fe92721058d8f805297d4d64d619978934",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw-75-elev45.fbc794c686de.png",
+        "status": 200,
+        "sha256": "fbc794c686de4d6b8c6ddcd98d9bd9f7cece473b663e55b4b3d2fba94dcfafe9",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw-60-elev45.db7021859377.png",
+        "status": 200,
+        "sha256": "db702185937767486f7b6b0d11c23ad43d04420414f1cb92ed48029c68452d66",
+        "width": 512,
+        "height": 512
+      }
+    ],
+    "images": [
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/0ed59f5b-62d0-40f6-8663-88db37735838",
+        "currentSrc": "blob:http://127.0.0.1:5365/0ed59f5b-62d0-40f6-8663-88db37735838",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "4e656013fc9cb562777c71ed4b94ed2de7ce485116a6f934f00146e102cc0458"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/99fd2339-e404-497c-82c1-4a6ef8530e6e",
+        "currentSrc": "blob:http://127.0.0.1:5365/99fd2339-e404-497c-82c1-4a6ef8530e6e",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "fcfa401381d129d186f54dc13e9832869e4ed3153cae55e91d5d38d528f9cdb0"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/a1483b61-6462-4abe-990a-0be5cf4a1891",
+        "currentSrc": "blob:http://127.0.0.1:5365/a1483b61-6462-4abe-990a-0be5cf4a1891",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "cb4bae62ae53809dba9e61f8556cfa7e854c22e243126379742ad0fbfd116a1f"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/2213b9c7-22b6-4c69-af22-138500bcb67a",
+        "currentSrc": "blob:http://127.0.0.1:5365/2213b9c7-22b6-4c69-af22-138500bcb67a",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "24f4e0f9b2718e92c0f01ed849049ddc3d759c31278517e72c34ff6e6a331dc0"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/1e421486-ca6f-4f07-ac49-133f4dbc3771",
+        "currentSrc": "blob:http://127.0.0.1:5365/1e421486-ca6f-4f07-ac49-133f4dbc3771",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "71ccffb2cc51119ea19ce62d6bc84a416a24f2f6928de7624e3fb020facbe0f6"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/07e25e07-a7fa-45c3-b90f-edb2ab35dc38",
+        "currentSrc": "blob:http://127.0.0.1:5365/07e25e07-a7fa-45c3-b90f-edb2ab35dc38",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "e9335cef165fe3e84a90cdf3bb629ddd884e34ecc248f64a60321f4a44937529"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/91314f72-5973-4fea-b297-583bd9c75d86",
+        "currentSrc": "blob:http://127.0.0.1:5365/91314f72-5973-4fea-b297-583bd9c75d86",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "9e83b26d596c40780ccfaf5bdeaea34fd3fb9423382023d2bd54f1bc5c622d92"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/5beeec59-76e8-4d70-8aed-ef67403b1131",
+        "currentSrc": "blob:http://127.0.0.1:5365/5beeec59-76e8-4d70-8aed-ef67403b1131",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "a1f31f17de5a327f36605d69251bc76d91dc7b82aa5970e82b665659dbfcb800"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/194b3586-b675-4ecc-b6e7-79167eb4d49b",
+        "currentSrc": "blob:http://127.0.0.1:5365/194b3586-b675-4ecc-b6e7-79167eb4d49b",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "6917ab6272c49c2a64aaf56ed9cfdd59d5c23f2f5101af67ea2446519f1df818"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/98c9d356-e184-421d-94bc-b43e18b1bb70",
+        "currentSrc": "blob:http://127.0.0.1:5365/98c9d356-e184-421d-94bc-b43e18b1bb70",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "1355322ca365edf6db9c561b66c9953de8a6263a6939c35d8aa051f7f5a60655"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/768ffeb6-ebd6-45ec-b529-d32d19fd3f01",
+        "currentSrc": "blob:http://127.0.0.1:5365/768ffeb6-ebd6-45ec-b529-d32d19fd3f01",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "3447b706bed88addd78a51cc025eeac54f79ef79ce0b1fd949510dba52f2c6dc"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/b6a46869-ce57-401d-8d5b-bb37a01fe8cb",
+        "currentSrc": "blob:http://127.0.0.1:5365/b6a46869-ce57-401d-8d5b-bb37a01fe8cb",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "05788bcaeb3341e3ddb55506ecd56ebb01baa46efa2277578be4583931276b16"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/0b1e7288-474e-44ff-9945-7bb8094413b9",
+        "currentSrc": "blob:http://127.0.0.1:5365/0b1e7288-474e-44ff-9945-7bb8094413b9",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "8d8ce9ca121fe947e6dbfb8db4e7654efbfe28515ba9bb0dc6456396123d3ee0"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/b0fdd696-fc07-4669-909b-6d30afcf6809",
+        "currentSrc": "blob:http://127.0.0.1:5365/b0fdd696-fc07-4669-909b-6d30afcf6809",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "f279d76d4d3035576ec232d68de20f079b2584394dc587662799a4d3be7aa635"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/7260e3a9-e3cf-4c23-b7d8-8c67e31e077a",
+        "currentSrc": "blob:http://127.0.0.1:5365/7260e3a9-e3cf-4c23-b7d8-8c67e31e077a",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "9304f6a7697b1242d4c26d563b7bb2a4598b8b4dcd43cce008d7eaa81b91834d"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/188082c8-2d75-4242-bed9-6f09c99c5f4f",
+        "currentSrc": "blob:http://127.0.0.1:5365/188082c8-2d75-4242-bed9-6f09c99c5f4f",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "ce7e0bef821387716337a715515c628010c51b34db4ead050b6066fa51d29448"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/1b453249-e9ad-4570-9ef9-2cb4c1d19f30",
+        "currentSrc": "blob:http://127.0.0.1:5365/1b453249-e9ad-4570-9ef9-2cb4c1d19f30",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "8a17ffe2678ca2c2c0246a89996aba64097fa29dead9c3eb2c9682ca594d73b8"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/41d85c48-d70c-42f7-a273-e17dc5b10483",
+        "currentSrc": "blob:http://127.0.0.1:5365/41d85c48-d70c-42f7-a273-e17dc5b10483",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "40921f9613417d04bd8ec9e842a93abf32982a48326bfecaf641153afbdfd2ec"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/815e91e2-ab7d-4c76-8dde-a067372d96cb",
+        "currentSrc": "blob:http://127.0.0.1:5365/815e91e2-ab7d-4c76-8dde-a067372d96cb",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "b17091c17260d041d14d4594e60a670bc4e0465412855b101a9b97f54b34762f"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/9f8c3568-69af-45f5-bb8e-1add9b55cbe1",
+        "currentSrc": "blob:http://127.0.0.1:5365/9f8c3568-69af-45f5-bb8e-1add9b55cbe1",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "1f712df62e5e4e7b5533bd14c3b438ee94255e3e682c64f6e093e02a4f308a47"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/f807b1f4-13b9-4afc-9d11-f4cc39d773ad",
+        "currentSrc": "blob:http://127.0.0.1:5365/f807b1f4-13b9-4afc-9d11-f4cc39d773ad",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "13d9fadda21f26afd30b16e61999905bf6f9e1ff9b3922ba1d20236dc3145b57"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/1d4eb5e6-2e94-4a39-a398-de47b84d8000",
+        "currentSrc": "blob:http://127.0.0.1:5365/1d4eb5e6-2e94-4a39-a398-de47b84d8000",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "142e26025b0b5e128eb866cf2d1f29bd9295172dc14ead22c9b4a774b60bcfa7"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/1d245287-f2b2-40b3-aa66-eb29f27cc226",
+        "currentSrc": "blob:http://127.0.0.1:5365/1d245287-f2b2-40b3-aa66-eb29f27cc226",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "b3fe27fabbbfcbb68426c616196e2b221f0b67107b6f1312c170b150ab710b49"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/b1b48ca6-317b-4219-b5cc-78fe787e13e3",
+        "currentSrc": "blob:http://127.0.0.1:5365/b1b48ca6-317b-4219-b5cc-78fe787e13e3",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "faccdd4d94af62dbb9bf239a5bfbdecac1daeab6c9542aed8a9a9a874368eae7"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/7fd1ed0e-ff59-4588-ad50-5a5e86beaf28",
+        "currentSrc": "blob:http://127.0.0.1:5365/7fd1ed0e-ff59-4588-ad50-5a5e86beaf28",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "19250d460ee942a48ed88c8c5ab3dc1d6fdd4d9b21439a8c32d41759ec3be604"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/7d2b0468-7009-4ee7-be48-6082854f4912",
+        "currentSrc": "blob:http://127.0.0.1:5365/7d2b0468-7009-4ee7-be48-6082854f4912",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "7f84cbde0f3117eccc812fd29c9cf802478834370e5a836eda27ee9c4e63e8cb"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/4714ec43-b0e7-4ef9-938e-5a9265e6f543",
+        "currentSrc": "blob:http://127.0.0.1:5365/4714ec43-b0e7-4ef9-938e-5a9265e6f543",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "6e34ad2b3b0780272f87fc7085f6ea282a4bc5d53c77cc1b3b080c5a2b2b2a2c"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/085e3b8c-e317-4841-8fc8-d3092a74f93f",
+        "currentSrc": "blob:http://127.0.0.1:5365/085e3b8c-e317-4841-8fc8-d3092a74f93f",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "9419dadf0dbe3c583bc90efcc907e0a7283050f9047921b500e74824ca244c77"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/9b73a66c-6f09-4451-8bd3-85047576b637",
+        "currentSrc": "blob:http://127.0.0.1:5365/9b73a66c-6f09-4451-8bd3-85047576b637",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "af1db667e4b94ce65ba39e49237388e4bc8205ae9bdee41be1b3480fb8be01b7"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/ffab7d7c-dbce-49f7-8c8b-d9d9f38ec796",
+        "currentSrc": "blob:http://127.0.0.1:5365/ffab7d7c-dbce-49f7-8c8b-d9d9f38ec796",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "7ebbeb67ea3a2ef4c18233a5469a450633149d15450722fd3d8274c0898b2d21"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/3e6cfeed-acac-4de7-a370-6ad253d970e1",
+        "currentSrc": "blob:http://127.0.0.1:5365/3e6cfeed-acac-4de7-a370-6ad253d970e1",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "16b615e04332b85033c449d7213b1532ba002a4c600b22f5a7d0648ea8ff2696"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/a7f0f82f-2f98-4818-8251-9fcf3c0417c4",
+        "currentSrc": "blob:http://127.0.0.1:5365/a7f0f82f-2f98-4818-8251-9fcf3c0417c4",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "34529e35c6967bc502c02486803e4cce95afc95e9867309194e1a1de68e2ad52"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/f03ccf87-434d-405e-be26-2bdfe2fb0663",
+        "currentSrc": "blob:http://127.0.0.1:5365/f03ccf87-434d-405e-be26-2bdfe2fb0663",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "6400567e6befd5b9cf05291053d00e64f31f36d896ec04d55a688cc385fcd0e0"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/02a34da4-121e-499b-85a6-d07a459deb85",
+        "currentSrc": "blob:http://127.0.0.1:5365/02a34da4-121e-499b-85a6-d07a459deb85",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "45fbced644d40e4a2d472ddb177c6b56ad2d75977ee65cf0b93cf766c7c66b59"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/6873f9c5-e7e0-41b4-ab82-a3253476afc6",
+        "currentSrc": "blob:http://127.0.0.1:5365/6873f9c5-e7e0-41b4-ab82-a3253476afc6",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "8b7df4260ff1fb56bcc5d744fa8b818f337320c05547b64751fe00adb9838578"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/f6f0af41-6a78-46dd-964c-b62e0833bb05",
+        "currentSrc": "blob:http://127.0.0.1:5365/f6f0af41-6a78-46dd-964c-b62e0833bb05",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "1c49137bf58e53a0c312ea616dc83b409b8a86907efc4b954f15567f035a6893"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/33c6a85a-1205-40cb-9416-8797278008c6",
+        "currentSrc": "blob:http://127.0.0.1:5365/33c6a85a-1205-40cb-9416-8797278008c6",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "87a1acd4112d3f4c47f2d45f0d0fbfa554e7295456140d5dff51849c53d7c610"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/01e8b48b-b4f4-4ffb-b298-5035a35d45d9",
+        "currentSrc": "blob:http://127.0.0.1:5365/01e8b48b-b4f4-4ffb-b298-5035a35d45d9",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "66eaf497a3846d8295b98a47571e6bc236481a5b0cb1cb5194a8599ccabb48db"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/7a8b2609-2782-47e2-b962-3598118125e4",
+        "currentSrc": "blob:http://127.0.0.1:5365/7a8b2609-2782-47e2-b962-3598118125e4",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "a8b8fbee8cd5f93bef4a2a4488a8104813ee6989dee7ea02d1608791c80a42a6"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/dc92c4c4-b520-4a64-a8b6-0ccafcdf680c",
+        "currentSrc": "blob:http://127.0.0.1:5365/dc92c4c4-b520-4a64-a8b6-0ccafcdf680c",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "e13a3e2ef5bf984ca2086f4d71ce0323f5d54e9978ab6342b93d6475a23190d9"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/91647e51-954b-4071-8793-18a2903f2a7c",
+        "currentSrc": "blob:http://127.0.0.1:5365/91647e51-954b-4071-8793-18a2903f2a7c",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "4c25174a20fe377731896d78083fcb7a35173890ec5b4b18fddd4e91ea647697"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/38da095a-ac7f-4af0-aa85-b6be81a3b1c1",
+        "currentSrc": "blob:http://127.0.0.1:5365/38da095a-ac7f-4af0-aa85-b6be81a3b1c1",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "31d2677710f5bc394eb54e3a12348968daab038412e2d86ad74c1fe2ca1c825b"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/26c62d4a-9880-4349-9f48-2b024418893d",
+        "currentSrc": "blob:http://127.0.0.1:5365/26c62d4a-9880-4349-9f48-2b024418893d",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "219f5f189783babdcbe7b73cb166057729ab339c532b9b42c6203280dc16d499"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/10ab6154-ae17-44d9-8451-ad9300e34994",
+        "currentSrc": "blob:http://127.0.0.1:5365/10ab6154-ae17-44d9-8451-ad9300e34994",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "272f48746c4c926d4bbbdc52873f6b26772742739169e71bd924603fac2c0e53"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/ed2666c9-7548-4783-8004-3b881b4b71a8",
+        "currentSrc": "blob:http://127.0.0.1:5365/ed2666c9-7548-4783-8004-3b881b4b71a8",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "29a8e68cbfe51f41d66b080928cfbb211c7f144f4eeb0cd0075150a2e0d3b06c"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/48724f69-b3fb-4bdd-a2af-dcd19b0d4f5b",
+        "currentSrc": "blob:http://127.0.0.1:5365/48724f69-b3fb-4bdd-a2af-dcd19b0d4f5b",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "eb756ff209de38741708095cd83daa2f61c49447e44bc1809174128559b7ab6c"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/193daaac-545c-46c6-a8ee-adb9102458e6",
+        "currentSrc": "blob:http://127.0.0.1:5365/193daaac-545c-46c6-a8ee-adb9102458e6",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "f0061be8c6240361aa7a4ae76d4b63c2d12733619edec1b65163cf74d0de01e4"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/edf7106c-440a-4085-96e0-b17651a8d1e5",
+        "currentSrc": "blob:http://127.0.0.1:5365/edf7106c-440a-4085-96e0-b17651a8d1e5",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "c411cffdd2e9bbafb5dbd6043f8fe21bca2266216abca887181cfd7375da6a40"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/ab3d6c98-0862-426d-8c19-529641cb814f",
+        "currentSrc": "blob:http://127.0.0.1:5365/ab3d6c98-0862-426d-8c19-529641cb814f",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "6a60277bf1c991b0db1d92a4cc5a6e93b01acdf5c39ebd929b0467026d58e2f6"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/82d91cd9-4d8f-4a87-bd31-d7d6934b9f73",
+        "currentSrc": "blob:http://127.0.0.1:5365/82d91cd9-4d8f-4a87-bd31-d7d6934b9f73",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "5392d64abd547d0af2bb44bc9d1a7eb67b29c4b3c9d086140b5b3eca2b4ea8a8"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/9792234a-6de9-450f-a1f1-394f573aee7f",
+        "currentSrc": "blob:http://127.0.0.1:5365/9792234a-6de9-450f-a1f1-394f573aee7f",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "48603357483db36f76af57ab81f77d19461416efa0c5c4a648d094d670279ec3"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/46cb1ccc-bc0f-4c42-99e9-ab2df6eaedd0",
+        "currentSrc": "blob:http://127.0.0.1:5365/46cb1ccc-bc0f-4c42-99e9-ab2df6eaedd0",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "e0bf5374ce4dbe0319557af8fe8f096f70e9a5c1cee491fb3cb1e6ed29fa47a0"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/97807fa1-553d-4bb0-8a0f-462ffad46f94",
+        "currentSrc": "blob:http://127.0.0.1:5365/97807fa1-553d-4bb0-8a0f-462ffad46f94",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/03493455-42ff-430f-99c3-a7b513827dc4",
+        "currentSrc": "blob:http://127.0.0.1:5365/03493455-42ff-430f-99c3-a7b513827dc4",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "b4f70db7c66d29296479a34d38127045e13f55fb54d1dbac80e0c9d4e576187a"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/bf2a1825-e681-4341-bd8b-493a947855b2",
+        "currentSrc": "blob:http://127.0.0.1:5365/bf2a1825-e681-4341-bd8b-493a947855b2",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "a1ad40038e9ea5a0f8710fbc8ac3cca8c1ae513eaabc28aa2dfada4a4405dbb1"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/f912131a-fcdf-443d-aa53-663371b69f6f",
+        "currentSrc": "blob:http://127.0.0.1:5365/f912131a-fcdf-443d-aa53-663371b69f6f",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "1f7db6b8e731cbdf073e2180605f263213a2b4f36e16353c234aaf2266b0d26b"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/67c738ab-de12-413f-8c4c-4be7fe683326",
+        "currentSrc": "blob:http://127.0.0.1:5365/67c738ab-de12-413f-8c4c-4be7fe683326",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "b0befdfa1112861e4e9394b24c9155d3f80d07db8c981762d8ffa66a8d703129"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/17a40ac3-5951-4c76-a4ad-32c51cc65b10",
+        "currentSrc": "blob:http://127.0.0.1:5365/17a40ac3-5951-4c76-a4ad-32c51cc65b10",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "ae5daf299751b572e66bf84280e411bb556a7ebc3d29f84dc6e447a237a3dbe7"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/41423779-0575-4009-965c-363202b40973",
+        "currentSrc": "blob:http://127.0.0.1:5365/41423779-0575-4009-965c-363202b40973",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "2ed6c923af6daef4136bb45bd632f344bff90adabb912adf8a98dffb51bc3020"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/5c7d95ee-eab5-4b93-a1be-40853e8187e4",
+        "currentSrc": "blob:http://127.0.0.1:5365/5c7d95ee-eab5-4b93-a1be-40853e8187e4",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "62cd5ad67992a0aadf1572ee09b66ac34be54ac45d12a6b3a223766e9fcbec03"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/4c0a7833-e633-4f88-8a1f-e877ff4fe8bb",
+        "currentSrc": "blob:http://127.0.0.1:5365/4c0a7833-e633-4f88-8a1f-e877ff4fe8bb",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "03fae71daa6465a446d550ce7526ceb1332e39030f1009c1eedd0b0bbcf29338"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/c3244e2b-1079-47cb-a666-7edadb1c153f",
+        "currentSrc": "blob:http://127.0.0.1:5365/c3244e2b-1079-47cb-a666-7edadb1c153f",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "ebd28e3ab90cc90726170ff93ab201801bbd8ccaf4248612c2a6b8b36a811e54"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/202c1fde-a517-4ea9-bf5f-d32c3b9a1edf",
+        "currentSrc": "blob:http://127.0.0.1:5365/202c1fde-a517-4ea9-bf5f-d32c3b9a1edf",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "e8f66d2382f00a7b1fc3f607c9cff8ff12347a3042ed5e2be7a55407245caf76"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/d12ed2fd-e96c-48b8-a33d-a2fed3573162",
+        "currentSrc": "blob:http://127.0.0.1:5365/d12ed2fd-e96c-48b8-a33d-a2fed3573162",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "d67cb14fb250f5cd5489966f97012496e9b2e2f7c5a1c74d2d6ac7929152bdb7"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/44979b0d-bc89-48cc-895f-c7d877b9f060",
+        "currentSrc": "blob:http://127.0.0.1:5365/44979b0d-bc89-48cc-895f-c7d877b9f060",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "40c93b42e2631089305df4e5d35d812366b985b5fdf3bf6150e625e5d810a2b5"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/3a2355c7-6c4d-42d9-b0cc-13e43fc469e4",
+        "currentSrc": "blob:http://127.0.0.1:5365/3a2355c7-6c4d-42d9-b0cc-13e43fc469e4",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "9d514573520a9a01723ca1d85754af78e2068205085acd1302d7cd53c71b0ca1"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/adc45ea6-9651-47ca-9550-42e305a6257b",
+        "currentSrc": "blob:http://127.0.0.1:5365/adc45ea6-9651-47ca-9550-42e305a6257b",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "dd1ed5cf1d9be29c8c78a8486bbec15009b94770bd94a8c64bba3f967eda3dab"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/a636b9c6-cda6-4901-ae4a-7752ed5a13b7",
+        "currentSrc": "blob:http://127.0.0.1:5365/a636b9c6-cda6-4901-ae4a-7752ed5a13b7",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "467aa443d8767548dbb87ddde8982dd418801356fc94ccd059330cc44b076804"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/a2e173ea-324e-415e-9d59-95a14bda4367",
+        "currentSrc": "blob:http://127.0.0.1:5365/a2e173ea-324e-415e-9d59-95a14bda4367",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "aed2aefd753874ba2540d7af1abde3abcaa5b4359b5d46de9dfe0bc2249d3d4a"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/b7e89eb5-e81d-4bd3-91a2-0c14387d1b2e",
+        "currentSrc": "blob:http://127.0.0.1:5365/b7e89eb5-e81d-4bd3-91a2-0c14387d1b2e",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "464da91239d967b3d43780bce2b422681cf3ca06a0085b8a1d38897fbceb42b1"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/f3de057c-a7b5-487d-86f9-a352d0ae52bd",
+        "currentSrc": "blob:http://127.0.0.1:5365/f3de057c-a7b5-487d-86f9-a352d0ae52bd",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "72b8d4d9df6538e811165d8cc3d00618c9372ab818f965401f10f90a7eff9626"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/a541fccb-992f-406f-8968-06eb354ff29f",
+        "currentSrc": "blob:http://127.0.0.1:5365/a541fccb-992f-406f-8968-06eb354ff29f",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "c6fbf1d4528028e62b0e1ef3b24b24ebf5c1f099ac4b03f05e4a4642f6f15e44"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/4e9b0d32-b8bf-4919-9b02-be3020674763",
+        "currentSrc": "blob:http://127.0.0.1:5365/4e9b0d32-b8bf-4919-9b02-be3020674763",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "5c336de1ae63db8ae403aa7027c460ba1550b06fcac539403a381a0064da3666"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/bc9b1966-33b1-4076-a611-a4c94a21d860",
+        "currentSrc": "blob:http://127.0.0.1:5365/bc9b1966-33b1-4076-a611-a4c94a21d860",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "a61d3ea998260a713cc4edf8dcdfd94b51414f9ba65f165d4500900aab6e30d7"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/bf5d97d9-1f45-4b4b-8959-13df9ded50a9",
+        "currentSrc": "blob:http://127.0.0.1:5365/bf5d97d9-1f45-4b4b-8959-13df9ded50a9",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "6a97930982cb9be6d21fcb3e10ff720ed4940369a9c7b20bed1349c9272ae5ed"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/bf15184a-7cc9-45c9-be5a-6d63ae31a1d8",
+        "currentSrc": "blob:http://127.0.0.1:5365/bf15184a-7cc9-45c9-be5a-6d63ae31a1d8",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "a9d798d93115aea8467ee4f6904ecd5eee76dd9e82101fc4b978c991b4034cf1"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/76721825-169b-4d56-8020-f90185252371",
+        "currentSrc": "blob:http://127.0.0.1:5365/76721825-169b-4d56-8020-f90185252371",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "1d4eaf34b21a516b6aac836dca245cb210dbdefb918ae5631adf2deb5cce02e3"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/3c7ae050-5176-4989-bd39-f0070611c227",
+        "currentSrc": "blob:http://127.0.0.1:5365/3c7ae050-5176-4989-bd39-f0070611c227",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "c02689100ff9d08d5e673dd2090ab9988e070acd2d1786689bed020c831c965d"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/8981faed-7b10-4bd8-97b3-27ec028cb52f",
+        "currentSrc": "blob:http://127.0.0.1:5365/8981faed-7b10-4bd8-97b3-27ec028cb52f",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "e733c99337b251d2eeccc590c57c4fbabef144b33f525b01a94492648c7531af"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/27cedf49-8d26-4536-9289-3fb4de1c9fa5",
+        "currentSrc": "blob:http://127.0.0.1:5365/27cedf49-8d26-4536-9289-3fb4de1c9fa5",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "f7bed6e90588c8171c48cb1595517494d11160e563c7e67133ebb13180ba8622"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/fd380c49-f42c-49dd-92f8-b8ecfc996ad0",
+        "currentSrc": "blob:http://127.0.0.1:5365/fd380c49-f42c-49dd-92f8-b8ecfc996ad0",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "9fdeb6e1f492ad6f647dfbd3ee97a3bfb043d10013ece83b066a27e40b826d41"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/90a99312-8e44-4cc1-8d91-dc84e2a04267",
+        "currentSrc": "blob:http://127.0.0.1:5365/90a99312-8e44-4cc1-8d91-dc84e2a04267",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "1c1f8e0b7cbe2a4d24543878c04474f40b95ba9888de2f940e0d5c8b9cf0dabb"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/1f3d7452-b3d4-4175-9e22-8928ae320afc",
+        "currentSrc": "blob:http://127.0.0.1:5365/1f3d7452-b3d4-4175-9e22-8928ae320afc",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "1f2614e4bc55cd053f357aa18018671fdff0509bc62d1121656bddd17d9f3ea9"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/06ed2a60-2766-4c8b-a470-8d8bebadd9ca",
+        "currentSrc": "blob:http://127.0.0.1:5365/06ed2a60-2766-4c8b-a470-8d8bebadd9ca",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "b9c85e2402ae39ce93d6eb925e50ab81e342f8dc89ee2eb9613a674d89d88578"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/31d78568-7890-469d-b1c0-0537eebf0b46",
+        "currentSrc": "blob:http://127.0.0.1:5365/31d78568-7890-469d-b1c0-0537eebf0b46",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "14bf46af190f2e18e0338acb809e4b61286817e3159b028fee68311a7f75b3af"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/99b7e94b-44cb-4107-97e8-41fa9e482528",
+        "currentSrc": "blob:http://127.0.0.1:5365/99b7e94b-44cb-4107-97e8-41fa9e482528",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "884a567b6d815d00115d3e3c3236beb07445e55e74b0f224d0a14102c52851c9"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/fbc728d8-dc0b-46e3-8055-900d8cbfc1e0",
+        "currentSrc": "blob:http://127.0.0.1:5365/fbc728d8-dc0b-46e3-8055-900d8cbfc1e0",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "209c003fad238b9f1fcf6f9b4ff4d304d5e18d896e818fb713af0deedc04dc69"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/479da370-286a-4f58-a088-fdce82251772",
+        "currentSrc": "blob:http://127.0.0.1:5365/479da370-286a-4f58-a088-fdce82251772",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "09e1e4d156a9c053711907139c85390728eece38beb167fca7a5a413ca589f2d"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/7cabcfb3-8387-47e3-9351-d202ed2037ac",
+        "currentSrc": "blob:http://127.0.0.1:5365/7cabcfb3-8387-47e3-9351-d202ed2037ac",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "7d5ac04ccd25f74f951841d3f6471dc69db90de261fcd76a758e69d6beaa18a2"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/5e15c786-2d16-4e41-a9a5-6ffbda753cad",
+        "currentSrc": "blob:http://127.0.0.1:5365/5e15c786-2d16-4e41-a9a5-6ffbda753cad",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "0e4e5680f15d961f0b88928d862f8b2b1b329eef3e5d46de999a7f92284f13ff"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/bb04272d-dbb3-4a90-b575-178068b1c898",
+        "currentSrc": "blob:http://127.0.0.1:5365/bb04272d-dbb3-4a90-b575-178068b1c898",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "f5f9a6ed3a4ce96aa14e9063f339fa449cb506a08a2315d3320d154b4d2bb244"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/2ca37e31-401c-482c-8fd9-c78d398f5f4f",
+        "currentSrc": "blob:http://127.0.0.1:5365/2ca37e31-401c-482c-8fd9-c78d398f5f4f",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "ded0d2ce8ff185a74f6710bc776c56afb45be074497520adbcd7e7970582df4f"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/478cbb25-9f04-44b6-b0dc-a8099b4441a1",
+        "currentSrc": "blob:http://127.0.0.1:5365/478cbb25-9f04-44b6-b0dc-a8099b4441a1",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "55ed7cc89a6b89b674544f3002a208d67fc1e051e60448aad4db292a0e331a83"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/d2b86ed8-90d1-4063-b335-496a15c3bc66",
+        "currentSrc": "blob:http://127.0.0.1:5365/d2b86ed8-90d1-4063-b335-496a15c3bc66",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "13ff4e818f29ae56cbc0f6550a5897d2f8e77875df10df35e2f8960f56cdeee7"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/fcdbea98-62e7-4836-85bf-8e17abc73d20",
+        "currentSrc": "blob:http://127.0.0.1:5365/fcdbea98-62e7-4836-85bf-8e17abc73d20",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "73c345d7905c402d17f2c75d9ad48e012867766785ef440ca3fcdd385f01987d"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/93a4e0d3-7f2d-48ef-b81c-6ae6c7d14c03",
+        "currentSrc": "blob:http://127.0.0.1:5365/93a4e0d3-7f2d-48ef-b81c-6ae6c7d14c03",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "24c591d5bd30fc4b0af36b9493b26e0b115e3ecd95799a6f7e22286f30f36443"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/38fae275-a950-4ef0-a67b-5624fcbaee08",
+        "currentSrc": "blob:http://127.0.0.1:5365/38fae275-a950-4ef0-a67b-5624fcbaee08",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "ca97f1eb73f36d204dc2141dc2f25766922356b05241e4b2da8ffd788fdec3ec"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/a497b678-d07f-4ce9-9a17-9f3c3f639e68",
+        "currentSrc": "blob:http://127.0.0.1:5365/a497b678-d07f-4ce9-9a17-9f3c3f639e68",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "1c7a18af4da9d40cf7fc4718e4fe09f63106c30481ed240860817a3257a6dba2"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/3671e054-e1f9-44fe-b257-bd66fd6202a5",
+        "currentSrc": "blob:http://127.0.0.1:5365/3671e054-e1f9-44fe-b257-bd66fd6202a5",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "f0c9c78a5ec03ff6017118027a3cf5fa324894cd4842c70683995c60d0fe5590"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/a97647b5-fcb1-4c51-a77b-58401162c41a",
+        "currentSrc": "blob:http://127.0.0.1:5365/a97647b5-fcb1-4c51-a77b-58401162c41a",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "8e4ab828e78b22b48c856729b497bdccc0b34ef0511aacb147bdd97c6d8616d8"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/8c539080-36c9-4e0e-8959-6aef592255e7",
+        "currentSrc": "blob:http://127.0.0.1:5365/8c539080-36c9-4e0e-8959-6aef592255e7",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "c4455655616259b000a21271cbcd6c1b25e94a54c851ff308cac0ea611c87cb4"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/741054e8-dcfe-42ae-a049-861c4d599264",
+        "currentSrc": "blob:http://127.0.0.1:5365/741054e8-dcfe-42ae-a049-861c4d599264",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "09750a95c3c2ab6e050b65e2a46078c949fef0d01e6df51967a1548725af32c7"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/c5da8c94-2064-4d3a-824d-05f167f7115b",
+        "currentSrc": "blob:http://127.0.0.1:5365/c5da8c94-2064-4d3a-824d-05f167f7115b",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "40776e7e2927223a3ffedd2d9df56b65f52e7aa362ab9bb9f2cd0d6a3a9a0f5b"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/f0153568-c7fd-408e-9866-1f0bbca25889",
+        "currentSrc": "blob:http://127.0.0.1:5365/f0153568-c7fd-408e-9866-1f0bbca25889",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "6a36cf382a936dd3d6cca0fe1c8e5b3c3f0701a19a498493941d0e5e0ab9e252"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/0e4264d2-4f92-48e6-8e86-6ca330ae4347",
+        "currentSrc": "blob:http://127.0.0.1:5365/0e4264d2-4f92-48e6-8e86-6ca330ae4347",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "c75c9b3a2f3d863124e68c386888a76896f2a59e6846566a7ff68c94886a1cb6"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/31105aa6-2f04-4274-bd37-c9116bcb20ba",
+        "currentSrc": "blob:http://127.0.0.1:5365/31105aa6-2f04-4274-bd37-c9116bcb20ba",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "eb823c66119df0f2f0fb563729170202203ee7d7d9cd8446028b8fe25654c2e2"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/02a6b460-7407-4d2e-9b0d-e8d2a35085b1",
+        "currentSrc": "blob:http://127.0.0.1:5365/02a6b460-7407-4d2e-9b0d-e8d2a35085b1",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "8996912fe8939d3080e4477614b8262c5a884f5e3bfda5d7b2fb491893886807"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/0dd39b9b-24ef-405b-a8b6-8e7c28d970a5",
+        "currentSrc": "blob:http://127.0.0.1:5365/0dd39b9b-24ef-405b-a8b6-8e7c28d970a5",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "e04bd0cdd0b51050e7ff6e173fce24bea124a491ce0c171691c8ad0d5d8428ff"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/085468f7-3865-419d-938d-f6e9adce5a91",
+        "currentSrc": "blob:http://127.0.0.1:5365/085468f7-3865-419d-938d-f6e9adce5a91",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "99024397976f31ad38ee3883bd413faa3c69b659d6366f334283e317fb1fcaa0"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/c39fadc0-a6ca-49c5-94c6-960ee914a107",
+        "currentSrc": "blob:http://127.0.0.1:5365/c39fadc0-a6ca-49c5-94c6-960ee914a107",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "0c91c0c6372b9f11656e53729a4f3bced57445cd7120c1d0ebc43d99562fb120"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/53a9f606-2b06-4c0f-8df8-1d40ead090dc",
+        "currentSrc": "blob:http://127.0.0.1:5365/53a9f606-2b06-4c0f-8df8-1d40ead090dc",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "ae6f0f050890d2a91579292d185bf8e9c956918affe18563d21c9696a8a5d44f"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/7dfc92ae-3703-478d-ab4b-8f4cc2277854",
+        "currentSrc": "blob:http://127.0.0.1:5365/7dfc92ae-3703-478d-ab4b-8f4cc2277854",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "cae1519010fd4998ed914d4d384725bf7989c16509552a088d3bf02bfe9cecfc"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/5b6298a9-3f64-4f89-bf47-5f2abf2aa122",
+        "currentSrc": "blob:http://127.0.0.1:5365/5b6298a9-3f64-4f89-bf47-5f2abf2aa122",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "41e60f30135c709402782c201fe7c7abb8165a9847c3feb21ed226086b82bd97"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/fdab96d9-53df-40a5-96a0-4c5896a7fa1b",
+        "currentSrc": "blob:http://127.0.0.1:5365/fdab96d9-53df-40a5-96a0-4c5896a7fa1b",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "30e1c48039f1dfb66ceaaebcd4b92f04f308d3d163011154202f6b458403a3e0"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/3b017e78-54e3-4269-b812-9e5bd6941e64",
+        "currentSrc": "blob:http://127.0.0.1:5365/3b017e78-54e3-4269-b812-9e5bd6941e64",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "30b2aa1dc192d315b36133e79c149af69c82c554f151307f2710a2ddc871c71b"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/2b90f80a-2423-4c3a-a4e1-6bde093be327",
+        "currentSrc": "blob:http://127.0.0.1:5365/2b90f80a-2423-4c3a-a4e1-6bde093be327",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "1765c56e90fc1e335c8cdd215a686f6cc2e1dc62758ad29a5cbad67af897a8e2"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/b9fbe582-ff7b-42b6-8c07-8d84fd9bcc95",
+        "currentSrc": "blob:http://127.0.0.1:5365/b9fbe582-ff7b-42b6-8c07-8d84fd9bcc95",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "10079f920e38d7fcf3aa69205b953b5a01d1116a659d280447c28e8f85a27170"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/9f7e736c-06d4-4788-ab4c-3bdd72e7e7e2",
+        "currentSrc": "blob:http://127.0.0.1:5365/9f7e736c-06d4-4788-ab4c-3bdd72e7e7e2",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "5aded34ea2f955d6de637082ad0bda76acccbf50022559c17135663443a4b03d"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/1942002a-a5b6-42c5-ad07-4174be05f99b",
+        "currentSrc": "blob:http://127.0.0.1:5365/1942002a-a5b6-42c5-ad07-4174be05f99b",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "8fd59089513170b01288dc9e678be09ef8fdaf54004e1a72dfc994b4dbd82df7"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/d0302272-dd55-4cf0-a283-5bdcc1b400ba",
+        "currentSrc": "blob:http://127.0.0.1:5365/d0302272-dd55-4cf0-a283-5bdcc1b400ba",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "f1e0b51b523f4374ee430862c68e936a9f078d8c244044316df2d0b0417778d4"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/83852045-cd38-4be5-b677-a415b8e5ad9b",
+        "currentSrc": "blob:http://127.0.0.1:5365/83852045-cd38-4be5-b677-a415b8e5ad9b",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "dec50a9899e401c34a6ceb7589c62a46c44fff14be821b3435e1424a0c68e33d"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/c217e139-51e5-498f-a939-4e6f2c49243a",
+        "currentSrc": "blob:http://127.0.0.1:5365/c217e139-51e5-498f-a939-4e6f2c49243a",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "34ea02205c06fd96c8db2981bf91a4ce9e9e5ee333011b66ebdcfd984ff26fcf"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/c47cd09e-433f-463a-9927-c7aa5ce8c8de",
+        "currentSrc": "blob:http://127.0.0.1:5365/c47cd09e-433f-463a-9927-c7aa5ce8c8de",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "eabcdda17eac151be31799d88f059109f45874ecc737993168e202847308af67"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/2006e98d-085d-45cd-a1b3-7ab05d77fdf1",
+        "currentSrc": "blob:http://127.0.0.1:5365/2006e98d-085d-45cd-a1b3-7ab05d77fdf1",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "cab32481262ee0c474a96d7a8e7952f055db285f5b31ccd052078da56eb23390"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/80e7f7be-eac7-4e60-837b-82f5a402bca6",
+        "currentSrc": "blob:http://127.0.0.1:5365/80e7f7be-eac7-4e60-837b-82f5a402bca6",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "3754d473142b47f3fe5ef5ebed50b4a51280016cb8f3b79f598d1c2585c4078f"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/e66f4eeb-c336-4ff3-8a13-d5b0635e1227",
+        "currentSrc": "blob:http://127.0.0.1:5365/e66f4eeb-c336-4ff3-8a13-d5b0635e1227",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "84121d0f20abe4385605342b48f7f851bf813b5b407a631ee90a89643f5ebe39"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/26b2cbbf-ec51-4bcb-b6a9-a332d118d216",
+        "currentSrc": "blob:http://127.0.0.1:5365/26b2cbbf-ec51-4bcb-b6a9-a332d118d216",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "dd2f57d4a41c67843d7b298cf2b3f7fe92721058d8f805297d4d64d619978934"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/a7c6f0fa-0f3f-44a7-b787-c6487fd1d6d3",
+        "currentSrc": "blob:http://127.0.0.1:5365/a7c6f0fa-0f3f-44a7-b787-c6487fd1d6d3",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "20e920fbcb6001b50648a2d2b5b45445aca5e4458de49a638910c63f11e9c187"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/f9a17b23-1cd7-4c82-a44f-f3fcdb08845a",
+        "currentSrc": "blob:http://127.0.0.1:5365/f9a17b23-1cd7-4c82-a44f-f3fcdb08845a",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "751bd922e8a872f2bb1be580aa405b420a6972612dea213952a1f4d357a511fb"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/5d706ac2-b456-47bf-bd0d-1421fc8b6544",
+        "currentSrc": "blob:http://127.0.0.1:5365/5d706ac2-b456-47bf-bd0d-1421fc8b6544",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "b0324bde5a9925b2ae801cc1f828a7f20ac8eee8627f5e0835cf88f7ff6563fe"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/7ba79a05-685a-4950-8a17-0a0d7d21c9eb",
+        "currentSrc": "blob:http://127.0.0.1:5365/7ba79a05-685a-4950-8a17-0a0d7d21c9eb",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "f75e66cea431f689f3ca9ae394a06a6092d7759d45b9ed922b9a6d7aab823c72"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/7d252e1f-917e-4b9b-80a4-36e81a3c4d06",
+        "currentSrc": "blob:http://127.0.0.1:5365/7d252e1f-917e-4b9b-80a4-36e81a3c4d06",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "fbc794c686de4d6b8c6ddcd98d9bd9f7cece473b663e55b4b3d2fba94dcfafe9"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/6d3220ad-fe64-496a-bc61-36fe3366d5af",
+        "currentSrc": "blob:http://127.0.0.1:5365/6d3220ad-fe64-496a-bc61-36fe3366d5af",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "ee3a71b205631d0555cc459e63cb3d45d9b5810cba1521234e1cc5160aec7783"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/79427f32-d5ff-4d38-a31c-0ad21fff05ad",
+        "currentSrc": "blob:http://127.0.0.1:5365/79427f32-d5ff-4d38-a31c-0ad21fff05ad",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "306688b65d6993e7cd5c0d991f82f06a58c70ccc29642597c13c417753276637"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/fab44cf9-6dfd-445c-b04a-2a82227f4afe",
+        "currentSrc": "blob:http://127.0.0.1:5365/fab44cf9-6dfd-445c-b04a-2a82227f4afe",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "db702185937767486f7b6b0d11c23ad43d04420414f1cb92ed48029c68452d66"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/5ae119be-0c79-4ce4-ab61-801c89ca9f99",
+        "currentSrc": "blob:http://127.0.0.1:5365/5ae119be-0c79-4ce4-ab61-801c89ca9f99",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "edd8b4ab4c487bbe130cb7842e1d38d3a3b3978ec60fb70d59636baba6da36b2"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5365/8e67dc06-1ad7-4857-9cb2-a0cebfd1f22c",
+        "currentSrc": "blob:http://127.0.0.1:5365/8e67dc06-1ad7-4857-9cb2-a0cebfd1f22c",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "f4faa40e0497710b3bf414cbba7cf26dcc52778fcb71e75fe4cdf256db9aa338"
+      }
+    ],
+    "descriptors": [
+      {
+        "url": "http://127.0.0.1:5365/game-content/oblique-cell-door-open.v1.json",
+        "status": 200,
+        "data": {
+          "schemaVersion": 1,
+          "assetId": "door.interior.open.full",
+          "source": "door.interior.leaf.open.blend",
+          "sourceSha256": "48a27d1b212e88121e6b55661452f70df1129e78f8825eebc3913db1d5aeaf5f",
+          "sourceDependencies": [
+            {
+              "source": "wall.interior.cutaway.blend",
+              "sha256": "98b264c5b3ea15658d7d8996f403024928c660135a66025adccba1d385927e6c"
+            }
+          ],
+          "resolutionPx": [
+            512,
+            512
+          ],
+          "nominalPixelsPerTile": 64,
+          "pivotPx": [
+            256,
+            256
+          ],
+          "cameraTargetTiles": [
+            0,
+            0,
+            0
+          ],
+          "projection": "orthographic",
+          "yawDegrees": [
+            -180,
+            -165,
+            -150,
+            -135,
+            -120,
+            -105,
+            -90,
+            -75,
+            -60,
+            -45,
+            -30,
+            -15,
+            0,
+            15,
+            30,
+            45,
+            60,
+            75,
+            90,
+            105,
+            120,
+            135,
+            150,
+            165
+          ],
+          "elevationDegrees": [
+            25,
+            45,
+            65
+          ],
+          "frames": [
+            {
+              "yawDegrees": -180,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-180-elev25.b4a8c20ada34.png",
+              "sha256": "b4a8c20ada34bbebba34bc08c97a5df03fa2b2b0e41751be0ccabd7084ea7200"
+            },
+            {
+              "yawDegrees": -180,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-180-elev45.24c591d5bd30.png",
+              "sha256": "24c591d5bd30fc4b0af36b9493b26e0b115e3ecd95799a6f7e22286f30f36443"
+            },
+            {
+              "yawDegrees": -180,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-180-elev65.6ef5f2ce7853.png",
+              "sha256": "6ef5f2ce7853326911ae1a819d01faa08166e941393dd861a3ff7a50d42735b9"
+            },
+            {
+              "yawDegrees": -165,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-165-elev25.9ea06cb7121c.png",
+              "sha256": "9ea06cb7121cb98479659efb6e8b8b9ebd003be192e3cb8ab3158aa526da906e"
+            },
+            {
+              "yawDegrees": -165,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-165-elev45.40776e7e2927.png",
+              "sha256": "40776e7e2927223a3ffedd2d9df56b65f52e7aa362ab9bb9f2cd0d6a3a9a0f5b"
+            },
+            {
+              "yawDegrees": -165,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-165-elev65.c809144a197b.png",
+              "sha256": "c809144a197b214121bc1a97cf4f5fca6e1f9d39b8d7898e4674d41edc670b5e"
+            },
+            {
+              "yawDegrees": -150,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-150-elev25.8e45643b5170.png",
+              "sha256": "8e45643b5170c1b3fd26540cf91dda62f120d4ebd8a6e698a39fe26817dd259f"
+            },
+            {
+              "yawDegrees": -150,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-150-elev45.8996912fe893.png",
+              "sha256": "8996912fe8939d3080e4477614b8262c5a884f5e3bfda5d7b2fb491893886807"
+            },
+            {
+              "yawDegrees": -150,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-150-elev65.ed2abb128e25.png",
+              "sha256": "ed2abb128e250ad26a2586b83c2a60f2c464987a2b0a4fc48a129b79a5bf335f"
+            },
+            {
+              "yawDegrees": -135,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-135-elev25.0b15e3cf8843.png",
+              "sha256": "0b15e3cf8843a0e8e631edc87058af8bf8e131a123913412da9372b3bdb71915"
+            },
+            {
+              "yawDegrees": -135,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-135-elev45.cae1519010fd.png",
+              "sha256": "cae1519010fd4998ed914d4d384725bf7989c16509552a088d3bf02bfe9cecfc"
+            },
+            {
+              "yawDegrees": -135,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-135-elev65.0b3e1dd85511.png",
+              "sha256": "0b3e1dd855112122b88634492f0a78ea528fd03ab560c83cbdb76f2ef75349c8"
+            },
+            {
+              "yawDegrees": -120,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-120-elev25.08576889a7fe.png",
+              "sha256": "08576889a7febd95e6c996a0fd92abe25d7739de2be7f479164be383a0fff892"
+            },
+            {
+              "yawDegrees": -120,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-120-elev45.10079f920e38.png",
+              "sha256": "10079f920e38d7fcf3aa69205b953b5a01d1116a659d280447c28e8f85a27170"
+            },
+            {
+              "yawDegrees": -120,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-120-elev65.0148194986d1.png",
+              "sha256": "0148194986d1481d2e185d223067166d32e590a393cc434ce2142293f812a3b6"
+            },
+            {
+              "yawDegrees": -105,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-105-elev25.a07dc8c3d50d.png",
+              "sha256": "a07dc8c3d50d539302d06b966c0f3a8ac931b2fb6b015b3a37205a5c5e9df9c0"
+            },
+            {
+              "yawDegrees": -105,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-105-elev45.eabcdda17eac.png",
+              "sha256": "eabcdda17eac151be31799d88f059109f45874ecc737993168e202847308af67"
+            },
+            {
+              "yawDegrees": -105,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-105-elev65.fa375d99c4dd.png",
+              "sha256": "fa375d99c4ddc7344cdb25ca83ed536eb44f1d51b1e668ee3d00137f7331fd0b"
+            },
+            {
+              "yawDegrees": -90,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-90-elev25.fd94dafa65e7.png",
+              "sha256": "fd94dafa65e7da0ba112b033e5e741e955a5fd8fa93876dafe96cddf5575e5b0"
+            },
+            {
+              "yawDegrees": -90,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-90-elev45.dd2f57d4a41c.png",
+              "sha256": "dd2f57d4a41c67843d7b298cf2b3f7fe92721058d8f805297d4d64d619978934"
+            },
+            {
+              "yawDegrees": -90,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-90-elev65.aeabf335b78d.png",
+              "sha256": "aeabf335b78d60045a0bdbef2cc4ef9661f3ec88392e0ab1a3ccba06d55f479f"
+            },
+            {
+              "yawDegrees": -75,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-75-elev25.565717bdfae4.png",
+              "sha256": "565717bdfae48cf26c17297c3be74c49ab3cca26960514266f5a8fdae978c66c"
+            },
+            {
+              "yawDegrees": -75,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-75-elev45.fbc794c686de.png",
+              "sha256": "fbc794c686de4d6b8c6ddcd98d9bd9f7cece473b663e55b4b3d2fba94dcfafe9"
+            },
+            {
+              "yawDegrees": -75,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-75-elev65.d1cee70b9eaa.png",
+              "sha256": "d1cee70b9eaaf1d1d78c7bc5c27ed82720bbff02bab38bf8358059e48cf3bc5d"
+            },
+            {
+              "yawDegrees": -60,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-60-elev25.7b82bc0e24bc.png",
+              "sha256": "7b82bc0e24bc126c1f69efd9995958e4eac57b18c77c4acddc6fcee036e0469b"
+            },
+            {
+              "yawDegrees": -60,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-60-elev45.db7021859377.png",
+              "sha256": "db702185937767486f7b6b0d11c23ad43d04420414f1cb92ed48029c68452d66"
+            },
+            {
+              "yawDegrees": -60,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-60-elev65.2427b1da15c9.png",
+              "sha256": "2427b1da15c96681d8ffb9692563de29f293662fec36e0b96cf00abaca6e6b3b"
+            },
+            {
+              "yawDegrees": -45,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-45-elev25.4ac128b2e6a3.png",
+              "sha256": "4ac128b2e6a31bda3bc96d72f4a83cac1f2664cd83fe0c50eec40f484c4aad55"
+            },
+            {
+              "yawDegrees": -45,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-45-elev45.40921f961341.png",
+              "sha256": "40921f9613417d04bd8ec9e842a93abf32982a48326bfecaf641153afbdfd2ec"
+            },
+            {
+              "yawDegrees": -45,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-45-elev65.5d6692a4009d.png",
+              "sha256": "5d6692a4009d3493bca79baf71ad800df61b679f743ada5dbc5ae044cd32ffdf"
+            },
+            {
+              "yawDegrees": -30,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-30-elev25.495e21402a12.png",
+              "sha256": "495e21402a125c0ad92cc81f9cdc7a0823d43ce0841a58fc905b6a6cbf5ac577"
+            },
+            {
+              "yawDegrees": -30,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-30-elev45.7f84cbde0f31.png",
+              "sha256": "7f84cbde0f3117eccc812fd29c9cf802478834370e5a836eda27ee9c4e63e8cb"
+            },
+            {
+              "yawDegrees": -30,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-30-elev65.d6139ff0abc4.png",
+              "sha256": "d6139ff0abc446bf6f786a015c2989a8177fc672a5abc67a7645c29a508e4e1d"
+            },
+            {
+              "yawDegrees": -15,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-15-elev25.e7eabb37d1a2.png",
+              "sha256": "e7eabb37d1a22f7972484fcb240fd4cae873aec43d2a23c9bd8bbb8523f6b327"
+            },
+            {
+              "yawDegrees": -15,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-15-elev45.45fbced644d4.png",
+              "sha256": "45fbced644d40e4a2d472ddb177c6b56ad2d75977ee65cf0b93cf766c7c66b59"
+            },
+            {
+              "yawDegrees": -15,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw-15-elev65.02a668145c72.png",
+              "sha256": "02a668145c7267b08d5ce47e4032fa856c28e23146a60c5a1fa6f29d74c4a880"
+            },
+            {
+              "yawDegrees": 0,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+00-elev25.153433698e9a.png",
+              "sha256": "153433698e9a37d0afa5db08b9a2c99db29aa1004ec2c096fbff917f3ca5e61f"
+            },
+            {
+              "yawDegrees": 0,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+00-elev45.66eaf497a384.png",
+              "sha256": "66eaf497a3846d8295b98a47571e6bc236481a5b0cb1cb5194a8599ccabb48db"
+            },
+            {
+              "yawDegrees": 0,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+00-elev65.8f3bd1d0bbeb.png",
+              "sha256": "8f3bd1d0bbebfb8948395b5c0c42b8414f86f6c33f30c170aafbc1353ab02b80"
+            },
+            {
+              "yawDegrees": 15,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+15-elev25.435dc95c5acb.png",
+              "sha256": "435dc95c5acb24d88e7e61839a4bbbb984389d101f05bb64a423063275d5b49c"
+            },
+            {
+              "yawDegrees": 15,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+15-elev45.272f48746c4c.png",
+              "sha256": "272f48746c4c926d4bbbdc52873f6b26772742739169e71bd924603fac2c0e53"
+            },
+            {
+              "yawDegrees": 15,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+15-elev65.7473474a347c.png",
+              "sha256": "7473474a347cd240bf057cf0b7b4dc538e74226afd43d240bed7a321b2e6fc38"
+            },
+            {
+              "yawDegrees": 30,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+30-elev25.2b04be6072c7.png",
+              "sha256": "2b04be6072c7db44073a31316cfeb7f5e2853c029d6bba84c7996873793857d4"
+            },
+            {
+              "yawDegrees": 30,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+30-elev45.5392d64abd54.png",
+              "sha256": "5392d64abd547d0af2bb44bc9d1a7eb67b29c4b3c9d086140b5b3eca2b4ea8a8"
+            },
+            {
+              "yawDegrees": 30,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+30-elev65.8bf4e7d3dfe5.png",
+              "sha256": "8bf4e7d3dfe57cd4b6c68337193bf0589748543ff9186f7d112da494d89f1ee1"
+            },
+            {
+              "yawDegrees": 45,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+45-elev25.a4fe47356131.png",
+              "sha256": "a4fe47356131ce5743725fb7795d70ccfd56262b4caf3481888454f85b33cfcd"
+            },
+            {
+              "yawDegrees": 45,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+45-elev45.b4f70db7c66d.png",
+              "sha256": "b4f70db7c66d29296479a34d38127045e13f55fb54d1dbac80e0c9d4e576187a"
+            },
+            {
+              "yawDegrees": 45,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+45-elev65.ec8b9ef3677f.png",
+              "sha256": "ec8b9ef3677f49b0ab324a0dd65db54764ff2ff74a19eb832b69bd78c22f69cf"
+            },
+            {
+              "yawDegrees": 60,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+60-elev25.f62f35111108.png",
+              "sha256": "f62f35111108343ef1353bf18e08fa65c7d6e08cb6d59bed1895894399865dfd"
+            },
+            {
+              "yawDegrees": 60,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+60-elev45.ae5daf299751.png",
+              "sha256": "ae5daf299751b572e66bf84280e411bb556a7ebc3d29f84dc6e447a237a3dbe7"
+            },
+            {
+              "yawDegrees": 60,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+60-elev65.0271786db20b.png",
+              "sha256": "0271786db20b1bec7651b005e68490dfe5548f4a9697bca0dc80b76d5394ed77"
+            },
+            {
+              "yawDegrees": 75,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+75-elev25.7f96cf6225d0.png",
+              "sha256": "7f96cf6225d096813caa487840bc6f20cc0ec74f2c10f7c8eaa4e6fdc1d35159"
+            },
+            {
+              "yawDegrees": 75,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+75-elev45.e8f66d2382f0.png",
+              "sha256": "e8f66d2382f00a7b1fc3f607c9cff8ff12347a3042ed5e2be7a55407245caf76"
+            },
+            {
+              "yawDegrees": 75,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+75-elev65.dd0925b4c444.png",
+              "sha256": "dd0925b4c444900e96a6493198ba1d2c47b7073ef0702dc6b09940c7f9a08a85"
+            },
+            {
+              "yawDegrees": 90,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+90-elev25.7cab066fa388.png",
+              "sha256": "7cab066fa38834df2a937aad7089f386fb89dfa5ac4d6c026de6d33f150d95ec"
+            },
+            {
+              "yawDegrees": 90,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+90-elev45.467aa443d876.png",
+              "sha256": "467aa443d8767548dbb87ddde8982dd418801356fc94ccd059330cc44b076804"
+            },
+            {
+              "yawDegrees": 90,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+90-elev65.1f011b5ba749.png",
+              "sha256": "1f011b5ba749cedd1af4fa0ec92c79c47d44aba4dca9fe8cf1dd4c8be9fea729"
+            },
+            {
+              "yawDegrees": 105,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+105-elev25.0cdea45fbcd4.png",
+              "sha256": "0cdea45fbcd489da5e935a43d15506df47e91cc00ac02761ffae0bf501f81dae"
+            },
+            {
+              "yawDegrees": 105,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+105-elev45.c6fbf1d45280.png",
+              "sha256": "c6fbf1d4528028e62b0e1ef3b24b24ebf5c1f099ac4b03f05e4a4642f6f15e44"
+            },
+            {
+              "yawDegrees": 105,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+105-elev65.22e2e9845e10.png",
+              "sha256": "22e2e9845e10eb950c9ae59e1f0fc08dcf85f2790609c1183ced2baf35bdc090"
+            },
+            {
+              "yawDegrees": 120,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+120-elev25.b014c7169b1d.png",
+              "sha256": "b014c7169b1df7cb3e91af86082029df50a77c43050f0c99bc187e3cd328dd74"
+            },
+            {
+              "yawDegrees": 120,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+120-elev45.a9d798d93115.png",
+              "sha256": "a9d798d93115aea8467ee4f6904ecd5eee76dd9e82101fc4b978c991b4034cf1"
+            },
+            {
+              "yawDegrees": 120,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+120-elev65.d41507e62ea2.png",
+              "sha256": "d41507e62ea280842c14b83bf4364e64bf5b7d769571919520f3ec33baa70d13"
+            },
+            {
+              "yawDegrees": 135,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+135-elev25.d961b5e67a6e.png",
+              "sha256": "d961b5e67a6ee3c6daf4be77c160f5fc5d1121224fba39f285550b1f48c23719"
+            },
+            {
+              "yawDegrees": 135,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+135-elev45.1c1f8e0b7cbe.png",
+              "sha256": "1c1f8e0b7cbe2a4d24543878c04474f40b95ba9888de2f940e0d5c8b9cf0dabb"
+            },
+            {
+              "yawDegrees": 135,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+135-elev65.043e3dd44051.png",
+              "sha256": "043e3dd44051c8d84e27bee1fe4e69902203efb5244365061805e2f5ce3b0934"
+            },
+            {
+              "yawDegrees": 150,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+150-elev25.26165806e661.png",
+              "sha256": "26165806e6614d407628832e886684bd5d9b095380da33b7c5c0837f39b704d9"
+            },
+            {
+              "yawDegrees": 150,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+150-elev45.7d5ac04ccd25.png",
+              "sha256": "7d5ac04ccd25f74f951841d3f6471dc69db90de261fcd76a758e69d6beaa18a2"
+            },
+            {
+              "yawDegrees": 150,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+150-elev65.3f9a928c4bd3.png",
+              "sha256": "3f9a928c4bd3b42eb06e50743b61726f2b118317528e31ce38c9ebca97571b84"
+            },
+            {
+              "yawDegrees": 165,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+165-elev25.20d89d70c121.png",
+              "sha256": "20d89d70c12181ecbf5b9b0c25a471c8d5c014971555ce2e61babddae7a2b11e"
+            },
+            {
+              "yawDegrees": 165,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+165-elev45.ded0d2ce8ff1.png",
+              "sha256": "ded0d2ce8ff185a74f6710bc776c56afb45be074497520adbcd7e7970582df4f"
+            },
+            {
+              "yawDegrees": 165,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/cell-door-open-yaw+165-elev65.239447df873e.png",
+              "sha256": "239447df873ea22b6ef767ee087b52ae9a06a2782ce5b3c9ef055d14e1c584c9"
+            }
+          ]
+        }
+      }
+    ],
+    "errors": [],
+    "redirects": [
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw+00-elev45.66eaf497a384.png",
+        "status": 307,
+        "location": "/assets/environment/oblique/cell-door-open-yaw%2B00-elev45.66eaf497a384.png"
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw+15-elev45.272f48746c4c.png",
+        "status": 307,
+        "location": "/assets/environment/oblique/cell-door-open-yaw%2B15-elev45.272f48746c4c.png"
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw+30-elev45.5392d64abd54.png",
+        "status": 307,
+        "location": "/assets/environment/oblique/cell-door-open-yaw%2B30-elev45.5392d64abd54.png"
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw+45-elev45.b4f70db7c66d.png",
+        "status": 307,
+        "location": "/assets/environment/oblique/cell-door-open-yaw%2B45-elev45.b4f70db7c66d.png"
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw+60-elev45.ae5daf299751.png",
+        "status": 307,
+        "location": "/assets/environment/oblique/cell-door-open-yaw%2B60-elev45.ae5daf299751.png"
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw+75-elev45.e8f66d2382f0.png",
+        "status": 307,
+        "location": "/assets/environment/oblique/cell-door-open-yaw%2B75-elev45.e8f66d2382f0.png"
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw+90-elev45.467aa443d876.png",
+        "status": 307,
+        "location": "/assets/environment/oblique/cell-door-open-yaw%2B90-elev45.467aa443d876.png"
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw+105-elev45.c6fbf1d45280.png",
+        "status": 307,
+        "location": "/assets/environment/oblique/cell-door-open-yaw%2B105-elev45.c6fbf1d45280.png"
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw+120-elev45.a9d798d93115.png",
+        "status": 307,
+        "location": "/assets/environment/oblique/cell-door-open-yaw%2B120-elev45.a9d798d93115.png"
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw+135-elev45.1c1f8e0b7cbe.png",
+        "status": 307,
+        "location": "/assets/environment/oblique/cell-door-open-yaw%2B135-elev45.1c1f8e0b7cbe.png"
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw+150-elev45.7d5ac04ccd25.png",
+        "status": 307,
+        "location": "/assets/environment/oblique/cell-door-open-yaw%2B150-elev45.7d5ac04ccd25.png"
+      },
+      {
+        "url": "http://127.0.0.1:5365/assets/environment/oblique/cell-door-open-yaw+165-elev45.ded0d2ce8ff1.png",
+        "status": 307,
+        "location": "/assets/environment/oblique/cell-door-open-yaw%2B165-elev45.ded0d2ce8ff1.png"
+      }
+    ]
+  },
+  "boundTextureObserved": false,
+  "visualCanvasCalibrationPending": true
+}

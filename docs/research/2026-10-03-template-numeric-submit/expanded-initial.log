@@ -1,0 +1,100 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-numeric-submit-20261003
+
+ ❯ tests/unit/ui-template-numeric-submit-ownership.test.ts (12 tests | 4 failed) 115ms
+   × world/new-selection: delayed numeric result consumes only its original accepted armed selection 12ms
+   × world/new-rearm: delayed numeric result consumes only its original accepted armed selection 5ms
+   × oblique/new-selection: delayed numeric result consumes only its original accepted armed selection 7ms
+   × oblique/new-rearm: delayed numeric result consumes only its original accepted armed selection 6ms
+ ❯ tests/unit/ui-template-numeric-submit-session-controls.test.ts (8 tests | 8 failed) 104ms
+   × world/new/same: stale numeric session result cannot stand down a current public arm 54ms
+   × world/new/new: stale numeric session result cannot stand down a current public arm 7ms
+   × world/load/same: stale numeric session result cannot stand down a current public arm 8ms
+   × world/load/new: stale numeric session result cannot stand down a current public arm 7ms
+   × oblique/new/same: stale numeric session result cannot stand down a current public arm 6ms
+   × oblique/new/new: stale numeric session result cannot stand down a current public arm 6ms
+   × oblique/load/same: stale numeric session result cannot stand down a current public arm 9ms
+   × oblique/load/new: stale numeric session result cannot stand down a current public arm 6ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-numeric-submit-ownership.test.ts > world/new-selection: delayed numeric result consumes only its original accepted armed selection
+ FAIL  tests/unit/ui-template-numeric-submit-ownership.test.ts > oblique/new-selection: delayed numeric result consumes only its original accepted armed selection
+AssertionError: expected undefined to be 'yard-basic' // Object.is equality
+
+- Expected:
+"yard-basic"
+
++ Received:
+undefined
+
+ ❯ tests/unit/ui-template-numeric-submit-ownership.test.ts:236:48
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  tests/unit/ui-template-numeric-submit-ownership.test.ts > world/new-rearm: delayed numeric result consumes only its original accepted armed selection
+ FAIL  tests/unit/ui-template-numeric-submit-ownership.test.ts > oblique/new-rearm: delayed numeric result consumes only its original accepted armed selection
+AssertionError: expected undefined to be 'cell-basic' // Object.is equality
+
+- Expected:
+"cell-basic"
+
++ Received:
+undefined
+
+ ❯ tests/unit/ui-template-numeric-submit-ownership.test.ts:236:48
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > world/new/same: stale numeric session result cannot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > world/load/same: stale numeric session result cannot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > oblique/new/same: stale numeric session result cannot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > oblique/load/same: stale numeric session result cannot stand down a current public arm
+AssertionError: expected undefined to be 'cell-basic' // Object.is equality
+
+- Expected:
+"cell-basic"
+
++ Received:
+undefined
+
+ ❯ tests/unit/ui-template-numeric-submit-session-controls.test.ts:117:129
+    115|   h.elements.find(e=>e.textContent==='Place on map')!.dispatchEvent(ne…
+    116|   h.clients[0]!.release();await vi.advanceTimersByTimeAsync(15000);awa…
+    117|   expect(h.tool.isArmed()).toBe(true);expect(h.tool.revision).toBe(cur…
+       |                                                                                                                                 ^
+    118|   expect(h.clients[1]!.sent.filter(m=>m.kind==='simulation/submit-comm…
+    119|  } finally {await h.host.stop();}
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > world/new/new: stale numeric session result cannot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > world/load/new: stale numeric session result cannot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > oblique/new/new: stale numeric session result cannot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > oblique/load/new: stale numeric session result cannot stand down a current public arm
+AssertionError: expected undefined to be 'yard-basic' // Object.is equality
+
+- Expected:
+"yard-basic"
+
++ Received:
+undefined
+
+ ❯ tests/unit/ui-template-numeric-submit-session-controls.test.ts:117:129
+    115|   h.elements.find(e=>e.textContent==='Place on map')!.dispatchEvent(ne…
+    116|   h.clients[0]!.release();await vi.advanceTimersByTimeAsync(15000);awa…
+    117|   expect(h.tool.isArmed()).toBe(true);expect(h.tool.revision).toBe(cur…
+       |                                                                                                                                 ^
+    118|   expect(h.clients[1]!.sent.filter(m=>m.kind==='simulation/submit-comm…
+    119|  } finally {await h.host.stop();}
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  12 failed | 8 passed (20)
+   Start at  09:28:51
+   Duration  2.63s (transform 1.72s, setup 0ms, import 4.69s, tests 219ms, environment 0ms)
+

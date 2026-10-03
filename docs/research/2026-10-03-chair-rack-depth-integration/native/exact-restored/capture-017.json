@@ -1,0 +1,29 @@
+{
+  "quarterTurns": 1,
+  "actualBefore": [
+    "object.storage-rack@23,6:orientation=1",
+    "object.storage-rack@23,8:orientation=1"
+  ],
+  "beforePixels": [
+    538,
+    302
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "storage-room-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      },
+      "quarterTurns": 1
+    },
+    {
+      "type": "UnzoneRoom",
+      "x": 20,
+      "y": 5,
+      "width": 5,
+      "height": 5
+    }
+  ]
+}

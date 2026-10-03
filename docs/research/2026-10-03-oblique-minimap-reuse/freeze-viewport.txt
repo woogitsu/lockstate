@@ -1,0 +1,29 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-oblique-minimap-reuse-20261003
+
+ ❯ tests/unit/oblique-minimap-projection-reuse.test.ts (5 tests | 1 failed) 16ms
+   × recalculates camera viewport while retaining unchanged physical pixels 3ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  13:08:03
+   Duration  928ms (transform 280ms, setup 0ms, import 760ms, tests 16ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-minimap-projection-reuse.test.ts > recalculates camera viewport while retaining unchanged physical pixels
+AssertionError: expected { x: -0.4522050858899107, …(3) } to not deeply equal { x: -0.4522050858899107, …(3) }
+
+Compared values have no visual difference.
+
+ ❯ tests/unit/oblique-minimap-projection-reuse.test.ts:70:40
+     68|   probe.publish();
+     69|   expect(probe.views[1]!.pixels).toBe(probe.views[0]!.pixels);
+     70|   expect(probe.views[1]!.viewport).not.toEqual(probe.views[0]!.viewpor…
+       |                                        ^
+     71|   expect(probe.views[1]!.viewport.width).toBeCloseTo(probe.views[0]!.v…
+     72|   expect(probe.views[1]!.viewport.height).toBeCloseTo(probe.views[0]!.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

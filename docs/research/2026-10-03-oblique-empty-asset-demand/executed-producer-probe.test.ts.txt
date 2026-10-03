@@ -1,0 +1,52 @@
+import { readFileSync, existsSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { expect, it, vi } from 'vitest';
+import { ObliqueWorldScene } from '../../src/rendering/scene/oblique-world-scene';
+import { parseObliqueModuleCatalog, selectObliqueModuleFrame } from '../../src/rendering/assets/oblique-module-catalog';
+import { parseObliqueModuleRegistry } from '../../src/rendering/assets/oblique-module-registry';
+
+const observed = vi.hoisted(() => ({ queued: [] as Array<{ key: string; url: string }> }));
+vi.mock('phaser', () => ({ default: {
+  Scene: class {
+    readonly load = {
+      image: (key: string, url: string) => observed.queued.push({ key, url }),
+      once: (_event: string, callback: () => void) => { queueMicrotask(callback); },
+      start() {},
+    };
+  },
+  Loader: { Events: { COMPLETE: 'complete' } },
+} }));
+
+it('measures real eager producer requests before any render frame against actual published catalogs', async () => {
+  const root = resolve(__dirname, '../..');
+  const registry = parseObliqueModuleRegistry(JSON.parse(readFileSync(resolve(root, 'public/game-content/oblique-module-registry.v1.json'), 'utf8')));
+  const catalogs = new Map(registry.entries.map(entry => {
+    const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(resolve(root, 'public'+entry.manifest), 'utf8')));
+    return [entry.assetId, catalog] as const;
+  }));
+  const scene = new ObliqueWorldScene({ catalogs, feed: { readFrame: () => undefined }, keyValueStore: { getItem: () => null, setItem() {} } });
+  const pose = { target: { x: 0, y: 0 }, viewport: { width: 1920, height: 1080 }, zoom: 1.25, yawRadians: -Math.PI / 4, elevationRadians: Math.PI / 4 };
+  Reflect.set(scene, 'pose', pose);
+  expect(Reflect.get(scene, 'lastFrame')).toBeUndefined();
+  await Reflect.get(scene, 'loadCatalogTextures').call(scene);
+  expect(observed.queued).toHaveLength(catalogs.size);
+  let rgbaLowerBoundBytes = 0;
+  let encodedBytes = 0;
+  const entries = [...catalogs].map(([id,catalog]) => {
+    const selected = selectObliqueModuleFrame(catalog,pose);
+    expect(observed.queued.some(item => item.url === selected.image)).toBe(true);
+    const path=resolve(root,'public'+selected.image);
+    expect(existsSync(path)).toBe(true);
+    const bytes=readFileSync(path);
+    const pointer=bytes.subarray(0,180).toString('utf8');
+    const actualEncodedBytes=pointer.startsWith('version https://git-lfs.github.com/spec/v1') ? Number(/^size (\d+)$/m.exec(pointer)?.[1]) : bytes.byteLength;
+    expect(Number.isFinite(actualEncodedBytes)).toBe(true);
+    rgbaLowerBoundBytes += catalog.resolutionPx[0] * catalog.resolutionPx[1] * 4;
+    encodedBytes += actualEncodedBytes;
+    return { id, image:selected.image, sha256:selected.sha256, resolutionPx:catalog.resolutionPx, encodedBytes:actualEncodedBytes };
+  });
+  observed.queued.length = 0;
+  Reflect.get(scene,'selectPoseTextures').call(scene,{raised:[]});
+  expect(observed.queued).toEqual([]);
+  writeFileSync(resolve(root,'docs/research/2026-10-03-oblique-empty-asset-demand/actual-producer-measurement.json'),JSON.stringify({catalogs:catalogs.size,eagerSelectedImages:entries.length,encodedBytes,rgbaLowerBoundBytes,emptyOnDemandImages:observed.queued.length,entries},null,2)+'\n');
+});

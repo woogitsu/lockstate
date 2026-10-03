@@ -1,0 +1,213 @@
+  2) tests/browser/hud-layout-shell.spec.ts:697:3 › the HUD layout shell › records the middle row’s budget with six sections in the rail, at 1280x800 (#1292)
+
+    Error: the bottom-left corner is not the 398px the budget was recorded against
+
+    ^[[2mexpect(^[[22m^[[31mreceived^[[39m^[[2m).^[[22mtoBeCloseTo^[[2m(^[[22m^[[32mexpected^[[39m^[[2m, ^[[22mprecision^[[2m)^[[22m
+
+    Expected: ^[[32m398^[[39m
+    Received: ^[[31m494^[[39m
+
+    Expected precision:    1
+    Expected difference: < ^[[32m0.05^[[39m
+    Received difference:   ^[[31m96^[[39m
+
+      716 |       1,
+      717 |     );
+    > 718 |     expect(budget.cornerHeight, 'the bottom-left corner is not the 398px the budget was recorded against').toBeCloseTo(
+          |                                                                                                            ^
+      719 |       398,
+      720 |       1,
+      721 |     );
+        at /home/runner/work/lockstate/lockstate/tests/browser/hud-layout-shell.spec.ts:718:108
+
+    Error Context: test-results/hud-layout-shell-the-HUD-l-0f383--the-rail-at-1280x800-1292-/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/hud-layout-shell-the-HUD-l-0f383--the-rail-at-1280x800-1292-/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/hud-layout-shell-the-HUD-l-0f383--the-rail-at-1280x800-1292-/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) tests/browser/hud-layout-shell.spec.ts:720:3 › the HUD layout shell › spends that budget down to ten pixels at the 781px threshold the stylesheet names (#1292)
+
+    Error: the clearance at the stylesheet’s own threshold has moved
+
+    ^[[2mexpect(^[[22m^[[31mreceived^[[39m^[[2m).^[[22mtoBeCloseTo^[[2m(^[[22m^[[32mexpected^[[39m^[[2m, ^[[22mprecision^[[2m)^[[22m
+
+    Expected: ^[[32m10.19^[[39m
+    Received: ^[[31m-85.8125^[[39m
+
+    Expected precision:    1
+    Expected difference: < ^[[32m0.05^[[39m
+    Received difference:   ^[[31m96.0025^[[39m
+
+      754 |      */
+      755 |     expect(budget.stripHeight, 'the dense strip is not the 80.69px the 781px arithmetic assumes').toBeCloseTo(80.69, 1);
+    > 756 |     expect(budget.clearance, 'the clearance at the stylesheet’s own threshold has moved').toBeCloseTo(10.19, 1);
+          |                                                                                           ^
+      757 |
+      758 |     expect(
+      759 |       budget.clearance,
+        at /home/runner/work/lockstate/lockstate/tests/browser/hud-layout-shell.spec.ts:756:91
+
+    Error Context: test-results/hud-layout-shell-the-HUD-l-6986e--the-stylesheet-names-1292-/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/hud-layout-shell-the-HUD-l-6986e--the-stylesheet-names-1292-/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/hud-layout-shell-the-HUD-l-6986e--the-stylesheet-names-1292-/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) tests/browser/hud-layout-shell.spec.ts:744:3 › the HUD layout shell › moves the corner out from under the column one pixel below that threshold (#1292)
+
+    Error: the clearance one pixel below the threshold has moved
+
+    ^[[2mexpect(^[[22m^[[31mreceived^[[39m^[[2m).^[[22mtoBeCloseTo^[[2m(^[[22m^[[32mexpected^[[39m^[[2m, ^[[22mprecision^[[2m)^[[22m
+
+    Expected: ^[[32m9.19^[[39m
+    Received: ^[[31m-86.8125^[[39m
+
+    Expected precision:    1
+    Expected difference: < ^[[32m0.05^[[39m
+    Received difference:   ^[[31m96.0025^[[39m
+
+      771 |     // handled" are two facts, and this is the second.
+      772 |     expect(budget.cornerLeft, 'the corner did not step aside below the 781px threshold').toBeCloseTo(192, 1);
+    > 773 |     expect(budget.clearance, 'the clearance one pixel below the threshold has moved').toBeCloseTo(9.19, 1);
+          |                                                                                       ^
+      774 |   });
+      775 |
+      776 | });
+        at /home/runner/work/lockstate/lockstate/tests/browser/hud-layout-shell.spec.ts:773:87
+
+    Error Context: test-results/hud-layout-shell-the-HUD-l-7820f--below-that-threshold-1292-/error-context.md
+  9) tests/browser/room-plan-quote-visibility.spec.ts:95:3 › Full HD 200% complete room-plan quote stays visible beside the entire fitted footprint
+
+    Error: ^[[2mexpect(^[[22m^[[31mreceived^[[39m^[[2m).^[[22mtoBe^[[2m(^[[22m^[[32mexpected^[[39m^[[2m) // Object.is equality^[[22m
+
+    Expected: ^[[32m0^[[39m
+    Received: ^[[31m1^[[39m
+
+      116 |     console.log(`ROOM_QUOTE_VISIBILITY scale=${scale} plan=kitchen-basic`, JSON.stringify(kitchen));
+      117 |     await page.screenshot({ path: testInfo.outputPath(`room-plan-kitchen-quote-${scale * 100}.png`) });
+    > 118 |     expect(kitchen.hiddenSampleCount).toBe(0);
+          |                                       ^
+      119 |     await page.screenshot({ path: testInfo.outputPath(`room-plan-quote-visible-${scale * 100}.png`) });
+      120 |   });
+      121 | }
+        at /home/runner/work/lockstate/lockstate/tests/browser/room-plan-quote-visibility.spec.ts:118:39
+
+    Error Context: test-results/room-plan-quote-visibility-4c558-the-entire-fitted-footprint/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/room-plan-quote-visibility-4c558-the-entire-fitted-footprint/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/room-plan-quote-visibility-4c558-the-entire-fitted-footprint/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) tests/browser/room-template-cards.spec.ts:3:1 › Full HD catalogue compares all room footprints before selection and keeps row controls in view
+
+    ^[[31mTest timeout of 60000ms exceeded.^[[39m
+
+    Error: ^[[2mexpect(^[[22m^[[31mlocator^[[39m^[[2m).^[[22mtoHaveCount^[[2m(^[[22m^[[32mexpected^[[39m^[[2m)^[[22m failed
+
+    Locator:  getByRole('dialog', { name: 'Room plans' }).locator('[data-template-id="solitary-cell-basic"]').locator('.hud-template__fixture')
+    Expected: ^[[32m2^[[39m
+    Received: ^[[31mundefined^[[39m
+
+    Call log:
+    ^[[2m  - Expect "toHaveCount" with timeout 10000ms^[[22m
+    ^[[2m  - waiting for getByRole('dialog', { name: 'Room plans' }).locator('[data-template-id="solitary-cell-basic"]').locator('.hud-template__fixture')^[[22m
+
+
+      13 |   for (const id of ROOM_TEMPLATE_IDS) {
+      14 |     const card = dialog.locator(`[data-template-id="${id}"]`);
+    > 15 |     await expect(card.locator('.hud-template__fixture')).toHaveCount(instantiateRoomTemplate(id, { x: 0, y: 0 }).objects.length);
+         |                                                          ^
+      16 |     const miniature = card.locator('.hud-template__miniature');
+      17 |     const rect = await miniature.boundingBox();
+      18 |     expect(rect!.width).toBeLessThanOrEqual(56.1);
+        at /home/runner/work/lockstate/lockstate/tests/browser/room-template-cards.spec.ts:15:58
+
+    Error Context: test-results/room-template-cards-Full-H-cfa2a--keeps-row-controls-in-view/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/room-template-cards-Full-H-cfa2a--keeps-row-controls-in-view/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/room-template-cards-Full-H-cfa2a--keeps-row-controls-in-view/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) tests/browser/room-template-polish-focus.spec.ts:3:1 › Polish Full HD room catalogue exposes all names and supports one roving keyboard stop
+
+    ^[[31mTest timeout of 60000ms exceeded.^[[39m
+
+    Error: ^[[2mexpect(^[[22m^[[31mlocator^[[39m^[[2m).^[[22mtoBeFocused^[[2m(^[[22m^[[2m)^[[22m failed
+
+    Locator:  getByRole('dialog', { name: 'Wzory pomieszczeń' }).getByRole('button', { name: 'Postaw na mapie', exact: true })
+    Expected: focused
+    Received: inactive
+
+    Call log:
+    ^[[2m  - Expect "toBeFocused" with timeout 10000ms^[[22m
+    ^[[2m  - waiting for getByRole('dialog', { name: 'Wzory pomieszczeń' }).getByRole('button', { name: 'Postaw na mapie', exact: true })^[[22m
+    ^[[2m    9 × locator resolved to <button type="button">Postaw na mapie</button>^[[22m
+    ^[[2m      - unexpected value "inactive"^[[22m
+
+
+      42 |   await expect(dialog.locator('.hud-template__quote')).not.toBeEmpty();
+      43 |   await page.keyboard.press('Tab');
+    > 44 |   await expect(dialog.getByRole('button',{name:'Postaw na mapie',exact:true})).toBeFocused();
+         |                                                                                ^
+      45 |   expect((await sentCommands(page)).filter(c=>c.type==='PlaceRoomTemplate')).toHaveLength(0);
+      46 |   await page.keyboard.press('Escape'); await expect(dialog).toBeHidden(); await expect(open).toBeFocused();
+      47 | });
+        at /home/runner/work/lockstate/lockstate/tests/browser/room-template-polish-focus.spec.ts:44:80
+
+    Error Context: test-results/room-template-polish-focus-39e72-ts-one-roving-keyboard-stop/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/room-template-polish-focus-39e72-ts-one-roving-keyboard-stop/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/room-template-polish-focus-39e72-ts-one-roving-keyboard-stop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) tests/browser/room-template-rebuilt-render-identity.spec.ts:239:1 › player directly removes a completed rotated template Bed and saves only its independently rebuilt normal image at Full HD
+
+  20) tests/browser/ui-hud-fullhd-build-minimap.spec.ts:29:3 › Full HD Build at 200% keeps alerts visible beside a player-controlled minimap
+
+    Error: ^[[2mexpect(^[[22m^[[31mlocator^[[39m^[[2m).^[[22mtoBeVisible^[[2m(^[[22m^[[2m)^[[22m failed
+
+    Locator:  locator('.hud-minimap .hud-alerts__list')
+    Expected: visible
+    Received: hidden
+    Timeout:  10000ms
+
+    Call log:
+    ^[[2m  - Expect "toBeVisible" with timeout 10000ms^[[22m
+    ^[[2m  - waiting for locator('.hud-minimap .hud-alerts__list')^[[22m
+    ^[[2m    13 × locator resolved to <div class="hud-alerts__list">…</div>^[[22m
+    ^[[2m       - unexpected value "hidden"^[[22m
+
+
+      45 |
+      46 |     await page.locator('.ui-tab[data-tab="overview"]').click();
+    > 47 |     await expect(page.locator('.hud-minimap .hud-alerts__list')).toBeVisible();
+         |                                                                  ^
+      48 |     await page.locator('.ui-tab[data-tab="build"]').click();
+      49 |     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+      50 |     await expect(alerts.locator('.ui-section__body')).toBeVisible();
+        at /home/runner/work/lockstate/lockstate/tests/browser/ui-hud-fullhd-build-minimap.spec.ts:47:66
+
+    Error Context: test-results/ui-hud-fullhd-build-minima-31cc1-a-player-controlled-minimap/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────

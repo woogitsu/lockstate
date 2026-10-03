@@ -1,0 +1,38 @@
+{
+  "negativeControls": [
+    {
+      "name": "omit-added-shelf",
+      "exitCode": 1
+    },
+    {
+      "name": "move-added-shelf",
+      "exitCode": 1
+    },
+    {
+      "name": "wrong-y-scale",
+      "exitCode": 1
+    },
+    {
+      "name": "wrong-camera-scale",
+      "exitCode": 1
+    },
+    {
+      "name": "wrong-camera-vector",
+      "exitCode": 1
+    }
+  ],
+  "exactWrapperBytesRestored": true,
+  "sourceBytesUnchanged": true,
+  "restoredNativeExitCode": 0,
+  "wrapperSha256": "268d36dcc14ffe688a1bf35026710e1285991c1e6fe5bc370558b8e04961f616",
+  "sources": [
+    {
+      "path": "assets/source/blender/furniture.kitchen.prep-counter.variants.blend",
+      "sha256": "a82cc835b2225a9a4ef6c113d2d887365e5f6b6d92933f0f0b234e5f28e47d00"
+    },
+    {
+      "path": "assets/source/blender/furniture.kitchen.prep-counter.angled.blend",
+      "sha256": "b20bffb79d6ffe66a6c741fc420bd163651faa4813ca4d77740eb3dd55914a8a"
+    }
+  ]
+}

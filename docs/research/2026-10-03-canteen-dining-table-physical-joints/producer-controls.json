@@ -1,0 +1,74 @@
+{
+  "controls": [
+    {
+      "control": "omit-real-rail-to-post-arm",
+      "exitCode": 1,
+      "error": "ValueError: Canteen dining table retained/authored mesh set changed"
+    },
+    {
+      "control": "move-real-rail-to-post-arm",
+      "exitCode": 1,
+      "error": "ValueError: Canteen dining table actual evaluated authored geometry changed"
+    },
+    {
+      "control": "move-retained-trestle",
+      "exitCode": 1,
+      "error": "ValueError: Canteen dining table actual evaluated authored geometry changed"
+    },
+    {
+      "control": "change-retained-bevel",
+      "exitCode": 1,
+      "error": "ValueError: Canteen dining table actual authored topology/material assignment/modifier data changed"
+    },
+    {
+      "control": "change-retained-material-graph",
+      "exitCode": 1,
+      "error": "ValueError: Canteen dining table retained ten stored material graphs changed"
+    },
+    {
+      "control": "change-added-joint-material",
+      "exitCode": 1,
+      "error": "ValueError: Canteen dining table actual authored topology/material assignment/modifier data changed"
+    },
+    {
+      "control": "actual-reversed-joint-winding",
+      "exitCode": 1,
+      "error": "ValueError: Evaluated Canteen dining table geometric surfaces face inward: physical-canteen-dining-table.rail-to-post arm 0"
+    },
+    {
+      "control": "actual-arm-disconnected-from-post",
+      "exitCode": 1,
+      "error": "ValueError: Dining mounting shoe lacks real triangle-interior contact: physical-canteen-dining-table.rail-to-post arm 0 / Stool post.0"
+    },
+    {
+      "control": "wrong-loaded-fit",
+      "exitCode": 1,
+      "error": "ValueError: Canteen dining table declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-accepted-target",
+      "exitCode": 1,
+      "error": "ValueError: Canteen dining table declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-canonical-descriptor",
+      "exitCode": 1,
+      "error": "ValueError: Canteen dining table exporter targets the wrong canonical descriptor"
+    },
+    {
+      "control": "wrong-camera-span",
+      "exitCode": 1,
+      "error": "ValueError: Canteen dining table actual camera pitch differs from64pixels per tile"
+    },
+    {
+      "control": "wrong-camera-vector",
+      "exitCode": 1,
+      "error": "ValueError: Canteen dining table actual camera ground basis differs from world projection"
+    }
+  ],
+  "exactRestoredNativeVerifyExitCode": 0,
+  "sourceBytesUnchanged": true,
+  "wrapperSha256": "4039c714fc8efce1a90287d0296255fb4c452f4ccc3a3aad9f47efb752391fc9",
+  "sourceSha256": "5f27967600a64ce4ded10a01fe6217ea849c2be9b57ff92353fd60b97af4ede1",
+  "originalSourceSha256": "c1a1e8b0cfd2e47fe420ebbaa3eeb72c426d896d0a42b5a708c9bcbb83230fd1"
+}

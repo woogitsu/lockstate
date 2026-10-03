@@ -1,0 +1,165 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-cell-utility-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-cell-utility-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-world-camera-exotic-results-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-cell-utility-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5420 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-cell-utility-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5420/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "room-template-world-camera-origin.spec.ts",
+      "file": "room-template-world-camera-origin.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "World FullHD 100% zoomed room-plan corners and actual placement share the picked ground",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4265,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "WORLD_ROOM_PLAN_CAMERA_REFERENCE {\"uiScale\":1,\"chosen\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":15,\"y\":14}},\"ok\":true},\"measured\":{\"canvas\":{\"width\":1920,\"height\":1080,\"left\":0,\"top\":0,\"widthCss\":1920,\"heightCss\":1080},\"map\":{\"width\":32,\"height\":32},\"left\":0.125,\"top\":0.289062,\"width\":0.75,\"height\":0.421875,\"unrounded\":{\"left\":12.5,\"top\":28.90625,\"width\":75,\"height\":42.1875},\"first\":[{\"x\":880,\"y\":380},{\"x\":960,\"y\":380},{\"x\":960,\"y\":460},{\"x\":880,\"y\":460}],\"bounds\":{\"left\":880,\"right\":1200,\"top\":380,\"bottom\":940}},\"zoomX\":1.25,\"zoomY\":1.25,\"expected\":[{\"x\":880,\"y\":380},{\"x\":1200,\"y\":380},{\"x\":1200,\"y\":940},{\"x\":880,\"y\":940}],\"actual\":[{\"x\":880,\"y\":380},{\"x\":1200,\"y\":380},{\"x\":1200,\"y\":940},{\"x\":880,\"y\":940}]}\n"
+                    },
+                    {
+                      "text": "WORLD_ROOM_PLAN_CAMERA_ORIGIN {\"uiScale\":1,\"chosen\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":15,\"y\":14}},\"ok\":true},\"zoomX\":1.25,\"zoomY\":1.25,\"expected\":[{\"x\":880,\"y\":380},{\"x\":1200,\"y\":380},{\"x\":1200,\"y\":940},{\"x\":880,\"y\":940}],\"actual\":[{\"x\":880,\"y\":380},{\"x\":1200,\"y\":380},{\"x\":1200,\"y\":940},{\"x\":880,\"y\":940}],\"first\":[{\"x\":880,\"y\":380},{\"x\":960,\"y\":380},{\"x\":960,\"y\":460},{\"x\":880,\"y\":460}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:15:50.231Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2583aece140198e99ab1-de15a8ce27a320ce3a6c",
+          "file": "room-template-world-camera-origin.spec.ts",
+          "line": 37,
+          "column": 31
+        },
+        {
+          "title": "World FullHD 200% zoomed room-plan corners and actual placement share the picked ground",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3941,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "WORLD_ROOM_PLAN_CAMERA_REFERENCE {\"uiScale\":2,\"chosen\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":15,\"y\":14}},\"ok\":true},\"measured\":{\"canvas\":{\"width\":1920,\"height\":1080,\"left\":0,\"top\":0,\"widthCss\":1920,\"heightCss\":1080},\"map\":{\"width\":32,\"height\":32},\"left\":0.125,\"top\":0.289062,\"width\":0.75,\"height\":0.421875,\"unrounded\":{\"left\":12.5,\"top\":28.90625,\"width\":75,\"height\":42.1875},\"first\":[{\"x\":880,\"y\":380},{\"x\":960,\"y\":380},{\"x\":960,\"y\":460},{\"x\":880,\"y\":460}],\"bounds\":{\"left\":880,\"right\":1200,\"top\":380,\"bottom\":940}},\"zoomX\":1.25,\"zoomY\":1.25,\"expected\":[{\"x\":880,\"y\":380},{\"x\":1200,\"y\":380},{\"x\":1200,\"y\":940},{\"x\":880,\"y\":940}],\"actual\":[{\"x\":880,\"y\":380},{\"x\":1200,\"y\":380},{\"x\":1200,\"y\":940},{\"x\":880,\"y\":940}]}\n"
+                    },
+                    {
+                      "text": "WORLD_ROOM_PLAN_CAMERA_ORIGIN {\"uiScale\":2,\"chosen\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":15,\"y\":14}},\"ok\":true},\"zoomX\":1.25,\"zoomY\":1.25,\"expected\":[{\"x\":880,\"y\":380},{\"x\":1200,\"y\":380},{\"x\":1200,\"y\":940},{\"x\":880,\"y\":940}],\"actual\":[{\"x\":880,\"y\":380},{\"x\":1200,\"y\":380},{\"x\":1200,\"y\":940},{\"x\":880,\"y\":940}],\"first\":[{\"x\":880,\"y\":380},{\"x\":960,\"y\":380},{\"x\":960,\"y\":460},{\"x\":880,\"y\":460}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:15:54.563Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2583aece140198e99ab1-88dcaa8d410e79b49d9f",
+          "file": "room-template-world-camera-origin.spec.ts",
+          "line": 37,
+          "column": 31
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T00:15:47.723Z",
+    "duration": 11314.786,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

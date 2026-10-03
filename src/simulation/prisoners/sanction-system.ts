@@ -232,6 +232,16 @@ export class SanctionSystem implements SystemRegistration {
         continue;
       }
 
+      // A high-risk resident may already occupy their ordinary accommodation.
+      // Ending the term does not need a second free place in that same room.
+      if (currentInstance?.roomCatalogId === releaseTarget.roomCatalogId &&
+          (releaseTarget.requiredObjectCapability === undefined ||
+            currentInstance.objectCapabilities.includes(releaseTarget.requiredObjectCapability))) {
+        this.records.solitarySanctionEndTick[index] = 0;
+        this.releasedFromSolitaryCount += 1;
+        continue;
+      }
+
       const arrival = this.sharingViewOf(entityId, index);
       const instance = this.roomInstances.findBestAvailable(
         releaseTarget.roomCatalogId,

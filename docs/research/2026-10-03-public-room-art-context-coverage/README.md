@@ -1,0 +1,23 @@
+# Actual public room art context coverage — 2026-10-03
+
+## Catalogue decision
+
+Verified base `a7db8b1fe3c2ee7340213b71dad4580a40d6bc10`, including the published remote root branch. The actual catalogue has 18 rooms and 20 public templates, with no Library or Workshop room/template. Classroom's `bookshelf-wooden` is a purpose-built bookshelf, not an Office placeholder: the current genuine source has 63 meshes, 9 stored material graphs, fourteen books and physical shelf/back joinery. Read-only Blender 5.2.1 inspection and its existing physical-detail record confirm the actual source and bounds; no source modification or new render was performed. Its original authored geometry already serves the Classroom function.
+
+Classroom has dedicated student chairs and a separately purchasable teacher desk; Storage has dedicated racks; Garbage has refuse trolleys; Kitchen and Infirmary have dedicated fixture models. Staff Room's ordinary wooden chairs are functionally appropriate and its desk uses the employee model. Reception registration desk is the existing published work, imported as a dependency here. A new coursebook station would duplicate an already served function without a confirmed material defect. No additional asset is proposed.
+
+## Concrete integration gap
+
+`tests/unit/room-template-oblique-art-coverage.test.ts` currently derives 19 fixture types from the 20 plans, then checks only `obliqueCanonicalAssetIdForObject`, the DEFAULT mapping. It does not check the actual room selector, completed structures, rotated occupied rectangles, or mirrored plans. Existing individual context tests provide focused controls but do not close this full public-template coverage gap.
+
+Own scope: an independent literal expectation table and integration coverage for all 20 plans, four rotations and both mirror states; actual world projection, registry/descriptor/source and canonical frame integrity. Genuine context and registry omission controls must fail, followed by byte-exact restoration and GREEN. No model, palette, price, catalogue, protocol, UI, renderer or gameplay edits. No browser/server; native acceptance belongs to root.
+
+## Evidence status
+
+Actual regression: 183 GREEN = 160 completed-template projection cases (20 plans ? 4 turns ? 2 mirror states) plus 23 unique actually selected model source/descriptor/frame-body checks. All 1656 canonical PNG hashes, signatures and IHDR dimensions match their manifests; no pixel decoding or native visual calibration is claimed. Whole rotated occupied polygons, orientation-local frame selection and published owners/rooms are checked. Identity orientation legitimately omits optional metadata; the retained toilet uses its signed grid offset by15 degrees. Initial test-development expectations assumed optional identity metadata and a uniform yaw grid; these expectations were corrected from actual source contracts, without production edits.
+
+Two genuine production mutations were executed in the isolated copy. Removing ONLY Garbage's context entry makes8tests RED (175protected tests GREEN) while the previous default-only fixture coverage remains20GREEN. Removing ONLY the student-chair registry entry makes9tests RED (174protected tests GREEN). Exact byte restoration then yields183GREEN. The receipt fingerprints1708 protected source, descriptor, PNG, mapping/registry and gameplay catalogue files; all remain byte-identical. Helper preliminary inventory attempts included old unselected manifests with legacy bare source filenames and stopped before any mutation; scope was corrected to the actual23 template-selected assets.
+
+Final focused5suites:218GREEN, no skips. Application/tools TypeScript and complete local production build exit0. Existing Vite chunk-size advisory is preserved in the actual build log. A fresh read-only Blender5.2.1LTS process, one thread, opened the retained bookshelf and recorded all63evaluated mesh hashes, all9full material graph hashes and exact bounds; source bytes remained unchanged. No rendering was requested and no Blender process remains.
+
+New QA commits are intended after root's existing four Reception desk source/integration commits. The isolated dependency cherry-picks preserve every research row from a7db8b1; only the new own record row is added. The helper fingerprints the23actual template-selected assets rather than old unselected legacy aliases. Both production mutations are restored in a finally block. No new model or art rewiring is necessary from this catalogue audit. Native visual/player acceptance remains root's pending boundary; this report provides source and actual world-projection integration evidence only.

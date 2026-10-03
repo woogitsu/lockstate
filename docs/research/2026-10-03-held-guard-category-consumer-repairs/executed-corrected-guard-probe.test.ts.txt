@@ -1,0 +1,30 @@
+import {expect,it} from 'vitest';
+import {readFileSync} from 'node:fs';
+import {stripTypeScriptTypes} from 'node:module';
+import {createNewSimulationRuntime} from '../../src/simulation/runtime/new-session';
+import {packCommand,type SimulationCommand} from '../../src/simulation/protocol/commands';
+import {projectHeldGuards} from '../../src/simulation/presentation/guard-release-projection';
+const CELL={x:4,y:4,width:2,height:3};
+function actualSquares(){const s=readFileSync('tests/browser/ui-held-guard-release-reachable.spec.ts','utf8');const a=s.indexOf('function perimeterSegments('),b=s.indexOf('\nconst metric',a);return new Function(`return (${stripTypeScriptTypes(s.slice(a,b))})`)()(CELL) as {x:number;y:number}[];}
+function send(r:ReturnType<typeof createNewSimulationRuntime>,c:SimulationCommand){const n=r.kernel.expectedSequence;r.kernel.submitCommand(`guard-fixture-${n}`,n,r.kernel.tick,packCommand(c));expect(r.kernel.dispatchDueCommands()).toBe(1);}
+function finish(r:ReturnType<typeof createNewSimulationRuntime>){for(let t=0;t<10000&&r.construction.allOrders().some(o=>o.state!=='completed');t++)r.kernel.step();expect(r.construction.allOrders().every(o=>o.state==='completed')).toBe(true);}
+const expected=[{x:4,y:3},{x:5,y:3},{x:4,y:7},{x:5,y:7},{x:3,y:4},{x:3,y:5},{x:3,y:6},{x:6,y:4},{x:6,y:5},{x:6,y:6}];
+it('actual held-Guard helper owns exactly ten exterior square faces, never Cell interior',()=>{
+ const squares=actualSquares();expect(squares.map(p=>`${p.x},${p.y}`).sort()).toEqual(expected.map(p=>`${p.x},${p.y}`).sort());expect(new Set(squares.map(p=>`${p.x},${p.y}`)).size).toBe(10);
+ const s=readFileSync('tests/browser/ui-held-guard-release-reachable.spec.ts','utf8');const a=s.indexOf('async function wallTheCell('),b=s.indexOf('async function zoneTheCell(',a);expect(s.slice(a,b)).not.toContain('data-choice=');
+});
+it('actual helper squares complete, admit a real unhoused occupant and post/release one genuine hired Guard',()=>{
+ const r=createNewSimulationRuntime(73),squares=actualSquares();send(r,{type:'PurchaseMaterials',orderId:'guard-bricks',itemId:'item.brick',quantity:20});
+ for(const [i,p] of squares.entries())send(r,{type:'PlaceBuildOrder',orderId:`guard-wall-${i}`,definitionId:'wall-brick',...p,footprint:'square'});finish(r);
+ expect(r.construction.allOrders()).toHaveLength(10);expect(r.construction.allOrders().reduce((sum,o)=>sum+o.materialsAllocated.reduce((n,m)=>n+(m.itemId==='item.brick'?m.quantity:0),0),0)).toBe(20);expect(r.treasury.balanceMinorUnits).toBe(24200);
+ for(let y=4;y<7;y++)for(let x=4;x<6;x++)expect(r.world.getSquareStructure({x,y} as never)).toBe(0);
+ send(r,{type:'ZoneRoom',roomId:'room.cell',...CELL});expect(r.prisoners.roomInstances.getById('room.cell:4:4')).toBeDefined();
+ send(r,{type:'AdmitPrisoner',x:16,y:16,priorIncidents:0});expect(r.prisoners.entityStore.getSnapshot().alive.reduce((sum, alive) => sum + alive, 0)).toBe(1);
+ send(r,{type:'HireStaff',staffRoleId:'staff-role.guard',x:16,y:16});
+ for(let t=0;t<100&&r.securityGuards.unassignedGuardIds().length>0;t++)r.kernel.step();
+ const before=projectHeldGuards({staff:r.securityGuards,claims:r.guardRelease});expect(before.totals).toEqual({hired:1,held:1,unassigned:0});
+ send(r,{type:'ReleaseGuardAssignment',guardId:r.securityGuards.allGuardIds()[0]!});const after=projectHeldGuards({staff:r.securityGuards,claims:r.guardRelease});expect(after.totals).toEqual({hired:1,held:0,unassigned:1});
+});
+it('a genuine omitted exterior square keeps the actual Cell unzoneable',()=>{
+ const r=createNewSimulationRuntime(73);for(const[i,p]of actualSquares().filter(p=>p.x!==4||p.y!==3).entries())send(r,{type:'PlaceBuildOrder',orderId:`gap-wall-${i}`,definitionId:'wall-brick',...p,footprint:'square'});finish(r);send(r,{type:'ZoneRoom',roomId:'room.cell',...CELL});expect(r.prisoners.roomInstances.getById('room.cell:4:4')).toBeUndefined();expect(r.refusals.last).toBeDefined();
+});

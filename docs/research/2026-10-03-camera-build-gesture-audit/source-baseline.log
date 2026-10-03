@@ -1,0 +1,56 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-camera-build-gesture-audit-20261003
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > world/wall/canvas: a middle-button release cannot commit the still-held left construction press
+ACTUAL_CHORD_RELEASE {"mode":"world","tool":"wall","outside":false,"primaryDown":true,"buttons":1,"commands":[{"type":"PlaceBuildOrder","orderId":"order-b6fe9504-8558-4320-b686-14809402e199","definitionId":"wall-brick","x":11,"y":11,"footprint":"square","transactionId":"build-32a8ceee-c95d-4d77-a01b-c447994e7f0f"}]}
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > world/wall/outside: a middle-button release cannot commit the still-held left construction press
+ACTUAL_CHORD_RELEASE {"mode":"world","tool":"wall","outside":true,"primaryDown":true,"buttons":1,"commands":[{"type":"PlaceBuildOrder","orderId":"order-3ecef6b3-20df-4aa3-8ca8-114891b98e4c","definitionId":"wall-brick","x":11,"y":11,"footprint":"square","transactionId":"build-0a0172a1-bfee-45c4-9947-e2cf46f2ed81"}]}
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > world/object/canvas: a middle-button release cannot commit the still-held left construction press
+ACTUAL_CHORD_RELEASE {"mode":"world","tool":"object","outside":false,"primaryDown":true,"buttons":1,"commands":[{"type":"PlaceObject","orderId":"object-f1898454-c412-4e95-8d0e-e473652dfd9f","definitionId":"bed-wooden","x":11,"y":11}]}
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > world/object/outside: a middle-button release cannot commit the still-held left construction press
+ACTUAL_CHORD_RELEASE {"mode":"world","tool":"object","outside":true,"primaryDown":true,"buttons":1,"commands":[{"type":"PlaceObject","orderId":"object-877ebac6-2fd8-465d-9065-aab865bd49c3","definitionId":"bed-wooden","x":11,"y":11}]}
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > world/room/canvas: a middle-button release cannot commit the still-held left construction press
+ACTUAL_CHORD_RELEASE {"mode":"world","tool":"room","outside":false,"primaryDown":true,"buttons":1,"commands":[{"type":"ZoneRoom","roomId":"room.yard","x":11,"y":11,"width":1,"height":1}]}
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > world/room/outside: a middle-button release cannot commit the still-held left construction press
+ACTUAL_CHORD_RELEASE {"mode":"world","tool":"room","outside":true,"primaryDown":true,"buttons":1,"commands":[{"type":"ZoneRoom","roomId":"room.yard","x":11,"y":11,"width":1,"height":1}]}
+
+ ❯ tests/unit/world-build-camera-button-release.test.ts (18 tests | 6 failed) 74ms
+   × world/wall/canvas: a middle-button release cannot commit the still-held left construction press 26ms
+   × world/wall/outside: a middle-button release cannot commit the still-held left construction press 3ms
+   × world/object/canvas: a middle-button release cannot commit the still-held left construction press 4ms
+   × world/object/outside: a middle-button release cannot commit the still-held left construction press 3ms
+   × world/room/canvas: a middle-button release cannot commit the still-held left construction press 3ms
+   × world/room/outside: a middle-button release cannot commit the still-held left construction press 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/world-build-camera-button-release.test.ts > world/wall/canvas: a middle-button release cannot commit the still-held left construction press
+ FAIL  tests/unit/world-build-camera-button-release.test.ts > world/wall/outside: a middle-button release cannot commit the still-held left construction press
+ FAIL  tests/unit/world-build-camera-button-release.test.ts > world/object/canvas: a middle-button release cannot commit the still-held left construction press
+ FAIL  tests/unit/world-build-camera-button-release.test.ts > world/object/outside: a middle-button release cannot commit the still-held left construction press
+ FAIL  tests/unit/world-build-camera-button-release.test.ts > world/room/canvas: a middle-button release cannot commit the still-held left construction press
+ FAIL  tests/unit/world-build-camera-button-release.test.ts > world/room/outside: a middle-button release cannot commit the still-held left construction press
+AssertionError: the real main/worker path must stay empty until the primary construction button is released: expected [ { protocolVersion: 1, …(3) } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/world-build-camera-button-release.test.ts:110:131
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 12 passed (18)
+   Start at  05:36:35
+   Duration  4.63s (transform 1.39s, setup 0ms, import 4.39s, tests 74ms, environment 0ms)
+

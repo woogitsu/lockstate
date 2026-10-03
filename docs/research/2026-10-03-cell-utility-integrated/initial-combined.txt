@@ -1,0 +1,98 @@
+node : [2m[WebServer] [22m(node:62240) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:10 char:1
++ node --experimental-transform-types --disable-warning=ExperimentalWar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 8 tests using 1 worker
+
+(node:62572) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62572) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\dedicated-cell-toilet-player-build.spec.ts:184:1 › player creates storage and delivery capacity before Basic cell (44.5s)
+  ok 2 tests\browser\dedicated-cell-toilet-player-build.spec.ts:247:3 › player builds Basic cell at quarterTurns0 and retains toilet palettes and anchors after Save/Load (38.4s)
+  ok 3 tests\browser\dedicated-cell-toilet-player-build.spec.ts:247:3 › player builds Basic cell at quarterTurns1 and retains toilet palettes and anchors after Save/Load (37.2s)
+  ok 4 tests\browser\dedicated-utility-panel-player-build.spec.ts:184:1 › player creates storage and delivery capacity before Utility Room (42.5s)
+  ok 5 tests\browser\dedicated-utility-panel-player-build.spec.ts:247:3 › player builds Utility Room at quarterTurns0 and retains utility panel palettes and anchors after Save/Load (32.2s)
+  ok 6 tests\browser\dedicated-utility-panel-player-build.spec.ts:247:3 › player builds Utility Room at quarterTurns1 and retains utility panel palettes and anchors after Save/Load (31.9s)
+  x  7 tests\browser\room-template-world-camera-origin.spec.ts:36:31 › World FullHD 100% zoomed room-plan corners and actual placement share the picked ground (4.2s)
+(node:15556) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15556) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  8 tests\browser\room-template-world-camera-origin.spec.ts:36:31 › World FullHD 200% zoomed room-plan corners and actual placement share the picked ground (4.8s)
+
+
+  1) tests\browser\room-template-world-camera-origin.spec.ts:36:31 › World FullHD 100% zoomed room-plan corners and actual placement share the picked ground 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeCloseTo[2m([22m[32mexpected[39m[2m, [22mprecision[2m)[22m
+
+    Expected: [32m380.00128000000007[39m
+    Received: [31m380[39m
+
+    Expected precision:    3
+    Expected difference: < [32m0.0005[39m
+    Received difference:   [31m0.001280000000065229[39m
+
+      108 |   for (let i = 0; i < 4; i++) {
+      109 |     expect(actual[i]!.x).toBeCloseTo(expected[i]!.x, 3);
+    > 110 |     expect(actual[i]!.y).toBeCloseTo(expected[i]!.y, 3);
+          |                          ^
+      111 |   }
+      112 |   expect(cursor.x).toBeGreaterThanOrEqual(measured.first[0]!.x);
+      113 |   expect(cursor.x).toBeLessThan(measured.first[2]!.x);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-cell-utility-integration-20261003\tests\browser\room-template-world-camera-origin.spec.ts:110:26
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-cell-utility-combined-results-20261003\room-template-world-camera-b152d-ent-share-the-picked-ground\error-context.md
+
+  2) tests\browser\room-template-world-camera-origin.spec.ts:36:31 › World FullHD 200% zoomed room-plan corners and actual placement share the picked ground 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeCloseTo[2m([22m[32mexpected[39m[2m, [22mprecision[2m)[22m
+
+    Expected: [32m380.00128000000007[39m
+    Received: [31m380[39m
+
+    Expected precision:    3
+    Expected difference: < [32m0.0005[39m
+    Received difference:   [31m0.001280000000065229[39m
+
+      108 |   for (let i = 0; i < 4; i++) {
+      109 |     expect(actual[i]!.x).toBeCloseTo(expected[i]!.x, 3);
+    > 110 |     expect(actual[i]!.y).toBeCloseTo(expected[i]!.y, 3);
+          |                          ^
+      111 |   }
+      112 |   expect(cursor.x).toBeGreaterThanOrEqual(measured.first[0]!.x);
+      113 |   expect(cursor.x).toBeLessThan(measured.first[2]!.x);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-cell-utility-integration-20261003\tests\browser\room-template-world-camera-origin.spec.ts:110:26
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-cell-utility-combined-results-20261003\room-template-world-camera-58cbe-ent-share-the-picked-ground\error-context.md
+
+  2 failed
+    tests\browser\room-template-world-camera-origin.spec.ts:36:31 › World FullHD 100% zoomed room-plan corners and actual placement share the picked ground 
+    tests\browser\room-template-world-camera-origin.spec.ts:36:31 › World FullHD 200% zoomed room-plan corners and actual placement share the picked ground 
+  6 passed (4.1m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+

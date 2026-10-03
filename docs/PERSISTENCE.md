@@ -135,6 +135,29 @@ validation remains frozen, and an older save with no travel data still has no
 `inFlight` section after migration. This is a local save-envelope migration;
 `supabase/migrations/` is unchanged.
 
+**V8 object ownership, owner-approved 2026-10-02 ([#1975](https://github.com/woogitsu/lockstate/issues/1975)).**
+The owner selected the combined identifier, V8 and safe-refusal option recorded in
+[the decision and proof](./research/2026-10-02-placed-object-owner-decision-draft.md).
+Newly written placed objects may carry optional exact
+`payload.simulation.objects.placedObjects[].sourceOrderId`, recorded only by
+successful physical construction completion. A completion that places nothing
+must retain the standing object's earlier owner. The field is declared only on
+V8; historical V1-V7 validators are frozen. V7 to V8 independently clones the raw
+payload, preserving every prior value, including completed, undone and pending
+room plans, and fabricates no owner from order sequence, location or orientation.
+
+Absence represents unrecorded legacy ownership. Before a coupled room-template
+Undo, cancellation or manual entry reverses that gesture, every matching standing
+fixture must have a valid exact completed owner link; otherwise the command
+refuses atomically with `construction.object-ownership-unknown` before zoning,
+orders, funds or history change. A different valid owner survives the older
+gesture. Direct standing `RemoveObject` remains available, after which the
+coupled reversal may proceed. Ordinary ownerless legacy single-order reversal
+outside a coupled template retains its existing behavior; this limited boundary
+is tested explicitly and is not a blanket claim that every legacy order is
+protected. Unlike the optional additions above, the owner approved a V8 boundary
+for this changed legacy reversal behavior. No cloud database migration is added.
+
 **The ninth is the one whose bump was authorised and not spent, which is the
 case this section had not yet had.** The owner's #589 ruling said
 `SAVE_SCHEMA_VERSION` would move by one field. It does not, because the three

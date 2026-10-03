@@ -1,0 +1,48 @@
+pnpm : $ vitest run "tests/unit/camera-pan-ports.test.ts" "tests/unit/ui-camera-pan-control.test.ts" "tests/unit/obliqu
+e-loading-dock-detail-integrity.test.ts" "tests/integration/occupied-template-refusal-undo-selection.test.ts" "tests/in
+tegration/solitary-template-sanction-release.test.ts" "tests/integration/room-template-occupied-material-cancel.test.ts
+" "tests/foundation/research-index-contract.test.ts" "tests/foundation/documentation-links-contract.test.ts" "tests/fou
+ndation/typecheck-coverage-contract.test.ts" "tests/foundation/browser-suite-partition-contract.test.ts" "--maxWorkers=
+2"
+At line:32 char:448
++ ... EXITCODE }; pnpm --config.verify-deps-before-run=false test tests/uni ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-pan-dock-integration-20261003
+
+ ❯ tests/foundation/typecheck-coverage-contract.test.ts (4 tests | 1 failed) 93ms
+     × leaves no tracked module file outside every TypeScript project 91ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/typecheck-coverage-contract.test.ts > typecheck coverage contract > leaves no tracked module fi
+le outside every TypeScript project
+AssertionError: git ls-files failed: : expected null to be +0 // Object.is equality
+
+- Expected:
+0
+
++ Received:
+null
+
+ ❯ trackedModuleFiles tests/foundation/typecheck-coverage-contract.test.ts:94:66
+     92| function trackedModuleFiles(): readonly string[] {
+     93|   const listed = spawnSync('git', ['ls-files', '-z'], { cwd: repositor…
+     94|   expect(listed.status, `git ls-files failed: ${listed.stderr}`).toBe(…
+       |                                                                  ^
+     95|   return listed.stdout
+     96|     .split('\0')
+ ❯ tests/foundation/typecheck-coverage-contract.test.ts:114:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 9 passed (10)
+      Tests  1 failed | 123 passed (124)
+   Start at  04:09:42
+   Duration  22.99s (transform 5.73s, setup 0ms, import 24.30s, tests 9.78s, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

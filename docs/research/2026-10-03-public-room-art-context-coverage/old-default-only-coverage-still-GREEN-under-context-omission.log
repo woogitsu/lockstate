@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-classroom-coursebook-station-model-20261003
+
+····················
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  16:23:05
+   Duration  355ms (transform 80ms, setup 0ms, import 228ms, tests 12ms, environment 0ms)
+
+$ vitest run "tests/unit/room-template-oblique-art-coverage.test.ts" "--reporter=dot"

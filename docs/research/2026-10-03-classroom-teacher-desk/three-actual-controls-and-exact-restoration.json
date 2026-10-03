@@ -1,0 +1,31 @@
+{
+  "actualControls": [
+    {
+      "control": "actual .blend textbook rack rigid z+0.45, matched provenance source hash",
+      "mutatedSourceSHA256": "407a8ef6675961fea97683e9848514809b4744f69e5326b9fa3d56b8d4407a35",
+      "exitCode": 1,
+      "reason": "Classroom teacher desk actual contact disconnected: Classroom teacher desk.desktop textbook rack base / laminate desktop"
+    },
+    {
+      "control": "actual producer omits its own dispatch tuple",
+      "exitCode": 1,
+      "reason": "Classroom teacher desk dedicated producer dispatch changed"
+    },
+    {
+      "control": "actual valid RGBA PNG with opaque corner, matched descriptor hash and filename hash",
+      "badPNG_SHA256": "3e40d6bcaf9dca0e901547d3f0d202eaf5e0c3490bb6bb3bf3ac81936ddf4ed3",
+      "exitCode": 1,
+      "reason": "Classroom desk PNG transparent border"
+    }
+  ],
+  "boundedNewRepeatRenderCount": 4,
+  "actualProducerRepeatReceipt": "four-real-producer-repeats.json",
+  "sourceSHA256": "c1dd80d253667f8e1bca5b17371b183ec18b5a292bebdf9fd2062e85b01d55ff",
+  "provenanceSHA256": "ceac8ef8efd9f2f5154575fe8c1d77e78fd54a4d4002ec8347f18e3067021670",
+  "descriptorSHA256": "21081cbe54947671e3eadbc0cd4b08be3c23d16e6d54cc8549fc85dcb722ccb7",
+  "exactSourceProvenanceProducerDescriptorRestoration": true,
+  "all72OwnExportsExactBytePreservation": true,
+  "originalDesk72ExportsAndSharedFilesUnchanged": true,
+  "restoredProducerExitCode": 0,
+  "restoredUnitExitCode": 0
+}

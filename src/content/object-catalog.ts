@@ -114,6 +114,7 @@ const rawObjectDefinitions: readonly ObjectDefinition[] = [
   { schemaVersion: 1, id: 'object.loading-dock-door', numericId: 18, nameKey: 'object.loading-dock-door.name', category: 'utility', footprint: { width: 3, height: 1 }, capabilities: ['delivery-access'] },
   { schemaVersion: 1, id: 'object.waste-bin', numericId: 19, nameKey: 'object.waste-bin.name', category: 'utility', footprint: { width: 1, height: 1 }, capabilities: ['waste-disposal'] },
   { schemaVersion: 1, id: 'object.utility-panel', numericId: 20, nameKey: 'object.utility-panel.name', category: 'utility', footprint: { width: 1, height: 1 }, capabilities: ['utility-control'] },
+  { schemaVersion: 1, id: 'object.exercise-station', numericId: 21, nameKey: 'object.exercise-station.name', category: 'furniture', footprint: { width: 2, height: 1 }, capabilities: ['recreation'] },
 ];
 
 /**

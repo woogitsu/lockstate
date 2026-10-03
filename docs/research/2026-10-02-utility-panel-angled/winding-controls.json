@@ -1,0 +1,20 @@
+{
+  "controls": [
+    {
+      "control": "producer-only-reversed-winding",
+      "exitCode": 1,
+      "actualError": "Evaluated utility panel convex surface normals face inward: body"
+    },
+    {
+      "control": "loaded-only-reversed-winding",
+      "exitCode": 1,
+      "actualError": "Evaluated utility panel convex surface normals face inward: body"
+    }
+  ],
+  "exactRestoredNativeVerifyExitCode": 0,
+  "sourceBytesUnchangedByNegative": true,
+  "builderSha256": "48d09912e70df3aa05aa392011bdf0d8d9dfc92abd2682ba699ffeaa1d96d108",
+  "wrapperSha256": "4834ae7faac980d259a34da34743d913523425a208bedc1c6348bd8722219411",
+  "sourceSha256": "1bc780cc2e6ab7b25e932652e6e3f1c9e4ce07a63256b340af02bf310e3cf137",
+  "originalSourceSha256": "05281b06512f7dabab247b183568b249aa8df04e912c7ea89a209e918f9775ea"
+}

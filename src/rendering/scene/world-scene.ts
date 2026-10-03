@@ -1,3 +1,4 @@
+import {boundedRendererView, type RendererCameraView} from '../camera/renderer-view-memory';
 import Phaser from 'phaser';
 import type { MinimapView } from '../../shared/minimap-view';
 import type { KeyValueStore } from '../../shared/key-value-store';
@@ -5,7 +6,7 @@ import {
   KeyboardInputAdapter,
   type SemanticActionEvent,
   TouchGestureTracker,
-  isTextEntryFocused,
+  activeKeyboardContexts,
   loadInputSettings,
 } from '../../input';
 import { AtlasFrameIndex } from '../assets/atlas-frame-index';
@@ -26,6 +27,7 @@ import {
   edgeTargetsEqual,
   pickEdgeAtWorld,
 } from '../build/edge-picking';
+import { squareRun, type SquareBuildToolPort, type SquareTarget } from '../build/square-picking';
 import type { RenderFeed } from '../feed/render-feed';
 import { ActorLayer } from '../phaser/actor-layer';
 import { registerAtlasTextures } from '../phaser/atlas-textures';
@@ -134,7 +136,7 @@ export interface WorldSceneOptions {
    * submit one (pinned by `tests/unit/rendering-module-boundaries.test.ts`),
    * and the renderer must not become the thing that decides a build happened.
    */
-  readonly buildTool?: BuildToolPort;
+  readonly buildTool?: BuildToolPort & Partial<SquareBuildToolPort>;
 
   /**
    * Where an undo or redo request goes (#261).
@@ -275,7 +277,7 @@ export class WorldScene extends Phaser.Scene {
   private panPointerId: number | undefined;
   private lastPanScreenPoint: { readonly x: number; readonly y: number } | undefined;
 
-  private readonly buildTool: BuildToolPort | undefined;
+  private readonly buildTool: (BuildToolPort & Partial<SquareBuildToolPort>) | undefined;
   private readonly editHistory: EditHistoryPort | undefined;
   private readonly toolStandDown: ToolStandDownPort | undefined;
   private readonly roomTool: RoomToolPort | undefined;
@@ -287,6 +289,7 @@ export class WorldScene extends Phaser.Scene {
   private buildPointerId: number | undefined;
   private buildPress: WorldPoint | undefined;
   private buildSegments: readonly EdgeTarget[] = [];
+  private buildSquares: readonly SquareTarget[] = [];
   private hoveredEdge: EdgeTarget | undefined;
 
   private tiles: TileLayer | undefined;
@@ -356,6 +359,16 @@ export class WorldScene extends Phaser.Scene {
     this.minimapSink = sink;
   }
 
+  public captureCameraView(): RendererCameraView {
+    const camera = this.cameras.main;
+    return {centre:camera.getWorldPoint(camera.x+camera.width/2,camera.y+camera.height/2),zoom:camera.zoom};
+  }
+
+  public restoreCameraView(view: RendererCameraView): void {
+    const bounded = boundedRendererView(view);
+    this.cameras.main.setZoom(bounded.zoom).centerOn(bounded.centre.x,bounded.centre.y);
+  }
+
   public constructor(options: WorldSceneOptions) {
     super('WorldScene');
     this.feed = options.feed;
@@ -376,7 +389,7 @@ export class WorldScene extends Phaser.Scene {
       // worked and was unit-tested, and the one thing that would make it fire
       // never happened (issue #201). `isActive` re-reads this on every call, so
       // focus moving into a field mid-hold stops the camera too.
-      () => (isTextEntryFocused() ? ['text-entry'] : ['world']),
+      () => activeKeyboardContexts(globalThis.document),
     );
     this.loadAtlasLibrary = options.loadAtlasLibrary ?? (() => AtlasLibrary.load());
     this.loadSourceArtCatalog = options.loadSourceArtCatalog ?? (() => SourceArtCatalog.load());
@@ -400,6 +413,12 @@ export class WorldScene extends Phaser.Scene {
   public setFeed(feed: RenderFeed): void {
     this.feed = feed;
   }
+
+  /** A native HUD selector takes keyboard ownership without cancelling tools. */
+  public releaseKeyboardInput(): void { this.keyboard.releaseAll(); }
+
+  /** Explicit HUD disarming invalidates its unfinished press immediately. */
+  public cancelConstructionGesture(): void { this.cancelAllGestures(); }
 
   public create(): void {
     this.cameras.main.setBackgroundColor(VOID_COLOR);
@@ -560,13 +579,20 @@ export class WorldScene extends Phaser.Scene {
     const capturePointer = (event: PointerEvent): void => {
       canvas.setPointerCapture(event.pointerId);
     };
-    canvas.addEventListener('pointerdown', capturePointer);
 
     const keyDown = (event: KeyboardEvent): void => {
       this.handleActionEvents(this.keyboard.keyDown(event));
     };
     const keyUp = (event: KeyboardEvent): void => {
       this.handleActionEvents(this.keyboard.keyUp(event));
+    };
+    const disarmRovingArrows = (event: FocusEvent): void => {
+      const target = event.target;
+      if (!(target instanceof Element) || !target.matches('[role="radio"]') ||
+        target.closest('[role="radiogroup"]') === null) return;
+      // As in Oblique, list focus owns an arrow that started on the world.
+      // Its next keydown may never arrive; preserve unconsumed WASD keys.
+      this.keyboard.releaseCodes(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
     };
     // A `keyup` goes to whichever window has focus, so holding a camera key and
     // alt-tabbing sends the release elsewhere and the key stays down forever --
@@ -593,13 +619,40 @@ export class WorldScene extends Phaser.Scene {
       this.keyboard.releaseAll();
       this.cancelAllGestures();
     };
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      window.removeEventListener('keydown', keyDown);
+      window.removeEventListener('keyup', keyUp);
+      window.removeEventListener('focusin', disarmRovingArrows);
+      window.removeEventListener('blur', blur);
+      canvas.removeEventListener('pointerdown', capturePointer);
+      this.tiles?.destroy();
+      this.roomLabels?.destroy();
+      this.roomConditions?.destroy();
+      this.actors?.destroy();
+      this.buildOverlay?.destroy();
+      this.areaOverlay?.destroy();
+      this.objectOverlay?.destroy();
+      this.homeIndicator?.destroy();
+      this.tiles = undefined;
+      this.roomLabels = undefined;
+      this.roomConditions = undefined;
+      this.actors = undefined;
+      this.buildOverlay = undefined;
+      this.areaOverlay = undefined;
+      this.objectOverlay = undefined;
+      this.homeIndicator = undefined;
+    });
+
+    canvas.addEventListener('pointerdown', capturePointer);
     window.addEventListener('keydown', keyDown);
     window.addEventListener('keyup', keyUp);
+    window.addEventListener('focusin', disarmRovingArrows);
     window.addEventListener('blur', blur);
 
     this.input.on(
       'wheel',
       (pointer: Phaser.Input.Pointer, _objects: Phaser.GameObjects.GameObject[], _deltaX: number, deltaY: number) => {
+        if (deltaY === 0) return;
         const camera = this.cameras.main;
         const next = zoomAtScreenPoint(
           this.cameraState(),
@@ -707,39 +760,21 @@ export class WorldScene extends Phaser.Scene {
     });
     const finishPointer = (pointer: Phaser.Input.Pointer): void => {
       if (pointer.wasTouch) this.touchGestures.end(pointer.id);
-      if (this.commitBuild(pointer)) return;
-      if (this.commitObject(pointer)) return;
-      if (this.commitArea(pointer)) return;
+      // Mouse buttons share one Phaser pointer ID. Releasing the camera's
+      // middle button cannot complete a still-held primary construction press.
+      const releasedPrimary = pointer.wasTouch || (pointer.button === 0 && (pointer.buttons & 1) === 0);
+      if (releasedPrimary) {
+        if (this.commitBuild(pointer)) return;
+        if (this.commitObject(pointer)) return;
+        if (this.commitArea(pointer)) return;
+      }
       if (pointer.wasTouch) return;
-      if (this.panPointerId !== pointer.id) return;
+      if (pointer.button !== 1 || (pointer.buttons & 4) !== 0 || this.panPointerId !== pointer.id) return;
       this.panPointerId = undefined;
       this.lastPanScreenPoint = undefined;
     };
     this.input.on('pointerup', finishPointer);
     this.input.on('pointerupoutside', finishPointer);
-
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      window.removeEventListener('keydown', keyDown);
-      window.removeEventListener('keyup', keyUp);
-      window.removeEventListener('blur', blur);
-      canvas.removeEventListener('pointerdown', capturePointer);
-      this.tiles?.destroy();
-      this.roomLabels?.destroy();
-      this.roomConditions?.destroy();
-      this.actors?.destroy();
-      this.buildOverlay?.destroy();
-      this.areaOverlay?.destroy();
-      this.objectOverlay?.destroy();
-      this.homeIndicator?.destroy();
-      this.tiles = undefined;
-      this.roomLabels = undefined;
-      this.roomConditions = undefined;
-      this.actors = undefined;
-      this.buildOverlay = undefined;
-      this.areaOverlay = undefined;
-      this.objectOverlay = undefined;
-      this.homeIndicator = undefined;
-    });
 
     // Art is not correctness: a batch that fails to load must leave a playable,
     // legible tile world rather than a blank screen.
@@ -760,9 +795,10 @@ export class WorldScene extends Phaser.Scene {
     // Disarming while a run is in progress, or while a ghost is showing,
     // must take the ghost away -- otherwise the panel says the tool is off
     // and the world still shows a wall about to appear.
-    if (!this.isBuildArmed() && (this.buildPointerId !== undefined || this.buildSegments.length > 0)) {
+    if (!this.isBuildArmed() && (this.buildPointerId !== undefined || this.buildSegments.length > 0 || this.buildSquares.length > 0)) {
       this.cancelBuild();
       this.buildSegments = [];
+      this.buildSquares = [];
       this.hoveredEdge = undefined;
       this.buildOverlay?.clear();
     }
@@ -793,13 +829,14 @@ export class WorldScene extends Phaser.Scene {
     const minimapBounds = frame.world.loadedBounds;
     if (this.minimapProjection !== undefined && minimapBounds !== undefined) {
       const camera = this.cameraState();
+      const visibleBounds = visibleWorldBounds(camera);
       const spanX = (minimapBounds.maxTileX - minimapBounds.minTileX + 1) * TILE_SIZE_PX;
       const spanY = (minimapBounds.maxTileY - minimapBounds.minTileY + 1) * TILE_SIZE_PX;
       this.minimapSink?.({
         ...this.minimapProjection,
         viewport: {
-          x: (camera.scroll.x - minimapBounds.minTileX * TILE_SIZE_PX) / spanX,
-          y: (camera.scroll.y - minimapBounds.minTileY * TILE_SIZE_PX) / spanY,
+          x: (visibleBounds.left - minimapBounds.minTileX * TILE_SIZE_PX) / spanX,
+          y: (visibleBounds.top - minimapBounds.minTileY * TILE_SIZE_PX) / spanY,
           width: camera.viewport.width / camera.zoom / spanX,
           height: camera.viewport.height / camera.zoom / spanY,
         },
@@ -1017,6 +1054,25 @@ export class WorldScene extends Phaser.Scene {
     this.stepZoom(direction === 'in' ? KEYBOARD_ZOOM_STEP : 1 / KEYBOARD_ZOOM_STEP);
   }
 
+  /** Issue1590: a fixed128CSS-pixel camera step, independent of ground zoom. */
+  public stepCameraPan(direction: 'up' | 'down' | 'left' | 'right'): void {
+    const camera = this.cameras.main;
+    const displayScale = this.scale.displayScale;
+    const dx = direction === 'right' ? 1 : direction === 'left' ? -1 : 0;
+    const dy = direction === 'down' ? 1 : direction === 'up' ? -1 : 0;
+    camera.scrollX += dx * 128 * displayScale.x / camera.zoom;
+    camera.scrollY += dy * 128 * displayScale.y / camera.zoom;
+    // Keyboard activation can leave the physical cursor stationary on canvas.
+    // Reuse the existing actual gesture/hover consumers; never submit here.
+    if (!this.input.manager.isOver || this.panPointerId !== undefined) return;
+    const pointer = this.input.activePointer;
+    if (pointer.wasTouch) return;
+    if (this.extendBuild(pointer) || this.extendObject(pointer) || this.extendArea(pointer)) return;
+    if (this.isBuildArmed()) this.previewHover(pointer);
+    else if (this.isObjectArmed()) this.previewObjectHover(pointer);
+    else if (this.isRoomArmed()) this.previewAreaHover(pointer);
+  }
+
   // ---- build tool ---------------------------------------------------
   //
   // The interaction is **modal**, and deliberately so. The alternative --
@@ -1118,7 +1174,14 @@ export class WorldScene extends Phaser.Scene {
     // at. See `edgeRunFromDrag`.
     this.buildPointerId = pointer.id;
     this.buildPress = this.worldPointOf(pointer);
-    this.buildSegments = [pickEdgeAtWorld(this.buildPress)];
+    if (this.buildTool?.usesSquareFootprint?.() === true) {
+      const tile = pickTileAtWorld(this.buildPress);
+      this.buildSquares = [{ x: tile.tileX, y: tile.tileY }];
+      this.buildSegments = [];
+    } else {
+      this.buildSegments = [pickEdgeAtWorld(this.buildPress)];
+      this.buildSquares = [];
+    }
     this.paintBuildPreview();
   }
 
@@ -1137,7 +1200,13 @@ export class WorldScene extends Phaser.Scene {
       this.hoveredEdge = undefined;
       return false;
     }
-    this.buildSegments = edgeRunFromDrag(this.buildPress, this.worldPointOf(pointer));
+    if (this.buildTool?.usesSquareFootprint?.() === true) {
+      const from = pickTileAtWorld(this.buildPress);
+      const to = pickTileAtWorld(this.worldPointOf(pointer));
+      this.buildSquares = squareRun({ x: from.tileX, y: from.tileY }, { x: to.tileX, y: to.tileY });
+    } else {
+      this.buildSegments = edgeRunFromDrag(this.buildPress, this.worldPointOf(pointer));
+    }
     this.paintBuildPreview();
     return true;
   }
@@ -1146,13 +1215,17 @@ export class WorldScene extends Phaser.Scene {
   private commitBuild(pointer: Phaser.Input.Pointer): boolean {
     if (this.buildPointerId !== pointer.id) return false;
     const segments = this.buildSegments;
+    const squares = this.buildSquares;
     this.buildPointerId = undefined;
     this.buildPress = undefined;
     this.buildSegments = [];
+    this.buildSquares = [];
     this.hoveredEdge = undefined;
     this.buildOverlay?.clear();
     this.buildTool?.target?.(undefined);
-    if (segments.length > 0) this.buildTool?.place(segments);
+    this.buildTool?.targetSquares?.(undefined);
+    if (squares.length > 0) this.buildTool?.placeSquares?.(squares);
+    else if (segments.length > 0) this.buildTool?.place(segments);
     return true;
   }
 
@@ -1179,8 +1252,10 @@ export class WorldScene extends Phaser.Scene {
     this.buildPointerId = undefined;
     this.buildPress = undefined;
     this.buildSegments = [];
+    this.buildSquares = [];
     this.buildOverlay?.clear();
     this.buildTool?.target?.(undefined);
+    this.buildTool?.targetSquares?.(undefined);
   }
 
   /**
@@ -1428,8 +1503,14 @@ export class WorldScene extends Phaser.Scene {
     // gesture takes something away" and draws its own removal fill and outline.
     // So the removal look costs nothing new here, and the scene still learns
     // only which preview to draw -- never which command the press becomes.
-    this.objectOverlay?.update(this.objectRect, this.objectTool?.isRemoving() === true ? undefined : this.objectTint?.());
     this.objectTool?.target?.(this.objectRect);
+    this.objectOverlay?.update(this.objectRect, this.objectTool?.isRemoving() === true ? undefined : this.objectTint?.());
+  }
+
+  /** Verdict publication repaints the retained aim, without moving or cancelling a held press. */
+  public refreshObjectToolVerdict(): void {
+    if (!this.isObjectArmed()) { this.cancelObject(); return; }
+    this.paintObjectPreview();
   }
 
   private previewAreaHover(pointer: Phaser.Input.Pointer): void {
@@ -1451,6 +1532,14 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private previewHover(pointer: Phaser.Input.Pointer): void {
+    if (this.buildTool?.usesSquareFootprint?.() === true) {
+      const tile = pickTileAtWorld(this.worldPointOf(pointer));
+      if (this.buildSquares.length === 1 && this.buildSquares[0]?.x === tile.tileX && this.buildSquares[0]?.y === tile.tileY) return;
+      this.buildSquares = [{ x: tile.tileX, y: tile.tileY }];
+      this.buildSegments = [];
+      this.paintBuildPreview();
+      return;
+    }
     const edge = pickEdgeAtWorld(this.worldPointOf(pointer));
     if (edgeTargetsEqual(edge, this.hoveredEdge)) return;
     this.hoveredEdge = edge;
@@ -1459,6 +1548,11 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private paintBuildPreview(): void {
+    if (this.buildTool?.usesSquareFootprint?.() === true) {
+      this.buildOverlay?.updateSquares(this.buildSquares);
+      this.buildTool.targetSquares?.(this.buildSquares);
+      return;
+    }
     this.buildOverlay?.update(this.buildSegments);
     this.buildTool?.target?.(this.buildSegments);
   }

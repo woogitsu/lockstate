@@ -226,3 +226,1445 @@ Remaining acceptance work, in priority order:
 3. Integrate and verify existing additional room plans from the #1644 stack before expanding the catalog to every room type. The owner's decision was the complete template system; three templates are an intermediate state.
 4. Re-render Blender frames whose non-transparent pixels touch a frame edge. Art QA found clipping in the desk, bin and sink pose catalogs; runtime frame selection fixes alone do not correct truncated source art.
 5. Join all reviewed increments, pass exact-head CI, then verify the actual deployed game. Keep art, gesture/input and integration QA in separate worktrees.
+
+## 2026-10-01 furnished catalog integration checkpoint
+
+The dependent branch codex/integrate-full-room-plans-20261001 ports the existing four-cell row, canteen and kitchen implementations (13f3bb9969, 1b013ea4ea, db890d72da) and mirrored object-width correction f53a61a12c onto the corrected square-wall stack. All six plans are selectable in the catalogue. Twelve scheduled build/furnish/save-envelope/load cases cover normal and mirrored copies, including all four separately designated cells. Five focused suites pass 40 tests; mutating the coordinator to designate only the first room produces two failures, restored production passes; TypeScript passes.
+
+Existing room/object names are reused for canteen, kitchen and fixtures. The row label reuses the previously authored Four-cell row / Blok czterech cel wording. This is not the complete eighteen-room catalog or a release: mouse-on-map template placement and worker-backed cost display still need integration, then remaining room types and exact-head release gates.
+
+## Complete room-type coverage checkpoint
+
+The furnished catalogue now contains twenty plans covering all eighteen released room types. Fourteen additional plans cover holding/solitary cells, reception, laundry, yard, common room, classroom, infirmary, security/staff offices, storage, deliveries, garbage and utilities. Authored dimensions meet actual room requirements; object footprints and mirrored widths are checked against content definitions. Yard is an open 8-by-8 zone with no indoor shell. Existing localized room/object names are reused, with no new outward-facing promises.
+
+All forty normal/mirrored construction, furnishing and save-envelope/load cases pass. Six focused suites pass 192 tests, including independent complete-room coverage and saved enum union contracts. Mutating Yard into an indoor shell and overlapping classroom seats produces four failures; restoring production passes. TypeScript passes. Pending template IDs extend the existing versioned field, without a new field or migration. This evidence does not prove Full HD catalogue usability or mouse placement; those acceptance checks remain assigned to the HUD integration agent.
+
+## Pending-plan safety checkpoint
+
+Existing fixes for #1646 (full pending interior claim), later ordinary wall reservations, #1608 (cancel whole shell when one member is lost), #1669 (paused Cancel/Undo reconciliation), and #1664 (safe coordinate bounds) are now integrated into the corrected all-room catalogue. These are reused source commits, not duplicated issues. The integration adds the missing tileCoordinate import detected by the current TypeScript and runtime test.
+
+Mutation removing pending interior reservation and paused reconciliation causes three session failures. Restored production passes five suites (197 tests) and TypeScript. Full browser coverage and the complete reversible transaction requirement #1657 remain acceptance work; shell cancellation alone is not full completed-room Undo.
+
+## Completed indoor-room transaction checkpoint — owner format approval pending
+
+The #1657 full reversible transaction direction is implemented for nineteen indoor plans. Furniture shares the shell transaction; cancellation removes all members and zoning, late fixture refusal rolls back accepted work, and Redo restores the room obligation without duplicating fixtures. Actual save envelopes retain optional roomTemplates.undone and roomTemplates.completed metadata (version 1); old saves without these fields use empty lists. The format extension remains a draft pending the owner's exact-field approval. It must not merge before that decision.
+
+Five suites pass136tests and TypeScript, including nineteen completed indoor-room build/save/load/Undo/save/load/Redo cycles. A production mutation grouping furniture separately fails the Basic Cell transaction case; restored tests pass. Cache geometry/content revisions correctly increase across Undo/Redo, so content comparison checks every saved plane while excluding only those revision counters. Shell-free Yard still requires a proper zoning transaction; no fake construction order is introduced to pretend it is finished.
+
+CI repair PR1895 merged at bf976ac9fe after exact head560cc632f929 passed all checks and mergeability was CLEAN. Serial main CI run36905140655 is in progress; no further main merge is authorized by a partially completed run.
+
+## Blender stove module (2026-10-01)
+
+A production-ready source asset is now authored for the kitchen lane:
+`assets/source/blender/furniture.kitchen.stove.variants.blend`. The
+reproducible `build_kitchen_stove.py` script renders 72 transparent 128 px
+frames (12 yaw poses × 6 elevations), and their hashes are recorded in
+`public/game-content/oblique-furniture.kitchen-stove.v1.json`. The catalog is
+registered as `furniture.kitchen.stove.variants` in the oblique module
+registry. The model is a two-tile commercial stove with four burners, twin oven
+faces, controls, splash guard and feet.
+
+This is authored Blender art and a verified runtime catalog, but it is not yet
+shown by the production `WorldScene`: the next integration step is to resolve
+an oblique object-sprite consumer for `object.stove`, then verify placement,
+cutaway/depth ordering and Save/Load in the real Full HD scene. The module is
+therefore a concrete art increment, not a claim that the complete angled mode
+has shipped.
+
+### Kitchen fridge Blender module (2026-10-01)
+
+The kitchen lane now also has a one-tile refrigerator source at
+`assets/source/blender/furniture.kitchen.fridge.variants.blend`, with 72
+transparent yaw/elevation frames and a verified catalog at
+`public/game-content/oblique-furniture.kitchen-fridge.v1.json`. It is registered
+as `furniture.kitchen.fridge.variants`. Like the stove module above, this is
+real authored art and a loader-ready catalog; the production renderer still
+needs the object-sprite consumer and Full HD placement/depth/Save-Load proof.
+## Documentation gate integration checkpoint, 2026-10-01
+
+Reopened live ownership declarations and object-removal class/method references after the full-plan stack shifted source coordinates. Quoted actual declarations beside the anchors without raising budgets. The archived enclosure fault still points past EOF; its diagnostic now records the actual 296-line file. Three documentation suites pass 19 tests after the previously observed quotation budget failure. Feature root remains draft pending the two save-field decision; HUD mouse integration is pushed in draft PR1906, and Yard transaction implementation continues separately.
+
+
+## Combined camera and mouse-build checkpoint
+
+Merged HUD mouse integration 2a4c65e079 and camera inventory follow-up 3237bc451e into the full catalogue root. Integration exposed two template labels outside HUD_MESSAGE_KEY, CRLF-sensitive composition source matching on Windows, and shifted live quote anchors. Registry references and line-ending normalization fix those failures without removing pinned wiring. Removing the production staff-coverage cadence call fails the contract (1 red); restoring it passes both composition and HUD registry suites (40 tests). Quotation plus those two suites pass 52 tests; TypeScript passes. Full runtime Blender validation and Yard reversible zoning remain independent active work; no release claim is made.
+
+
+## Pointer interruption safety, issue1907
+
+Four production-path tests reproduced unintended template placement after pointer cancellation, lost capture, release outside the map, and switching templates during an unfinished press. The bridge now binds the press to both pointer ID and selection revision and clears it on interruption, outside release, window blur and Escape. A fresh press still places the selected plan. Focus-loss regression coverage is included; focused bridge/tool/composition tests pass 36 tests and TypeScript passes. No new player copy or save-format field is introduced.
+
+
+## Accepted command versus newer hover, issue1908
+
+A delayed room-plan confirmation was discarded when moving the cursor triggered a newer hover query, leaving the tool armed after placement. The production-path test fails before the fix (armed true instead of false). Accepted placement now disarms the matching original selection irrespective of newer hover queries; stale refusals still cannot repaint newer previews, and a newly armed selection is protected from older confirmations. Eleven bridge/tool tests and TypeScript pass. This is a source integration checkpoint; browser acceptance remains separate.
+
+
+## Near-wall visibility integrated checkpoint
+
+Merged camera agent47eee44860 into the combined feature root. The pure world projection lowers camera-facing walls with room interiors behind them, switches the matching authored cutaway asset, preserves full door height and never changes the worker's occupied square, edge, collision or saved world. Agent proof includes yaw0/elevation45 and yaw180/elevation65 FullHD browser cases (2 green); identity-height mutation makes the pixel test red. Root integration passes six suites75tests including completed-room Save/Load/Undo/Redo and whole-room catalogue/protocol cases; TypeScript passes. This does not replace true Blender-runtime QA or owner approval of the pending save metadata.
+
+
+## All twenty plans reversible backend integration
+
+Integrated Yard source checkpoints53009f866b/c0c6011646/d3b2ad35ec. Yard records an actual reversible zoning gesture in shared history, without fabricating a wall BuildOrder or consuming materials. Its hooks are reattached from existing plan metadata after load; the status projection exposes Undo/Redo availability. Rejected Redo is guarded against resurrecting an empty-shell plan. Root transaction/Redo/complete-catalogue suites pass65tests and TypeScript. Player success wording remains owner-reserved and pending; this integration is draft, with browser Yard acceptance not yet established because the QA worker bootstrap did not complete.
+
+## Full room fixture art mapping checkpoint
+
+Integrated the authored art composition7dd7075d1f into the feature root. A new catalogue-derived check found fourteen missing fixture mappings before integration and five afterward: bed, toilet, shower head, dining table and bench. Those five now resolve to existing Blender pose catalogs. All nineteen fixture types in the twenty plans resolve through the production object mapping to registered catalogs with complete pose grids and Blender source declarations; mapping/projection/coverage suites pass46tests after the observed red cases. This checks routing and catalog metadata, not PNG completeness or final runtime appearance. Full-square wall geometry and actual textured Full HD play remain separate acceptance work.
+
+Removing the production bed mapping deliberately makes the coverage suite fail one of twenty cases; restoring it returns20green. Camera checkpoints34c58dd4ed and16b5ccee28 now pin the full/low heights to0.75/0.34 tiles and lower camera-facing corner walls with diagonally adjacent interiors. Root projection/catalogue/research-index checks pass29tests. Research records for real mouse placement, completed square walls and Yard history are indexed; native Windows CRLF and linked path separators no longer create false index failures.
+
+The earlier Yard browser bootstrap limitation was superseded by the built-game test committed in423628c04e: real Full HD64-square ghost, interruption without placement, fresh mouse placement, and Save/Load between Undo and Redo passed in11.2seconds. No wall BuildOrder was created; room count went1 to0 to1. Save-field approval and truthful success wording remain pending owner decisions, so the combined feature PR remains draft.
+
+## Authored square walls and catalogue usability integrated
+
+Merged Blender checkpoint1d41b9a4ee: full and low brick square models now match the projection heights0.75 and0.34 tiles, with72 authored poses each. Root wall/catalogue/registry suites pass23tests, and the official Windows production build generates and verifies client and Worker output. Camera picking testded85d9dd1 is also integrated; its independent branch proved four yaw directions and two elevations through actual mouse placement, with a deliberately broken yaw projection detected before restoration.
+
+Integrated HUD cardsf092035b36/2049c77c0a/c0f4c0cb0a/b90bb56fbc. The twenty plans show dimensions, authored footprint miniatures and fixture counts before selection; the long four-cell diagram keeps its controls visible in Full HD. Actual built-game browser passed, and shrinking the bed's two-tile card footprint deliberately failed that case before restoration. The source screenshot is recorded in the indexed room-plan-cards research folder. Native inventory CLI issue1575 is corrected with Node's file URL conversion; regeneration reports588authored strings and the inventory gate passes. Final combined textured-cell camera controls and full room fixture rendering are actively being verified by separate agents; these source and build checkpoints do not establish a production release.
+
+## Full verification and representative textured room checkpoint
+
+A complete native Windows Vitest run on d0a001b7b8 finished with6012passed,48failed and8skipped tests across532files. This is a red full-suite result, not a release gate. Follow-up isolated the missing shell environment: setting the existing LOCKSTATE_BASH option to installed Git Bash makes deploy-secret and Worker-source suites pass111tests without changing their assertions or installing WSL. Other platform-specific source/path checks still need reconciliation. Actual integration defects found by the same run were repaired: new mouse bridge is included in the locale scanner; save-bundle source scanning uses fileURLToPath instead of a URL pathname; cards use direct dimensions rather than an undeclared CSS variable. Source anchors were reopened and the fully repaired ADR0031 no longer consumes its old exception budget. Six focused suites pass135tests, including the complete save shape and all design tokens.
+
+Art composition586d932f63 is integrated with real classroom/kitchen/infirmary/laundry render evidence at three Full HD camera poses: all projected built solids use loaded Blender frames and no fallback drawing. The indexed report names its limits: direct render-frame fixtures do not prove construction-worker or Build-dialog flows, near walls still hide some low fixtures, and wall surfaces remain visually plain. Actual completed-cell Save/Load and camera-control checks continue separately; all19fixturetypes are the next texture-coverage step. No production rollout is claimed.
+
+## Full catalogue and actor occlusion integration
+
+Integrated the expanded actual-scene fixture harness for all20plans and all19fixturetypes, deriving room numeric zoning identities from the room registry instead of painting every floor as a cell. The independent agent reported21browser cases green across three poses; the combined cutaway version still needs its updated visual pass. The camera change hides only low wall pieces that actually overlap built interior fixtures in projection; occupied wall squares remain unchanged. Root integrated that change and the HUD fix for an invalid hidden numeric coordinate erasing an otherwise valid mouse-placement material quote (#1912).
+
+Issue1913 is fixed in the real Phaser scene: reusable actor Graphics follow the same sorted depth as authored wall and furniture images. A Full HD pixel test proves the rear actor's lower torso is hidden and the foreground actor stays visible; restoring the old depth fails with56wrong pixels, restoring the fix passes. Before/after evidence is in the indexed actor-depth research folder. This is pushed feature work, not a production-release claim.
+
+Next visual integration requirement: the angled ground painter currently uses flat Graphics despite existing authored floor materials. Reuse existing top-down Blender floor textures via exact planar quad projection, preserving the grid at intermediate yaw; do not approximate ground with nearest-angle overlapping PNGs. Existing floor source geometry is centered at worldXY0 with footprint[-0.5,+0.5], so a tile anchors at its center. Room-specific materials and terrain mappings already exist in environment-art; retain approved kitchen and Yard colors. Actual floor seam/picking/SaveLoad/browser verification is required before claiming that integration finished. In parallel, agents verify stationary-cursor previews after camera turns and wide mirrored room placement.
+
+## Exact floor material integration checkpoint
+
+The flat-ground gap above is now repaired in the WebGL production scene. Existing authored overhead floor textures use Mesh2D batches on the exact projected full-square footprint, including intermediate yaw37/elevation53 and yawminus63/elevation25. Room-specific and terrain identities come from the shared environment-art module, with the existing tint-over-art/ownership/grid rules above the material. Missing art and Canvas retain normal fills. No new art files or simulation/save policy were introduced.
+
+Actual1920×1080 Yard evidence covers64zoned texturedtiles at threeposes. A pixel test fails with spread0 when meshes are deliberately transparent; restored floor and actor tests pass2/2. A separate32-pixel geometry mutation fails the exact-corner test and restoration passes2/2. TypeScript and floor/index tests pass7/7. Screenshots and verification limits are in the indexed oblique-floor-art research folder. The completed-cell Save/Load case passes after integration but exposed older local oblique LFS pointers, so full-cell texture evidence is not inferred from that case. A separate agent is verifying production floor pixels across Save/Load. Wide-template and ordinary Build stationary-cursor fixes are integrated;12drag directions/boundary cases and real112-square mirrored placement were proved independently. Three preview-fit policies remain review proposals until a concrete owner choice; no production rule has changed.
+
+
+## Brick detail integration checkpoint
+
+Integrated the Blender detail pass b5dd5c83ad into the combined feature root: the existing full/low square models retain exact 1x1 footprints and 0.75/0.34 heights, with authored staggered masonry, recessed joints and cap stones across 144 refreshed frames. Root hydrated the LFS source and images and passed eight catalog/world-projection cases. Deliberately replacing one production manifest frame hash with zeros makes the catalog test fail one case; restoring the manifest passes both cases. The standalone full-wall render was inspected and shows the joints and cap grid. Actual combined Full HD scene appearance remains a separate art-agent acceptance step; this is not a production-release claim.
+
+## Authored actor consumer source checkpoint
+
+The registry already carries Blender prisoner/guard catalogues, but the angled scene previously ignored actor art and drew every role with the same orange Graphics glyph. Projection now carries the role's existing catalogue and exact continuous feet anchor; pose texture selection and sorted image painting consume those frames, while unknown roles or missing textures retain the graphics fallback. Eight projection cases and TypeScript pass. A deliberate prisoner-to-guard mapping mutation fails the role/anchor case, and restoring it passes both focused cases. Actual actor pixels and wall occlusion with the authored frames still require browser verification; no animation or production-release claim is made.
+
+## Owner decision: full large-pattern preview, 2026-10-02
+
+After reviewing the six actual Full HD comparison frames, the owner selected option 3: show the whole pattern, pan the camera and preserve the selected construction origin until the next physical mouse movement. This authorizes the pan-locked production policy; it does not bypass terrain/overlap validation, approve the separately pending save-history fields or approve new player messages. The pure fit API is integrated and passes five focused tests; the HUD agent is implementing repeated-selection, rotation/mirror, cancellation and exact committed-origin behaviour. The one-shot comparison controller remains review evidence, not the finished implementation.
+
+The masonry runtime evidence is integrated: the art agent's actual-scene run passed21cases covering20plans and19fixturetypes at three camera poses, and inspected kitchen/laundry frames show the new joints and cap grid. That run predates the new actor consumer; authored actor pixels and Save/Load floor evidence remain separate acceptance tasks.
+
+## Approved fit completion and moving actor checkpoint, 2026-10-02
+
+The owner-selected full-preview pan policy is integrated. Actual production tests pass at1920x1080 and2560x1080; a separate stationary-row overlap case passes with exact retained origin after camera rotation and a genuine worker refusal on the occupied footprint. The detailed evidence is in docs/design/2026-10-02-approved-room-preview-fit/README.md. No terrain or collision validation was bypassed.
+
+Authored prisoner/guard pixels and wall depth are verified in the actual angled scene. Moving actors now reuse Phaser Images, including culled slots, rather than creating and destroying every actor image on each position update. The production reuse mutation fails actual browser identities; restoration passes both image/depth and movement cases. Detailed evidence and limits are in docs/research/2026-10-02-oblique-authored-actors/README.md. Cook, medic and staff frames are being rendered from the existing Blender sources by the art agent. Save-history fields and new player-copy approvals remain separately pending; these checkpoints do not claim a production release.
+
+## Role art and canonical feed integration checkpoint
+
+All216 cook/medic/staff Blender frames, source/PNG hash contracts and registry entries are integrated. The canonical feed-ID mismatch discovered as issue1922 is corrected: real snapshot prisoner/guard identifiers now resolve authored art rather than the fallback, while cook/medic/staff canonical catalogue IDs are supported. Actual scene role pixels, wall depth, actor pooling and solid reuse all pass4/4 browser cases; making actor art invisible fails the role pixels, then restoration passes. The inspected Full HD screenshot and detailed population-lifecycle limits are in docs/research/2026-10-02-oblique-role-actors/README.md. Staff snapshot positions are still not published; do not claim all populations' gameplay lifecycle is finished.
+
+The modal keyboard fix for issue1918 is integrated and prevents camera movement behind an open native room-plan dialog. Camera Save/Load rotation also passed unchanged in a warm production test; issue1921 separately records cold Vite startup spending the test clock. PR1897 was merged at exact green head6aeaf7ac7705b2378c6e1f30de55cda94f24feec after the previous main CI completed. Serial main CI on mergea1d80ce3fe113a6c98fece3e8f705fc05cf1cfcd is running. The angled production composition PR1894's three stale verification failures were repaired and pushed as453433c32a; no test timeout or assertion budget was increased.
+
+## Approved preview and label completion checkpoint
+
+Option 3 remains the integrated owner policy: full footprint fit, camera pan and retained world construction origin until physical pointer movement. Keyboard rearming of all 20 plans is integrated and verified in the real application. The cost readout now avoids the projected floor and HUD-safe bounds; issue 1925 records the measured 17-square obstruction and zero-overlap restored center and mirrored edge views. Root source verification passes 16 focused unit cases and TypeScript. The corrected 216 staff-role orientations also pass actual canonical-role pixel acceptance, 1/1, with the refreshed Full HD screenshot. Test startup warming is separate infrastructure and keeps the existing 60-second gameplay budget. These are integration-branch results, not a production release.
+
+## Independent actor headings and modal-origin key checkpoint
+
+Issue1927 is repaired in the actual scene: authored frames are selected per actor using published world motion/facing relative to camera yaw. Facing-only changes update a standing actor, and same-role guards no longer share one heading. Camera-only selection mutation failed the real scene; restoration passes. The complete authored actor file now passes5/5 in48.5seconds, covering canonical staff role pixels, prisoner/guard wall depth, actor image reuse, solid image reuse/depth and independent headings. Source unit/modal/index verification passes13/13 and TypeScript passes. Snapshot publishers still supply zero movement/no facing, so this is not a claim of finished simulation-facing history or walk clips.
+
+An additional issue1918 edge case is integrated: pressing a camera key first in a modal/text context does not arm a held world action if the dialog closes before key-up. The adapter's source regression and mutation were red before restoration; the agent's real Full HD case passes1/1, with a fresh key press afterward still moving the camera. This complements the existing modal context rule.
+
+Next active scopes: a new authored Yard exercise station and real content integration; reversible quarter-turn room geometry plus a concrete save/history proposal; snapshot-facing data-flow audit. Rotated geometry alone is not playable room rotation. Changes remain on the integration branch; PR1894/main CI gates and separately pending owner save/player-copy choices still control release.
+
+## Rotation proposal and verification inventory checkpoint
+
+Root integrated the dormant quarter-turn geometry, canonical construction adapter and reviewable state proposal. The combined geometry/adapter/index run passes69/69 and TypeScript passes. The two separate owner decisions are pending: durable optional orientation fields with absent0 old-save compatibility, and allowing rectangular room minima in either orientation. No save fields, rotated player control or relaxed room minima have been activated.
+
+A fresh full local Vitest run reports6121 passed,47 failed,2 skipped across543 files. It is not a green full-suite claim. Four failures identify stale named UI scan inventories and a HUD quote literal outside the message registry. The repair names the new label-position/preview-fit/quote modules and routes the existing catalogue-value key through HUD_MESSAGE_KEY without changing player text; all52 cases in the three affected gate files pass afterward, and TypeScript passes. Other full-run failures remain unaudited or environment-bound, including bash/WSL deploy-secret checks where this Windows host has no installed WSL distribution. Do not infer all remaining failures are environmental or waive Linux CI.
+
+## Snapshot headings and catalogue keyboard checkpoint — 2026-10-02
+
+The integration branch now preserves the existing saved `inFlight` prisoner and guard headings in snapshot projection. It leaves velocity zero and does not invent facing for old saves without headings. This supersedes the previous checkpoint's no-facing limitation; it adds no save field or migration. Rendering-feed and service boundary tests pass65/65; actual paused Save/Load browser proof is assigned separately and is not yet claimed.
+
+All20 room-plan cards now share the existing one-stop roving focus helper. Arrow/Home/End changes focus without changing the chosen plan; Enter/Space activates. Polish Full HD evidence, actual worker quote and the production mutation are preserved in [catalogue keyboard proof](../../research/2026-10-02-room-catalogue-keyboard/README.md).
+
+Canteen zoning calibration now uses the registered Blender tile rather than an obsolete PNG's average colour. Existing real-PNG tint/legibility tests pass23/23, with approved colours and opacity unchanged. See [calibration evidence](../../research/2026-10-02-canteen-calibration/README.md).
+
+Windows guard-pool/deployment/security scanners formerly compared native backslash paths with canonical slash paths, including incorrectly treating the declaration as a consumer. Only diagnostic path normalization changed. Baseline8red/4green became12green. Mutating the real search-system pool call still causes the consumer contract to fail; restoring production source returns12green. TypeScript passes. The earlier full-suite baseline remains a baseline, not a full-green claim.
+
+Three active independent scopes remain: corrected min-corner Blender exercise-station source/72 renders, actual snapshot-heading Save/Load proof, and protection against a delayed numeric placement reply overwriting a newly chosen template's status. Main and PR1894 browser CI remain in progress; no merge or production release is inferred from local proof.
+
+## New Yard source and delayed placement acceptance checkpoint
+
+The new Blender exercise station and72 deterministic camera renders are on the integration branch. Source min-corner bounds fit2×1 squares. Camera target agrees between source and manifest; resolution256 / orthographic span4 gives exact64px per tile. The exporter/manifest scale gate catches the earlier3.7span mismatch. Root source/frame/scale test passes1/1 and TypeScript passes. This is genuine source art, not yet a live buildable or a placement acceptance claim. See [model and twelve actual poses](../../research/2026-10-02-yard-exercise-station/README.md).
+
+Numeric room-plan placement now rejects obsolete completion status when another card/mirror choice supersedes the request. Actual delayed-worker Full HD browser proof: removing the production revision guard fails14.6seconds later when the old reply overwrites Yard's clear status; restoring the guard passes in4.3seconds. Selection/focus, current zero-cost quote and no erroneous PlaceRoomTemplate command are checked. Root dialog/tool suites pass7/7. [Durable worker proof and screenshot](../../research/2026-10-02-room-plan-status-revision/README.md).
+
+Main CI run36936677731 completed successfully. PR1894 browser still runs; it has not been merged. Camera agent's paused real Import/Load test passed1/1, but its production browser mutation proof is still pending, so that acceptance is not complete. Next parallel work: existing bench's outdoor Blender variant, compact camera HUD controls, and camera pointer cancellation/remapping audit. Root will connect the new station to actual content with construction/collision/save acceptance before claiming gameplay integration.
+
+## Exercise station content integration checkpoint
+
+The authored station now has a real object catalogue entry, width2/height1, a localized Build name, a buildable recipe and the registered oblique renderer mapping. It uses the existing anchored-fixture brick procurement route; material quantity2 and work60 follow the existing width-derived object rule. Catalogue material value is80minor units at the unchanged brick unit price40. No new material, price, simulation action, save field or mandatory Yard requirement was added. The recreation capability uses the existing object-capability system; no exercise animation or new Yard bonus is claimed.
+
+A real kernel command test purchases materials, zones an outdoor8x8Yard, places and completes the station, proves both squares occupied and the adjacent square free, refuses an overlapping order, then encodes/decodes/restores the save and compares the placed-object state. Changing the production buildable to finish as a bench makes this test fail; restoring passes. Combined kernel/content/cost/room-art tests pass39/39 and TypeScript passes. Actual player Build placement and authored-model pixels in the browser remain the next acceptance step; this is pushed branch work, not production release.
+
+
+## Production composition merge and station contracts, 2026-10-02
+
+PR1894 was merged as b4ed27c55bb52646cd7ff655cbc5275e0e2279b7 after exact head029deb18a1a38a7a1dda44065962b1ff8d712130 had all checks successful, MERGEABLE/CLEAN, and prior serial main CI36936677731 succeeded. The new serial main CI36948369126 is running; deployment has not been confirmed. The production composition exposes the angled renderer through `?renderer=oblique`; default overhead behaviour remains unchanged.
+
+The new exercise station's explicit catalogue counts, furniture membership, consumed-content inventory and generated player-string inventory are reconciled: six targeted suites pass81/81 and TypeScript passes. Its angled Blender model is registered; overhead rendering explicitly retains the colour fallback because no overhead sprite exists. The stale Remove locale source citation is re-aimed to its declaration without raising the quotation budget. Full local-suite green is not claimed.
+
+Three independent scopes remain active: actual station player placement/collision/SaveLoad proof, outdoor bench context integration, and pointer cancellation/remapping. Browser work is serialized to one worker to avoid concurrent headless CPU pressure.
+
+
+## Actual station player acceptance and outdoor bench integration
+
+The real player station flow now passes1/1 at Full HD with a filled two-square ghost, third-square exclusion, quoted80 matching treasury25000 to24920, completed worker construction, occupied-second-square refusal and production Save/Load. Removing only its authored asset mapping fails with zero steel pixels; restoration passes. Root inspected the completed Full HD screenshot. See [player acceptance and screenshots](../../research/2026-10-02-exercise-station-player-build/README.md). This is integration-branch acceptance, not deployed station availability.
+
+The existing bench now selects a Blender weatherproof variant only when its entire completed footprint lies inside an authoritative Yard rectangle. Indoor, partial, absent and planned contexts retain their previous appearance. No buildable, price or save identity changed. Bench context/art, world projection and station command integration pass13/13; TypeScript passes. Actual bench player placement remains queued behind the camera pointer-cancellation browser proof.
+
+
+## Camera cancellation and platform verification checkpoint
+
+Issue1935 is fixed: a right-button turn cannot resume after window blur or pointer cancellation. The unchanged actual Full HD test failed when the production pointer reset was removed, then passed after restoration; final screenshot run passes1/1 in13.5seconds. The source and [durable proof](../../research/2026-10-02-oblique-camera-cancel/README.md) are integrated. No browser timeout was increased.
+
+Four existing evidence contracts falsely failed Windows CRLF/backslash input. Normalize read text line endings and diagnostic repository paths only; assertions and enumerated membership stay unchanged. Their baseline4failures becomes23/23green. A deliberate production clock guard inversion still fails the HUD cadence contract1/5; restoring returns23/23green. TypeScript passes. The separate shell secret gate still needs a working Bash environment on this host, and whole-suite green is not claimed.
+
+
+## Native Bash and Build occupied-area checkpoint
+
+The earlier local shell failures were environment selection, not rejected game secrets: setting the existing LOCKSTATE_BASH override to the installed native Git Bash made deploy-secret and worker-telemetry suites pass111/111 without changing scripts or gates. Published commit citations pass after explicitly fetching the four published feature refs omitted by this checkout's restricted fetch mapping. Navigation ADR text normalization returns17/17 combined documentation/navigation tests.
+
+Build now publishes canonical selected object dimensions and an exact occupied-area-at-anchor readout. It remains a single-object order with the existing catalogue material valuation. Focused production branch mutation failed before restoration; actual keyboard switching and Escape browser acceptance is queued. Root uses literal multiplication symbols so the generated string inventory equals the runtime value, and re-aims ADR0031's queue-limit citation onto its declaration. The broad local run recorded6220passed,5failed,2skipped; its five failing cases all pass in their unchanged targeted suites after these corrections and reduced concurrent load53/53. This is not a claim that the entire broad suite passed.
+
+
+## Player bench acceptance, object selection fix and independent camera landings
+
+Actual New prison -> Yard -> existing bench Build -> completed worker order -> production Save/Load passes1/1 in28.9seconds, with the original object.bench identity and authored outdoor pixels preserved. Changing only the context selector from Yard to Canteen makes the pixel check fail; restoring returnsgreen. Root inspected the loaded Full HD screenshot in the existing Yard bench research record.
+
+Issue1939's inactive sibling tool was clearing ObjectTool's active hover on keyboard object selection. BuildTool now withdraws the shared readout only on an actual armed-to-disarmed transition. Keyboard bench-to-station selection keeps exact2x1 area and origin; Escape clears it. The unchanged Full HD test is red with the production guard removed, then green5.6seconds after restoration. Root readout, footprint and foundation gates pass25/25 and TypeScript passes.
+
+Camera fixes can land independently of the pending template-history save decision. PR1940 contains only cancellation, adapted to main's existing hoveredWorldPoint, a Full HD case and proof. Root's isolated-main production artifact mutation fails window-blur equality; restored artifact passes1/1 (7.3seconds suite). PR1941 independently fixes remapped legacy input losing a rotate action by selecting a vacated, conflict-free existing physical position while retaining user bindings. Actual remapped AZERTY labels, rotation and custom pan were proven by the camera agent. Both require exact-head green checks, CLEAN/MERGEABLE and serial main CI before merge. Their attachment attempts hit the app's100-attachment limit; the GitHub PRs exist.
+
+Three independent next scopes: actual Blender weatherproof variant of existing waste-bin with Yard context and player acceptance, recognizable selected Build object thumbnails, and focus-aware keyboard camera behaviour. Browser leases remain serialized.
+
+
+## Yard waste-bin player acceptance and current parallel scopes
+
+The existing 1x1 waste-bin now has an authored weatherproof Blender variant selected only inside an authoritative Yard rectangle. No price, buildable identity, capabilities or save field changed. Source bounds, 72 deterministic poses and renderer mapping are integrated. The actual Full HD route New prison -> Yard -> Build waste bin -> worker completion -> Save/Load passes1/1. Replacing only the Yard visual with the indoor cylinder makes the unchanged browser pixel check fail380 versus required1000; restoration passes. Root inspected the loaded screenshot. See [actual player evidence](../../research/2026-10-02-yard-steel-waste-bin/README.md). This proves branch integration, not deployed availability.
+
+Root integrated the source and player evidence and pushed them. Camera cancellation PR1940 passed verification and assets after correcting a version citation; its browser gate and prior serial main CI36948369126 still run. Input-remap PR1941 verification is red and the camera agent is repairing its actual log failure. Neither is merged while the gates remain incomplete.
+
+Three independent agents continue: next authored Blender furnishing, recognisable catalogue thumbnails with transparent margins cropped within the unchanged row, and camera input when focus enters catalogue radio controls. Browser tests remain serialized to one lease. Owner decisions for persistent template history, quarter-turn fields and swapped minimum room dimensions remain pending; these are not silently released by an unrelated preview-fit approval.
+
+
+## First Cell procurement bootstrap integrated
+
+Issue1750 / reviewed PR1751's carrier guard was absent from the full-plan branch. Root restored its real-runtime regression, which now reaches the full command path: live and JSON Save/Load variants both strand the first Cell after furnished Storage Room and Delivery Bay with zero prisoners. Reapplying the guard makes both cases pass, with10/10 combined route foundation/regression cases and TypeScript green. Existing prices, stored state and physical carry once a prisoner exists are retained. Source and prepared real-player dialog acceptance are pushed; browser proof waits behind the camera focus repair and the HUD active-row visibility audit, so player completion is not yet claimed. See [bootstrap evidence](../../research/2026-10-02-first-cell-delivery-bootstrap/README.md).
+
+Catalogue thumbnails now have actual Full HD proof: authored transparent bounds are cropped into the existing row box; whole-frame mutation fails; restoration passes1/1, zero CSP errors and a real404 restores the hammer fallback. Root inspected the station screenshot and integrated the proof. The camera agent reproduced held-arrow motion after focus enters a catalogue radio and is repairing that case. The art agent models an existing bench variant for Common Room in Blender; only source is ready, not player acceptance.
+
+
+## Actual first Cell from the furnished-route save and input focus acceptance
+
+The first-Cell player path is accepted on the integration branch: two serial actual UI stages pass2/2 under unchanged60s/10s limits, connected by the first browser's real IndexedDB save loaded in a fresh browser. Removing the living-carrier guard leaves18 orders stalled in the second stage; restoration and artifact rebuild pass2/2. Root integrated the proof and inspected its screenshot. The screenshot records neighbouring delivery/storage rooms rather than centring the completed Cell, so a follow-up camera-centred capture is prepared and awaits the shared browser lease. The logical completion and saved-state assertions are already proven.
+
+Held world arrows now stop on focus entering the catalogue radiogroup (#1943). The actual browser regression is green2/2, production release mutation red1/2 and restored green2/2; root input tests pass43/43 with TypeScript. Authored Common Room bench source,72poses and context are integrated, with12 related tests green; actual player proof remains assigned to art. New room-card fixture/door diagrams remain on the HUD agent branch pending actual Full HD acceptance.
+
+Main serial CI36948369126 and staging Deploy36955209725 both succeeded for the independently landed angled composition. The deploy's production job was skipped. Direct reads of both public hosts returned403 from this tool environment, so current public version and runtime pixels are not independently confirmed. PR1899's outdated body was replaced with the current scope, verified evidence, dependency chain and three pending owner decisions.
+
+## Full-preview decision and readable room plans: integrated checkpoint
+
+The owner reconfirmed option3: show the whole pattern, pan the camera, retain the chosen construction origin until the next physical mouse movement. This is the existing integrated policy; the confirmation does not release any unrelated pending persistence decision.
+
+The follow-up first-Cell capture now passes both real player stages again (43.9s and28.2s). Root inspected the centred complete Cell with bed, toilet and doorway after loading the actual furnished-route save. Common Room upholstered bench player build and Save/Load evidence is also integrated, with context-selector mutation red followed by restored green.
+
+All20 room-card miniatures now group furniture by its full occupied footprint and distinguish doors by shape. Actual Full HD acceptance is green, changing the production bed rectangle to a single-square span is red, and restoration is green. Root inspected the catalogue screenshot. The selected large diagram still uses per-square furniture dots; the HUD agent is improving that separate surface next. Root verifies110 focused miniature, projection, design-token and research-index cases, plus TypeScript. This is not a fresh full-suite or production-release claim.
+
+Shallow-angle actual picking at yaw30/elevation25 degrees places the Basic cell at the square indicated by the ghost. The central placement case passes1/1; inverse-projection unit mutation previously produced3 failures before restoration. Blender work proceeds on a Classroom-only chair variant inside the existing1x1 footprint, keeping object identity, cost and saved-state semantics unchanged. Three agents continue on art, camera lifecycle and the selected room diagram. Changes and evidence are pushed to GitHub.
+
+## Selected diagram and Classroom chair integration checkpoint
+
+The selected large diagram now groups furniture as full rectangles too, preserving tile indexing and outlining the containing fixture when the worker reports a blocked square. Actual Full HD mirrored row acceptance passes1/1; reducing only the selected bed to one square fails; restoring passes1/1. Root inspected the refreshed screenshot. This supersedes the previous per-square-dot limitation, without changing the modal dimensions or fit policy.
+
+The Blender school chair source,72 deterministic poses and Classroom-only completed-object consumer are integrated and pushed. Mesh bounds stay inside1x1; existing object.chair identity and price are preserved. Art is checking actual player construction and Save/Load before runtime acceptance is claimed. HUD is addressing stale previous Ready/Blocked while a newly opened plan query is pending; camera is checking removal of a frozen plan when the worker session is replaced. Browser runs remain serialized.
+
+Independent main-based PR1945 isolates the held-arrow focus fix from the pending template release. Input/index46cases and TypeScript pass; making adapter release a no-op gives a targeted failure, then exact restoration gives41input cases green. The PR stays draft pending its separate production-browser acceptance and exact-head full CI. PR1940 and1941 still have browser CI in progress and are not merged. No pending owner save-history, quarter-turn or minimum-dimension decision has been inferred from preview approval.
+
+## Pointer fix landed and pending-query verdict correction
+
+PR1940 completed exact-head full CI atcd973c4b2658cb48b5f76a871d7d2e445b6d768a with CLEAN/MERGEABLE. Previous serial main CI36948369126 was green; root squash-merged it as19d616cec139d0ca4e649c38544c1a8e1d4e0907. Issue1935 is closed. The new main CI must finish before another merge; this does not establish deployment completion.
+
+Issue1946 now has an integrated correction: starting a new room-plan query withdraws the previous Ready/Blocked verdict and tile/fixture marks, disables Submit and sets aria-busy until the current result or failure. Invalid origins do not launch a query and end the busy state. Root verifies18 dialog-status, Classroom context and index cases with TypeScript; real worker browser acceptance remains queued.
+
+The first Classroom player experiment displayed four authored chairs and survived Save/Load, but root found180s test and90s assertion overrides and rejected that experiment as acceptance. Its old-texture mutation failed and the source mapping was restored. Art is rewriting the player proof under unchanged60s/10s limits with normal game fast-forward and actual saved-state stages as needed. Do not report the extended-budget experiment as completed runtime validation. Camera now has the exclusive browser lease for session-replacement ghost cancellation; root main held-arrow proof is next, followed by the corrected chair test and pending-query UI proof.
+
+## Session preview acceptance and independent held-arrow delivery
+
+Issue1947's production fix is integrated: worker replacement or failed claim disarms the outgoing fitted plan. Actual Full HD keyboard Save preserves its preview, Load and New prison remove it without submitting a stale plan. The real case passes1/1, removing only the production stand-down call leaves the ghost visible and fails, and restoration passes1/1. The source changes no saved format or camera pose.
+
+Main-based PR1945 now has its own actual production artifact evidence, rather than borrowing integration proof: baseline2/2green11.8s, scene-release mutation1/2red12.1s, exact source restoration and artifact rebuild2/2green12.1s. One worker and original60s/10s budgets are preserved. Root inspected the refreshed screenshot, pushed dfda579bb1 and marked the PR ready for review, still subject to exact-head CI and serial main gates. Browser lease passed to the corrected Classroom acceptance; HUD pending-query proof is next.
+
+A read-only audit found clean local commits a070e935c650d288a0c4aac3545ee3f868c08da6 on the earlier template-entry branch absent from all remote refs. Root preserved that exact commit at wip/template-entry-audit-preserved-20261002 and verified the remote SHA, without advancing the old PR branch or altering its source. Its stale PR1751 CI failure concerns ADR0042 quoted anchors; it is not a green release gate for this integration.
+
+## Owner reconfirmation and bounded runtime acceptance — 2026-10-02
+
+The owner selected **3 — show the whole pattern, pan the camera and preserve the construction location** in the clickable preview-fit decision. Keep the existing integrated policy: retain the chosen world origin until the next physical mouse movement; illegal ground remains illegal. This confirms preview behavior only, not the pending persistence/history or quarter-turn decisions.
+
+The authored Classroom chair now has accepted real-player proof under the original 60-second test and 10-second assertion budgets: baseline 1/1 green (46.7s), old-chair production mapping mutation red, restored artifact 1/1 green (44.3s). All four completed chairs survive actual Save/Load with independently measured pixels. Source, 72 poses, context consumer and proof are integrated and pushed; see [Classroom chair](../../research/2026-10-02-classroom-chair/README.md).
+
+Issue1946 pending-plan reopen proof is now integrated: actual worker baseline green, stale-verdict mutation red and restored artifact green (8.5s). Root inspected the final blocked-pending screenshot: old collision markings and verdict are absent, current query is busy and numeric submission disabled. TypeScript passes after integration. See [pending reopen](../../research/2026-10-02-room-plan-pending-reopen/README.md).
+
+Serial main CI36959628731 is still running. PR1941's previous browser job ended cancelled after 90 minutes; its artifact includes a real keyboard-only room-removal timeout, so it is not classified as a purely environmental failure. One exact-job rerun is underway, without increased budgets or workers. PR1945 is ready but remains subject to exact-head full CI and the serial main gate.
+
+Three independent work surfaces continue: authored Storage Room rack, new-prison camera framing after an off-map pan, and matching room-plan legend shapes. New-session framing was reproduced in the actual browser; its production fix and mutation/restore acceptance are being recorded before integration. These integration results do not establish production deployment.
+
+## Local keyboard-room-removal follow-up
+
+The failed CI1941 attempt1 artifact contains a genuine keyboard room-removal timeout; it has not been dismissed as infrastructure-only. Root reproduced the exact head887aa65bde66d5c65173b923b3f723b9d9897e2d in an isolated worktree and ran only the existing assembled-page case with its existing slow-test budget, one worker and no retry. Process6777 ended exit0, 1/1 green (1.1m). This is a local result, not proof that the remote job is green; the exact-job attempt2 remains in progress.
+
+The camera new-session correction is integrated as269ab5d2b7 after resolving the callback conflict by retaining both outgoing-plan standDown and revision-gated centering of the incoming world. Strict TypeScript and research-index5/5 pass; root opened the actual new-prison Full HD capture. The selected-plan legend now shares the actual rectangular furniture and door-gap shapes; root90 focused status/design/index cases pass. Its actual browser mutation proof is still being completed by HUD.
+
+PR1945 was DIRTY after pointer cancellation landed. Root merged current main into its own branch, preserving the existing pointercancel/lostpointercapture cleanup as well as the new held-arrow radio-focus release, and pushed830fa5742c. TypeScript passes. Its new exact-head CI is required before merge; previous-head proof and runs are not silently treated as current-head full CI.
+
+## Storage Room and legend runtime completion — 2026-10-02
+
+The authored Storage Room rack has actual Full HD player acceptance integrated as8b6c3ed4a4: two racks complete through the worker and remain at the same anchors after Save/Load. Separate authored-frame pixel counts1581/1486 are unchanged after loading. Old generic mapping mutation fails at0 pixels against>800; exact restoration passes1/1 in35.9s under the original60s/10s budgets. Root inspected the actual loaded room screenshot and pushed model,72poses, consumer and proof.
+
+The room-plan legend is accepted asbbcfbc1e3b: actual shape baseline passes, old circle mutation fails, restoration passes; actual computed-color baseline passes, removing semantic fixture ink fails RGB230/237/241 versus24/52/66, restoration passes. Root opened the final Full HD screenshot and verified dark rectangular Furniture ink and the doorway gap inside the unchanged modal.
+
+Next independent work surfaces: an authored Cell bed in its authoritative1x2 footprint (not1x1), Load-time held-pointer gesture cancellation, and an discoverable HUD renderer selector preserving the current worker, feed and unsaved game. Current angled view remains URL opt-in; do not claim a live renderer selector exists before its real-game integration and acceptance. The selector audit found global input listeners require old-scene shutdown rather than sleeping it.
+
+## Main integration and Load gesture acceptance — 2026-10-02
+
+Current main release7f55deb6a9 is incorporated through merge54c91ea4a8. Conflict review retained the integration branch's later square geometry, cutaway/actor/model consumers, compact pose controls, input remap repair and pointer cleanup; main's native Windows build/release changes remain incorporated. The locale inventory generator combines escaped value cells with quoted source-key anchors. A stale build-queue CSS citation was corrected to its opened source line, without increasing any anchor budget. Strict TypeScript and focused input/projection/inventory/composition/quotation checks pass; no fresh full-suite claim.
+
+Issue1949 is integrated in a23cb1a01f plus12110ae1df/f99445ef47. Actual Full HD held right-button Load fails before the production boundary release and passes after; the independent held Build drag emits2 PlaceBuildOrder commands into the loaded worker without the release and0 after restoration. Root inspected the actual restored screenshot and ran54 input/projection/index cases plus TypeScript. Room/Object held gestures are not separately proven by these two cases.
+
+The live-renderer selector controller and asynchronous HUD control are integrated as dormant ports with6 focused unit cases and TypeScript green. Architecture draft reviewed by the integrator permits production wiring against the same worker/feed/tools, old-scene SHUTDOWN cleanup, lazy preparation before deactivation and rollback. It is not yet a working in-game view selector. Retaining camera centre and pose in presentation memory is requested; no saved preference/default/deploy change is implied. Three agents continue on actual selector wiring, missing middle-button angled panning, and dedicated1x2 Cell cot art.
+
+## Full-footprint Cell cot and middle-button panning — 2026-10-02
+
+The authored Cell cot source and 72-pose consumer are integrated as b4153ee387/1bb20a871e and pushed with all 73 LFS objects. Root inspected the old/new comparison and confirmed the model stays within the existing 1×2 bed footprint. The existing bed identity, cost and collision are unchanged. Focused cot, legacy environment integrity and research-index checks pass 56/56; TypeScript passes. Actual player Build/worker/SaveLoad acceptance is still pending, with the art agent holding the exclusive browser lease.
+
+Middle-button ground-anchor panning is integrated as 53c4605f00. The agent reproduced unchanged viewport while Build was armed, then obtained 2/2 real Full HD browser passes. Removing only middle-button movement made the movement case fail; retaining held pan state across Load made the session case fail; exact restorations passed. Root reviewed source cleanup for blur, pointercancel, Load and shutdown, and ran 14 projection unit checks plus TypeScript. Detailed screenshots and run evidence are being preserved by the camera agent.
+
+The live-renderer controller now honestly exposes failed recovery and permits retry (a57fae7606, five focused cases). Actual same-session renderer wiring is pushed on the HUD agent branch but not yet accepted into the integrated runtime: exact camera centre/zoom restoration and actual unsaved-game transitions remain to prove. Do not treat a controller or a selector label as release completion. Serial main CI36959628731, PR1945 CI36962766742 and PR1941 attempt2 are confirmed live; no merge gate is inferred from partial green checks.
+## Actual cot acceptance and live-renderer integration — 2026-10-02
+
+The Cell cot actual player proof is accepted as51cbd90f1e/edf0fa85c1. The player completes delivery/storage then Basic cell through the worker, retains the 1×2 bed anchor21,6, and loads the real IndexedDB save. The authored blanket measures1212 pixels in both completed and loaded captures. Replacing only the bed consumer with its old alias makes the actual pixel check fail at0 against>700; restoring the bytes returns2/2green. Root opened the actual loaded Full HD capture. Art now audits the already-authored72-pose toilet work before creating another model, avoiding duplicate effort.
+
+Production same-session renderer wiring is integrated through6fa6f07a51 plus59cd8c2660, registry correctionede14a4f07 and prepared runtime tests1c8dfd2642. It retains one Phaser Game, worker, current feed/tools, cached verified catalogues, exact world centre and per-mode in-memory zoom/angles. No save preference/default or deployment configuration changes. Actual browser acceptance remains incomplete: the HUD agent reproduced a partial-activation native-listener leak11→14 and owns the scene cleanup correction. A working label/controller/build does not count as completed view-switch acceptance.
+
+A bounded two-worker non-browser audit first returned6283passes/23failures/2skips. Twenty shell checks failed because Windows selected WSL Bash without a distribution; Git Bash explicitly first in PATH made the111 focused secret-gate/Worker checks pass. The three remaining findings were a stale exact HUD module list, two Staff source anchors that moved to the opened3048 line, and remote commit refs absent from the narrow local fetch. Root preserved the strict module/quoted-anchor contracts, registered the new live-view message keys, and fetched all published branch refs. Focused HUD/anchor/commit checks33/33 passed. The subsequent entire audit returned6308passes/1failure/2skips; the sole missing documented prepared browser test was then integrated and its link/index gates15/15 passed. This records scoped repairs, not a fresh all-green full-suite result. Application and tool TypeScript checks and the production artifact build pass.
+
+Serial main CI36959628731 is now terminal success, including verify/assets/browser. PR1945 CI36962766742 and PR1941 attempt2 remain live at the latest check; neither is merged on partial green. Three independent agents continue on existing toilet model integration, actual renderer rollback/listener recovery, and mixed-button camera/Build semantics.
+## Partial renderer activation cleanup — 2026-10-02
+
+Root integrated the precise centre-square runtime assertion asaa01004461 and early native-listener cleanup as83dfc7f541. Both scene types register callback-specific SHUTDOWN cleanup before adding native listeners, so an interrupted CREATE can withdraw the listeners already attached. Root reviewed the source order, application/tool TypeScript and28 focused HUD/controller/cache/view checks pass, and the coherent changes are pushed. The HUD agent reports actual unsaved-world roundtrip and503 recovery green, then final3/3green in24.3s. The partial-activation probe exposed two real leaked canvas handlers; a separate extra window pointerdown listener was inspected and identified as Playwright hit-target interception, not game input. Production cleanup-order mutation and exact restoration are still underway before runtime acceptance. A tracked-only WIP snapshot724010549ff7754a3e2a57099877ba7ad5a2648d is preserved on wip/live-renderer-cleanup-20261002-0710 without modifying the agent checkout or refs/stash.
+
+The toilet audit found an existing green72-pose PR but no actual player proof. Its evaluated source mesh, reset to the model origin, crosses negative X/Y and exceeds the authoritative1×1 rectangle. The art agent is correcting this bounded source alignment instead of duplicating models or accepting manifest hashes as visual correctness. Camera prepares mixed-button ownership checks; HUD retains the exclusive browser lease until its mutation/restoration cases are terminal.
+## Live HUD view switch accepted — 2026-10-02
+
+The final renderer-switch runtime proof is integrated as434afa922a and supersedes the pending runtime boundary above. Three actual Full HD cases pass: world→angled→world retains the same unsaved worker, snapshot, command list, URL and centre Build square16,16; registry503 leaves the old scene playable and retry succeeds; interrupted native attachment rolls back without leftover game listeners. Reinstating late Oblique SHUTDOWN registration is red at13 game listeners instead of11; exact restoration returns3/3green in24.6s. Root opened the real angled-view capture and verified the visible native selector, square preview and pose buttons. Fifteen documentation-link/index checks pass. This is integrated branch acceptance, not a claim that production has deployed it or that the independent clipped target text is fixed. Camera now holds the browser lease for mixed-button Build/turn ownership; art corrects toilet footprint and HUD fixes target readability independently.
+## Main remap delivery and mixed-button safety — 2026-10-02
+
+PR1941 exacthead887aa65bde66d5c65173b923b3f723b9d9897e2d completed all checks successfully after its single exact-job rerun and was CLEAN/MERGEABLE. Prior serial main CI36959628731 was terminal success; its release commit differed only in package version. Root squash-merged1941 as78dc96cb9b59acf0e38485a79e2ec98301faf581 and verified main still retains the existing pointercancel/lostpointercapture cleanup. Issue1938 is closed. New serialmainCI36968171803 is confirmed live and blocks a next merge until green. Root integrated main as4641468b18, retaining both research rows and running48 input/index checks plus TypeScript successfully.
+
+Issue1954 mixed mouse buttons is integrated asd80cf3c4e2 with full actual browser regression and proof0726e1ec3c. Before the fix, holding camera-turn RMB and pressing LMB while Build was armed sent4 unintended PlaceBuildOrder commands into the real worker. Serial gesture ownership and matching pressed-button release restore2/2green in18.3s; removing only the LMB guard makes1/2red with the same4 orders, exact restoration passes. Root reviewed the three source guards and ran application/tools TypeScript plus62 input/projection/index checks successfully. Coherent changes are pushed.
+
+Next independent surfaces continue: toilet model alignment and72deterministic poses, complete readable Build target/count/catalogue value including effective FullHD zoom viewport, and remaining Room/Object held-gesture Load regressions. HUD owns the exclusive browser lease; camera prepares the next cases offline and art renders source corrections. Neither partial PR1945 CI nor the new running main CI is treated as merge approval.
+## Readable build targets and aligned toilet poses — 2026-10-02
+
+The owner's option 3 remains the accepted construction-preview policy: show the entire footprint, pan the camera and keep the selected world origin until physical pointer movement. The existing acceptance above is preserved; this checkpoint introduces no new terrain permission or save format.
+
+Build target readability is integrated as5ba80b0f4d/74ab742ec2. The exact square count, origin and catalogue value wrap within the rail; the minimum three-line slot keeps following controls stationary. Actual artifact cases at1920x1080,2560x1080 and an effective960x540 CSS viewport pass3/3 in20.6s. Restoring production nowrap fails with358px content inside260px. This reduced CSS viewport is not a claim of changing browser chrome zoom. Root opened the1920 capture and ran92 target/token/index cases plus application and tools TypeScript successfully. The separately observed black terrain band remains under investigation.
+
+Existing dense toilet art is imported and corrected as70c55ec737/e99c501bdb, avoiding a duplicate model. The standalone Blender export uses evaluated geometry aligned to the authoritative1x1 square; measured local bounds areX[.176,.916],Y[.088,.9622],Z[.005,1.1025]. All72 poses and the authored source are pushed. The root source initially remained an LFS pointer; hydrating the actual model restored its manifest hash and seven dense-art/index checks pass. The first actual Build/worker/SaveLoad pair passes2/2, but its independent pixel mutation/restoration acceptance remains pending. Do not claim production deployment or final toilet runtime acceptance from that first pair alone.
+
+PR1945 acquired a research-index conflict after1941 landed. Root preserved both reports, merged current main into the owned branch as681e4ea0fa and pushed it after48 input/index cases and TypeScript passed. This requires new exact-head CI; old-head results are not current-head approval. Serial main CI36968171803 remains in progress at this checkpoint. Three independent agents continue on actual toilet acceptance, Room/Object Load gestures, and the ground-band renderer audit; browser use stays serial.
+## Dense toilet player acceptance completed — 2026-10-02
+
+Toilet runtime proof is accepted as8929697bdf/00ce675d6c and supersedes the provisional boundary above. The real player completes Storage/Delivery then Basic cell through the worker, retains the authoritative1x1 toilet anchor22,9, and saves/loads through IndexedDB. The fixed screen region contains141 authored glaze pixels before and after loading. A missing-asset production mapping mutation makes that exact check fail at0; restoring the original mapping returns2/2green. This tests the actual model consumer, not an old-model comparison. Root opened the loaded Full HD image and reviewed the pixel/anchor assertions; tool TypeScript and five research-index cases pass. Source, poses and proof are preserved on GitHub. Camera now owns the serial browser lease for Room/Object Load gesture acceptance, while HUD diagnoses ground coverage offline and art prepares the next missing contextual model.
+## Room and object gesture Load acceptance — 2026-10-02
+
+The remaining held Room/Object Load cases are accepted throughc67c7f545c/b205fd5f88/6c356e309a/9ca93c18ec/b062057d06. The final browser spec is byte-identical to the agent's verified2a03054421 version, including fresh valid gestures after Load. Actual baseline passes2/2 in22.9s. Removing only production cancelGesture from releaseSessionInput makes both cases red: Rooms retains its outgoing2x3 readout and one bed PlaceObject reaches the loaded worker. Exact restoration passes2/2 in22.2s; a fresh Room confirmation and exactly one fresh Object command work. No new production defect or duplicate Issue is claimed. Root tool TypeScript and15 documentation-link/index cases pass; changes are pushed.
+
+PR1899's body now has actual Markdown paragraphs and current accepted model, view-switch, target and mouse-gesture evidence instead of literal escaped newline sequences. Its pending owner save/orientation/minimum decisions and dependency/full-CI gates remain explicit. Independent next work: Staff Room contextual employee desk from the existing Blender source, cursor-anchored angled wheel zoom, and keyboard focus recovery for the native renderer selector. The ground-band audit is preserving raw framebuffer versus composited capture evidence; no ground-painter fix is justified by the current diagnosis.
+## Staff Room desk source integration — 2026-10-02
+
+The detailed existing employee desk Blender source is integrated for the Staff Room only as24fbd10103/550bcd1e03. It preserves object.desk identity,2x1 footprint, catalogue price and save semantics. The minimum-corner-aligned evaluated model fitsX[.080,1.920],Y[.070,.983]. All72 poses are pushed; two complete renders have identical manifest hash9cb94d947cc99c72a58a99a9231760f162e0ff40a78a812587836f76cf879733. Root inspected the desk preview and confirmed paperwork/accessories are visible. Its actual source is furniture.office.desk.employee.blend (not the logical variants ID); hydrating the LFS source fixed the local pointer/hash mismatch without changing the contract. Root31 art/mapping/index cases and application TypeScript pass. Actual Staff Room worker completion and Save/Load proof is prepared by the art agent and remains pending until its browser lease.
+
+The ground-band diagnosis is integrated through39cd716aa0. Root opened the raw framebuffer image showing continuous terrain where the composited page capture has a black strip. Six coverage/index cases and tool TypeScript pass. This locates the discrepancy beyond the game framebuffer; it does not prove its downstream cause or claim a production rendering fix.
+## Cursor-anchored angled wheel zoom accepted — 2026-10-02
+
+Issue1955 is integrated as2b00a02a55/9e20c9702f. Actual Full HD baseline wheel input at a stationary cursor after changing yaw/elevation moved the Build square18,22 to17,21. The projection now retains the indicated ground point under native wheel input; keyboard and HUD zoom still use the viewport centre. The actual case includes World-to-Angled switching and passes1/1 in13.4s; removing only the wheel pivot reproduces the same failure, restoring it passes1/1 in13.6s. Root reviewed the projection/scene patch and ran15 projection/index cases plus application and tools TypeScript successfully. Source and evidence are pushed; current production delivery is not claimed.
+
+Three independent agents remain active: actual Staff Room desk completion/SaveLoad acceptance is queued, HUD native keyboard-selector focus recovery has a reproduced issue1956 and scoped fix under browser acceptance, and camera audits held construction gestures during view changes. No optional duplicate orbit test or lower-priority phone feature replaces the Full HD mouse/keyboard priority.
+
+## Staff Room player acceptance and next integration — 2026-10-02
+
+The Staff Room acceptance is now complete on this branch as a9130bbd87/958f264ee8, superseding its pending status above. The actual Full HD player completes Storage/Delivery through workers, saves, loads in a fresh browser context, builds Staff Room, and saves/loads again. The desk remains at authoritative anchor21,6; the isolated desktop region contains1547 authored grey pixels before and after Load. Substituting only the generic production desk mapping makes the same check fail at zero; exact restoration passes2/2. Root opened the loaded screenshot and verified19 art/documentation/index checks plus tools TypeScript. See [the actual player evidence](../../research/2026-10-02-staff-room-desk/README.md). This proves integration, not production deployment.
+
+The owner reconfirmed preview option3: fit the entire room pattern, pan the camera, and retain the chosen world origin until physical pointer movement; no terrain permission changes. Three independent agents continue on held Build endpoint reprojection during camera movement, native selector focus during delayed failure, and Blender Kitchen footprint alignment tracked in issue1957. Root is preparing the independent cursor-wheel correction against current main for delivery while the larger template branch retains its explicit pending save-policy decisions.
+
+## Held preview, keyboard refusal and Kitchen sources — 2026-10-02
+
+Held Build endpoint correction is integrated as04b52f2211/3ec28a76e3. The real Full HD baseline kept six preview squares after two keyboard zoom actions although physical pointer movement and eventual worker commands selected five. Reprojecting the stationary endpoint preserves the pressed world square and updates the preview to the actual five commands. Actual fixed1/1green, production-block mutation1/1red and restored1/1green are recorded in the [held Build evidence](../../research/2026-10-02-held-build-camera-preview/README.md). Application/tools TypeScript and ten projection cases pass; the research index omission was corrected and all five index cases pass.
+
+Selector focus evidence now includes the fourth delayed503+Tab case, integrated as64daf58aab: guarded production1/1green, unconditional reportValidity mutation1/1red with focus stolen back to View, restored1/1green. Truthful refusal state remains visible. This supersedes the earlier fourth-case pending status.
+
+Kitchen source/export integration is110458a0a5/2d0703e306. The three existing Blender models now fit their authoritative squares: stove and prep counter2x1, fridge1x1; all216 poses are pushed with64 pixels per tile and deterministic repeated-render hashes. Root inspected the stove preview and ran ten Kitchen/hash/index checks successfully. [Kitchen evidence](../../research/2026-10-02-kitchen-square-fixtures/README.md) still marks real worker construction and Save/Load pixel acceptance pending; do not infer that acceptance from source bounds or render hashes. The art agent owns the only browser lease for this actual proof.
+
+Independent wheel delivery is [PR1958](https://github.com/woogitsu/lockstate/pull/1958), based on current main, with built-client wheel-in/out acceptance and exact production mutation/restoration. Full exact-head CI and serial main CI remain required; neither merge nor deployed availability is claimed here.
+
+## Kitchen player acceptance and solo continuation — 2026-10-02
+
+The owner explicitly requested solo work; this supersedes earlier three-agent directions. No subagents are running, and subsequent development, Blender integration and delivery are performed by root.
+
+Kitchen actual acceptance is integrated asf6432bf9a6/9cb5c385f8 and supersedes the pending runtime boundary above. The real worker completes Storage/Delivery, IndexedDB is saved and loaded in a fresh page, then Kitchen at20,5 is built and saved/loaded again. Stove21,6, prep counter23,6 and fridge21,8 retain their authoritative anchors. Exact authored palette counts225/1697/672 are identical before and after Load; missing-stove production mapping makes its count zero and the second stage red, exact restoration returns2/2green. Root opened the loaded Full HD screenshot and ran ten Kitchen/hash/index cases plus tools TypeScript successfully. This proves the pictured completed player scene, not all angles or deployed availability. The source,216 poses and acceptance are preserved on GitHub.
+
+## Solo touch-input integration — 2026-10-02
+Root integrated native two-finger navigation and touch release correction through cd3bdec31a. Native two-pointer camera pan submits zero construction orders; native cancellation and held mouse/touch capture loss also submit zero. A fresh native single-touch release submits exactly one square. Combined production artifact case passed in 5.3 seconds on the source branch, following the earlier actual normal-release failure and restoration. Application TypeScript passed after integration. This is branch integration evidence, not deployed availability. Solo work remains the owner's current direction; no agents are used.
+
+Integrated production client rebuilt successfully; the same complete native-input case passed 1/1 in 7.0 seconds on this branch (one worker, standard timeouts).
+
+## Shared catalog failure recovery — 2026-10-02
+Issue1960 records an actual unit-level concurrency defect: a second caller sharing an offline request bypassed its own verified fallback. Fix a82f43b852 applies recovery per caller while retaining one network request. Four registry cases pass, including independent fallback maps and retry after failure. Removing only failed-cache eviction makes the retry case red (one network attempt instead of two); exact production restoration returns4/4green. Application TypeScript passed with the fix. No actual browser outage or deployed availability is inferred from these unit cases.
+
+
+## Solo Blender Laundry alignment — 2026-10-02
+Root evaluated the existing washing-machine Blender geometry: X[-.85,.85], Y[-.59,.42], outside its minimum-corner2x1 footprint. A scoped wrapper reuses the verified Kitchen exporter and preserves the source, object ID, price and saved state. Corrected evaluated bounds X[.15,1.85], Y[.028,.836], Z[0,1.56]. All72 poses now use256px/4tiles=64 pixels per tile, checked transparent borders and deterministic PNG normalization. Root opened the actual45/45 preview. Actual Laundry worker construction/SaveLoad proof and repeated full-render hash comparison remain pending; this is source/render integration only.
+
+Repeated full72-frame render has identical manifest SHA2563ed65a7523e002e505e26da791b134e972c47b8f71ac68d261f0f8c009c980f3. Actual production-client player flow passes2/2: Storage/Delivery capacity built and IndexedDB reloaded in a fresh page, Laundry completed with authoritative washing-machine anchors21,6 and23,6, saved and reloaded with identical anchors. Case durations43.2/37.9seconds stay inside the existing60second budget. Root opened [the loaded FullHD screenshot](./laundry-loaded-fullhd.png), showing both authored models inside the room. A palette pixel assertion plus missing-model mutation/restoration is still pending before final art acceptance.
+
+Laundry visual checks now sample the authored blue door palette separately in both fixed model regions before and after SaveLoad, require more than100pixels each and identical counts. Corrected artifact baseline passes2/2 (43.5/42.5s); missing-mapping mutation was inconclusive because the fresh page timed out before clicking Load, not on pixels. Exact mapping restoration and rebuild pass2/2 (43.9/37.5s). No mutation acceptance is claimed; final missing-model sensitivity remains pending. Tools TypeScript passes.
+
+
+## Laundry visual acceptance completed — 2026-10-02
+The previous missing-asset mutation remains explicitly inconclusive. A new production consumer mutation replaced only object.washing-machine with the existing generic desk asset, preserving normal catalog loading. Setup passed; real Laundry completion failed precisely on authored door pixels (0 instead of more than100). Exact byte restoration and rebuilt production client returned2/2green (43.0/38.1seconds). Separate door regions for both machines have equal palette counts before and after SaveLoad. The pending consumer sensitivity boundary is now satisfied for this FullHD player scene; no all-angle or deployed-availability claim is made.
+
+
+## Solo security/utility Blender alignment — 2026-10-02
+The generic evaluated-source audit now accepts a source basename and authoritative width/height. Hydrated original models had negative footprint coordinates: security console X[-.88,.88],Y[-.485,.38] for2x1; utility panel X[-.55,.55],Y[-.485,.30] for1x1. Export-only transforms now fit security X[.12,1.88],Y[.0635,.842] and panel X[.06,.94],Y[.0635,.77]. Existing sources remain unchanged. The existing deterministic square exporter produced72poses per model at256px/4tiles=64pixels per tile and checked transparent borders. Root opened both30/40 renders. Actual worker/SaveLoad/pixel proof and repeated-export comparison remain pending.
+
+Repeated144-frame export matches both manifests byte-for-byte: security a0d3ed3daf82ea98fd2372b9c2638edf6cc68898f77c6ddcdf2d3863445fcc51, utility f9f3496cfb75521bd7bf17e447566f0e1eb58aa70ea7fafaf935ebcd972ded4b. New integrity cases verify every PNG byte hash, hydrated source hashes,72poses each,256resolution/64pixels-per-tile and footprint-centred targets. Both pass; replacing the first security frame hash with zeroes makes1/2red; exact restoration returns2/2green. Existing26 registry/mapping cases also pass. These checks do not replace pending actual worker/SaveLoad consumer proof.
+
+## Security console player baseline — 2026-10-02
+Root's built production-client player flow passes2/2 (45.6/32.3seconds): Storage/Delivery worker capacity, fresh-page IndexedDB Load, Security Office real worker completion, exact object.security-console anchor21,6 and one approved security-office-basic command, then SaveLoad retaining the anchor. Root opened [the actual loaded FullHD scene](./security-loaded-fullhd.png): the authored console is visible inside the room. This is a baseline; palette/mutated-consumer acceptance remains pending, and Utility Room is not covered by this test.
+
+
+## Utility panel player baseline — 2026-10-02
+Actual built-client flow passes2/2 (42.2/28.4seconds): Storage/Delivery completed, fresh IndexedDB page Load, Utility Room real worker completion with object.utility-panel anchor22,6 and exact utility-room-basic command, SaveLoad retaining the anchor. Root opened [the loaded FullHD scene](./utility-loaded-fullhd.png). Panel geometry is visible, but the door partially obscures its front at this selected camera angle; a clearer angle and palette/mutated-consumer test remain required for final art acceptance. No production deployment is claimed.
+
+
+## Security console visual acceptance completed — 2026-10-02
+Both built-client stages pass with authored display palette RGB31/94/99 in a fixed console-only region, more than100pixels before and after Load and equal counts. Baseline43.2/33.2s. Substituting only object.security-console's production mapping with the existing generic desk produces red exactly on console display pixels (0), while real setup and construction pass. Exact byte restoration and rebuilt client return2/2green (43.9/34.9s). This supersedes the security baseline's pending visual-consumer boundary for this FullHD scene. Utility panel consumer sensitivity remains pending; no production deployment is claimed.
+
+
+Utility Room readable-angle baseline passes2/2 (43.6/35.5seconds). Four real HUD Rotate camera right clicks turn the initial-45degree yaw to+15degrees before the construction capture. Load preserves the session camera pose, so the test no longer rotates again after Load. Root opened [the readable loaded view](./utility-readable-angle-fullhd.png): the front teal panel is exposed and the door is to its left. This corrects the test's viewing position, not source geometry or save policy. Palette assertions and production consumer mutation remain pending.
+
+
+## Utility panel visual acceptance completed — 2026-10-02
+Authored teal display pixels (RGB41/113/118) are sampled in a fixed panel-only region before and after SaveLoad, requiring more than100 pixels and identical counts. Baseline2/2green45.1/37.5seconds. Replacing only object.utility-panel's production mapping with the existing generic desk leaves setup/construction working but fails exactly on authored panel pixels (0). Exact source-byte restoration and a rebuilt production client return2/2green45.0/33.6seconds. Tools TypeScript passes. This completes consumer sensitivity for the readable FullHD scene, not all-angle coverage or deployment. Three authorized parallel agents now cover loading-dock Blender, FullHD HUD menu and room-template coverage; browser execution is serialized.
+
+## Owner decisions and parallel integration — 2026-10-02
+The owner explicitly approved through clickable decisions in this conversation:
+- Optional simulation.roomTemplates.undone and completed save fields; older saves without them load empty lists.
+- quarterTurns and objectOrientation values0..3; older absent values mean0. This authorizes the proposed save-format compatibility strategy for room-template rotation.
+- Rectangular room minima accept either orientation (e.g.2x5 or5x2), retaining minimum tile count and other requirements.
+These remove the three previously recorded owner-decision blockers. Implementation and actual acceptance of rotation are still pending; approval is not completion. Gameplay/persistence and UI/preview are assigned to separate agents; root integrates their results.
+Integrated Layout Escape fix preserves armed Build in standard and angled FullHD200% views (baseline red, scoped fix green, production mutation red, exact restoration green). Mirrored and normal Delivery Bay pending/completed SaveLoad now check both worker projections; targeted producer mutation red and exact restoration45/45green. Loading dock now has actual construction/SaveLoad browser proof with anchors13,6 and21,6, authored glazing2522pixels before/afterLoad, consumer mapping mutation0red and exact rebuilt restoration2/2green. Hosted availability and exact-head CI remain unverified.
+
+Root integrated validation at4df4429595: actual rebuilt production Layout Escape cases2/2green (world2.6s, angled5.3s;10.9s total). Delivery readiness + complete catalogue43/43green; tools TypeScript passes. Three agents now implement approved authoritative rotation/save/history, tool controls/preview and rendered object orientation on disjoint surfaces. None of those pending rotation changes is claimed complete or deployed.
+
+
+Integrated rotation checkpointb51831047a joins authoritative orientation/save/history, UIcontrols/full occupied previews and corrected Blender facing. Root's combined run confirms179 actual history matrix/domain cases plus UI and renderer cases green; the generated inventory had CRLF-only checkout mismatch, regenerated through its existing tool and6/6green. Both TypeScript projects pass. Actual rotated model browser acceptance is in flight with the art agent; Template Escape capture and collision atomicity receive separate agents. PR1945 merged asd2293aa8d856 after exact-head green/CLEAN; serialmainCI36994796706 was confirmed live. #1962 records Layout Escape; PR1899 now reflects the three approvals and remains dependent/draft.
+
+
+Actual integrated rotation acceptance atb51831047a: native90degree control submits quarterTurns1, real worker console anchor23,6 orientation1 andfrontdisplay1116pixels persist through SaveLoad. Deliberately reversing only production yaw composition leaves correct authoritative objects but displaypixels0red; byte-exact restore/rebuild2/2green43.6/35.6seconds. Root openedthecommittedFullHD loaded screenshot. 160-plan simulation matrix and four command-atomic collision cases complement this specific player/renderer scene; no all-angle or hosted-deployment claim. Evidence docs/research/2026-10-02-rotated-console-rendering/README.md.
+
+## Bookshelf visual acceptance and current parallel work — 2026-10-02
+
+The actual built-client Classroom flow now proves bookshelf anchor21,6 through worker construction and Save/Load, and174 authored spine pixels in the loaded scene. Baseline2/2green42.3/43.4seconds; substituting only its production mapping with the generic desk yields the intended0-pixel failure after successful bootstrap; byte-exact restoration/rebuild2/2green44.3/43.0seconds. Root opened the loaded1920x1080 screenshot. [Bookshelf evidence](../2026-10-01-oblique-bookshelf/README.md) records the tested angle and retained historical files. No hosted availability is claimed.
+
+The approved rotation draft now states the implemented checkpoint and links actual runtime and rendered player evidence, keeping its earlier sink audit as historical. Three agents continue on independent surfaces: release/gameplay integration, FullHD ghost-label visibility and medical Blender source/export alignment. The separately based Layout Escape fix is pushed as PR1963; exact-head CI and serial main remain delivery gates. Local browser execution is serialized to limit CPU use.
+
+## Verify input decision and medical integration — 2026-10-02
+
+The owner explicitly approved the proposed verify-job hydration step for Blender sources and angled PNGs, including later models under the same two globs. [The exact proposal and approval](../2026-10-02-verify-art-hydration/README.md) preserve its scope. The source-byte/hash and PNG decoding assertions remain unchanged; fresh Ubuntu CI must confirm the full gate. Static CI/retry/partition checks pass58/58 after applying the patch.
+
+Medical export40349455d2 is integrated as84bff0e11c: original Blender sources stay byte-identical, the cabinet export retains its9 authored meshes and omits11 foreign bed meshes, and both fixtures use the shared64pixels-per-tile camera with evaluated footprint bounds. Both repeated72-pose exports are byte-identical and scoped integrity checks pass. Actual worker-built Infirmary/SaveLoad pixel acceptance is in progress with the art agent. HUD quote text obstruction was disproved for tested FullHD100/200% scenes; regression and deliberate obstruction sensitivity are integrated as9d45d0588c without changing ghost production. Wheel PR1958 merged asf198f6d949 after exact-head green/CLEAN and prior serialmain green; new serialmainCI37000775751 was confirmed live before any subsequent merge.
+
+## Medical player acceptance completed — 2026-10-02
+
+The built-client Infirmary now has completed real-worker construction, Save/Load and independent bed/cabinet pixel acceptance. Baseline2/2green; removing both production art bindings keeps authoritative objects correct but fails all four palette assertions; exact byte restoration and rebuild return2/2green. Root opened the actual loaded Full HD image. The accepted spec joins the existing artifact gate, with complementary source-suite exclusion and a mutation-sensitive partition check. [Detailed acceptance](../../research/2026-10-02-infirmary-export-alignment/player-acceptance.md) records measured anchors and counts. The Blender build identifier is explicitly upstream, with the full pinned executable digest, rather than a nonexistent Lockstate commit citation. Three agents continue on dining-table Blender alignment, live native plan transformation and offline artwork loading. This remains local acceptance; exact release CI and hosted delivery are separate.
+
+## Dependency refresh and live plan edits — 2026-10-02
+
+Root merged the complete main-based dependency71e25921a6 into the integration branch as47c49256f3. Resolution preserves the newer room-aware art, square-wall cutaway, object orientation, middle drag and touch lifecycle; the updated wheel case retains renderer-switch coverage. Both TypeScript targets,203 targeted art/camera/square-wall/tint/documentation checks and the production build pass. The published branch contains the owner-approved verification hydration step. PR1898 and its serial-main delivery gate still require exact terminal CI; this preparation is not a production merge.
+
+The actual live plan-edit regression is integrated: native controls retain the chosen world origin, complete fixtures/doors and quote, and the latest real-worker preflight verdict wins when an obsolete blocked response arrives later. Baselinegreen7.4s, revision-guard mutationred17.5s, exact rebuilt restorationgreen8.3s. [Evidence](../../research/2026-10-02-room-plan-live-orientation.md) distinguishes real worker replies from injected synthetic verdicts. The accepted case now joins the existing artifact gate with complementary source-suite exclusion. Agents next cover native catalogue Escape, saved mid-stride actor positions and aligned Canteen dining art.
+
+## New bug fixes and retained Canteen art — 2026-10-02
+
+Verified new Issues1964/1965 now have integrated corrections: paused Load projects authoritative saved sub-tile walk offsets without advancing time, and native catalogue Escape owns its key before world cancellation. Actor position baseline and progress mutation each fail in all four directions; restoration passes78 related cases. Catalogue baseline and propagation mutation fail at100/200% FullHD; exact rebuilt restoration passes2/2. Its accepted regression joins the existing artifact gate. Older saves retain the existing fallback; no save schema changes.
+
+The existing dining table's62 authored meshes were extracted into a standalone Blender source and exported through the same64pixels-per-tile camera. Geometry lies inside3x2 in all four orientations,72 poses repeat byte-for-byte, and the existing canonical registry identity now consumes the aligned manifest. Root's targeted dining/registry/locomotion/preview checks pass24/24, alongside55 feed checks and both TypeScript targets. [Source/export record](../../research/2026-10-02-canteen-dining-table-alignment/README.md) preserves the prior authorship and mutation evidence. The art agent is completing actual normal/rotated worker construction, Save/Load and consumer mutation acceptance; this paragraph makes no completed player or deployment claim.
+
+## Dining acceptance, input ownership and entrance history — 2026-10-02
+
+The preceding dining acceptance boundary is now closed for the tested Full HD scenes. Real worker tables at21,6/24,6 (orientation0) and25,6/25,9 (orientation1) retain authored plate counts through Load:655/666 and643/635 respectively. Removing only the production dining binding fails eight before/after palette assertions while authoritative anchors remain correct; exact byte restoration and rebuild pass all three cases. Root opened both committed loaded screenshots. [Player acceptance](../../research/2026-10-02-canteen-dining-table-alignment/player-acceptance.md) retains an initial rotated timing failure alongside the later exact restored run, rather than claiming every attempt passed.
+
+Issue1966 records a distinct native picker failure: a camera key released inside the operating system popup could resume map rotation after closing plans. Modal input ownership now discards excluded held codes. The actual artifact fails before the fix and under production mutation, then passes after exact restoration; focused input and documentation checks are green. The dining and native picker cases join the existing artifact gate with complementary source-suite exclusions, retaining its one worker and timeouts.
+
+The #1672 entrance-history fix is integrated: after Undo and later furniture, a fresh plan refuses a blocked exterior approach before adding any orders or spending money. Root confirms24 related history/placement cases and TypeScript green. Full reversibility and the existing later-edit Redo policy remain unchanged. Two ADR0116 fragments now sit beside their own source anchors, correcting the reproduced LF-only Ubuntu failure without changing the guard or quotation budget. These are local integration results; exact-head CI and serial-main gates still precede production delivery.
+
+Local cleanup removed four confirmed redundant scratch files after backup-hash and persisted GitHub checkpoint verification. Production mapping bytes stayed unchanged; needed sources, evidence, worktrees, dependencies and live process files were preserved. Three agents continue with authored shower graphics, native View input ownership and template collision/atomicity.
+
+Aligned handwash and shower exports are now integrated. The sink keeps its original Blender bytes and all17 meshes; the shower extracts the existing43 authored meshes, including21 nozzles, while preserving the original catalogue. Both use the independently verified64pixels-per-tile shared camera, fit their occupied1x1 tile in all four rotations, and repeat72 frames byte-for-byte. Root opened both actual exported frames and confirms201 combined registry/integrity/entrance/documentation cases green. [Sink evidence](../../research/2026-10-02-handwash-sink-alignment/README.md) explicitly preserves its deliberate no-buildable boundary; [shower evidence](../../research/2026-10-02-shower-head-alignment/README.md) still requires actual normal/rotated construction and Load, now in progress. Legacy entrance edge rejection for #1661 is integrated; its separate outside-square-wall boundary is being investigated through actual commands before accepting that broader claim.
+
+The outside-square-wall investigation is now complete and corrected. Queued and standing full wall squares on the entrance approach are rejected before submitting any shell; adjacent squares and passable doors remain valid. [Actual command/history evidence](../../research/2026-10-02-legacy-room-entrance-atomicity.md) covers all twenty templates, four rotations and both mirrors through encoded Save/Load and blocker Undo/Redo. Separate queued/standing square mutations each fail144 variants; exact restoration passes202 related cases. No format or history policy changed. The reverse order (pending plan followed by a new wall) is a separate next investigation, not an established fix in this checkpoint.
+
+## Shower player acceptance and reverse entrance order — 2026-10-02
+
+Actual Shower Room construction and Save/Load now pass normal and90-degree native placement: anchors21,6/23,6 orientation0 and23,6/23,8 orientation1. Authored per-fixture nozzle counts93/93 and86/28 are identical before/afterLoad. Removing only the production binding fails all eight palette checks; byte-exact mapping restoration, identical worker bytes and rebuilt client yield3/3green44.2/34.9/34.5seconds. Root opened both loaded Full HD screenshots. [Player evidence](../../research/2026-10-02-shower-head-alignment/player-acceptance.md) records provisional color calibration and the partly occluded second rotated fixture; it does not claim full unobstructed visibility or hosted delivery. The accepted spec joins the existing artifact gate and is excluded from the source suite.
+
+The reverse wall order from existing #1696 is fixed and integrated: a later ordinary wall cannot take an earlier pending plan's exterior approach. The session injects a live reader using the same mirrored/rotated doorway geometry; the plan's own orders remain allowed, and Undo releases its claims. Actual commands through queued/partly completed encoded saves and Undo/Redo produce24 baseline failures; disconnecting the production reader reproduces them; exact restore passes72 related cases. [Evidence and exact historical source amendments](../../research/2026-10-02-later-wall-pending-entrance.md) preserve previous coordinates without weakening documentation gates. Adjacent-template overlap is a distinct next investigation; native View navigation and wooden bench Blender alignment continue on disjoint agent surfaces.
+
+Fresh Ubuntu verification atc6605a6f40 passed6740 cases and failed only the existing Blender entrypoint version contract: the sink/shower wrappers delegated the version check to the shared importer without explicitly calling it themselves. Both now import and invoke the same pinned pipeline version guard before delegation. Root reproduces the static red baseline, then9green/1unchanged live-test skip; independent native Blender5.2.1 verification succeeds for both sources, all four occupied orientations and72 camera vectors. Sources, manifests, rendered frames, geometry and assertions are unchanged. Previous wrapper hashes in mutation records describe the earlier exact restoration checkpoint; this later explicit guard amendment supersedes those script bytes. Serial-mainCI37000775751 is now terminal success; dependency and exact release-head browser gates remain separate.
+
+Adjacent pending plans now refuse atomically when their later perimeter would occupy a previously reserved entrance approach (#1692). Previously the ordinary-wall defense prevented final sealing but a false clear template verdict still added cancelled/failed shell records; the new preflight rejects before any mutation. Actual commands, saved partial continuation and Undo/Redo reproduce24 failures; the incoming-wall-set mutation reproduces them and exact restoration passes95 related cases. [Evidence](../../research/2026-10-02-adjacent-room-entrance-atomicity.md) distinguishes this failure from an already permanently sealed completed room.
+
+Issue1967 is also integrated: native View arrow navigation retains its default option change but no longer pans the still-live map while its replacement renderer prepares. Real browser baseline and propagation mutation fail; exact rebuilt restoration passes the new settled-map case and four focus/retry controls (5/5). Fourteen independent input/controller cases complement that artifact proof. Root confirms68 combined adjacent-plan/UI/routing/documentation cases green and routes the new case through the existing artifact gate. [Scope and evidence](../../research/2026-10-02-native-view-arrow-ownership.md) explicitly exclude world-origin lost releases in non-modal popups, now a separate investigation. Three agents continue on the wooden bench, View popup lifecycle and completed-row route access.
+
+## Completed doorway and wooden bench integration — 2026-10-02
+
+Completed room doorway protection now derives from standing doors and zoning, including compatible saves without completed-template metadata. Later opaque squares or separating legacy edges refuse before funding or reversible history; actual prisoner and guard routes remain valid through encoded Load. [Completed wall evidence](../../research/2026-10-02-completed-row-doorway-access.md) retains40 mutation failures and eight legal controls. The same live reader now protects every occupied square of a later furniture footprint. [Furniture evidence](../../research/2026-10-02-completed-room-furniture-approach.md) distinguishes physical entrance occupancy from traversal: navigation already permits furniture traversal, which this patch does not alter.
+
+The retained40-mesh wooden bench is integrated with a2x1 footprint, all four occupied rotations and72 repeat-identical shared-camera exports. Actual normal/90-degree Holding Cell construction and Save/Load pass3/3 after eight missing-consumer pixel failures and exact rebuilt restoration. Root opened both actual1920x1080 loaded images; the rear rotated bench remains partly wall-occluded. [Acceptance and hashes](../../research/2026-10-02-wooden-bench-alignment/player-acceptance.md) bound this local evidence. Its spec joins the existing artifact matcher with complementary source-suite exclusion. This is not hosted acceptance.
+
+DependencyCI37001303268 is terminal with760 browser cases passing and six failing. Five failures identify eight unvisited room-plan controls; the sixth concerns the new plans button in the native Tab sequence. Root is correcting that concrete visitor/keyboard coverage on the dependency checkpoint while three independent agents continue chair Blender alignment, View popup input lifecycle and template gameplay transitions. No gate exemption, timeout increase or production availability is inferred from the partial delivery state.
+
+Issue1968's distinct world-origin lost release is now integrated: focusing native View clears only current scene keyboard input, preserving the armed112-square plan, quote, origin, pointer state and camera pose. Actual native popups at FullHD100% withKeyE and200% with remappedKeyJ suppress the physical release; source-focus mutation fails both cases and exact restored build passes7/7 with the earlier arrow/focus/retry controls. [Native evidence](../../research/2026-10-02-native-view-popup-held-key.md) records different failing assertions honestly. Root confirms38 related controller/UI/routing/documentation checks and both TypeScript targets; the new spec joins the existing artifact partition.
+
+## Integration safeguards and native controls — 2026-10-02
+
+The completed-entrance rule is narrowed to an actual completed authored template
+door order plus standing geometry/zoning. Ordinary hand-built rooms gain no new
+reservation. The full local suite passes6,886 cases with two existing skips;
+its remaining three environment/ref-cache files pass119 cases after selecting
+existing Git Bash and fetching the already published bench evidence branch.
+These complementary runs do not claim a single complete green run or remote CI.
+[Superseding entrance evidence](../../research/2026-10-02-completed-row-doorway-access.md)
+retains the ten-failure generic-inference mutation and102 restored scoped cases.
+
+Occupied-template Undo now prepares the existing collective unzone/relocation
+before changing shell, fixtures or history. No-vacancy refusal is atomic, and a
+row cannot relocate its resident into a different member removed by the same
+Undo. Root confirms235 related gameplay/documentation cases after integration.
+[Occupied Undo evidence](../../research/2026-10-02-occupied-template-undo-atomicity.md)
+records18 preparation mutation failures and two relocation-exclusion failures.
+A compatible save lacking optional completed metadata remains a separately
+reproduced follow-up; it is not claimed fixed by this current-metadata patch.
+
+The dependency's six native-browser failures are corrected without exemptions:
+the sweep opens every real plan control and the keyboard path includes the
+actual plans Tab action before and after filtering. [Six-case evidence](../../research/2026-10-02-room-plan-control-sweep.md)
+records production mutations and restored green. Its fresh remote browser run
+is still in progress; no merge or hosted claim follows from that partial state.
+
+Issue1969 keeps recognized HUD separator keys with their native owner while
+preserving unhandled cross-axis world arrows. Root confirms42 unit cases after
+integration; actual FullHD world and oblique baseline/mutation/restoration
+are recorded in [separator evidence](../../research/2026-10-02-hud-separator-keyboard-ownership.md).
+The spec joins the existing artifact partition. Three independent agents
+continue native category input ownership, legacy occupied template history,
+and authored wooden rack acceptance; root integrates accepted chair graphics.
+## Wooden chair native acceptance — 2026-10-02
+
+The retained16-mesh default wooden chair is integrated with its occupied1x1
+square, all four rotations and72 repeat-identical64pixels-per-tile exports.
+Actual Staff Room normal/90-degree construction and IndexedDBLoad pass3/3.
+Independent fixture timber counts are108/106 and54/49, unchanged afterLoad.
+Removing only the default consumer gives eight expected zero-pixel failures;
+exact restored mapping and directly equal worker bytes restore all three cases.
+Root opened both actual loaded1920x1080 images and confirmed the two chairs
+at the worker-proven positions; they are not synthetic placement screenshots.
+[Native proof and bounds](../../research/2026-10-02-wooden-chair-alignment/player-acceptance.md)
+retain all source and mutation evidence. Its spec joins the existing artifact
+partition. Individual rotated object placement is not inferred from this
+native room-template orientation route; classroom overrides remain unchanged.
+Generic wooden rack source alignment is published separately and is now being
+checked through genuine individual placement and removal of rotated room zoning.
+## Legacy transactions, economics and native Category — 2026-10-02
+
+The reproduced older-save occupied Undo gap is now integrated. Recovery remains
+lazy at Undo and requires an exact authored real history/order book and live
+room-purpose zoning. Refused Undo adds no optional metadata; successful recovery
+uses the existing collective relocation and saved Redo path. Missing metadata
+still loads as empty, without a schema or migration change. [Legacy evidence](../../research/2026-10-02-legacy-occupied-template-history.md)
+records37 actual cases,35 recovery-wire mutation failures and two current-save
+controls; nineteen shelled room classes retain real readiness through saved
+Undo/Redo, while shell-free Yard keeps its existing path.
+
+The separate [financial transition audit](../../research/2026-10-02-room-template-economy-transitions.md)
+found no economic defect. Its36 new actual-command tests distinguish full quote
+from staged debit and refundable assigned stock from genuinely started spend.
+Quote omission and refund bypass mutations fail35 and eight cases respectively;
+prices and production economic code are unchanged.
+
+Issue1970's native Category filter now owns option-navigation keys without
+preventing its native selection/default action or unmatched remapped world keys.
+[Native Category evidence](../../research/2026-10-02-native-build-category-keyboard-ownership.md)
+retains the initial world pass/oblique failures, three producer mutation failures
+and exact rebuilt three-case restoration. Its spec joins the existing artifact
+partition. Root confirms232 combined transaction, finance, HUD, chair and
+documentation checks in eleven files, both TypeScript targets and a production
+build after these integrations. Actual integrated browser and exact remote CI
+remain release gates. Three agents continue rack native acceptance, Category
+popup lost-release lifecycle and the next concrete construction Issue.
+## Full suite and generic rack integration — 2026-10-02
+
+The complete local suite at published0739759b0c passes7,002tests across596files,
+with two existing skips (167.68seconds), on the exact integrated source and
+existing Git Bash option. This supersedes the earlier complementary-run
+limitation for that checkpoint, not remote CI or changes subsequently added.
+
+The generic rack retains48 authored Blender meshes, its1x1 occupied square,
+all four orientations and72 shared-camera exports. Real individual PlaceObject
+proves the default orientation0 consumer. A genuinely rotated StorageRoom then
+native UnzoneRoom proves default orientation1 without injecting state or
+claiming unsupported individual rotation UI. Actual worker construction and
+Load preserve both anchors, orientation, room removal and independent pixels.
+Default-binding removal fails eight pixel checks; exact mapping/source/worker
+restoration passes3/3 with original limits. Root opened both loaded FullHDs;
+rear rotated timber is partially wall-occluded. [Rack acceptance](../../research/2026-10-02-generic-wooden-rack-alignment/player-acceptance.md)
+records the distinct native routes and initial unhydrated calibration honestly.
+The accepted spec joins the existing artifact partition. Root confirms210 art,
+adjacency and documentation cases in thirteen files after integration.
+
+Existing #1703 is separately corrected in preflight: an incoming perimeter
+cannot occupy a completed template's approach even when rectangles are disjoint.
+Current impact was false-clear followed by non-atomic defensive refusal, not
+permanent loss of a route. Forty actual-command mutation failures and nine legal
+controls establish the boundary; ownership helper, format and copy stay intact.
+Full exact-head remote CI and integrated built-client acceptance remain gates.
+## Integrated native controls and art checkpoint — 2026-10-02
+
+At source1b566abe78, the canonical production-artifact wrapper passes all13
+selected browser cases in one worker (5.2minutes): authored wooden chair and
+rack worker construction/Load, recognized HUD separator arrows, native Category
+option navigation and the Category popup world-held-key release lifecycle.
+The same real built client is used across the group; this is scoped integrated
+acceptance, not the entire browser suite or exact remote release clearance.
+
+The Category focus port clears existing world-held camera keys before a native
+popup can swallow their release. It preserves the armed footprint, quote and
+native filter operation. [Popup evidence](../../research/2026-10-02-native-category-popup-held-key.md)
+retains both production mutation failures and exact restored native acceptance.
+The spec is added to the complementary artifact/dev partitions without changing
+limits or retries. Native printable typeahead remains a separate diagnostic.
+
+Three independent agents continue actual native typeahead diagnosis, retained
+Blender desk acceptance, and the next reproducible build transaction issue.
+Full-square furniture collision #1705 is published and awaits root integration.
+Exact remote CI, mergeability and serial main CI remain required before merge.
+
+## Furniture collision integration and dependency delivery — 2026-10-02
+
+Existing #1705 now shares the authoritative standing and pending object
+footprint reader with whole-square wall submission. A wall cannot enter a far
+furniture tile through rotation, saved delivery or Undo/Redo. Existing legacy
+edge walls and actual RemoveObject release retain their legal behavior.
+[Collision evidence](../../research/2026-10-02-square-wall-object-footprint.md)
+records22 mutation failures and four legal controls. Root confirms461 combined
+collision, template, object and documentation tests in14files after integration;
+both TypeScript targets pass. No save format, price or player-copy change.
+
+Dependency PR1898 exactbfae195e7470bf606b27dedfcf18c5f91d7703e0 passed every
+seven remote check runs and was CLEAN/MERGEABLE. After fresh serial-main green
+and verification that the intervening main delta was only its automatic version
+increment, it merged as48da4ac330b43b8e2a8612d8dff160f2d380f05d. Its resulting
+main CI must finish before another merge. Root incorporates the actual merged
+ancestry and automatic0.0.838 release; PR1899 now targetsmain and remains draft
+until its own exact-head release gates finish. No hosted art claim follows.
+
+## Native Category printable selection integration — 2026-10-02
+
+Issue1970's actual native letter-selection extension is integrated. Native
+change, rather than guessed localized prefixes, relinquishes the already held
+camera input through the existing Category keyboard ownership port. Native
+selection/filtering and unmatched remapped world control remain operational.
+[Typeahead evidence](../../research/2026-10-02-native-category-typeahead-camera.md)
+records3 baseline failures,3 actual-change-disconnection failures and exact
+restored8-case Category acceptance with existing limits. The initial three
+5-second documentation timeouts and serial unchanged-gate restoration remain
+recorded, not hidden by increasing budgets. Root confirms109 HUD/documentation
+and complementary browser-routing cases in8files and both TypeScript targets.
+The spec joins the existing artifact partition. Same-option letters, buffered
+localized selection and immediate zoom/Undo are outside this observed scope.
+
+## Reception desk, occupied cancellation and HUD drag integration — 2026-10-02
+
+The retained authored Reception desk now uses the measured shared-camera scale,
+target and all four occupied orientations. Actual worker construction and
+Save/Load acceptance covers the normal and rotated Reception; removing its
+default consumer mapping fails eight independent pixel checks. Exact restored
+acceptance passes three native cases. Root opened both loaded Full HD images;
+the rotated document is wall-occluded, so its visibility is not claimed.
+[Desk evidence](../../research/2026-10-02-generic-office-desk-alignment/player-acceptance.md)
+keeps the original source, retained evaluated vertices and calibration history.
+
+Explicit cancellation of an occupied completed template now prepares the whole
+coupled cancellation before changing construction orders or refunds. Compatible
+completed metadata without Undo history is covered as well as genuine legacy
+history, whole-row exclusion, spare-cell relocation and refusal without partial
+mutation. Production disconnection fails 23 cases with four legal controls;
+disconnecting the direct metadata path fails its separate control.
+[Cancellation evidence](../../research/2026-10-02-occupied-template-cancellation.md)
+records 27 restored cases without a save-format, tariff or copy change.
+
+Canvas-origin mouse building now retains its pointer when a held wall drag
+crosses native HUD controls. The observed defect was a frozen footprint and
+quote, not truncated authoritative construction. Native 100% and 200% cases
+fail before the change and under capture-only mutation, then pass on exact
+restoration alongside existing cancellation controls: four cases in 32.3 s.
+[HUD drag evidence](../../research/2026-10-02-oblique-build-drag-hud-preview.md)
+records the narrower observed wall scope; object and room-area acceptance is
+being established separately. Its spec joins the existing complementary
+artifact/dev partition without changing limits or retries.
+
+Root's combined 15-file verification returned 248 passes and two citation
+failures in 624.61 s. One failure was the external Blender build identifier
+being read as a repository commit; it is now explicitly named `build_hash`.
+The other was an already published peer commit missing from this checkout's
+remote-reference cache. After fetching that published branch, the unchanged
+eight-case citation contract passes in 12.30 s. These are complementary scoped
+results, not a new complete-suite or remote release claim.
+
+The approved verify hydration step covers authored Blender sources and oblique
+renders, including subsequent models in the approved directories. The next
+Kitchen stove, numeric coupled-refund preview and further native controls stay
+on independent branches while this integrated release candidate runs exact-head
+CI. Serial main CI and mergeability remain required before another merge.
+
+## Next delivery: collective Cancel refund preview — 2026-10-02
+
+The next branch integrates the actual coupled refund into the existing queue
+readout. It follows the selected-order-first cancellation sequence and recorded
+delivery payments, and checks collective resident relocation over private
+claims. Reading a quote does not mutate orders, money, history or residency.
+[Refund evidence](../../research/2026-10-02-template-cancel-refund-preview.md)
+retains the six root baseline failures, three distinct production mutations,
+ten restored command/projection cases and root's 224 combined checks. Both
+TypeScript targets and the hydrated production build pass. Prices, player
+copy and save format are unchanged.
+
+The current release candidate remains published as
+`3eeeddc2d276714fee6a7c8420270b78d2e49b3c` in PR1899 while this next delivery
+develops independently. Three agents continue new Kitchen stove native
+acceptance, existing View control mouse targeting, and the separately observed
+manual RemoveWall entrance into completed-template cancellation. Prototype or
+scoped local proof does not replace exact-head CI and actual release gates.
+
+## Next delivery: real stove model and manual cancellation — 2026-10-02
+
+The dedicated Kitchen stove retains its 29 authored assemblies and six material
+colors, with 51 new physical detail meshes. Its grounded 2x1 model follows all
+four occupied orientations and 72 repeatable shared-camera renders. Five native
+geometry/camera mutations and a PNG mutation fail, then exact restoration
+passes. Actual normal/rotated Kitchen construction and Save/Load pass three
+native cases; removing the stove consumer produces eight independent pixel
+failures. Root opened the loaded rotated Full HD image. The side wall occludes
+some oven/vent details, so visibility of those hidden details is not claimed.
+[Stove evidence](../../research/2026-10-02-kitchen-stove-angled/README.md)
+records the complete source/export/native chain and collector recovery.
+
+Manual removal of a completed template door now uses the existing collective
+preparation before touching geometry, retaining ordinary walls and finished
+individual object removal. The actual source-disconnection mutation produces
+12 failures and five legal controls; the 17 restored command cases include
+current/legacy saves, occupied refusal, spare relocation and Undo/Redo.
+[Manual removal evidence](../../research/2026-10-02-template-manual-door-removal.md)
+preserves the narrower command-level scope. Root passes 137 combined cases in
+nine files after integration with collective refund preview.
+
+The stove spec joins the complementary artifact/dev partition. Root's subsequent
+11-file art, transaction and documentation scope returns 66 passes and one
+citation failure: two PNG filename hash fragments were interpreted as commits.
+Replacing those fragments with their real full file paths restores the unchanged
+eight-case citation gate. Both TypeScript targets and the hydrated production
+build pass. Integrated native acceptance and remote release remain separate
+gates; the prior PR1899 candidate remains unchanged.
+
+## Integrated stove, View and square-drag acceptance — 2026-10-02
+
+Root's prepared production client at source
+`535b3ee102` (worker `worker-uDQlX8sj.js`, client `index-YCUrdKYO.js`,
+CSS `index-BtHvjcB7.css`) passed all 11 native browser cases in 3.0 minutes.
+The complementary artifact/dev routing commit `b390df7345` changes test routing,
+not the emitted production client. One worker and the original test budgets were
+used. The actual normal and rotated Kitchen retain the dedicated authored stove
+and authoritative placement after Save/Load (three cases). View receives native
+mouse acquisition in both renderer directions at Full HD 100% and 200%, changes
+the renderer by native keyboard choice, and sends no accidental map command
+(four cases). This does not claim native popup-row mouse selection.
+[View evidence](../../research/2026-10-02-native-view-mouse-target.md)
+records the source-only negative and exact restoration.
+
+Bed footprints and Yard area rectangles stay attached to their actual released
+square targets when a native canvas-origin drag crosses HUD controls at both
+scales (four cases). The existing wall fix supplies this shared capture; the
+new object/area tests do not change production behavior.
+[Object/area evidence](../../research/2026-10-02-native-object-area-hud-drag.md)
+retains the independent predicate mutation and exact source restoration.
+
+Serial main CI at the preceding merge is now terminal green. PR1899 stays frozen
+at its published candidate while its exact-head browser check runs. This next
+integration is PR1972, stacked onto PR1899; passing these scoped local cases is
+not approval to merge before all exact-head checks and clean mergeability.
+Three independent agents continue real fridge modeling and native acceptance,
+paused-template pending-object removal, and angled camera/footprint review.
+## Paused saved-template fixture removal integration — 2026-10-02
+
+On the current integrated client, the independent pending-fixture diagnostic
+reproduces four failures with two ordinary controls passing in 4.18 s. A command
+aimed at a rotated assigned bed's far square cancels only that fixture; occupied
+current and legacy saved rows change allocations and funds instead of refusing.
+The narrow fix prepares the existing collective cancellation before either
+object-entry command, then reconciles cancelled shells immediately while paused.
+The previous manual-door preparation remains present; standing object priority
+and ordinary single-object removal remain unchanged.
+[Pending fixture evidence](../../research/2026-10-02-template-pending-fixture-removal.md)
+keeps both production mutations (eight failures each) and exact restoration.
+
+Root's combined pending-fixture, manual-door, refund and four documentation/
+routing gates pass all 64 cases across seven files in 14.89 s. Both TypeScript
+targets pass. The initial follow-up documentation pass failed because this
+checkout had not fetched its own newly published commits; after fetching the
+exact remote branch, the unchanged citation contract passes in the combined run.
+Native Kitchen/View/drag acceptance above predates this worker-only removal fix,
+so those earlier client bytes are not presented as acceptance of the later fix.
+PR1972 remains the next delivery after the frozen PR1899 candidate; the fridge
+is still an independent model and native acceptance task.
+## Following delivery: retain keyboard-armed fitted origin — 2026-10-02
+
+The next isolated integration starts from published PR1972 candidate
+`41998ff60f013c099a2337dcd64172aa0ab12c34`, keeping both preceding release
+candidates frozen while their exact-head CI runs. Root independently reproduced
+two actual-math controller failures in 285 ms with four inherited controls green:
+a retained hover at 17,13 shifts to 21,15 or 26,11 on the first stationary click
+for a 7x16 or 16x7 fitted row. The approved rule keeps the chosen origin until
+physical movement, so a stationary confirmation must not select another square.
+
+The narrow controller fix records the retained screen anchor before fitting pans
+the camera. Genuine physical movement still clears the lock; a new positive
+control preserves that behavior. Root's focused controller verification passes
+seven cases in 242 ms after integration. The agent's independent producer
+reversion fails both new cases, followed by exact byte restoration. A native
+keyboard-arming/click/worker-origin fixture is prepared, but native acceptance
+and an actual player-level Issue remain pending the exclusive browser slot.
+Fridge geometry/export work and separate simulation collision coverage continue
+on independent branches; no hosted or complete-suite claim is made here.
+## Following delivery: dedicated fridge model integrated — 2026-10-02
+
+The fridge retains its nine original meshes and six materials, adding 64 physical
+hinges, seals, grilles and louvres. Its measured 1x1 anchor and 72 repeatable
+camera poses preserve the actual occupied square. Both upstream native Kitchen
+orientations finish through the worker and survive player Save/Load; removing
+only the fridge consumer fails four isolated pixel checks per orientation.
+Exact restored acceptance passes three cases. Root opened the final loaded
+rotated Full HD image: the blue panel and side louvres are visible, while the
+door genuinely hides the lower front grille.
+[Fridge evidence](../../research/2026-10-02-kitchen-fridge-angled/README.md)
+retains source/export receipts, initial calibration failures and exact restore.
+
+Root preserved the newer stove tuple while merging only the shared fridge row.
+The combined fridge/stove integrity, camera-fit, world-bridge, routing and index
+scope passes 39 cases across eight files in 584 ms. An initial index pass found
+one new fridge row separated from the table by a blank line; moving that row
+inside the contiguous table restores the unchanged guard. Both TypeScript
+targets pass. Fridge and retained-hover specs join the complementary native
+artifact partition; integrated browser acceptance is next, with one exclusive
+browser worker and the original budgets. These new changes stay on this next
+branch, so neither PR1899 nor PR1972 is repeatedly replaced during CI.
+## Combined Kitchen and fitted-origin player acceptance — 2026-10-02
+
+Root's actual production client prepared at `471c42468f`, with worker
+`worker-BpBnawSv.js`, client `index-CiIOhJZe.js` and retained
+`index-BtHvjcB7.css`, passes ten native browser cases in 4.7 minutes.
+The subsequent `8b3096c888` changes routing/index/plan, not client source.
+Both dedicated fridge and stove complete in actual normal and rotated Kitchen
+and retain their anchors, orientation and distinct visible detail pixels through
+player Save/Load: six cases. The new fridge tuple preserves the newer stove
+source, so this combined run verifies both consumers in the same integration.
+
+Four Full HD 100%/200% cases arm the mirrored four-cell row by keyboard, retain
+all 112 displayed squares and the worker quote at origin 15,12, then perform a
+stationary native mouse press/release. All keep the same target and submit
+exactly one matching PlaceRoomTemplate command in 0/90-degree orientations.
+Real physical movement repicks the target, and Escape cancels without another
+placement. The independent original and producer-only negative runs each fail
+all four cases at changed pointerdown origins; they do not claim construction
+completed in the wrong location.
+[Retained-hover evidence](../../research/2026-10-02-retained-hover-preview-fit/README.md)
+records exact producer byte restoration and native source boundaries.
+
+This is scoped local built-Chromium acceptance with one worker and unchanged
+budgets, not full hosted CI or deployment. Root's browser handle is terminal;
+the next Blender prep-counter task receives the exclusive browser slot after
+its offline source/export checks. Prior PR1899 and PR1972 remain frozen while
+their exact-head browser gates run. Ownership Issue1975 is a separate owner
+proposal; no new saved ownership field, migration or refusal copy is implemented.
+## Whole-square admission release checkpoint — 2026-10-02
+
+This third integration independently reproduces the generic-object far-square
+ownership bypass before its source fix: two failed PlaceBuildOrder cases with six
+legal controls green in 2.64 s. The ordinary PlaceObject route already refuses
+both saved frontier cases. Every incoming object footprint square now passes the
+existing bounds/ownership admission before approval; the preceding collision
+check also keeps all claimed furniture squares unavailable. Terrain permission
+remains deliberately deferred, including the real owned rock/water controls.
+No persistent field, owner migration or player copy is added.
+
+Root's final combined admission, paused removal, manual-door, collective refund,
+fit, fridge/stove integrity and four documentation gates pass 99 cases in eleven
+files (39.06 s), followed by all 24 actual generic collision controls (3.65 s).
+Both TypeScript targets and the real named production build pass at source
+`66f1271a5b`: worker `worker-ZJIkVaeZ.js` (435.85 kB), client
+`index-CH_kwFP_.js`, existing CSS `index-BtHvjcB7.css`. The ten native Kitchen/fit
+cases above predate this worker admission change; their earlier client identity
+is retained rather than presented as native coverage of the later change.
+[Collision record](../../research/2026-10-02-generic-object-build-footprint.md)
+and [ownership admission](../../research/2026-10-02-object-footprint-admission.md)
+retain producer-only negatives and exact restoration.
+
+PR1899's browser job ended cancelled at its existing 90-minute cap: 330 passed,
+38 failed and four serial did-not-run reports were retained before cancellation.
+Verification and asset jobs passed. The failures include stale HUD selectors and
+a test-only texture lookup reading the former renderer key map; the actual
+failed traces are being investigated on a separate source-matched branch.
+No timeout, retry or assertion relaxation is authorized by this checkpoint.
+PR1972 remains a separate stacked candidate. This following delivery is ready
+for a draft PR; hosted delivery still requires repaired complete exact-head CI,
+clean mergeability and serial green main CI. Blender prep-counter acceptance is
+published separately and is not silently added to a frozen release candidate.
+## Dedicated prep-counter integrated player checkpoint — 2026-10-02
+
+The next separate Blender delivery preserves the newer stove and fridge tuples
+and adds the retained 24-mesh prep counter with 54 physical details. Root's
+actual combined Kitchen client at `84ec30455a` passes three native Full HD cases
+in 2.0 minutes: real capacity construction, q0 Kitchen and q1 Kitchen, with all
+three authoritative fixture anchors and exact visible prep detail pixels through
+Save/Load. Both TypeScript targets and the named production build pass.
+[Combined prep record](../../research/2026-10-02-kitchen-prep-counter-angled/README.md)
+retains the actual new loaded screenshots and worker evidence separately from the
+upstream calibration and negative runs. PR1977 stays frozen; this following model
+is on its own published branch rather than repeatedly replacing that CI head.
+
+Owner directly approves the exact #1975 package on 2026-10-02:
+"Tak — identyfikator zlecenia, V8 i bezpieczna odmowa (zalecane)".
+That ownership migration and atomic refusal is now an independent implementation
+scope; this Kitchen client still uses the preceding save format. The three agents
+continue washing-machine authoring, whole-square wall scale/anchor correction,
+and approved ownership persistence. Scoped native acceptance does not mean that
+any of these unpublished-to-production deliveries is already on lockstate.io.
+## Approved ownership and square-wall integration checkpoint — 2026-10-02
+
+The owner-approved #1975 implementation is integrated after PR1978 on the
+separate `codex/integrate-wall-owner-20261002` branch. V8 records optional exact
+`sourceOrderId`; the V7 migration preserves data without inventing ownership,
+and frozen V1–V7 validators keep their historical shapes. Ambiguous reversal of
+a coupled old room plan refuses atomically before unzoning or geometry changes.
+The exact approved EN/PL refusal is wired; ordinary ownerless legacy single-order
+reversal remains explicitly outside this protection. Root inspected the wiring
+and independently ran 80 ownership/migration/object/wall tests, all green, and
+both TypeScript targets plus the named production build passed. The combined
+worker is `worker-Ce4CF4WT.js`. This is local integration, not hosted acceptance.
+
+Both square Brick catalogs now use the actual 64-pixel tile scale and centred
+anchors, with original Blender source bytes preserved. Upstream native proof
+covers six full/low wall poses, two independent six-case producer negatives and
+exact-restored acceptance. Root retains the actual before/after PNG/JSON records;
+combined-worker native acceptance is queued, including genuine Kitchen object
+ownership before and after player Save/Load. The existing artifact/source test
+partition now sends this wall fixture through the built client.
+
+The separate dedicated washing machine passed actual capacity construction,
+normal/rotated Laundry, exact visible glass pixels, and Save/Load. Removing only
+its render mapping failed both orientation consumers while worker state stayed
+unchanged; exact restoration passed all three cases. Its published model remains
+a separate following delivery, not an unnoticed change to PR1977 or PR1978.
+
+The first frozen candidate still has a failing browser gate. Concrete repairs
+are developed separately: native View acquisition, full-square keyboard enclosure,
+visible camera controls, full object-footprint readout, retained room-plan origin,
+and the actual short-window Build floor. No timeout, retry, assertion tolerance,
+or hosted completion is inferred from these scoped results. Keep advancing real
+camera input and Blender models while the serial browser acceptance runs.
+
+### Combined native acceptance completed
+
+Root's actual built `worker-Ce4CF4WT.js` client now passes all nine combined Full
+HD cases in 4.2 minutes: capacity construction, normal and rotated Kitchen with
+the stove/fridge/prep counter, exact V8 ownership tuples through player Save/Load,
+and six full/low square-wall poses. Every wall allocates exactly two bricks in
+one command at (20,20), with zero classified masonry pixels outside its ground
+span or authored projected hull. Both loaded Kitchen screenshots were opened.
+[The new combined captures and complete output](../../research/2026-10-02-wall-owner-integrated/README.md)
+are retained independently of upstream proofs. This closes the queued local
+native check above; full exact-head CI and the serial release gates remain.
+
+An additional confirmed renderer defect is being repaired independently: a
+removed or rebuilt template object can still be drawn from its historical
+completed construction order, even when V8's physical registry correctly holds
+zero objects or one replacement. Six actual packed-session/save-load/render-feed
+cases reproduce it. The adapter must use supplied physical state authoritatively
+while preserving the explicit legacy order-only fallback. No new persistence or
+player-copy decision is required for that correction.
+
+### Following Laundry and camera delivery
+
+The nine-case wall/ownership checkpoint is published as draft PR1981 at
+`dd45d8919be0843205896636429c5af83d3d59d0`, stacked after PR1978. Keep that head
+frozen. Following work is isolated on `codex/integrate-laundry-renderer-20261002`.
+It now integrates the dedicated Laundry washer, #1980's authoritative physical
+render registry, #1979's horizontal wheel guards in both views, and #1982's
+minimal four-field mouse-camera termination on actual canvas exit. Removed
+completed-order history no longer draws nonexistent or duplicated furniture;
+an explicitly absent physical registry retains the documented legacy fallback.
+No new format, palette, player-copy or camera-persistence decision is introduced.
+
+Root's independent scopes pass 63 ownership/model cases, 75 integration cases,
+115 rendering cases and 31 camera/suite-partition cases (overlap is not counted
+as a unique total). Both TypeScript targets and the production build pass at
+`13a6c582e6`: `worker-Bjll0lxr.js` (436.94 kB), SHA-256
+`4af958b3cdd115f8b60771c9308f9ca105aab7d2aa25176eea316d5f3f344347`,
+client `index-CC0PWSiU.js`, CSS `index-BtHvjcB7.css`. Washer Save/Load acceptance
+now additionally requires two distinct exact V8 source-order owners. Canonical
+suite routing sends washer/wheel/gameout fixtures through the built client;
+the separate read-only renderer-observer regression remains a source-server test.
+Combined following-client native coverage is still queued, so the upstream
+accepted washer and camera runs are not presented as tests of this new build.
+
+The published [wheel native record](../../research/2026-10-02-camera-wheel-axis/native-acceptance.md)
+preserves actual horizontal negatives in each renderer and exact restoration;
+[camera canvas-exit proof](../../research/2026-10-02-camera-gameout/README.md)
+preserves two real input negatives and eight restored cases, including Build
+capture and retained preview controls. The removed/rebuilt object's actual native
+scenario is being calibrated without replacing the worker or renderer state.
+
+Blender work continues on the retained Cell toilet: 25 actual fittings, hinges
+and cistern details have been added to its original 19 meshes/eight materials.
+An independent normal audit caught an inward valve torus; the corrected outward
+source and all 72 reproducible frames are separately published, with winding
+producer negatives retained. Its corrected native pixels and the dedicated waste
+bin remain queued. The next existing utility panel has a confirmed inward-face
+source audit and a scoped topology/detail correction; no imaginary buildable is
+introduced. Full release gates still precede every merge and hosted delivery.
+
+### Following integration acceptance — 2026-10-03
+
+The Laundry/camera client now passes a fresh root combined seven-case native
+artifact run in2.6minutes: both horizontal-wheel views, actual capacity build,
+normal/rotated Laundry with exact V8 object owners through Save/Load, and both
+middle/right camera exit/reentry cases. [Actual captures and worker/input receipts](../../research/2026-10-03-laundry-camera-integrated/README.md)
+are published. This closes that queued local check, not the full hosted release.
+
+The separate first-CI repair also completes native acceptance for the four
+actual View mouse cases, four Build/pose cases, five authored actor cases,
+four-yaw retained-origin room picking and all five whole-square keyboard routes.
+The actual actor-visibility producer mutation gives zero pixels and RED; exact
+restoration passes all five with old/new decoders agreeing on the same captures.
+One keyboard consumer had rescanned into a different cell after an alert grew
+the minimap; its corrected measured-column aim retains exact origins and passes.
+[Root repair receipts](https://github.com/woogitsu/lockstate/blob/873093cae8/docs/research/2026-10-02-browser-ci-timecap/root-controls-restoration.md)
+are on `codex/integrate-first-ci-repair-20261002`; they have not been silently
+applied to the frozen candidate head or represented as full-suite success.
+
+Art now owns the single native browser for Bin, corrected Cell toilet and the
+new physical Utility panel. Blender desk details proceed separately. Another
+agent checks shell reversal ownership and a third audits camera/HUD input.
+The completed, mutation-checked CI split proposal is offered to the owner;
+production workflow is unchanged while the decision is pending. Continue game
+development and preserve each coherent chunk on GitHub during that wait.
+
+### Bin and navigation integration checkpoint — 2026-10-03
+
+Following branch `codex/integrate-bin-drawer-20261003` now combines the aligned
+retained Blender bin and the navigation drawer closing-Escape correction.
+Root opened the actual rotated loaded FullHD bin capture; upstream normal and
+rotated Build/SaveLoad acceptance is3/3, both real missing-consumer negatives
+give zero palette pixels, and byte-exact restored3/3 passes. Source integration
+passes58 tests in7 files, both TypeScript projects and production build.
+The existing Yard bin override remains checked. [Model and native evidence](../../research/2026-10-02-default-waste-bin-alignment/README.md)
+and [registered drawer producer evidence](../../research/2026-10-03-navigation-drawer-escape/README.md)
+are included. Root adds exact different V8 owners and completed owning-order
+checks to both bin orientations; those new native assertions and six physical
+drawer cases are queued until Art releases the single browser. They are routed
+once through the built-artifact suite, with the source suite excluding them.
+
+The Laundry/camera predecessor is published as draft
+[PR1984](https://github.com/woogitsu/lockstate/pull/1984), including regenerated
+596-sentence inventory and the approved49-member refusal vocabulary gates.
+The root catalogue typo producer negative fails both gates, exact restoration
+passes16/16. Full exact-head CI, merge gates and production delivery remain
+separate from these local integration results.
+
+The same following integration also includes the actual #1986 atomic template
+Redo admission correction: newer accepted zoning cannot make Redo reapprove
+paid orders, spend twice or strand old furniture. Root integrated the published
+producer-checked source and passed163 tests across10 gameplay/renderer files
+in14.00s, plus both TypeScript projects and production build (client6.99s).
+The resulting worker is `worker-DIP7pP3A.js`, SHA256
+`5247173b87c7d7935c4c2b312676b4e35bf2c3a35b8568c83ff9a678c78c21d2`.
+[Actual baseline, guarded reversal, legal retry and both producer negatives](../../research/2026-10-03-template-redo-zoning/README.md)
+are retained. Bin/drawer native acceptance must use this rebuilt combined
+subject; earlier upstream native captures are not relabelled as this client.
+
+### Bin/drawer integration accepted locally — 2026-10-03
+
+The rebuilt subject now passes all nine queued native artifact cases in2.1minutes:
+real capacity construction, both Garbage Room orientations with different exact
+V8 owners through Save/Load, and six trusted drawer Escape cases. [Fresh root
+captures and terminal evidence](../../research/2026-10-03-bin-drawer-integrated/README.md)
+are published. Palette counts remain equal across Load. CI found one historical
+baseline source stored with an active module extension; root reproduced that
+failure and preserved identical bytes in a text archive. The original coverage
+contract then passes4/4, with no assertions or tsconfig exclusions changed.
+
+Following Cell/Utility integration combines both accepted Blender model sources,
+the actual camera-matrix plan projector (#1988), visible-ground minimap (#1989)
+and full incoming-object footprint admission (#1654). Their combined native
+acceptance is a new check, not a relabel of individual agent runs. Art owns the
+single browser for Desk; HUD audits actual camera consumers, gameplay repairs
+asynchronous construction-history ordering. Full release gates remain pending.
+
+### Cell, Utility and camera source integration — 2026-10-03
+
+`codex/integrate-cell-utility-20261003` includes both actual Blender sources and
+all144 Cell/Utility frames, each model's individual native mutation and Load
+receipts, the corrected World plan projector/minimap, and incoming full-object
+footprint reservation. Root focused integration passes108 tests across8 files;
+both TypeScript projects and the production client build pass (5.47s).
+
+The following source also fixes #1990: deferred fixtures extend the exact
+original paid gesture without replacing the newer player transaction selected
+by Undo or erasing Redo/refusal state. Its producer and reader mutations and
+13 restored cases are published, with443 neighbouring tests and unchanged
+persisted/wire fields. Root is verifying that source together with the camera
+and models. Both room fixtures now require exact V8 source owners pointing to
+completed matching orders before and after genuine Save/Load. Canonical artifact
+routing includes these six player cases and the two World zoomed whole-plan
+cases exactly once; combined native acceptance is pending the sole browser.
+
+Art is completing physical Desk native consumer negatives and restoration;
+HUD checks renderer-switch acceptance ownership; gameplay probes an existing
+completed-wall furniture collision report. Continue those concrete tasks while
+CI runs. The owner-only CI split and new-action persistence proposals remain
+pending; no protected workflow or save-format decision is inferred from time.
+
+## Root integrated Cell, Utility and zoomed ground — 2026-10-03
+
+Actual frozen built source282f6413443d784e588ff4c5ec43095796e0244a now has
+six dedicated Cell/Utility construction, q0/q1 and Save/Load cases GREEN.
+Each matching sourceOrderId resolves to its actual completed order/location/
+orientation and remains identical after Load. Both World100/200 native cases
+also pass after observing the independent minimap assignment before native CSS
+rounding, with original precision3 and exact physical placement assertions.
+The original six-GREEN/two-RED run and incompatible observer setup are retained;
+the production source/build was unchanged throughout corrected acceptance.
+Full receipts, opened loaded screenshots and limits:
+[combined acceptance](../../research/2026-10-03-cell-utility-integrated/README.md).
+The next isolated integration contains the actual detailed Reception desk,
+Medicine Cabinet, renderer-change accepted-receipt fix and completed/pending
+square furniture collision fixes. Its native proof and full hosted CI remain
+separate gates; prototype screenshots do not count as release.
+## Desk Cabinet and renderer receipts accepted locally - 2026-10-03
+
+Frozen clientda685 passes six model capacity/q0/q1 Build/Load cases. Exact V8
+owners resolve to completed orders; whole paused worker data and unchanged
+native palette counts survive Load. Both loaded orientations were opened.
+Initial ten-case8GREEN/2RED retained: observer spread preflight-only kind into
+actual command. Corrected receipt4GREEN uses unchanged production; actual
+missing-Cabinet/disposed-bridge mutation3RED/3legal, finally restored7GREEN on
+byte-identical worker. [Actual root evidence](../../research/2026-10-03-desk-cabinet-integrated/README.md)
+is committed with real FullHD captures and raw failures.
+
+Next SafeRestore integration: canonical imported-object restoration,
+completed-doorway clearance, actual camera precondition repairs, Security
+Console and queued detailed Medical Bed. One root native browser at a time;
+Art refines actual Loading Dock Door, gameplay fixes actual occupied-template
+material cancellation, HUD probes interleaved actual camera gestures. Push
+coherent checkpoints. Full hosted CI/main/release gates remain separate;
+owner-only sharding and V9 proposals stay pending.
+
+## SafeRestore source checkpoint - 2026-10-03
+
+The isolated following branch combines deterministic strict-V8 conflicting
+object import repair,32-case completed doorway admission, actual initial-CI
+HUD pointer/category-floor repairs, independent real camera preconditions,
+and actual detailed Security Console/Medical Bed sources. Medical retains11
+original meshes and adds65 physical caster/brake/rail/lifting parts; source
+previews and18 producer controls pass but do not replace genuine Build/Load.
+Native Security/Medical fixtures are routed once through the canonical artifact
+suite. Root now builds this exact integration and queues six actual player
+cases and three source camera regressions with unchanged budgets. First-CI
+repairs retain the original cancelled failure record; fullCI is still pending.
+
+## Security, Medical and camera accepted locally - 2026-10-03
+
+Frozen built subject bb521c103e has six genuine capacity/q0/q1 model cases GREEN,
+exact completed V8 owners and whole paused worker data equal after Save/Load.
+Actual default mapping removals yield2 RED/2 legal capacity controls; finally
+byte-exact source/worker restoration yields4 GREEN. Original palette counts
+Medical866/312 and Security506/1494 remain equal after Load. Actual loaded
+FullHD images were opened. [Published root proof](../../research/2026-10-03-security-medical-integrated/README.md)
+retains raw failures, restored receipts and images. Three native source camera
+cases also pass after all40 existing LFS-rendered runtime entries are hydrated;
+original missing-asset diagnostics remain recorded, with no workflow change.
+
+Next isolated integration: detailed Loading Dock Door, actual four camera pan
+controls with real World/Oblique ground consumers, and #1996 refused-cancellation
+history correction. Three agents refine physical wooden Chair, prepare actual
+native button acceptance, and reproduce genuine admission/routing issues.
+Keep one native browser active; push coherent checkpoints. Full hosted CI,
+serial main and production release remain separate outstanding gates. Neither
+pending protected sharding nor V9 proposal is silently activated.
+
+## Pan and Dock source integration checkpoint - 2026-10-03
+
+The following isolated integration now includes the actual64-part Loading Dock
+Door and all72 authored camera frames, dedicated genuine capacity/Build/Load
+fixture, four localized screen pan buttons wired to both actual ground consumers,
+and FullHD100/200 native fixtures. It also integrates #1996: refused cancellation
+preserves the latest independent Undo, while actual successful reversals still
+mark the accepted action;24 source cases and real producer controls are retained.
+Existing #1555 now ends a sanction in the resident's own valid solitary template;
+live/V8 release and ordinary relocation controls are real kernel evidence, not
+an assertion that UI exposes the high-risk fixture inputs. Root will build this
+combined subject, run exact native controls once and preserve any original RED.
+Full exact-head hosted CI and serial release gates remain outstanding.
+
+## Pan and detailed Dock accepted locally - 2026-10-03
+
+Actual frozen ef2aa client passes7 real FullHD native cases: physical mouse and
+Enter camera controls at UI100/200 in World and Angled, independent ground-step
+math, unchanged quote/full footprint, genuine logistics capacity and Dockq0/q1
+construction/whole-data SaveLoad with exact completed owners. Actual callback
+and default-binding negatives yield5 RED/1 legal/1 serial not-run; separateq1
+yields1 RED/1 legal, with byte-exact source/worker restoration7+2 GREEN.
+[Actual raw receipts and opened images](../../research/2026-10-03-pan-dock-source-integration/README.md)
+are pushed. Next isolated integration includes detailed physical Chair/Rack,
+#1553 full-ID search-target departure and #1913 sorted loading-wall fallback.
+Art is modeling an actual connected ShowerHead, gameplay audits the remaining
+accepted/refused history class, HUD prepares a real native pending-wall test.
+One root browser at a time; full hosted CI and serial release still required.
+
+## Physical fixtures and construction integration - 2026-10-03
+
+Chair, Rack and Shower have completed real capacity/Build/SaveLoad acceptance:
+11 cases GREEN after the original observer failures were retained and corrected.
+Actual mapping and pending-wall depth omissions fail; exact source/worker
+restoration passes. The rear guard stays occluded while an independent front
+guard remains visible, including the pending texture state.
+[Published native proof](../../research/2026-10-03-chair-rack-depth-integration/README.md)
+is on the integration branch.
+
+Bookshelf and stationary renderer handoff now have 11 genuine FullHD cases GREEN,
+including UI scale 100/200 and both directions with rotated/mirrored templates.
+Completed owners and whole paused SaveLoad state are checked. The separate actual
+consumer controls are being completed; a setup needle guard aborted before any
+source mutation and its positive restoration was retained, not counted as a
+negative test.
+
+The following isolated source integration includes physical Fridge/Stove models,
+World primary-release ownership #2001, and abandoned preflight/session ownership
+#2002. Root will run one combined genuine Kitchen route for both fixtures and
+all three completed owners, plus actual Wall/Bed/Yard mouse-chord cases.
+[Current integration record](../../research/2026-10-03-kitchen-construction-session-integration/README.md)
+distinguishes pending native and hosted gates from completed source work.
+
+Three disjoint agents continue: actual Canteen rail-to-post modeling, immediate
+construction cancellation/re-arm #2004, and native New/Load session acceptance.
+Only root runs the browser, with one worker. Push every coherent checkpoint.
+Full hosted CI and serial release remain required; protected sharding #1983 and
+optional V9 proposals stay pending until the owner's answer.
+
+## Current delivery checkpoint - 2026-10-03
+
+Bookshelf/stationary renderer handoff consumer omissions are complete: actual
+q0/model+hover omissions9RED/1legal, explicitq1 omission1RED/1legal, exact
+source/worker restoration11GREEN. Published raw proof remains linked above.
+Kitchen integration now includes #2004 HUD cancellation and #1949 ordinary
+World New/Load cancellation in addition to #2001/#2002.112bounded source tests
+pass; combined10case native player route is next, one browser/worker at a time.
+Three independent agents currently refine the actual CellCot north headboard
+connections, prepare genuine Canteen native hardware capture, and audit camera
+changes during held template construction. Canteen/Washer source72poses and
+contacts are published; native integration follows Kitchen. This is ongoing
+local integration, not exact hosted green or a production release.
+
+## Kitchen player integration accepted locally - 2026-10-03
+
+[Actual player proof](../../research/2026-10-03-kitchen-construction-session-integration/README.md)
+is published in PR2005:10GREEN, actual producer omissions8RED+explicitq1
+1RED and exact source/worker restoration10GREEN. Initial observer failures
+are preserved. Fridge/Stove Build and whole pausedSaveLoad work in both
+orientations; New/Load rejects old held construction and pending requests.
+Root now integrates actual connected Canteen, Washer and CellCot sources with
+existing owners/palette gates and genuine decoded-loader evidence. Three
+agents model the visibly missing rear Guard belt, correct an actual terminal
+predecessor CI contract failure, and audit held-plan rotation/mirror ownership.
+Do not mistake local acceptance for full exact-head hosted green/deployment.
+
+## 2026-10-03 active model integration
+
+Current frozen built-client4443da6c integrates retained Canteen rail arms, Washer grip mounts, Cell headboard uprights and Guard rear band. Real public q0/q1room purchases, whole paused Save/Load and trusted two-touch ownership are under one-worker FullHD acceptance. [Integration record](../../research/2026-10-03-canteen-washer-cot-integration/README.md) holds exact sources and honest pending hardware/hosted boundaries. Three independent agents continue actual hired-Guard acceptance preparation, Prisoner source-scale measurement and stationary ghost invalidation after real Undo/Redo.
+
+### 2026-10-03 integrated stationary history and genuine Guard acceptance
+
+Canteen/Washer/Cot actual FullHD pack is11/11GREEN, preserving exact owners and paused wholeSaveLoad. The original5GREEN/3RED/3SKIP observer result is retained. Root now integrates #2007 stationary completed Undo/PendingRedo readiness and historical Guard projection, original meshes/materials/actions intact; actual public hire and history native acceptance plus consumer omission/restoration are the next gates. Full hosted CI/release remains separate; no prototype or loader-only claim is completion.
+
+Actual integrated public Guard hire passes1native case. Actual stationary q1Cell history now passes3/3native cases across World/Angled, preserving cursor/origin/camera/28-square footprint and full quote across genuine completedUndo/pendingRedo. Initial observer failures are retained in the integration record, not hidden by a retry. Root next executes bounded consumer omissions and a restored15-case pack, then integrates the completed Blender woodenBench and real gameplay fixes. Three agents currently model the Cell toilet transfer neck, fix duplicate accepted numeric placement and fix delivery selection of blocked room anchors. Each coherent change is pushed; exact hosted fullCI remains the merge/release gate.
+
+### 2026-10-03 complete compiled acceptance and approved CI activation
+
+The current frozen371bec client passes15/15actual built-browser cases, no skip/flaky, after real consumer omissions7RED/4legal/1serialSKIP and complementary q1 4RED/4legal. Both source and compiled index/worker bytes restore exactly. Public q0/q1room purchases, retained models, whole paused Save/Load, genuine Guard hire and both stationary Undo/Redo/touch scenes are proved together; tiny hardware-only crops/private texture binding are not claimed. PR2010 carries this integration and the preserved raw proof.
+
+The owner explicitly approved #1983 browser source partitioning, separate once-only built-client tests and a fail-closed same-subject aggregate, preserving test budgets/retries. Fresh main32c28 activation is published in PR2012; root reviews exact hosted CI before merging and then preserves serial main gates. While hosted jobs run, root integrates connected Bench/Toilet and actual blocked-anchor, delivery, numeric-owner and completed-door-square fixes. Three agents continue new Common Room Blender hardware, genuine numeric pointer acceptance preparation and room-interaction defects. This does not narrow the top-priority playable angled camera/full-square/templates/model integration objective.
+
+### 2026-10-03 approved CI landed and Bench/Toilet/numeric acceptance complete
+
+PR2012 is merged as b01e26fcff4189988b40741679a1b793c25f0c18 after all six exact hosted CI jobs succeeded on4ce977d097ec4f67590a7112d7c19261f205b38e. Main CI37112225597 is running; further merges wait for its terminal success. The #1983 decision is approved and implemented; optional V9 remains a separate pending owner decision.
+
+The [Bench/Toilet gameplay integration](../../research/2026-10-03-bench-toilet-gameplay-integration/README.md) now passes8/8actual compiled FullHD player cases after default-model/numeric consumer omissions4RED/2legal/2serialSKIP and explicitq1 omissions2RED/2legal. Exact source and client/worker restoration is proved. Full-square room purchase, both orientations, retained models, whole paused Save/Load and release of the original held map pointer are accepted together. Root integrates Common Room upholstered Bench and real blocked/disconnected-first-room fixes next. Three independent agents prepare a dense public playable prison scene, review room-selection semantics and establish the shortest gated path through older release dependencies. Exact hosted CI and actual deployment remain required.
+
+### 2026-10-03 dense real prison and continuous new models
+
+New checkpoint: the dedicated Garbage Room refuse trolley and Classroom teacher desk now have actual runtime registry/context mappings. Real projection negatives give9RED/2legal before integration;49combined controls and both strict type checks pass after integration. Actual completed-room skins respect the full rotated footprint, preserve other room/object skins and change no simulation/save state. Root now verifies these models through public Build and whole paused Save/Load in the compiled FullHD game. The current two tested camera-controls allocation previews await the owner's clickable decision; meanwhile model integration continues.
+
+All six exact main CI jobs succeeded for the approved sharding merge b01e26fcff4189988b40741679a1b793c25f0c18. The new split is implemented and merged; optional V9 remains separately unapproved. Older angled-release branches have actual browser failures under repair, so no partial green is treated as permission to release.
+
+The [combined Common Room/room-use branch](../../research/2026-10-03-common-room-connectivity-integration/README.md) now passes7/7 genuine compiled FullHD showcase cases: public capacity purchase, rotated four-cell wing, Kitchen, Shower, Canteen, Yard, then three actual camera poses and whole paused Save/Load. The scene has180completed orders,10rooms,22fixtures and four cell places; it remains unpopulated. Root opened all three fresh frames. Original observer failures and exact executed fixtures remain published alongside the corrected7GREEN. The Common Room per-fixture consumer controls remain next; real source query fixes #2013/#2014/#2016 are integrated.
+
+Continuous genuine Blender modeling stays a primary goal: a dedicated Garbage Room refuse trolley with the retained complete bin assembly, four casters/brakes and connected push frame is saved and exported in72canonical poses. Source semantic/dispatch/hash-valid PNG negatives and exact restoration are published; actual registry/context integration and native q0/q1 acceptance remain pending. Next art work addresses the Classroom room context. Independent HUD work repairs clipped cost quotes and prepares a reviewable camera/minimap allocation decision; renderer work removes demonstrably redundant unchanged-minimap pixel projections. Three agents continue disjoint art, HUD and gameplay/rendering tasks while root integrates their results. Every coherent checkpoint is pushed; hosted exact-head green, mergeability and serial main gates remain mandatory.
+
+### 2026-10-03 actual Garbage Room and combined gate repair
+
+The two dedicated Garbage Room trolleys now pass three real compiled public-UI
+cases: actual capacity/purchase, both template orientations, source PNG decoding,
+exact ownership and whole paused Save/Load. Both fresh FullHD scenes were opened;
+the original Load observer failure remains published. This acceptance predates
+the final demanded-image loader and does not claim its native performance gate.
+Classroom teacher desks are integrated and their actual public recipe is ready.
+Reception armchairs retain their original physical parts and have 72 genuine
+Blender renders; a dedicated Reception-only context mapping is being integrated.
+
+The full combined local verification found concrete source and Windows task
+environment failures. [Original output and scoped repairs](../../research/2026-10-03-integrated-verification-repairs/README.md)
+remain published, including numeric component seed order, explicit Blender
+version checks, tooling type coverage and truthful room-metric expectations.
+Three agents continue Reception integration, native demanded-image profiling and
+tooling/gate repairs while root integrates results. Camera-controls allocation
+still awaits the previously displayed owner choice; unrelated work proceeds.
+
+The combined published d4299094d6 product now passes the complete unchanged
+local verification gate: 693 passing test files, 8208 tests passed/two explicit
+skips, both strict types and the real Cloudflare production build. Classroom
+and Reception also pass six actual public FullHD capacity/purchase/whole paused
+SaveLoad cases; both room orientations were opened and reviewed. Raw proof is
+retained in their native preparation records. Per-fixture consumer pixel gates
+and exact hosted CI remain separate. The genuine new student-chair model adds
+a connected side-writing tablet/notebook to the retained complete school chair;
+three agents continue its actual integration, ordinary object rotation and
+minimap work. The rotation control's proposed new copy remains a review draft
+until the owner's clickable decision; the accepted quarter-turn command path
+can proceed independently.
+
+### 2026-10-03 student furniture and individual placement integration
+
+The genuine student writing chair is now registered and selected only for
+Classroom chairs; retained teacher desks, Reception and generic furniture keep
+their contexts. Approved individual quarter turns reach real construction and
+whole V8 persistence. The unapproved Rotate object UI draft is kept separately.
+Minimap unchanged-text publications now retain the actual DOM child.
+[Current combined checkpoint](../../research/2026-10-03-combined-student-rotation-minimap/README.md)
+preserves the original full-gate failures and prepares exact combined student
+and teacher PNG/body/native construction checks without raising any budget.
+Three agents continue Reception registration-desk models, authoritative object
+preflight and concrete gameplay fixes. Root owns integration and one browser.
+Approved sharding remains merged with terminal successful main CI; the angled
+release still needs exact full hosted CI and serial landing of its dependencies.
+
+### 2026-10-03 authoritative ordinary placement and consolidated delivery
+
+Actual combined student/teacher purchases in both turns, whole paused Save/Load,
+six minimap publication states and World grouped-radio held-arrow ownership are
+published GREEN, with the genuine World producer omission and byte-exact source
+and9383compiled-file restoration. The full a7db local gate passes8229tests/698files,
+two explicit skips, strict application/tools types and production build.
+
+The [next coherent integration](../../research/2026-10-03-authoritative-object-model-integration/README.md)
+mounts the actual worker object preflight and new Reception registration-desk
+Blender model. A confirmed pre-release #2022 lifecycle regression was recorded
+and repaired: New/Load cancel old gestures/previews while retaining the public
+tool mode. Four genuine compiled player cases on2023be9 pass, including a fresh
+post-Load placement without rearming, exact square-wall/removal coordinates and
+visible Yard bench before/after Save/Load. Dedicated stationary ghost and combined
+Reception acceptance are next. No pending V9/rotation-control draft is imported.
+
+Independent review confirms main and own stacked dependencies are already
+ancestors, allowing one consolidated own PR to receive the full exact-head gate.
+Old runs/PRs stay intact; partial green never permits release. Three agents
+continue retained north-door full-angle completion, concrete rotation-control
+review and actual construction lifecycle fixes while root integrates. Each
+coherent result is pushed; top priority remains a genuinely playable adjustable
+camera/full-square/templates/model product in FullHD, not screenshots alone.
+
+### 2026-10-03 stationary placement and retained backside door poses
+
+The real stationary ordinary-object route now passes its entire native case:
+allowed then blocked worker verdicts without physical mouse movement, exact
+secondary-square claim, independently measured blocked tint, Escape, old held
+release rejection on Load/New, fresh placement without rearming, literal owners,
+money and whole paused V8 snapshots. Combined Reception desk and waiting chairs
+pass three actual capacity and q0/q1 purchase/SaveLoad cases; fresh FullHD loaded
+scenes were opened. The complete local gate on66fb8df passes8441cases/707files,
+two existing skips, strict types and the actual production build. Original
+preparation failures remain preserved in the integration record.
+
+The retained north-door Blender assembly now has72 genuine poses, including
+backside135/225 views; original source, nine old poses and accepted alias are
+unchanged. Its real public BasicCell camera/wholeSaveLoad observation and the
+fresh final combined gate are next. Three obsolete browser consumers have been
+corrected with original failures and exact reversion controls retained. No
+unapproved ordinary Rotate UI or V9 history fields enter this delivery. Root
+integrates; three agents continue new genuine art, reviewable rotation UI and
+concrete existing construction bugs. Each coherent checkpoint is pushed and
+the consolidated main PR still requires all exact hosted gates before landing.
+
+The final frozen63f8288product now passes strict types, the complete8448case
+suite/708files/two existing skips with four local test workers, actual production
+build and the asset gate. Three real BasicCell capacity/q0/q1native cases pass,
+including actual north-door back135/225poses, genuine source/loader bodies and
+whole paused Save/Load. Root opened both fresh FullHD backside frames. Original
+default-worker scan timeouts remain published; no case budget is raised.
+
+Separate new work is already on GitHub: the retained52part Staff chair gains
+two connected pads and72genuine Blender poses; #2023 forbids a separately
+purchased object on an owned template door square. The owner has now approved
+V9 with construction.newerActionThanTheStackTop and construction.orderRevisions,
+older-save data retained/defaultfalse andempty map, copy/refunds unchanged.
+These followups do not silently change the frozen graphics product. Three
+agents continue Staff native preparation/new models, actual corrected rotation
+UI measurements and the approved V9 implementation while root submits and
+integrates the actual game. Hosted exact-head and serial main gates still apply.

@@ -1,0 +1,125 @@
+{
+  "subject": "63f8288f1386f6ac4194c189e1888e5b261a501d",
+  "baseMain": "6d25ebd896c76fb09c2d387185eb1bd8b2a48b8d",
+  "version": "0.0.839",
+  "verification": {
+    "typecheckExit": 0,
+    "completeSuiteExit": 0,
+    "productionBuildExit": 0,
+    "passingCases": 8448,
+    "passingFiles": 708,
+    "existingSkips": 2,
+    "localMaxWorkers": 4,
+    "commands": [
+      "pnpm --config.verify-deps-before-run=false typecheck",
+      "pnpm --config.verify-deps-before-run=false exec vitest run --maxWorkers=4",
+      "node scripts/cloudflare-task.mjs build production"
+    ],
+    "canonicalEarlierFailuresRetained": true,
+    "caseTimeoutMs": 5000
+  },
+  "assetCatalog": {
+    "exit": 0,
+    "actorClipAtlases": 10,
+    "renderedEntries": 40
+  },
+  "native": {
+    "config": "tests/browser/native-interior-north-door.audit.config.ts",
+    "port": 5365,
+    "workers": 1,
+    "retries": 0,
+    "caseTimeoutMs": 60000,
+    "expectTimeoutMs": 10000,
+    "stats": {
+      "startTime": "2026-10-03T16:21:42.244Z",
+      "duration": 142517.532,
+      "expected": 3,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "cases": [
+      {
+        "title": "player furnishes delivery and storage plans before the cot test",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 42538,
+            "errors": []
+          }
+        ]
+      },
+      {
+        "title": "player builds the existing bed in a Basic cell q0 and keeps it after Save/Load at Full HD",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 59323,
+            "errors": []
+          }
+        ]
+      },
+      {
+        "title": "player builds the existing bed in a Basic cell q1 and keeps it after Save/Load at Full HD",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 37324,
+            "errors": []
+          }
+        ]
+      }
+    ],
+    "shots": [
+      {
+        "name": "north-door-camera135-source135-elev45.png",
+        "sha256": "66807bb8d64c1bd7a55fc35fd551716f04dd290c3f2b8a58a0c25e22b443aeda",
+        "bytes": 1445661,
+        "width": 1920,
+        "height": 1080,
+        "rootViewed": true
+      },
+      {
+        "name": "north-door-camera225-source-135-elev45.png",
+        "sha256": "c8823ffca9dd5a6c4340ec001b7d869b7bc36a52b70479e189e1d94c39db988f",
+        "bytes": 1479037,
+        "width": 1920,
+        "height": 1080,
+        "rootViewed": true
+      }
+    ],
+    "publicCameraRightClicks": [
+      12,
+      6,
+      6
+    ],
+    "wholePausedEqualityAtBothBacksidesAndFullTurn": true,
+    "boundTextureIntrospection": false,
+    "calibratedConsumerPixelFloor": false,
+    "visualReview": "Both actual FullHD native frames opened by root. Cell door frame and rear leaf, bed, connected toilet and full-square walls visibly follow the genuine camera rotation. No new pixel threshold or private binding assertion is inferred."
+  },
+  "reviewFiles": [
+    {
+      "source": "C:/Users/matma/AppData/Local/Temp/lockstate-root63-release-review-20261003.cjs",
+      "archive": "independent-release-review.cjs.txt",
+      "sha256": "c8b0ec11bba4cbcfebb534e3f0a51775fe8b6e22191fa06ea33635e970a46e87",
+      "bytes": 4665
+    },
+    {
+      "source": "C:/Users/matma/AppData/Local/Temp/lockstate-root63-release-review-20261003.json",
+      "archive": "independent-release-review.json",
+      "sha256": "79182d524d5fd4d00fc4692b2860bc6a157a285e5f2b2370a7f129c1f7b7fc3c",
+      "bytes": 11572
+    },
+    {
+      "source": "C:/Users/matma/AppData/Local/Temp/lockstate-root63-release-review-20261003.initial-relative-source-resolution-error.json",
+      "archive": "independent-release-review.initial-relative-source-resolution-error.json",
+      "sha256": "751862f44709e3fe43971f854d769ec139c4d7128ed9347fc64ae30e03a642cd",
+      "bytes": 14234
+    }
+  ],
+  "release": "all same-head hosted jobs, mergeability and serial main still required; unapproved individual rotation/global layout excluded; newly approved V9 is a separate followup"
+}

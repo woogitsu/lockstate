@@ -1,0 +1,37 @@
+  test('the Build catalogue offers a door its edge chooser, from the real registry (#531)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openApp(page);
+    await page.getByRole('button', { name: 'New prison' }).click();
+    await expect(page.locator('.hud-clock__day')).toHaveText('1');
+
+    await page.getByRole('button', { name: 'Build' }).click();
+    const coordinates = page.locator('.hud-build__coordinates');
+    await coordinates.locator('> .ui-section__header').click();
+    await expect(coordinates).toHaveAttribute('data-collapsed', 'false');
+
+    // The wall first, where the chooser is undisputed -- so a hidden chooser
+    // below is a fact about the door row rather than about the whole panel.
+    const chooser = page.locator('.hud-build .ui-choice');
+    await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
+    await expect(
+      page.locator('.hud-build__list [data-buildable="wall-brick"][data-selected="true"]'),
+      'the wall row did not become the selection',
+    ).toHaveCount(1);
+    await expect(chooser).toBeVisible();
+
+    // The retained edge the defect leaked. Chosen on the wall, where the
+    // control is undisputed.
+    await chooser.locator('[data-choice="west"]').click();
+
+    // And the row this issue is about. A door is edge geometry -- it writes
+    // `DOOR_EDGE_NUMERIC_ID` onto a tile edge -- so the chooser must survive
+    // the selection rather than take the setting off screen while the panel
+    // goes on submitting it.
+    await page.locator('.hud-build__list [data-buildable="door-wooden"]').click();
+    await expect(
+      page.locator('.hud-build__list [data-buildable="door-wooden"][data-selected="true"]'),
+      'the door row did not become the selection, so the chooser below is about something else',
+    ).toHaveCount(1);
+    await expect(chooser).toBeVisible();
+    await expect(chooser.locator('[data-choice="west"]')).toHaveAttribute('aria-checked', 'true');
+  });

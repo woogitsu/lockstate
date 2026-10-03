@@ -1,0 +1,5713 @@
+[
+  {
+    "source": "assets/source/blender/door.interior.leaf.open.blend",
+    "sourceSha256": "48a27d1b212e88121e6b55661452f70df1129e78f8825eebc3913db1d5aeaf5f",
+    "blenderVersion": [
+      5,
+      2,
+      1
+    ],
+    "meshCount": 20,
+    "bounds": {
+      "min": [
+        -0.8462811708450317,
+        -0.6383092403411865,
+        0.0
+      ],
+      "max": [
+        -0.3044038712978363,
+        0.04221227765083313,
+        2.2890000343322754
+      ]
+    },
+    "collections": [
+      {
+        "name": "Collection",
+        "hideRender": false,
+        "assetId": "",
+        "footprintTiles": []
+      },
+      {
+        "name": "door.interior.leaf.open",
+        "hideRender": false,
+        "assetId": "door.interior.leaf.open",
+        "footprintTiles": [
+          1,
+          1
+        ]
+      }
+    ],
+    "sourceBytesUnchanged": true,
+    "materialGraphHashes": [
+      {
+        "name": "Brushed galvanized handle and hinges",
+        "sha256": "311efd5f05004ebef2d74b98ac83d20d8310ee357809cebfb2bcdc749604fbde"
+      },
+      {
+        "name": "Hardware shadow",
+        "sha256": "ad3a0385d37418e71899c118797b497f0ed039c898774e40ff3cddf77a65527e"
+      },
+      {
+        "name": "Material",
+        "sha256": "7fbc4d9a9f1c32b971a6350999cba4e4864f7b092bc5f6e2590ac5a93fbfa613"
+      },
+      {
+        "name": "Recessed dark panel seam",
+        "sha256": "a4f46f55d36c385f3623db5416d9dcf86b333b539504aa15239cfd6b19c73845"
+      },
+      {
+        "name": "Timber end grain",
+        "sha256": "39596d5daa5fdd87a4f29e54d6eaad153baf8af6ec035d36096122ce09173eb5"
+      },
+      {
+        "name": "Warm walnut raised panel",
+        "sha256": "53367513abd9e9c0e9679429dce5e237181b61bcded0918bfb65f4cc3dc2c2b0"
+      },
+      {
+        "name": "Warm walnut slab",
+        "sha256": "029e0e3d3ff71ecbf2f09a670b0d25b3e9ba43bed83d60ba2c014e9b70b6cd61"
+      }
+    ],
+    "parts": [
+      {
+        "name": "Handle socket -1",
+        "min": [
+          -0.7997094988822937,
+          -0.5241262316703796,
+          1.0369999408721924
+        ],
+        "max": [
+          -0.7544082999229431,
+          -0.47882506251335144,
+          1.0829999446868896
+        ],
+        "evaluatedPositionSha256": "b28148c6da35fb7d1e3bab510c1841ba38f45b97f704cf1a03395f3ed63aa0bb",
+        "hideRender": false,
+        "materialNames": [
+          "Hardware shadow"
+        ]
+      },
+      {
+        "name": "Handle socket 1",
+        "min": [
+          -0.7112410664558411,
+          -0.5860725045204163,
+          1.0369999408721924
+        ],
+        "max": [
+          -0.6659398674964905,
+          -0.5407713055610657,
+          1.0829999446868896
+        ],
+        "evaluatedPositionSha256": "4391e6373e509a0b656478a6f4e0a676bc2327d8b9d1dada05620a7411d440b5",
+        "hideRender": false,
+        "materialNames": [
+          "Hardware shadow"
+        ]
+      },
+      {
+        "name": "Hinge barrel 0.38",
+        "min": [
+          -0.4293619692325592,
+          -0.06187192723155022,
+          0.29499998688697815
+        ],
+        "max": [
+          -0.3044038712978363,
+          0.04221227765083313,
+          0.4650000035762787
+        ],
+        "evaluatedPositionSha256": "098968b5fa135de8b90d53795fd62483b065c7f3b5557990874cf131ab3b811c",
+        "hideRender": false,
+        "materialNames": [
+          "Brushed galvanized handle and hinges"
+        ]
+      },
+      {
+        "name": "Hinge barrel 1.89",
+        "min": [
+          -0.4293619692325592,
+          -0.06187192723155022,
+          1.8049999475479126
+        ],
+        "max": [
+          -0.3044038712978363,
+          0.04221227765083313,
+          1.975000023841858
+        ],
+        "evaluatedPositionSha256": "7908c81bf484a47e8b6d90c4fc93bef0104445fac1e8b97e0f12c6852c77b054",
+        "hideRender": false,
+        "materialNames": [
+          "Brushed galvanized handle and hinges"
+        ]
+      },
+      {
+        "name": "Hinge pin 0.38",
+        "min": [
+          -0.3879428207874298,
+          -0.03088971972465515,
+          0.46299999952316284
+        ],
+        "max": [
+          -0.3458230197429657,
+          0.01123007107526064,
+          0.4789999723434448
+        ],
+        "evaluatedPositionSha256": "bb2a7bf545f489bc6383571730ca6cac75a4e418559400283fbf71f933739b48",
+        "hideRender": false,
+        "materialNames": [
+          "Hardware shadow"
+        ]
+      },
+      {
+        "name": "Hinge pin 1.89",
+        "min": [
+          -0.3879428207874298,
+          -0.03088971972465515,
+          1.972999930381775
+        ],
+        "max": [
+          -0.3458230197429657,
+          0.01123007107526064,
+          1.9889999628067017
+        ],
+        "evaluatedPositionSha256": "70dc460086940eacbac762425dc38be321326508e203aa948f949a0d27296b46",
+        "hideRender": false,
+        "materialNames": [
+          "Hardware shadow"
+        ]
+      },
+      {
+        "name": "Latch plate -1",
+        "min": [
+          -0.8086146116256714,
+          -0.546008288860321,
+          0.9699999094009399
+        ],
+        "max": [
+          -0.7422264814376831,
+          -0.45923730731010437,
+          1.149999976158142
+        ],
+        "evaluatedPositionSha256": "ea9ca564d224c482d7c9278e8ebebd54ccde30f6a96cc52c61653a78eaa1eda5",
+        "hideRender": false,
+        "materialNames": [
+          "Brushed galvanized handle and hinges"
+        ]
+      },
+      {
+        "name": "Latch plate 1",
+        "min": [
+          -0.7234228849411011,
+          -0.6056602597236633,
+          0.9699999094009399
+        ],
+        "max": [
+          -0.6570347547531128,
+          -0.5188892483711243,
+          1.149999976158142
+        ],
+        "evaluatedPositionSha256": "915ddb814a8c773d82c45cc4d5545353fe5e7a8b2f79fb91884a6c2c1493526d",
+        "hideRender": false,
+        "materialNames": [
+          "Brushed galvanized handle and hinges"
+        ]
+      },
+      {
+        "name": "Panel dark recess -1 0.65",
+        "min": [
+          -0.7799375653266907,
+          -0.526143491268158,
+          0.2849999666213989
+        ],
+        "max": [
+          -0.44315090775489807,
+          -0.049378737807273865,
+          1.0149999856948853
+        ],
+        "evaluatedPositionSha256": "5d2bb8e5b07734919768f4afba8e9f5e16621fbec7e4542cf0f66564423765bd",
+        "hideRender": false,
+        "materialNames": [
+          "Recessed dark panel seam"
+        ]
+      },
+      {
+        "name": "Panel dark recess -1 1.62",
+        "min": [
+          -0.7799375653266907,
+          -0.526143491268158,
+          1.2549999952316284
+        ],
+        "max": [
+          -0.44315090775489807,
+          -0.049378737807273865,
+          1.9850000143051147
+        ],
+        "evaluatedPositionSha256": "ab96e1b91d519fdb9ea7215e4877c38bf9c9c9139470694ba58a7a6dba23717b",
+        "hideRender": false,
+        "materialNames": [
+          "Recessed dark panel seam"
+        ]
+      },
+      {
+        "name": "Panel dark recess 1 0.65",
+        "min": [
+          -0.7127671241760254,
+          -0.5731767416000366,
+          0.2849999666213989
+        ],
+        "max": [
+          -0.3759804666042328,
+          -0.09641198813915253,
+          1.0149999856948853
+        ],
+        "evaluatedPositionSha256": "65b602353f3210743c387ba7903265a55305449780910919b03efc129f2974d3",
+        "hideRender": false,
+        "materialNames": [
+          "Recessed dark panel seam"
+        ]
+      },
+      {
+        "name": "Panel dark recess 1 1.62",
+        "min": [
+          -0.7127671241760254,
+          -0.5731767416000366,
+          1.2549999952316284
+        ],
+        "max": [
+          -0.3759804666042328,
+          -0.09641198813915253,
+          1.9850000143051147
+        ],
+        "evaluatedPositionSha256": "339306061125bf35607fbb7994b3b78a38b96b5f09a60e34186389065f8142d7",
+        "hideRender": false,
+        "materialNames": [
+          "Recessed dark panel seam"
+        ]
+      },
+      {
+        "name": "Raised timber panel -1 0.65",
+        "min": [
+          -0.7725626826286316,
+          -0.5012416839599609,
+          0.3149999678134918
+        ],
+        "max": [
+          -0.46363240480422974,
+          -0.06510327756404877,
+          0.9850000143051147
+        ],
+        "evaluatedPositionSha256": "d835edaa04cd6870c658799d1c3141ca877eeba66d88e480e2a602e7afed5a1e",
+        "hideRender": false,
+        "materialNames": [
+          "Warm walnut raised panel"
+        ]
+      },
+      {
+        "name": "Raised timber panel -1 1.62",
+        "min": [
+          -0.7725626826286316,
+          -0.5012416839599609,
+          1.284999966621399
+        ],
+        "max": [
+          -0.46363240480422974,
+          -0.06510327756404877,
+          1.9550000429153442
+        ],
+        "evaluatedPositionSha256": "b159f13d9e8cdbd959311b0068598a31d89b4ef05beb213ffdce5f5ac6d8d297",
+        "hideRender": false,
+        "materialNames": [
+          "Warm walnut raised panel"
+        ]
+      },
+      {
+        "name": "Raised timber panel 1 0.65",
+        "min": [
+          -0.6922857165336609,
+          -0.5574522018432617,
+          0.3149999678134918
+        ],
+        "max": [
+          -0.38335543870925903,
+          -0.12131379544734955,
+          0.9850000143051147
+        ],
+        "evaluatedPositionSha256": "af7e5d92d98da9e011d8222adce23846c45ab44343d6022234f870c26112ff6f",
+        "hideRender": false,
+        "materialNames": [
+          "Warm walnut raised panel"
+        ]
+      },
+      {
+        "name": "Raised timber panel 1 1.62",
+        "min": [
+          -0.6922857165336609,
+          -0.5574522018432617,
+          1.284999966621399
+        ],
+        "max": [
+          -0.38335543870925903,
+          -0.12131379544734955,
+          1.9550000429153442
+        ],
+        "evaluatedPositionSha256": "3cbf0a59bbe673116c0baadb6d5dc63f6eb1134582de1554486cb2bf65294917",
+        "hideRender": false,
+        "materialNames": [
+          "Warm walnut raised panel"
+        ]
+      },
+      {
+        "name": "Round steel grip -1",
+        "min": [
+          -0.8462811708450317,
+          -0.5317014455795288,
+          1.0129998922348022
+        ],
+        "max": [
+          -0.7537091970443726,
+          -0.4391295313835144,
+          1.1069999933242798
+        ],
+        "evaluatedPositionSha256": "b0614665fe2e643585a419bb2cadfaf4d9ea12cc3c249532d23cfa960fe9f076",
+        "hideRender": false,
+        "materialNames": [
+          "Brushed galvanized handle and hinges"
+        ]
+      },
+      {
+        "name": "Round steel grip 1",
+        "min": [
+          -0.7119401693344116,
+          -0.6257680058479309,
+          1.0129998922348022
+        ],
+        "max": [
+          -0.6193681955337524,
+          -0.5331960320472717,
+          1.1069999933242798
+        ],
+        "evaluatedPositionSha256": "dbb723c4328a637b3f09f9928c0c67dd2f9ee0db78d09d80ec23be259e5d4fdb",
+        "hideRender": false,
+        "materialNames": [
+          "Brushed galvanized handle and hinges"
+        ]
+      },
+      {
+        "name": "Timber door slab",
+        "min": [
+          -0.8205125331878662,
+          -0.6383092403411865,
+          0.0
+        ],
+        "max": [
+          -0.335405558347702,
+          0.01575370691716671,
+          2.2799999713897705
+        ],
+        "evaluatedPositionSha256": "830e064b0d938041c07113036f36f799cf16acd5ab1453d2e9d5cd7909544f8f",
+        "hideRender": false,
+        "materialNames": [
+          "Warm walnut slab"
+        ]
+      },
+      {
+        "name": "Visible top end grain",
+        "min": [
+          -0.8098435997962952,
+          -0.623711109161377,
+          2.2789998054504395
+        ],
+        "max": [
+          -0.34607449173927307,
+          0.0011555571109056473,
+          2.2890000343322754
+        ],
+        "evaluatedPositionSha256": "bb69e3646e2ed689fd44b5534d72bd23223d0e58dc82c17812aed2bf0805123a",
+        "hideRender": false,
+        "materialNames": [
+          "Timber end grain"
+        ]
+      }
+    ]
+  },
+  {
+    "source": "assets/source/blender/wall.interior.cutaway.blend",
+    "sourceSha256": "98b264c5b3ea15658d7d8996f403024928c660135a66025adccba1d385927e6c",
+    "blenderVersion": [
+      5,
+      2,
+      1
+    ],
+    "meshCount": 85,
+    "bounds": {
+      "min": [
+        -0.5,
+        -0.5,
+        0.0
+      ],
+      "max": [
+        0.5,
+        0.5,
+        2.5999999046325684
+      ]
+    },
+    "collections": [
+      {
+        "name": "Collection",
+        "hideRender": false,
+        "assetId": "",
+        "footprintTiles": []
+      },
+      {
+        "name": "wall.interior.corner.inner.cutaway",
+        "hideRender": false,
+        "assetId": "wall.interior.corner.inner.cutaway",
+        "footprintTiles": [
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "name": "wall.interior.corner.inner.full",
+        "hideRender": false,
+        "assetId": "wall.interior.corner.inner.full",
+        "footprintTiles": [
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "name": "wall.interior.corner.outer.cutaway",
+        "hideRender": false,
+        "assetId": "wall.interior.corner.outer.cutaway",
+        "footprintTiles": [
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "name": "wall.interior.corner.outer.full",
+        "hideRender": false,
+        "assetId": "wall.interior.corner.outer.full",
+        "footprintTiles": [
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "name": "wall.interior.doorframe.cutaway",
+        "hideRender": false,
+        "assetId": "wall.interior.doorframe.cutaway",
+        "footprintTiles": [
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "name": "wall.interior.doorframe.full",
+        "hideRender": false,
+        "assetId": "wall.interior.doorframe.full",
+        "footprintTiles": [
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "name": "wall.interior.end.cutaway",
+        "hideRender": false,
+        "assetId": "wall.interior.end.cutaway",
+        "footprintTiles": [
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "name": "wall.interior.end.full",
+        "hideRender": false,
+        "assetId": "wall.interior.end.full",
+        "footprintTiles": [
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "name": "wall.interior.junction.cross.cutaway",
+        "hideRender": false,
+        "assetId": "wall.interior.junction.cross.cutaway",
+        "footprintTiles": [
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "name": "wall.interior.junction.cross.full",
+        "hideRender": false,
+        "assetId": "wall.interior.junction.cross.full",
+        "footprintTiles": [
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "name": "wall.interior.junction.t.cutaway",
+        "hideRender": false,
+        "assetId": "wall.interior.junction.t.cutaway",
+        "footprintTiles": [
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "name": "wall.interior.junction.t.full",
+        "hideRender": false,
+        "assetId": "wall.interior.junction.t.full",
+        "footprintTiles": [
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "name": "wall.interior.module.cutaway",
+        "hideRender": false,
+        "assetId": "wall.interior.module.cutaway",
+        "footprintTiles": [
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "name": "wall.interior.module.full",
+        "hideRender": false,
+        "assetId": "wall.interior.module.full",
+        "footprintTiles": [
+          1.0,
+          1.0
+        ]
+      }
+    ],
+    "sourceBytesUnchanged": true,
+    "materialGraphHashes": [
+      {
+        "name": "Material",
+        "sha256": "7fbc4d9a9f1c32b971a6350999cba4e4864f7b092bc5f6e2590ac5a93fbfa613"
+      },
+      {
+        "name": "muted sandstone coping",
+        "sha256": "0a6cc8f15ff4945756df8cffa1fada93af9c6ada5bf6aa03a2ffa7df195ba15b"
+      },
+      {
+        "name": "pale stone inlay",
+        "sha256": "49ea58166ea817cd3d432d9087e5815e82bb93cf0c5207378658097bd17aef8e"
+      },
+      {
+        "name": "recessed warm plaster joint",
+        "sha256": "1c7a1ae00562114b5e13348845391ea4024e202cdb352f6fa86302e8aba6909b"
+      },
+      {
+        "name": "warm charcoal skirting",
+        "sha256": "858e14e0f6acf9b7990800ca31fff2e1c69faf7702d0d1117917ff1ec0b4712b"
+      },
+      {
+        "name": "warm lime plaster",
+        "sha256": "e3a22bf0627b627edd49a933122b13333b4c382d49df969f5a0e6a77d82940ed"
+      }
+    ],
+    "parts": [
+      {
+        "name": "T crossbar coping",
+        "min": [
+          -0.5,
+          -0.14000000059604645,
+          2.5
+        ],
+        "max": [
+          0.5,
+          0.14000000059604645,
+          2.5799999237060547
+        ],
+        "evaluatedPositionSha256": "e2dafe4e5357e9152ba49289da0644e4db708dcb93da5f0b062e104c48275d5f",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "T crossbar coping.001",
+        "min": [
+          -0.5,
+          -0.14000000059604645,
+          0.5199999809265137
+        ],
+        "max": [
+          0.5,
+          0.14000000059604645,
+          0.6000000238418579
+        ],
+        "evaluatedPositionSha256": "0459613a2292098599fbbaf431358dd9ba324100c843c9c5fd2103174ac55be6",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "T crossbar enamel line",
+        "min": [
+          -0.46000000834465027,
+          -0.042500000447034836,
+          2.5789999961853027
+        ],
+        "max": [
+          0.46000000834465027,
+          0.042500000447034836,
+          2.5910000801086426
+        ],
+        "evaluatedPositionSha256": "3ae082d985279a3ee0900d7ccfccde61a1ae264530c2f733cd09eabfa9ae9fac",
+        "hideRender": false,
+        "materialNames": [
+          "pale stone inlay"
+        ]
+      },
+      {
+        "name": "T crossbar enamel line.001",
+        "min": [
+          -0.46000000834465027,
+          -0.042500000447034836,
+          0.5990000367164612
+        ],
+        "max": [
+          0.46000000834465027,
+          0.042500000447034836,
+          0.6110000014305115
+        ],
+        "evaluatedPositionSha256": "abad98e34c9de758fcb6856e844236b13394dc071c3acf7d87baa6d446d0c7bd",
+        "hideRender": false,
+        "materialNames": [
+          "pale stone inlay"
+        ]
+      },
+      {
+        "name": "T crossbar painted core",
+        "min": [
+          -0.5,
+          -0.125,
+          0.0
+        ],
+        "max": [
+          0.5,
+          0.125,
+          2.5
+        ],
+        "evaluatedPositionSha256": "6cda3d4f567a86168d15f78616408fb65e4d901ee13d814bd3dd289881c821a9",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "T crossbar painted core.001",
+        "min": [
+          -0.5,
+          -0.125,
+          0.0
+        ],
+        "max": [
+          0.5,
+          0.125,
+          0.5199999809265137
+        ],
+        "evaluatedPositionSha256": "cf1d9b14d37e48ca82a24ec50d9f6ba2c6b5e9d231be94accebe09479a83e334",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "T crossbar skirting -1",
+        "min": [
+          -0.5,
+          -0.13899999856948853,
+          0.0
+        ],
+        "max": [
+          0.5,
+          -0.11700000613927841,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "310c5dd0181deeefb27fc4c69f8493a06f8fcdfe86d88106ef16c78329b6fcf5",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "T crossbar skirting -1.001",
+        "min": [
+          -0.5,
+          -0.13899999856948853,
+          0.0
+        ],
+        "max": [
+          0.5,
+          -0.11700000613927841,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "310c5dd0181deeefb27fc4c69f8493a06f8fcdfe86d88106ef16c78329b6fcf5",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "T crossbar skirting 1",
+        "min": [
+          -0.5,
+          0.11700000613927841,
+          0.0
+        ],
+        "max": [
+          0.5,
+          0.13899999856948853,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "f6ef8fea2241f4fcd9f0061852d2405b5d0b9e3084ecbcd8d66187056231065c",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "T crossbar skirting 1.001",
+        "min": [
+          -0.5,
+          0.11700000613927841,
+          0.0
+        ],
+        "max": [
+          0.5,
+          0.13899999856948853,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "f6ef8fea2241f4fcd9f0061852d2405b5d0b9e3084ecbcd8d66187056231065c",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "T joint continuous plaster",
+        "min": [
+          -0.14499999582767487,
+          -0.14499999582767487,
+          0.0
+        ],
+        "max": [
+          0.14499999582767487,
+          0.14499999582767487,
+          2.5
+        ],
+        "evaluatedPositionSha256": "0a2383dd1d03a6c2f35ee318c23eef9b4254bc1636396785262f2e0a75eb6fd0",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "T joint continuous plaster.001",
+        "min": [
+          -0.14499999582767487,
+          -0.14499999582767487,
+          0.0
+        ],
+        "max": [
+          0.14499999582767487,
+          0.14499999582767487,
+          0.5199999809265137
+        ],
+        "evaluatedPositionSha256": "b5fc5c8650454ba74e9ad2076f3847f08255884109457a42a624c4149d675846",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "T joint coping",
+        "min": [
+          -0.1550000011920929,
+          -0.1550000011920929,
+          2.5
+        ],
+        "max": [
+          0.1550000011920929,
+          0.1550000011920929,
+          2.5799999237060547
+        ],
+        "evaluatedPositionSha256": "c556c049882c2da0fa946e059f9c0e95f6fe79ba0b2db1b14c35bae2e2212a72",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "T joint coping.001",
+        "min": [
+          -0.1550000011920929,
+          -0.1550000011920929,
+          0.5199999809265137
+        ],
+        "max": [
+          0.1550000011920929,
+          0.1550000011920929,
+          0.6000000238418579
+        ],
+        "evaluatedPositionSha256": "6e3f883e38d5d40a8d4d1796f1d23939dffb433155eb4ba459352ea22cec67c6",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "T positive-y stem coping",
+        "min": [
+          -0.14000000059604645,
+          0.0,
+          2.5
+        ],
+        "max": [
+          0.14000000059604645,
+          0.5,
+          2.5799999237060547
+        ],
+        "evaluatedPositionSha256": "27a398f0d3d79f9e6f141d02b19b4a3dfa7134e1134818a1220ae00809fdf5d5",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "T positive-y stem coping.001",
+        "min": [
+          -0.14000000059604645,
+          0.0,
+          0.5199999809265137
+        ],
+        "max": [
+          0.14000000059604645,
+          0.5,
+          0.6000000238418579
+        ],
+        "evaluatedPositionSha256": "ac1c74c9384dca7a94d2c081adc701e806861b4426d59e3b7f9ead8de7dc18e9",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "T positive-y stem enamel line",
+        "min": [
+          -0.042500000447034836,
+          0.040000006556510925,
+          2.5789999961853027
+        ],
+        "max": [
+          0.042500000447034836,
+          0.4599999785423279,
+          2.5910000801086426
+        ],
+        "evaluatedPositionSha256": "6ae1c06c507b1e489b7d17b85900a01173b389f785649ee2446fa54fe77ca72c",
+        "hideRender": false,
+        "materialNames": [
+          "pale stone inlay"
+        ]
+      },
+      {
+        "name": "T positive-y stem enamel line.001",
+        "min": [
+          -0.042500000447034836,
+          0.040000006556510925,
+          0.5990000367164612
+        ],
+        "max": [
+          0.042500000447034836,
+          0.4599999785423279,
+          0.6110000014305115
+        ],
+        "evaluatedPositionSha256": "a14cef5a3143c5c61df94341df12a2568492b9193a1ae51914022b3544612669",
+        "hideRender": false,
+        "materialNames": [
+          "pale stone inlay"
+        ]
+      },
+      {
+        "name": "T positive-y stem painted core",
+        "min": [
+          -0.125,
+          0.0,
+          0.0
+        ],
+        "max": [
+          0.125,
+          0.5,
+          2.5
+        ],
+        "evaluatedPositionSha256": "a4d12b3c68b3bca4053929638233297dda816380259d96cc7de8b40a296903f5",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "T positive-y stem painted core.001",
+        "min": [
+          -0.125,
+          0.0,
+          0.0
+        ],
+        "max": [
+          0.125,
+          0.5,
+          0.5199999809265137
+        ],
+        "evaluatedPositionSha256": "f4a9b9f606b5e4c069f0f8a69dd1cc08ec759ab7c7e5d35a44c56432caa64966",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "T positive-y stem skirting -1",
+        "min": [
+          -0.13899999856948853,
+          0.0,
+          0.0
+        ],
+        "max": [
+          -0.11700000613927841,
+          0.5,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "98efc84cbed3bd1424bc2c1c9985a7d7464b485e4b71482260321e57dd9e2e77",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "T positive-y stem skirting -1.001",
+        "min": [
+          -0.13899999856948853,
+          0.0,
+          0.0
+        ],
+        "max": [
+          -0.11700000613927841,
+          0.5,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "98efc84cbed3bd1424bc2c1c9985a7d7464b485e4b71482260321e57dd9e2e77",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "T positive-y stem skirting 1",
+        "min": [
+          0.11700000613927841,
+          0.0,
+          0.0
+        ],
+        "max": [
+          0.13899999856948853,
+          0.5,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "81ab80d8b35981cf79894f88f88db09fd38b0a8ecd4fb69ce2bec19e70310479",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "T positive-y stem skirting 1.001",
+        "min": [
+          0.11700000613927841,
+          0.0,
+          0.0
+        ],
+        "max": [
+          0.13899999856948853,
+          0.5,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "81ab80d8b35981cf79894f88f88db09fd38b0a8ecd4fb69ce2bec19e70310479",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "cross continuous plaster",
+        "min": [
+          -0.5,
+          -0.5,
+          0.23999999463558197
+        ],
+        "max": [
+          0.5,
+          0.5,
+          2.5
+        ],
+        "evaluatedPositionSha256": "733523277fa1a4f86e84f0be94f62e64c13895158e8a041b1c4643565714769b",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "cross continuous plaster.001",
+        "min": [
+          -0.5,
+          -0.5,
+          0.23999999463558197
+        ],
+        "max": [
+          0.5,
+          0.5,
+          0.5199999809265137
+        ],
+        "evaluatedPositionSha256": "7b633f8469904f3d6316a9aefc1671c1688138e41448b3f1d450a56c82fd3c8d",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "cross coping",
+        "min": [
+          -0.5,
+          -0.5,
+          2.5
+        ],
+        "max": [
+          0.5,
+          0.5,
+          2.5799999237060547
+        ],
+        "evaluatedPositionSha256": "c185cd97c7004fb7bb6a14f18b8ab0930bc3fdf5a50809e21118416c760565af",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "cross coping.001",
+        "min": [
+          -0.5,
+          -0.5,
+          0.5199999809265137
+        ],
+        "max": [
+          0.5,
+          0.5,
+          0.6000000238418579
+        ],
+        "evaluatedPositionSha256": "db89ab52b85048266e0f7ee6cc34eda0256df2b1459b8a559df898513ba23f79",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "cross dark skirting",
+        "min": [
+          -0.5,
+          -0.5,
+          0.0
+        ],
+        "max": [
+          0.5,
+          0.5,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "0025b3b956daa668afd433c17c3f30b4f8200672651cd0524962cc69a266d6c1",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "cross dark skirting.001",
+        "min": [
+          -0.5,
+          -0.5,
+          0.0
+        ],
+        "max": [
+          0.5,
+          0.5,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "0025b3b956daa668afd433c17c3f30b4f8200672651cd0524962cc69a266d6c1",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "door head shadow",
+        "min": [
+          -0.375,
+          -0.14749999344348907,
+          2.297499895095825
+        ],
+        "max": [
+          0.375,
+          -0.13250000774860382,
+          2.322499990463257
+        ],
+        "evaluatedPositionSha256": "0c5c8db1889ce07719163a95f24b87e7358d80dedd095fec733d7659485e8107",
+        "hideRender": false,
+        "materialNames": [
+          "recessed warm plaster joint"
+        ]
+      },
+      {
+        "name": "door jamb -1",
+        "min": [
+          -0.5,
+          -0.125,
+          0.0
+        ],
+        "max": [
+          -0.3799999952316284,
+          0.125,
+          2.5
+        ],
+        "evaluatedPositionSha256": "732d4bd160e0d6d566c74d12aaf81d53b549d765e37fa30b2b44f7e2e6e46881",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "door jamb -1.001",
+        "min": [
+          -0.5,
+          -0.125,
+          0.0
+        ],
+        "max": [
+          -0.3799999952316284,
+          0.125,
+          0.5199999809265137
+        ],
+        "evaluatedPositionSha256": "5cd51e62ccd27ce6890eb5b998097b8a9fc2ad0e0ace7a2ed4972bcb8c5d28db",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "door jamb 1",
+        "min": [
+          0.3799999952316284,
+          -0.125,
+          0.0
+        ],
+        "max": [
+          0.5,
+          0.125,
+          2.5
+        ],
+        "evaluatedPositionSha256": "7d12922c41596c87a94a7815f734f37a6981d6b62f0b4c33c92449881da4d36f",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "door jamb 1.001",
+        "min": [
+          0.3799999952316284,
+          -0.125,
+          0.0
+        ],
+        "max": [
+          0.5,
+          0.125,
+          0.5199999809265137
+        ],
+        "evaluatedPositionSha256": "78001e3cdbf41fd92c3e4c35b3e10c46df2322578c9b839ea4769ceaf75c6161",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "door jamb low guard -1",
+        "min": [
+          -0.5,
+          -0.1459999978542328,
+          0.0
+        ],
+        "max": [
+          -0.3799999952316284,
+          -0.12400000542402267,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "14713ea5393fc2f4f13acb2763ebb2a633f0f0414e6275d819a7e7cff51b94bc",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "door jamb low guard -1.001",
+        "min": [
+          -0.5,
+          -0.1459999978542328,
+          0.0
+        ],
+        "max": [
+          -0.3799999952316284,
+          -0.12400000542402267,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "14713ea5393fc2f4f13acb2763ebb2a633f0f0414e6275d819a7e7cff51b94bc",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "door jamb low guard 1",
+        "min": [
+          0.3799999952316284,
+          -0.1459999978542328,
+          0.0
+        ],
+        "max": [
+          0.5,
+          -0.12400000542402267,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "47347f94d57c5ea9e8420749f0ed95b413624c127035e60c83e234bb493735bd",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "door jamb low guard 1.001",
+        "min": [
+          0.3799999952316284,
+          -0.1459999978542328,
+          0.0
+        ],
+        "max": [
+          0.5,
+          -0.12400000542402267,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "47347f94d57c5ea9e8420749f0ed95b413624c127035e60c83e234bb493735bd",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "door lintel",
+        "min": [
+          -0.5,
+          -0.13500000536441803,
+          2.3400001525878906
+        ],
+        "max": [
+          0.5,
+          0.13500000536441803,
+          2.5
+        ],
+        "evaluatedPositionSha256": "d732478b0b4f885507fb6a32e9cd21cc8f10fad124ef1dee13ffc4995e81fb09",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "door metal reveal -1",
+        "min": [
+          -0.3779999911785126,
+          -0.1899999976158142,
+          0.0
+        ],
+        "max": [
+          -0.35999998450279236,
+          0.06999999284744263,
+          2.5
+        ],
+        "evaluatedPositionSha256": "336acc5a2fa0f9bf83e8d835cab3763a992981736fbdcc3fa386eff4caa8b2b5",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "door metal reveal -1.001",
+        "min": [
+          -0.3779999911785126,
+          -0.1899999976158142,
+          0.0
+        ],
+        "max": [
+          -0.35999998450279236,
+          0.06999999284744263,
+          0.5199999809265137
+        ],
+        "evaluatedPositionSha256": "c61665a78447c40ec284e7194b4bab6a0d02ce2b97af4192d2ccf2e970d39a8d",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "door metal reveal 1",
+        "min": [
+          0.35999998450279236,
+          -0.1899999976158142,
+          0.0
+        ],
+        "max": [
+          0.3779999911785126,
+          0.06999999284744263,
+          2.5
+        ],
+        "evaluatedPositionSha256": "b4e40793f1301dbf0528537437ec17e23a47c26cedd169911bfc9840e64eb3a9",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "door metal reveal 1.001",
+        "min": [
+          0.35999998450279236,
+          -0.1899999976158142,
+          0.0
+        ],
+        "max": [
+          0.3779999911785126,
+          0.06999999284744263,
+          0.5199999809265137
+        ],
+        "evaluatedPositionSha256": "1219fece8820011aaa1d6e6905f737d5fd145540df9a9ddffb15fda5c99422ab",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "end post enamel cap",
+        "min": [
+          0.2199999988079071,
+          -0.1599999964237213,
+          2.5
+        ],
+        "max": [
+          0.4000000059604645,
+          0.1599999964237213,
+          2.5999999046325684
+        ],
+        "evaluatedPositionSha256": "edec30624d5c60c7f2f5c8ca7ba7e819091bcedf5be4dd0c839e755d4bcb60fb",
+        "hideRender": false,
+        "materialNames": [
+          "pale stone inlay"
+        ]
+      },
+      {
+        "name": "end post enamel cap.001",
+        "min": [
+          0.2199999988079071,
+          -0.1599999964237213,
+          0.5199999809265137
+        ],
+        "max": [
+          0.4000000059604645,
+          0.1599999964237213,
+          0.6200000047683716
+        ],
+        "evaluatedPositionSha256": "998c037ea2681b123695ba0c2719f7ae8422e40920bf0da7fa6eb7f9574e2970",
+        "hideRender": false,
+        "materialNames": [
+          "pale stone inlay"
+        ]
+      },
+      {
+        "name": "finished end post",
+        "min": [
+          0.23000000417232513,
+          -0.15000000596046448,
+          0.0
+        ],
+        "max": [
+          0.38999998569488525,
+          0.15000000596046448,
+          2.5
+        ],
+        "evaluatedPositionSha256": "311c1c63da5bac0a6114380469f7d0a1692789cb9af24ec0aa4a592bc102e108",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "finished end post.001",
+        "min": [
+          0.23000000417232513,
+          -0.15000000596046448,
+          0.0
+        ],
+        "max": [
+          0.38999998569488525,
+          0.15000000596046448,
+          0.5199999809265137
+        ],
+        "evaluatedPositionSha256": "ace63bf8518af2643377fa2c2ebc2efbf9cb02366d568ff0a2475574688eed93",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "inner corner coping",
+        "min": [
+          -0.125,
+          -0.125,
+          2.5
+        ],
+        "max": [
+          0.5,
+          0.5,
+          2.5799999237060547
+        ],
+        "evaluatedPositionSha256": "4c35e95055300ad5672f0bc6dc52ccac11ac20f9ce0fdc133d892ad8cc05983b",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "inner corner coping.001",
+        "min": [
+          -0.125,
+          -0.125,
+          0.5199999809265137
+        ],
+        "max": [
+          0.5,
+          0.5,
+          0.6000000238418579
+        ],
+        "evaluatedPositionSha256": "8849ef73e86ed732c23291ad52ab8c25efed76d5159d08b21e602ed7d7601db0",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "inner corner plaster",
+        "min": [
+          -0.125,
+          -0.125,
+          0.23999999463558197
+        ],
+        "max": [
+          0.5,
+          0.5,
+          2.5
+        ],
+        "evaluatedPositionSha256": "34c230c8e82b7561e6e5368c69712c809b18698b004eaf841b54d6a79d0e58e8",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "inner corner plaster.001",
+        "min": [
+          -0.125,
+          -0.125,
+          0.23999999463558197
+        ],
+        "max": [
+          0.5,
+          0.5,
+          0.5199999809265137
+        ],
+        "evaluatedPositionSha256": "31dd659b31501f49c8c69007fa745ff22f776b8a2f4d349b62ea028e6aa9a689",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "inner corner skirting",
+        "min": [
+          -0.125,
+          -0.125,
+          0.0
+        ],
+        "max": [
+          0.5,
+          0.5,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "a7ae1246359303bd89928a42722e58e176056aaf1194dff3c488f63a5475d67f",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "inner corner skirting.001",
+        "min": [
+          -0.125,
+          -0.125,
+          0.0
+        ],
+        "max": [
+          0.5,
+          0.5,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "a7ae1246359303bd89928a42722e58e176056aaf1194dff3c488f63a5475d67f",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "lintel top coping",
+        "min": [
+          -0.5,
+          -0.14000000059604645,
+          2.5
+        ],
+        "max": [
+          0.5,
+          0.14000000059604645,
+          2.5799999237060547
+        ],
+        "evaluatedPositionSha256": "9e93c04947e1dd149f321e7bb818f89c435b1000058e7db0007ab82ef00b0b94",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "outer corner coping",
+        "min": [
+          -0.5,
+          -0.5,
+          2.5
+        ],
+        "max": [
+          0.125,
+          0.125,
+          2.5799999237060547
+        ],
+        "evaluatedPositionSha256": "deb279bc8c6db2e22286347f841e641bdb98dfd2164a99f2f22d383a3da8c901",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "outer corner coping.001",
+        "min": [
+          -0.5,
+          -0.5,
+          0.5199999809265137
+        ],
+        "max": [
+          0.125,
+          0.125,
+          0.6000000238418579
+        ],
+        "evaluatedPositionSha256": "ad154863ff756786689c6717d4c8bedef10a73cfcba2ca9988ca8730b92f0e62",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "outer corner plaster",
+        "min": [
+          -0.5,
+          -0.5,
+          0.23999999463558197
+        ],
+        "max": [
+          0.125,
+          0.125,
+          2.5
+        ],
+        "evaluatedPositionSha256": "127c2b4bc992084e1ede6a3c0459c1ed5f530077ce0d4b26dd2287d6537e6952",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "outer corner plaster.001",
+        "min": [
+          -0.5,
+          -0.5,
+          0.23999999463558197
+        ],
+        "max": [
+          0.125,
+          0.125,
+          0.5199999809265137
+        ],
+        "evaluatedPositionSha256": "887fcd9bc5751d5ce28e89f96f5b7818b3b309b8a4e079d570766794c6f0bde8",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "outer corner skirting",
+        "min": [
+          -0.5,
+          -0.5,
+          0.0
+        ],
+        "max": [
+          0.125,
+          0.125,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "e4cae96d6d7d1739e96ee3942ee221965b28c30389594bbc187e92861acd8b3a",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "outer corner skirting.001",
+        "min": [
+          -0.5,
+          -0.5,
+          0.0
+        ],
+        "max": [
+          0.125,
+          0.125,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "e4cae96d6d7d1739e96ee3942ee221965b28c30389594bbc187e92861acd8b3a",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "straight coping",
+        "min": [
+          -0.5,
+          -0.14000000059604645,
+          2.5
+        ],
+        "max": [
+          0.5,
+          0.14000000059604645,
+          2.5799999237060547
+        ],
+        "evaluatedPositionSha256": "e2dafe4e5357e9152ba49289da0644e4db708dcb93da5f0b062e104c48275d5f",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "straight coping.001",
+        "min": [
+          -0.5,
+          -0.14000000059604645,
+          0.5199999809265137
+        ],
+        "max": [
+          0.5,
+          0.14000000059604645,
+          0.6000000238418579
+        ],
+        "evaluatedPositionSha256": "0459613a2292098599fbbaf431358dd9ba324100c843c9c5fd2103174ac55be6",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "straight enamel line",
+        "min": [
+          -0.46000000834465027,
+          -0.042500000447034836,
+          2.5789999961853027
+        ],
+        "max": [
+          0.46000000834465027,
+          0.042500000447034836,
+          2.5910000801086426
+        ],
+        "evaluatedPositionSha256": "3ae082d985279a3ee0900d7ccfccde61a1ae264530c2f733cd09eabfa9ae9fac",
+        "hideRender": false,
+        "materialNames": [
+          "pale stone inlay"
+        ]
+      },
+      {
+        "name": "straight enamel line.001",
+        "min": [
+          -0.46000000834465027,
+          -0.042500000447034836,
+          0.5990000367164612
+        ],
+        "max": [
+          0.46000000834465027,
+          0.042500000447034836,
+          0.6110000014305115
+        ],
+        "evaluatedPositionSha256": "abad98e34c9de758fcb6856e844236b13394dc071c3acf7d87baa6d446d0c7bd",
+        "hideRender": false,
+        "materialNames": [
+          "pale stone inlay"
+        ]
+      },
+      {
+        "name": "straight painted core",
+        "min": [
+          -0.5,
+          -0.125,
+          0.0
+        ],
+        "max": [
+          0.5,
+          0.125,
+          2.5
+        ],
+        "evaluatedPositionSha256": "6cda3d4f567a86168d15f78616408fb65e4d901ee13d814bd3dd289881c821a9",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "straight painted core.001",
+        "min": [
+          -0.5,
+          -0.125,
+          0.0
+        ],
+        "max": [
+          0.5,
+          0.125,
+          0.5199999809265137
+        ],
+        "evaluatedPositionSha256": "cf1d9b14d37e48ca82a24ec50d9f6ba2c6b5e9d231be94accebe09479a83e334",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "straight skirting -1",
+        "min": [
+          -0.5,
+          -0.13899999856948853,
+          0.0
+        ],
+        "max": [
+          0.5,
+          -0.11700000613927841,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "310c5dd0181deeefb27fc4c69f8493a06f8fcdfe86d88106ef16c78329b6fcf5",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "straight skirting -1.001",
+        "min": [
+          -0.5,
+          -0.13899999856948853,
+          0.0
+        ],
+        "max": [
+          0.5,
+          -0.11700000613927841,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "310c5dd0181deeefb27fc4c69f8493a06f8fcdfe86d88106ef16c78329b6fcf5",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "straight skirting 1",
+        "min": [
+          -0.5,
+          0.11700000613927841,
+          0.0
+        ],
+        "max": [
+          0.5,
+          0.13899999856948853,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "f6ef8fea2241f4fcd9f0061852d2405b5d0b9e3084ecbcd8d66187056231065c",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "straight skirting 1.001",
+        "min": [
+          -0.5,
+          0.11700000613927841,
+          0.0
+        ],
+        "max": [
+          0.5,
+          0.13899999856948853,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "f6ef8fea2241f4fcd9f0061852d2405b5d0b9e3084ecbcd8d66187056231065c",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "terminated run coping",
+        "min": [
+          -0.5,
+          -0.14000000059604645,
+          2.5
+        ],
+        "max": [
+          0.2799999713897705,
+          0.14000000059604645,
+          2.5799999237060547
+        ],
+        "evaluatedPositionSha256": "f2fd39091aa8170e5e72d55278732ee6b30bab3a5db60f21ac9ac905ce6adeec",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "terminated run coping.001",
+        "min": [
+          -0.5,
+          -0.14000000059604645,
+          0.5199999809265137
+        ],
+        "max": [
+          0.2799999713897705,
+          0.14000000059604645,
+          0.6000000238418579
+        ],
+        "evaluatedPositionSha256": "444e10821400d24ec5a871c2f8846c100017f7ff18b5b1542dde774b835c9d32",
+        "hideRender": false,
+        "materialNames": [
+          "muted sandstone coping"
+        ]
+      },
+      {
+        "name": "terminated run enamel line",
+        "min": [
+          -0.4599999785423279,
+          -0.042500000447034836,
+          2.5789999961853027
+        ],
+        "max": [
+          0.23999999463558197,
+          0.042500000447034836,
+          2.5910000801086426
+        ],
+        "evaluatedPositionSha256": "dd8bee9d7234c5ff7c8be2304caf8f4c56748910a14dc45bdf5695041f18800f",
+        "hideRender": false,
+        "materialNames": [
+          "pale stone inlay"
+        ]
+      },
+      {
+        "name": "terminated run enamel line.001",
+        "min": [
+          -0.4599999785423279,
+          -0.042500000447034836,
+          0.5990000367164612
+        ],
+        "max": [
+          0.23999999463558197,
+          0.042500000447034836,
+          0.6110000014305115
+        ],
+        "evaluatedPositionSha256": "48bc11700482c926a32cebd6c01efc8b0f6808ec0fc41c8968006ea9cda26ef8",
+        "hideRender": false,
+        "materialNames": [
+          "pale stone inlay"
+        ]
+      },
+      {
+        "name": "terminated run painted core",
+        "min": [
+          -0.5,
+          -0.125,
+          0.0
+        ],
+        "max": [
+          0.2799999713897705,
+          0.125,
+          2.5
+        ],
+        "evaluatedPositionSha256": "bdd58ad8e5387e5c3a0b40ae4cfc2e5bf872a1ce39fd595c2fd6e127d8c0dde2",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "terminated run painted core.001",
+        "min": [
+          -0.5,
+          -0.125,
+          0.0
+        ],
+        "max": [
+          0.2799999713897705,
+          0.125,
+          0.5199999809265137
+        ],
+        "evaluatedPositionSha256": "460c88189a78b0112ace6c1e5a746f389e25030f30399ae4310113ae8af0d821",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime plaster"
+        ]
+      },
+      {
+        "name": "terminated run skirting -1",
+        "min": [
+          -0.5,
+          -0.13899999856948853,
+          0.0
+        ],
+        "max": [
+          0.2799999713897705,
+          -0.11700000613927841,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "fdff9f005761d526aeaacc43729e35dfd17d7b12544a1e5f22f0c6d4180a68b9",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "terminated run skirting -1.001",
+        "min": [
+          -0.5,
+          -0.13899999856948853,
+          0.0
+        ],
+        "max": [
+          0.2799999713897705,
+          -0.11700000613927841,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "fdff9f005761d526aeaacc43729e35dfd17d7b12544a1e5f22f0c6d4180a68b9",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "terminated run skirting 1",
+        "min": [
+          -0.5,
+          0.11700000613927841,
+          0.0
+        ],
+        "max": [
+          0.2799999713897705,
+          0.13899999856948853,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "ba623e91e30cc1a3f7f74fa9e3bf118c12bf303e677699f2e30815ea0b2b89bc",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "terminated run skirting 1.001",
+        "min": [
+          -0.5,
+          0.11700000613927841,
+          0.0
+        ],
+        "max": [
+          0.2799999713897705,
+          0.13899999856948853,
+          0.23999999463558197
+        ],
+        "evaluatedPositionSha256": "ba623e91e30cc1a3f7f74fa9e3bf118c12bf303e677699f2e30815ea0b2b89bc",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal skirting"
+        ]
+      },
+      {
+        "name": "vertical panel joint -0.001",
+        "min": [
+          -0.4895000159740448,
+          -0.13050000369548798,
+          0.1249999850988388
+        ],
+        "max": [
+          -0.4805000126361847,
+          -0.12550000846385956,
+          0.39499998092651367
+        ],
+        "evaluatedPositionSha256": "6bee269c1472cbfa4d5b122f3d383a9672f6c3fb068f61f68747ed07b4cbd788",
+        "hideRender": false,
+        "materialNames": [
+          "recessed warm plaster joint"
+        ]
+      },
+      {
+        "name": "vertical panel joint -0.485",
+        "min": [
+          -0.4895000159740448,
+          -0.13050000369548798,
+          0.125
+        ],
+        "max": [
+          -0.4805000126361847,
+          -0.12550000846385956,
+          2.375
+        ],
+        "evaluatedPositionSha256": "d7768294b881c9fbe6ac273689b46c6f2df856627ae4c560fc4193a05ccde990",
+        "hideRender": false,
+        "materialNames": [
+          "recessed warm plaster joint"
+        ]
+      },
+      {
+        "name": "vertical panel joint 0.001",
+        "min": [
+          0.4805000126361847,
+          -0.13050000369548798,
+          0.1249999850988388
+        ],
+        "max": [
+          0.4895000159740448,
+          -0.12550000846385956,
+          0.39499998092651367
+        ],
+        "evaluatedPositionSha256": "97eef028cc427127264db6558a64247a01477f708f5325e89983301ee6b61c30",
+        "hideRender": false,
+        "materialNames": [
+          "recessed warm plaster joint"
+        ]
+      },
+      {
+        "name": "vertical panel joint 0.485",
+        "min": [
+          0.4805000126361847,
+          -0.13050000369548798,
+          0.125
+        ],
+        "max": [
+          0.4895000159740448,
+          -0.12550000846385956,
+          2.375
+        ],
+        "evaluatedPositionSha256": "54eec7cdba8e7f529095d6c987bd6806feb3513ed87698a2ac1946bc74e6728a",
+        "hideRender": false,
+        "materialNames": [
+          "recessed warm plaster joint"
+        ]
+      }
+    ]
+  },
+  {
+    "source": "assets/source/blender/wall.square.brick.full.blend",
+    "sourceSha256": "c73fcc00471682135b53049e0b74f1d71588909b245bfeac0cac6cd93d696ae1",
+    "blenderVersion": [
+      5,
+      2,
+      1
+    ],
+    "meshCount": 59,
+    "bounds": {
+      "min": [
+        -0.5,
+        -0.5,
+        0.0
+      ],
+      "max": [
+        0.5,
+        0.5,
+        0.75
+      ]
+    },
+    "collections": [],
+    "sourceBytesUnchanged": true,
+    "materialGraphHashes": [
+      {
+        "name": "aged chalk brick",
+        "sha256": "bfc8b42c21bbc21b66313ee911f6f73ad0900323e2b31d3b048c455359828317"
+      },
+      {
+        "name": "charcoal stone footing",
+        "sha256": "9678ddf6705efc0f7cd7745dbe10df0287aaad3cf877a7e2cf96fed8b5d04b38"
+      },
+      {
+        "name": "pale sand brick",
+        "sha256": "1fca44c863e18ac1a05aacde81ee98528ab536f05fae8492b1d296bcb7a6a758"
+      },
+      {
+        "name": "recessed mortar",
+        "sha256": "0160c52aaa8334937163f7ccce83d14851d051e24544c20eb91d75920878da0b"
+      },
+      {
+        "name": "sandstone cap light",
+        "sha256": "f76ba292550eb63c852f802a4501cff7cd4bac7c0cbae2f1ace9dd5ad7d58aa9"
+      },
+      {
+        "name": "sandstone cap shaded",
+        "sha256": "d1a6c8eea0fefd2ef5160f08735e6ba344a7bf7849bd4b7a02aed5f72b0bd0fd"
+      },
+      {
+        "name": "smoked sand brick",
+        "sha256": "1508011fda11be0e076ab7aacdb8be98ca6e0fbb39e8f473cb3651f4bf797cfb"
+      },
+      {
+        "name": "warm chalk brick",
+        "sha256": "2e5ad499cd0f097ec28fb60725b1d30d38cd52fa6d8a2183e89b694fcf86cd9d"
+      },
+      {
+        "name": "warm lime mortar bed",
+        "sha256": "46e20f6640fc70ec3655bb9081fdd83f8d7a3e3fa39763dd393a5b71c9d581c7"
+      }
+    ],
+    "parts": [
+      {
+        "name": "cap stone 0.0",
+        "min": [
+          -0.48500001430511475,
+          -0.48500001430511475,
+          0.7419999837875366
+        ],
+        "max": [
+          -0.005000010132789612,
+          -0.005000010132789612,
+          0.75
+        ],
+        "evaluatedPositionSha256": "5aae8d36e62fe6ea3c821735f8e6579319f3973e195ffefcd061f57a74a7742e",
+        "hideRender": false,
+        "materialNames": [
+          "sandstone cap light"
+        ]
+      },
+      {
+        "name": "cap stone 0.1",
+        "min": [
+          0.005000010132789612,
+          -0.48500001430511475,
+          0.7419999837875366
+        ],
+        "max": [
+          0.48500001430511475,
+          -0.005000010132789612,
+          0.75
+        ],
+        "evaluatedPositionSha256": "8ba7b4d0a162ef61e0298b288b3fb5c7e4f7d914887879f67b8dd34d32f3565c",
+        "hideRender": false,
+        "materialNames": [
+          "sandstone cap shaded"
+        ]
+      },
+      {
+        "name": "cap stone 1.0",
+        "min": [
+          -0.48500001430511475,
+          0.005000010132789612,
+          0.7419999837875366
+        ],
+        "max": [
+          -0.005000010132789612,
+          0.48500001430511475,
+          0.75
+        ],
+        "evaluatedPositionSha256": "e04a488dd2a0254a7252127af408dbb54f1533d3ee1feea0df3c555cac644ce8",
+        "hideRender": false,
+        "materialNames": [
+          "sandstone cap shaded"
+        ]
+      },
+      {
+        "name": "cap stone 1.1",
+        "min": [
+          0.005000010132789612,
+          0.005000010132789612,
+          0.7419999837875366
+        ],
+        "max": [
+          0.48500001430511475,
+          0.48500001430511475,
+          0.75
+        ],
+        "evaluatedPositionSha256": "071a52976ad26a38ef76e4c206ef419fbf3c6a42356d4aa501521896ef3166bf",
+        "hideRender": false,
+        "materialNames": [
+          "sandstone cap light"
+        ]
+      },
+      {
+        "name": "charcoal stone footing",
+        "min": [
+          -0.5,
+          -0.5,
+          0.0
+        ],
+        "max": [
+          0.5,
+          0.5,
+          0.09000000357627869
+        ],
+        "evaluatedPositionSha256": "f1fe773a4172ba15c5db0b3bd64b590da870793388a408842c4e2f5fcfb56281",
+        "hideRender": false,
+        "materialNames": [
+          "charcoal stone footing"
+        ]
+      },
+      {
+        "name": "east brick 0.0",
+        "min": [
+          0.49400001764297485,
+          -0.4860000014305115,
+          0.1120000034570694
+        ],
+        "max": [
+          0.5,
+          -0.2590000033378601,
+          0.21800000965595245
+        ],
+        "evaluatedPositionSha256": "2ca50ca7b2230b3411d6f62617fd5baa5ebd89f14898c92effa855f26c366dc5",
+        "hideRender": false,
+        "materialNames": [
+          "pale sand brick"
+        ]
+      },
+      {
+        "name": "east brick 0.1",
+        "min": [
+          0.49400001764297485,
+          -0.2409999966621399,
+          0.1120000034570694
+        ],
+        "max": [
+          0.5,
+          0.2409999966621399,
+          0.21800000965595245
+        ],
+        "evaluatedPositionSha256": "454b6bfb6075e96786e607423b0c7316b30b13cb48a896ff907f91d728d0a8e8",
+        "hideRender": false,
+        "materialNames": [
+          "smoked sand brick"
+        ]
+      },
+      {
+        "name": "east brick 0.2",
+        "min": [
+          0.49400001764297485,
+          0.2590000033378601,
+          0.1120000034570694
+        ],
+        "max": [
+          0.5,
+          0.4860000014305115,
+          0.21800000965595245
+        ],
+        "evaluatedPositionSha256": "56425c6c3745af4a08ff72f70f0c4727e1d28ee52fe231505ee105bd97253e1c",
+        "hideRender": false,
+        "materialNames": [
+          "warm chalk brick"
+        ]
+      },
+      {
+        "name": "east brick 1.0",
+        "min": [
+          0.49400001764297485,
+          -0.4860000014305115,
+          0.23199999332427979
+        ],
+        "max": [
+          0.5,
+          -0.013999998569488525,
+          0.33799999952316284
+        ],
+        "evaluatedPositionSha256": "245c1f150f505066a0072e396b6c7245fa7fe1ffedd602870711cd6929dddc26",
+        "hideRender": false,
+        "materialNames": [
+          "aged chalk brick"
+        ]
+      },
+      {
+        "name": "east brick 1.1",
+        "min": [
+          0.49400001764297485,
+          0.013999998569488525,
+          0.23199999332427979
+        ],
+        "max": [
+          0.5,
+          0.4860000014305115,
+          0.33799999952316284
+        ],
+        "evaluatedPositionSha256": "6d7622999b07a1cc1fd556c8bf136f7d295bebc5b36e0ad1f149fe696ec1e917",
+        "hideRender": false,
+        "materialNames": [
+          "pale sand brick"
+        ]
+      },
+      {
+        "name": "east brick 2.0",
+        "min": [
+          0.49400001764297485,
+          -0.4860000014305115,
+          0.35199999809265137
+        ],
+        "max": [
+          0.5,
+          -0.2590000033378601,
+          0.4580000042915344
+        ],
+        "evaluatedPositionSha256": "4eda4ea0bba052b9c05aa9ef3b14b79f2f1b675fd55f0b3eabcc0240c0ea8c6d",
+        "hideRender": false,
+        "materialNames": [
+          "warm chalk brick"
+        ]
+      },
+      {
+        "name": "east brick 2.1",
+        "min": [
+          0.49400001764297485,
+          -0.2409999966621399,
+          0.35199999809265137
+        ],
+        "max": [
+          0.5,
+          0.2409999966621399,
+          0.4580000042915344
+        ],
+        "evaluatedPositionSha256": "e2c2fd824ad383af163f9d8c33b442f62e44e770d96097e112bb51e455e460be",
+        "hideRender": false,
+        "materialNames": [
+          "aged chalk brick"
+        ]
+      },
+      {
+        "name": "east brick 2.2",
+        "min": [
+          0.49400001764297485,
+          0.2590000033378601,
+          0.35199999809265137
+        ],
+        "max": [
+          0.5,
+          0.4860000014305115,
+          0.4580000042915344
+        ],
+        "evaluatedPositionSha256": "23467ac91515b5ded85f976224246900e36683816cf3a2c20555e2276ca48d4a",
+        "hideRender": false,
+        "materialNames": [
+          "pale sand brick"
+        ]
+      },
+      {
+        "name": "east brick 3.0",
+        "min": [
+          0.49400001764297485,
+          -0.4860000014305115,
+          0.47199997305870056
+        ],
+        "max": [
+          0.5,
+          -0.013999998569488525,
+          0.5779999494552612
+        ],
+        "evaluatedPositionSha256": "67f2bfb39117d0b7f7030519761425007735e1cfc9c68646c68c1251b36dfb07",
+        "hideRender": false,
+        "materialNames": [
+          "smoked sand brick"
+        ]
+      },
+      {
+        "name": "east brick 3.1",
+        "min": [
+          0.49400001764297485,
+          0.013999998569488525,
+          0.47199997305870056
+        ],
+        "max": [
+          0.5,
+          0.4860000014305115,
+          0.5779999494552612
+        ],
+        "evaluatedPositionSha256": "0acfb803094968b906ef585bf5a03f65d967c87575aeeed6c9977970101af995",
+        "hideRender": false,
+        "materialNames": [
+          "warm chalk brick"
+        ]
+      },
+      {
+        "name": "east brick 4.0",
+        "min": [
+          0.49400001764297485,
+          -0.4860000014305115,
+          0.5920000076293945
+        ],
+        "max": [
+          0.5,
+          -0.2590000033378601,
+          0.6979999542236328
+        ],
+        "evaluatedPositionSha256": "bbc9729c5ba4d0e69d5f4231947bbb22f070c2afd97fea43597e6d9abc8e6158",
+        "hideRender": false,
+        "materialNames": [
+          "pale sand brick"
+        ]
+      },
+      {
+        "name": "east brick 4.1",
+        "min": [
+          0.49400001764297485,
+          -0.2409999966621399,
+          0.5920000076293945
+        ],
+        "max": [
+          0.5,
+          0.2409999966621399,
+          0.6979999542236328
+        ],
+        "evaluatedPositionSha256": "7b6c96d85dbfd9f29dd32f3ad6be4efdc0fbdf1dab668d07e5cc91e88d378dce",
+        "hideRender": false,
+        "materialNames": [
+          "smoked sand brick"
+        ]
+      },
+      {
+        "name": "east brick 4.2",
+        "min": [
+          0.49400001764297485,
+          0.2590000033378601,
+          0.5920000076293945
+        ],
+        "max": [
+          0.5,
+          0.4860000014305115,
+          0.6979999542236328
+        ],
+        "evaluatedPositionSha256": "c29dd13fdf336ad76081b25fdf05daab3638a70915d92d61e33944eca7841c7c",
+        "hideRender": false,
+        "materialNames": [
+          "warm chalk brick"
+        ]
+      },
+      {
+        "name": "lime mortar masonry core",
+        "min": [
+          -0.49399998784065247,
+          -0.49399998784065247,
+          0.09000000357627869
+        ],
+        "max": [
+          0.49399998784065247,
+          0.49399998784065247,
+          0.7200000286102295
+        ],
+        "evaluatedPositionSha256": "368c9dfa2535be11476aff0b6a2cb769ff09096ca3b0db4f18bbf951db479452",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime mortar bed"
+        ]
+      },
+      {
+        "name": "north brick 0.0",
+        "min": [
+          -0.4860000014305115,
+          -0.5,
+          0.1120000034570694
+        ],
+        "max": [
+          -0.2590000033378601,
+          -0.49400001764297485,
+          0.21800000965595245
+        ],
+        "evaluatedPositionSha256": "6928aae2c8c43a285b7731fe6e94a8df71f4f98f6ec5b0b4330693d4ad252809",
+        "hideRender": false,
+        "materialNames": [
+          "warm chalk brick"
+        ]
+      },
+      {
+        "name": "north brick 0.1",
+        "min": [
+          -0.2409999966621399,
+          -0.5,
+          0.1120000034570694
+        ],
+        "max": [
+          0.2409999966621399,
+          -0.49400001764297485,
+          0.21800000965595245
+        ],
+        "evaluatedPositionSha256": "97adb5ca1a35a8ae1546b05001f57c1111de4234633edcf24ddfec585d6ff2fe",
+        "hideRender": false,
+        "materialNames": [
+          "aged chalk brick"
+        ]
+      },
+      {
+        "name": "north brick 0.2",
+        "min": [
+          0.2590000033378601,
+          -0.5,
+          0.1120000034570694
+        ],
+        "max": [
+          0.4860000014305115,
+          -0.49400001764297485,
+          0.21800000965595245
+        ],
+        "evaluatedPositionSha256": "1fd8da3a8fc631b48b25358cd3d51f60b24b76f129fbcdcc590c7b0155d9c934",
+        "hideRender": false,
+        "materialNames": [
+          "pale sand brick"
+        ]
+      },
+      {
+        "name": "north brick 1.0",
+        "min": [
+          -0.4860000014305115,
+          -0.5,
+          0.23199999332427979
+        ],
+        "max": [
+          -0.013999998569488525,
+          -0.49400001764297485,
+          0.33799999952316284
+        ],
+        "evaluatedPositionSha256": "578224cd19674ffeaaad043127a1401a559e05c499de3deaba9c1aed75fc3835",
+        "hideRender": false,
+        "materialNames": [
+          "smoked sand brick"
+        ]
+      },
+      {
+        "name": "north brick 1.1",
+        "min": [
+          0.013999998569488525,
+          -0.5,
+          0.23199999332427979
+        ],
+        "max": [
+          0.4860000014305115,
+          -0.49400001764297485,
+          0.33799999952316284
+        ],
+        "evaluatedPositionSha256": "0a5884b23ca77981cf3e37adc8649c2cc816bdbd5ff36da5f033cf1bf098dcc6",
+        "hideRender": false,
+        "materialNames": [
+          "warm chalk brick"
+        ]
+      },
+      {
+        "name": "north brick 2.0",
+        "min": [
+          -0.4860000014305115,
+          -0.5,
+          0.35199999809265137
+        ],
+        "max": [
+          -0.2590000033378601,
+          -0.49400001764297485,
+          0.4580000042915344
+        ],
+        "evaluatedPositionSha256": "c86fc1e2916872e6aa3ddb19152d0e7e4b405acfe20c5a7f3dc547107647195f",
+        "hideRender": false,
+        "materialNames": [
+          "pale sand brick"
+        ]
+      },
+      {
+        "name": "north brick 2.1",
+        "min": [
+          -0.2409999966621399,
+          -0.5,
+          0.35199999809265137
+        ],
+        "max": [
+          0.2409999966621399,
+          -0.49400001764297485,
+          0.4580000042915344
+        ],
+        "evaluatedPositionSha256": "a86bef64798ebe8c192ff081d1232a0378f81bf17c62b9ce8456c2241e5db372",
+        "hideRender": false,
+        "materialNames": [
+          "smoked sand brick"
+        ]
+      },
+      {
+        "name": "north brick 2.2",
+        "min": [
+          0.2590000033378601,
+          -0.5,
+          0.35199999809265137
+        ],
+        "max": [
+          0.4860000014305115,
+          -0.49400001764297485,
+          0.4580000042915344
+        ],
+        "evaluatedPositionSha256": "6903bdecf6e26bc50193d540c2b87e878349357dd3c4835d5ff2aa6f7a805c1a",
+        "hideRender": false,
+        "materialNames": [
+          "warm chalk brick"
+        ]
+      },
+      {
+        "name": "north brick 3.0",
+        "min": [
+          -0.4860000014305115,
+          -0.5,
+          0.47199997305870056
+        ],
+        "max": [
+          -0.013999998569488525,
+          -0.49400001764297485,
+          0.5779999494552612
+        ],
+        "evaluatedPositionSha256": "8bb83a2937cce6f7872a2f6a62cf73ba8acfd711af8fd36febf69c7d6e13ffd3",
+        "hideRender": false,
+        "materialNames": [
+          "aged chalk brick"
+        ]
+      },
+      {
+        "name": "north brick 3.1",
+        "min": [
+          0.013999998569488525,
+          -0.5,
+          0.47199997305870056
+        ],
+        "max": [
+          0.4860000014305115,
+          -0.49400001764297485,
+          0.5779999494552612
+        ],
+        "evaluatedPositionSha256": "3ae65957db615511771ed2c66595d8c3e5fc1a9ff65c74782dd5cfb9c65b0e25",
+        "hideRender": false,
+        "materialNames": [
+          "pale sand brick"
+        ]
+      },
+      {
+        "name": "north brick 4.0",
+        "min": [
+          -0.4860000014305115,
+          -0.5,
+          0.5920000076293945
+        ],
+        "max": [
+          -0.2590000033378601,
+          -0.49400001764297485,
+          0.6979999542236328
+        ],
+        "evaluatedPositionSha256": "347e614aadd99205cbc9be10a200b623a1e63a46c019967124456dc7499bc812",
+        "hideRender": false,
+        "materialNames": [
+          "warm chalk brick"
+        ]
+      },
+      {
+        "name": "north brick 4.1",
+        "min": [
+          -0.2409999966621399,
+          -0.5,
+          0.5920000076293945
+        ],
+        "max": [
+          0.2409999966621399,
+          -0.49400001764297485,
+          0.6979999542236328
+        ],
+        "evaluatedPositionSha256": "896573660e8f596796b5ff39ed988eaa67111861bd12eaf60192214e74354e7c",
+        "hideRender": false,
+        "materialNames": [
+          "aged chalk brick"
+        ]
+      },
+      {
+        "name": "north brick 4.2",
+        "min": [
+          0.2590000033378601,
+          -0.5,
+          0.5920000076293945
+        ],
+        "max": [
+          0.4860000014305115,
+          -0.49400001764297485,
+          0.6979999542236328
+        ],
+        "evaluatedPositionSha256": "7be49bc52630bcc65cabae0ec855733a072bdf6bcb882e8484aca31a12e69861",
+        "hideRender": false,
+        "materialNames": [
+          "pale sand brick"
+        ]
+      },
+      {
+        "name": "recessed cap joints",
+        "min": [
+          -0.5,
+          -0.5,
+          0.7200000286102295
+        ],
+        "max": [
+          0.5,
+          0.5,
+          0.7419999837875366
+        ],
+        "evaluatedPositionSha256": "ba2ee413458998d3dfebf137f115f6f1aa028ea1059978c915465d59d8ea632f",
+        "hideRender": false,
+        "materialNames": [
+          "recessed mortar"
+        ]
+      },
+      {
+        "name": "south brick 0.0",
+        "min": [
+          -0.4860000014305115,
+          0.49400001764297485,
+          0.1120000034570694
+        ],
+        "max": [
+          -0.2590000033378601,
+          0.5,
+          0.21800000965595245
+        ],
+        "evaluatedPositionSha256": "cf40ab0e0e138a0bb914ab1a350f2ccdc45a5d5f875f932bd2e6d00d43e8a0ce",
+        "hideRender": false,
+        "materialNames": [
+          "smoked sand brick"
+        ]
+      },
+      {
+        "name": "south brick 0.1",
+        "min": [
+          -0.2409999966621399,
+          0.49400001764297485,
+          0.1120000034570694
+        ],
+        "max": [
+          0.2409999966621399,
+          0.5,
+          0.21800000965595245
+        ],
+        "evaluatedPositionSha256": "5f8670b43d89990c572fad8b6ebe61f96aad019624dd9e1f1a7a71816385082e",
+        "hideRender": false,
+        "materialNames": [
+          "warm chalk brick"
+        ]
+      },
+      {
+        "name": "south brick 0.2",
+        "min": [
+          0.2590000033378601,
+          0.49400001764297485,
+          0.1120000034570694
+        ],
+        "max": [
+          0.4860000014305115,
+          0.5,
+          0.21800000965595245
+        ],
+        "evaluatedPositionSha256": "309ff64104dd73abbde3120beabeeff82432ba1e4606647a70686db31275a782",
+        "hideRender": false,
+        "materialNames": [
+          "aged chalk brick"
+        ]
+      },
+      {
+        "name": "south brick 1.0",
+        "min": [
+          -0.4860000014305115,
+          0.49400001764297485,
+          0.23199999332427979
+        ],
+        "max": [
+          -0.013999998569488525,
+          0.5,
+          0.33799999952316284
+        ],
+        "evaluatedPositionSha256": "29dcf56fbb8fc87cee292b6a9616194ff2a391897ab2ce56b4e5e498d7a72615",
+        "hideRender": false,
+        "materialNames": [
+          "pale sand brick"
+        ]
+      },
+      {
+        "name": "south brick 1.1",
+        "min": [
+          0.013999998569488525,
+          0.49400001764297485,
+          0.23199999332427979
+        ],
+        "max": [
+          0.4860000014305115,
+          0.5,
+          0.33799999952316284
+        ],
+        "evaluatedPositionSha256": "a9304c03d734baa183a89c762a9a0b26b64e9a85850868f18f780d39861b8d84",
+        "hideRender": false,
+        "materialNames": [
+          "smoked sand brick"
+        ]
+      },
+      {
+        "name": "south brick 2.0",
+        "min": [
+          -0.4860000014305115,
+          0.49400001764297485,
+          0.35199999809265137
+        ],
+        "max": [
+          -0.2590000033378601,
+          0.5,
+          0.4580000042915344
+        ],
+        "evaluatedPositionSha256": "b1346f0153d80460a56adad18e48c5326121ef8302f3b9cc2ce7ec65974bc0f2",
+        "hideRender": false,
+        "materialNames": [
+          "aged chalk brick"
+        ]
+      },
+      {
+        "name": "south brick 2.1",
+        "min": [
+          -0.2409999966621399,
+          0.49400001764297485,
+          0.35199999809265137
+        ],
+        "max": [
+          0.2409999966621399,
+          0.5,
+          0.4580000042915344
+        ],
+        "evaluatedPositionSha256": "d25e7b66c92fef8cc207a40b8cba396d5bc6e9eb397b054865095a21c6e145e9",
+        "hideRender": false,
+        "materialNames": [
+          "pale sand brick"
+        ]
+      },
+      {
+        "name": "south brick 2.2",
+        "min": [
+          0.2590000033378601,
+          0.49400001764297485,
+          0.35199999809265137
+        ],
+        "max": [
+          0.4860000014305115,
+          0.5,
+          0.4580000042915344
+        ],
+        "evaluatedPositionSha256": "98f7c3642124636253e170ba72259e21dd7beb5aa65fd460a411f2e125b4d229",
+        "hideRender": false,
+        "materialNames": [
+          "smoked sand brick"
+        ]
+      },
+      {
+        "name": "south brick 3.0",
+        "min": [
+          -0.4860000014305115,
+          0.49400001764297485,
+          0.47199997305870056
+        ],
+        "max": [
+          -0.013999998569488525,
+          0.5,
+          0.5779999494552612
+        ],
+        "evaluatedPositionSha256": "f7933cf997fb16913c414ad0210d207c697ded78fff9150f932bb70eb281a986",
+        "hideRender": false,
+        "materialNames": [
+          "warm chalk brick"
+        ]
+      },
+      {
+        "name": "south brick 3.1",
+        "min": [
+          0.013999998569488525,
+          0.49400001764297485,
+          0.47199997305870056
+        ],
+        "max": [
+          0.4860000014305115,
+          0.5,
+          0.5779999494552612
+        ],
+        "evaluatedPositionSha256": "4da7260c7fa2fe29ec2b393052e79efa18202a3167d034de191a0c99ec398a7f",
+        "hideRender": false,
+        "materialNames": [
+          "aged chalk brick"
+        ]
+      },
+      {
+        "name": "south brick 4.0",
+        "min": [
+          -0.4860000014305115,
+          0.49400001764297485,
+          0.5920000076293945
+        ],
+        "max": [
+          -0.2590000033378601,
+          0.5,
+          0.6979999542236328
+        ],
+        "evaluatedPositionSha256": "5d8a8da55322c97581e60d9827e641c8a5aa38abfa966ca663615a1bba426a7f",
+        "hideRender": false,
+        "materialNames": [
+          "smoked sand brick"
+        ]
+      },
+      {
+        "name": "south brick 4.1",
+        "min": [
+          -0.2409999966621399,
+          0.49400001764297485,
+          0.5920000076293945
+        ],
+        "max": [
+          0.2409999966621399,
+          0.5,
+          0.6979999542236328
+        ],
+        "evaluatedPositionSha256": "f9678ed165d348374a70925efdca7484f158f4a79aa38388a56c7ba3dc8a72a5",
+        "hideRender": false,
+        "materialNames": [
+          "warm chalk brick"
+        ]
+      },
+      {
+        "name": "south brick 4.2",
+        "min": [
+          0.2590000033378601,
+          0.49400001764297485,
+          0.5920000076293945
+        ],
+        "max": [
+          0.4860000014305115,
+          0.5,
+          0.6979999542236328
+        ],
+        "evaluatedPositionSha256": "0fb2b286f97162507923df1d4b8d93514e9921c23e1df5e048190204deea8ceb",
+        "hideRender": false,
+        "materialNames": [
+          "aged chalk brick"
+        ]
+      },
+      {
+        "name": "west brick 0.0",
+        "min": [
+          -0.5,
+          -0.4860000014305115,
+          0.1120000034570694
+        ],
+        "max": [
+          -0.49400001764297485,
+          -0.2590000033378601,
+          0.21800000965595245
+        ],
+        "evaluatedPositionSha256": "74acb4fff542f2fee5443b7689d1b89ad77208a78fbf1f1fcc64c26d95be412c",
+        "hideRender": false,
+        "materialNames": [
+          "aged chalk brick"
+        ]
+      },
+      {
+        "name": "west brick 0.1",
+        "min": [
+          -0.5,
+          -0.2409999966621399,
+          0.1120000034570694
+        ],
+        "max": [
+          -0.49400001764297485,
+          0.2409999966621399,
+          0.21800000965595245
+        ],
+        "evaluatedPositionSha256": "b8cfeaca2a68c81d0789d42d786d66afb9e6043e9c80c521ae4aa1d657b04df4",
+        "hideRender": false,
+        "materialNames": [
+          "pale sand brick"
+        ]
+      },
+      {
+        "name": "west brick 0.2",
+        "min": [
+          -0.5,
+          0.2590000033378601,
+          0.1120000034570694
+        ],
+        "max": [
+          -0.49400001764297485,
+          0.4860000014305115,
+          0.21800000965595245
+        ],
+        "evaluatedPositionSha256": "66b5f5d6e815a0e967a2ba1ba57fedf3f9ed854b96ff2d513103c5e23cfbc681",
+        "hideRender": false,
+        "materialNames": [
+          "smoked sand brick"
+        ]
+      },
+      {
+        "name": "west brick 1.0",
+        "min": [
+          -0.5,
+          -0.4860000014305115,
+          0.23199999332427979
+        ],
+        "max": [
+          -0.49400001764297485,
+          -0.013999998569488525,
+          0.33799999952316284
+        ],
+        "evaluatedPositionSha256": "01856a13341099831f8bf6d3d821ee834aa49f7742de1ecb5e1dc434f3be8d14",
+        "hideRender": false,
+        "materialNames": [
+          "warm chalk brick"
+        ]
+      },
+      {
+        "name": "west brick 1.1",
+        "min": [
+          -0.5,
+          0.013999998569488525,
+          0.23199999332427979
+        ],
+        "max": [
+          -0.49400001764297485,
+          0.4860000014305115,
+          0.33799999952316284
+        ],
+        "evaluatedPositionSha256": "d3245d3f93bd92e2004f16774b39211f55ffb5c2be80c5e86fb8bef797bfe223",
+        "hideRender": false,
+        "materialNames": [
+          "aged chalk brick"
+        ]
+      },
+      {
+        "name": "west brick 2.0",
+        "min": [
+          -0.5,
+          -0.4860000014305115,
+          0.35199999809265137
+        ],
+        "max": [
+          -0.49400001764297485,
+          -0.2590000033378601,
+          0.4580000042915344
+        ],
+        "evaluatedPositionSha256": "f024ecd28bc84e9499e5ff7a439eac81c3d78a98abeeec71ca3087db2753b78e",
+        "hideRender": false,
+        "materialNames": [
+          "smoked sand brick"
+        ]
+      },
+      {
+        "name": "west brick 2.1",
+        "min": [
+          -0.5,
+          -0.2409999966621399,
+          0.35199999809265137
+        ],
+        "max": [
+          -0.49400001764297485,
+          0.2409999966621399,
+          0.4580000042915344
+        ],
+        "evaluatedPositionSha256": "23b4a9fd12e0ca95d2e2f8d4107f3d35e2bfc7aaa7319c9ee79e36d8226547f5",
+        "hideRender": false,
+        "materialNames": [
+          "warm chalk brick"
+        ]
+      },
+      {
+        "name": "west brick 2.2",
+        "min": [
+          -0.5,
+          0.2590000033378601,
+          0.35199999809265137
+        ],
+        "max": [
+          -0.49400001764297485,
+          0.4860000014305115,
+          0.4580000042915344
+        ],
+        "evaluatedPositionSha256": "4776c6d67004c15e66c9a4edeb9d21381cc39abf1ccb36922298039affdafc53",
+        "hideRender": false,
+        "materialNames": [
+          "aged chalk brick"
+        ]
+      },
+      {
+        "name": "west brick 3.0",
+        "min": [
+          -0.5,
+          -0.4860000014305115,
+          0.47199997305870056
+        ],
+        "max": [
+          -0.49400001764297485,
+          -0.013999998569488525,
+          0.5779999494552612
+        ],
+        "evaluatedPositionSha256": "244eb8eb7aad8c488938dc8b84e299a0ba651df2f62c5aa752df4a4a07560cfc",
+        "hideRender": false,
+        "materialNames": [
+          "pale sand brick"
+        ]
+      },
+      {
+        "name": "west brick 3.1",
+        "min": [
+          -0.5,
+          0.013999998569488525,
+          0.47199997305870056
+        ],
+        "max": [
+          -0.49400001764297485,
+          0.4860000014305115,
+          0.5779999494552612
+        ],
+        "evaluatedPositionSha256": "d72d99ccfefebd93d1441e21ec2f13c23cf0cf5b15c3b34d763898a3b9f427df",
+        "hideRender": false,
+        "materialNames": [
+          "smoked sand brick"
+        ]
+      },
+      {
+        "name": "west brick 4.0",
+        "min": [
+          -0.5,
+          -0.4860000014305115,
+          0.5920000076293945
+        ],
+        "max": [
+          -0.49400001764297485,
+          -0.2590000033378601,
+          0.6979999542236328
+        ],
+        "evaluatedPositionSha256": "b42bbfc6764a77e62920aaf1f69d414e41bb7d33023ddcc4ac0221a91683567a",
+        "hideRender": false,
+        "materialNames": [
+          "aged chalk brick"
+        ]
+      },
+      {
+        "name": "west brick 4.1",
+        "min": [
+          -0.5,
+          -0.2409999966621399,
+          0.5920000076293945
+        ],
+        "max": [
+          -0.49400001764297485,
+          0.2409999966621399,
+          0.6979999542236328
+        ],
+        "evaluatedPositionSha256": "3e35a6e26ceb06f7a9068478a68eadc3728c81ec4b3dc70648baa2eec4bc5cb4",
+        "hideRender": false,
+        "materialNames": [
+          "pale sand brick"
+        ]
+      },
+      {
+        "name": "west brick 4.2",
+        "min": [
+          -0.5,
+          0.2590000033378601,
+          0.5920000076293945
+        ],
+        "max": [
+          -0.49400001764297485,
+          0.4860000014305115,
+          0.6979999542236328
+        ],
+        "evaluatedPositionSha256": "4331a3c11487ce0b7b505fc27133790d564120422ccb40c1ae365e40ea643de9",
+        "hideRender": false,
+        "materialNames": [
+          "smoked sand brick"
+        ]
+      }
+    ]
+  },
+  {
+    "source": "assets/source/blender/wall.square.brick.low.blend",
+    "sourceSha256": "583c49382bf24191ee0d0e10518c0678716eb036c9638558036d5a06b0fbd1f1",
+    "blenderVersion": [
+      5,
+      2,
+      1
+    ],
+    "meshCount": 27,
+    "bounds": {
+      "min": [
+        -0.5,
+        -0.5,
+        0.0
+      ],
+      "max": [
+        0.5,
+        0.5,
+        0.3400000035762787
+      ]
+    },
+    "collections": [],
+    "sourceBytesUnchanged": true,
+    "materialGraphHashes": [
+      {
+        "name": "aged chalk brick",
+        "sha256": "bfc8b42c21bbc21b66313ee911f6f73ad0900323e2b31d3b048c455359828317"
+      },
+      {
+        "name": "charcoal stone footing",
+        "sha256": "9678ddf6705efc0f7cd7745dbe10df0287aaad3cf877a7e2cf96fed8b5d04b38"
+      },
+      {
+        "name": "pale sand brick",
+        "sha256": "1fca44c863e18ac1a05aacde81ee98528ab536f05fae8492b1d296bcb7a6a758"
+      },
+      {
+        "name": "recessed mortar",
+        "sha256": "0160c52aaa8334937163f7ccce83d14851d051e24544c20eb91d75920878da0b"
+      },
+      {
+        "name": "sandstone cap light",
+        "sha256": "f76ba292550eb63c852f802a4501cff7cd4bac7c0cbae2f1ace9dd5ad7d58aa9"
+      },
+      {
+        "name": "sandstone cap shaded",
+        "sha256": "d1a6c8eea0fefd2ef5160f08735e6ba344a7bf7849bd4b7a02aed5f72b0bd0fd"
+      },
+      {
+        "name": "smoked sand brick",
+        "sha256": "1508011fda11be0e076ab7aacdb8be98ca6e0fbb39e8f473cb3651f4bf797cfb"
+      },
+      {
+        "name": "warm chalk brick",
+        "sha256": "2e5ad499cd0f097ec28fb60725b1d30d38cd52fa6d8a2183e89b694fcf86cd9d"
+      },
+      {
+        "name": "warm lime mortar bed",
+        "sha256": "46e20f6640fc70ec3655bb9081fdd83f8d7a3e3fa39763dd393a5b71c9d581c7"
+      }
+    ],
+    "parts": [
+      {
+        "name": "cap stone 0.0",
+        "min": [
+          -0.48500001430511475,
+          -0.48500001430511475,
+          0.3319999873638153
+        ],
+        "max": [
+          -0.005000010132789612,
+          -0.005000010132789612,
+          0.3400000035762787
+        ],
+        "evaluatedPositionSha256": "56e1c26c3439cbfad114f21908e15583fc1c0e72d04ee6d31d9f89fdcea1bf45",
+        "hideRender": false,
+        "materialNames": [
+          "sandstone cap light"
+        ]
+      },
+      {
+        "name": "cap stone 0.1",
+        "min": [
+          0.005000010132789612,
+          -0.48500001430511475,
+          0.3319999873638153
+        ],
+        "max": [
+          0.48500001430511475,
+          -0.005000010132789612,
+          0.3400000035762787
+        ],
+        "evaluatedPositionSha256": "060376d66bb004e9b2195cf27576a4d05bc72482cf8ca6abe891702e297f96bb",
+        "hideRender": false,
+        "materialNames": [
+          "sandstone cap shaded"
+        ]
+      },
+      {
+        "name": "cap stone 1.0",
+        "min": [
+          -0.48500001430511475,
+          0.005000010132789612,
+          0.3319999873638153
+        ],
+        "max": [
+          -0.005000010132789612,
+          0.48500001430511475,
+          0.3400000035762787
+        ],
+        "evaluatedPositionSha256": "14d572c14463868e2084183a42f587807728abd6cb51fd446a434eb87cd06c44",
+        "hideRender": false,
+        "materialNames": [
+          "sandstone cap shaded"
+        ]
+      },
+      {
+        "name": "cap stone 1.1",
+        "min": [
+          0.005000010132789612,
+          0.005000010132789612,
+          0.3319999873638153
+        ],
+        "max": [
+          0.48500001430511475,
+          0.48500001430511475,
+          0.3400000035762787
+        ],
+        "evaluatedPositionSha256": "4843f8045a2af73fe12ac877ed422c9ed22c4bd603dbe4638ceff1f44624cd6f",
+        "hideRender": false,
+        "materialNames": [
+          "sandstone cap light"
+        ]
+      },
+      {
+        "name": "charcoal stone footing",
+        "min": [
+          -0.5,
+          -0.5,
+          0.0
+        ],
+        "max": [
+          0.5,
+          0.5,
+          0.09000000357627869
+        ],
+        "evaluatedPositionSha256": "f1fe773a4172ba15c5db0b3bd64b590da870793388a408842c4e2f5fcfb56281",
+        "hideRender": false,
+        "materialNames": [
+          "charcoal stone footing"
+        ]
+      },
+      {
+        "name": "east brick 0.0",
+        "min": [
+          0.49400001764297485,
+          -0.4860000014305115,
+          0.1120000034570694
+        ],
+        "max": [
+          0.5,
+          -0.2590000033378601,
+          0.19300000369548798
+        ],
+        "evaluatedPositionSha256": "e8834afa21cf288e92eadcd837ec91c0ef229d6584bd6678ad4804e5d40cd51c",
+        "hideRender": false,
+        "materialNames": [
+          "pale sand brick"
+        ]
+      },
+      {
+        "name": "east brick 0.1",
+        "min": [
+          0.49400001764297485,
+          -0.2409999966621399,
+          0.1120000034570694
+        ],
+        "max": [
+          0.5,
+          0.2409999966621399,
+          0.19300000369548798
+        ],
+        "evaluatedPositionSha256": "b3663d0d2f04d4a3184e12a9b8ded24872f39da9aa221575a887858baa6ca6c2",
+        "hideRender": false,
+        "materialNames": [
+          "smoked sand brick"
+        ]
+      },
+      {
+        "name": "east brick 0.2",
+        "min": [
+          0.49400001764297485,
+          0.2590000033378601,
+          0.1120000034570694
+        ],
+        "max": [
+          0.5,
+          0.4860000014305115,
+          0.19300000369548798
+        ],
+        "evaluatedPositionSha256": "d4d159a7d623301b2a1de948cf5134fac199af2309e454cb64a6178acf57d8be",
+        "hideRender": false,
+        "materialNames": [
+          "warm chalk brick"
+        ]
+      },
+      {
+        "name": "east brick 1.0",
+        "min": [
+          0.49400001764297485,
+          -0.4860000014305115,
+          0.2070000022649765
+        ],
+        "max": [
+          0.5,
+          -0.013999998569488525,
+          0.2879999876022339
+        ],
+        "evaluatedPositionSha256": "50c65fc4f8e3761f1505b6c42b34d41424113e63393da8a938a935a2287a074e",
+        "hideRender": false,
+        "materialNames": [
+          "aged chalk brick"
+        ]
+      },
+      {
+        "name": "east brick 1.1",
+        "min": [
+          0.49400001764297485,
+          0.013999998569488525,
+          0.2070000022649765
+        ],
+        "max": [
+          0.5,
+          0.4860000014305115,
+          0.2879999876022339
+        ],
+        "evaluatedPositionSha256": "b74cc7e163c8947347982c4615cf5d3f91f3fd5a2846cd73e5828d06c0d7b7c2",
+        "hideRender": false,
+        "materialNames": [
+          "pale sand brick"
+        ]
+      },
+      {
+        "name": "lime mortar masonry core",
+        "min": [
+          -0.49399998784065247,
+          -0.49399998784065247,
+          0.09000000357627869
+        ],
+        "max": [
+          0.49399998784065247,
+          0.49399998784065247,
+          0.3100000023841858
+        ],
+        "evaluatedPositionSha256": "07e7a6a4b0a2627955312cd6ce80b8901fab219a182ecba8f7d0ae58937d1d29",
+        "hideRender": false,
+        "materialNames": [
+          "warm lime mortar bed"
+        ]
+      },
+      {
+        "name": "north brick 0.0",
+        "min": [
+          -0.4860000014305115,
+          -0.5,
+          0.1120000034570694
+        ],
+        "max": [
+          -0.2590000033378601,
+          -0.49400001764297485,
+          0.19300000369548798
+        ],
+        "evaluatedPositionSha256": "30f2517ea0f31ba38d9ea5a083f88c3f7e390e1352c1b08d9a10c606d358f2d4",
+        "hideRender": false,
+        "materialNames": [
+          "warm chalk brick"
+        ]
+      },
+      {
+        "name": "north brick 0.1",
+        "min": [
+          -0.2409999966621399,
+          -0.5,
+          0.1120000034570694
+        ],
+        "max": [
+          0.2409999966621399,
+          -0.49400001764297485,
+          0.19300000369548798
+        ],
+        "evaluatedPositionSha256": "6d2d38e0600e0ad35b720f2a97a0641b3e9547cf3cb3c8a921abb182386fb20b",
+        "hideRender": false,
+        "materialNames": [
+          "aged chalk brick"
+        ]
+      },
+      {
+        "name": "north brick 0.2",
+        "min": [
+          0.2590000033378601,
+          -0.5,
+          0.1120000034570694
+        ],
+        "max": [
+          0.4860000014305115,
+          -0.49400001764297485,
+          0.19300000369548798
+        ],
+        "evaluatedPositionSha256": "b4d790cc8041249cd2590576de1f636e01fdeb5d9df9b4654e12b2db509b4dd0",
+        "hideRender": false,
+        "materialNames": [
+          "pale sand brick"
+        ]
+      },
+      {
+        "name": "north brick 1.0",
+        "min": [
+          -0.4860000014305115,
+          -0.5,
+          0.2070000022649765
+        ],
+        "max": [
+          -0.013999998569488525,
+          -0.49400001764297485,
+          0.2879999876022339
+        ],
+        "evaluatedPositionSha256": "d65fdcdfb7a0f66265e0f75c693c1d8ba185600b800b9cb2dde5a3210644bf0d",
+        "hideRender": false,
+        "materialNames": [
+          "smoked sand brick"
+        ]
+      },
+      {
+        "name": "north brick 1.1",
+        "min": [
+          0.013999998569488525,
+          -0.5,
+          0.2070000022649765
+        ],
+        "max": [
+          0.4860000014305115,
+          -0.49400001764297485,
+          0.2879999876022339
+        ],
+        "evaluatedPositionSha256": "6767deb40a557584f25a58160c4eda7eb87c1d2b8d93cff59d5a96995f2d17f0",
+        "hideRender": false,
+        "materialNames": [
+          "warm chalk brick"
+        ]
+      },
+      {
+        "name": "recessed cap joints",
+        "min": [
+          -0.5,
+          -0.5,
+          0.3100000023841858
+        ],
+        "max": [
+          0.5,
+          0.5,
+          0.3320000171661377
+        ],
+        "evaluatedPositionSha256": "23c927d89dcd0ab52150ad2361f74eb7b394ebc06c726ffdc22e5cf819b5da91",
+        "hideRender": false,
+        "materialNames": [
+          "recessed mortar"
+        ]
+      },
+      {
+        "name": "south brick 0.0",
+        "min": [
+          -0.4860000014305115,
+          0.49400001764297485,
+          0.1120000034570694
+        ],
+        "max": [
+          -0.2590000033378601,
+          0.5,
+          0.19300000369548798
+        ],
+        "evaluatedPositionSha256": "1c525b83a16042e5836cd0228481fc952652284338eeed6d54560b4ecfb6e745",
+        "hideRender": false,
+        "materialNames": [
+          "smoked sand brick"
+        ]
+      },
+      {
+        "name": "south brick 0.1",
+        "min": [
+          -0.2409999966621399,
+          0.49400001764297485,
+          0.1120000034570694
+        ],
+        "max": [
+          0.2409999966621399,
+          0.5,
+          0.19300000369548798
+        ],
+        "evaluatedPositionSha256": "33c844975d6c032bbb4350919542dba36fd970292da63485dd9ed32848c5a6f0",
+        "hideRender": false,
+        "materialNames": [
+          "warm chalk brick"
+        ]
+      },
+      {
+        "name": "south brick 0.2",
+        "min": [
+          0.2590000033378601,
+          0.49400001764297485,
+          0.1120000034570694
+        ],
+        "max": [
+          0.4860000014305115,
+          0.5,
+          0.19300000369548798
+        ],
+        "evaluatedPositionSha256": "5f5265c535b28b33d0904989834e1fb2e571fa108cffba5adf318a8cb151fa20",
+        "hideRender": false,
+        "materialNames": [
+          "aged chalk brick"
+        ]
+      },
+      {
+        "name": "south brick 1.0",
+        "min": [
+          -0.4860000014305115,
+          0.49400001764297485,
+          0.2070000022649765
+        ],
+        "max": [
+          -0.013999998569488525,
+          0.5,
+          0.2879999876022339
+        ],
+        "evaluatedPositionSha256": "ddad443cae27de2c86a880e7bcf82115ec19499e143fa73e55041cf6d509bba1",
+        "hideRender": false,
+        "materialNames": [
+          "pale sand brick"
+        ]
+      },
+      {
+        "name": "south brick 1.1",
+        "min": [
+          0.013999998569488525,
+          0.49400001764297485,
+          0.2070000022649765
+        ],
+        "max": [
+          0.4860000014305115,
+          0.5,
+          0.2879999876022339
+        ],
+        "evaluatedPositionSha256": "0a83cb31ce771dde2a9adbdbd5abccd01f522ef99bc563a7c7937842e715499e",
+        "hideRender": false,
+        "materialNames": [
+          "smoked sand brick"
+        ]
+      },
+      {
+        "name": "west brick 0.0",
+        "min": [
+          -0.5,
+          -0.4860000014305115,
+          0.1120000034570694
+        ],
+        "max": [
+          -0.49400001764297485,
+          -0.2590000033378601,
+          0.19300000369548798
+        ],
+        "evaluatedPositionSha256": "6cdade1b13e1860665433089109a4f8c59e344d5902a923145b3108d36a503ef",
+        "hideRender": false,
+        "materialNames": [
+          "aged chalk brick"
+        ]
+      },
+      {
+        "name": "west brick 0.1",
+        "min": [
+          -0.5,
+          -0.2409999966621399,
+          0.1120000034570694
+        ],
+        "max": [
+          -0.49400001764297485,
+          0.2409999966621399,
+          0.19300000369548798
+        ],
+        "evaluatedPositionSha256": "69a69b1bed79ad1a944296eded51f64c149292ae142e3280c8400903517843fd",
+        "hideRender": false,
+        "materialNames": [
+          "pale sand brick"
+        ]
+      },
+      {
+        "name": "west brick 0.2",
+        "min": [
+          -0.5,
+          0.2590000033378601,
+          0.1120000034570694
+        ],
+        "max": [
+          -0.49400001764297485,
+          0.4860000014305115,
+          0.19300000369548798
+        ],
+        "evaluatedPositionSha256": "3ec164c32a86da5dbda09f62ecb27166098f85c3952d09d3587f5cb29e0f6e97",
+        "hideRender": false,
+        "materialNames": [
+          "smoked sand brick"
+        ]
+      },
+      {
+        "name": "west brick 1.0",
+        "min": [
+          -0.5,
+          -0.4860000014305115,
+          0.2070000022649765
+        ],
+        "max": [
+          -0.49400001764297485,
+          -0.013999998569488525,
+          0.2879999876022339
+        ],
+        "evaluatedPositionSha256": "b3288f7ded4d7d376de28bccda1cba9a648349dc7fab36647f3a32dfe71099b7",
+        "hideRender": false,
+        "materialNames": [
+          "warm chalk brick"
+        ]
+      },
+      {
+        "name": "west brick 1.1",
+        "min": [
+          -0.5,
+          0.013999998569488525,
+          0.2070000022649765
+        ],
+        "max": [
+          -0.49400001764297485,
+          0.4860000014305115,
+          0.2879999876022339
+        ],
+        "evaluatedPositionSha256": "f55e0079ff8cdda83dee8ed165f382d709defab01ef11f8410b0f34f6445e785",
+        "hideRender": false,
+        "materialNames": [
+          "aged chalk brick"
+        ]
+      }
+    ]
+  },
+  {
+    "source": "assets/source/blender/utility.utility-panel.angled.blend",
+    "sourceSha256": "1bc780cc2e6ab7b25e932652e6e3f1c9e4ce07a63256b340af02bf310e3cf137",
+    "blenderVersion": [
+      5,
+      2,
+      1
+    ],
+    "meshCount": 36,
+    "bounds": {
+      "min": [
+        -0.4400000274181366,
+        -0.4490000009536743,
+        0.0
+      ],
+      "max": [
+        0.4400000274181366,
+        0.26999998092651367,
+        1.0099999904632568
+      ]
+    },
+    "collections": [],
+    "sourceBytesUnchanged": true,
+    "materialGraphHashes": [
+      {
+        "name": "amber status",
+        "sha256": "d712a7b8d9e6b1d55c73d35a97db8385e1c5c6bf8ef2c5fb7a47366ea3fc3123"
+      },
+      {
+        "name": "control panel",
+        "sha256": "b10908d1a3e2cdbb8ccd7c9f5feae014dbe0fc632fa4f45c4d947e5ce956b1a8"
+      },
+      {
+        "name": "monitor glass",
+        "sha256": "d58fa978f151809507386c5b0fb121f464f1cdd6b6a2570490b30eef246c861a"
+      },
+      {
+        "name": "warm charcoal",
+        "sha256": "050e02f6cce22c87c889830f02700da2cebc3cad0c5a32a6af8fcb6f03d5d85a"
+      }
+    ],
+    "parts": [
+      {
+        "name": "angled-utility.cabinet hinge leaf -1",
+        "min": [
+          -0.37549999356269836,
+          -0.37599998712539673,
+          0.7064999938011169
+        ],
+        "max": [
+          -0.34849998354911804,
+          -0.3659999966621399,
+          0.7635000348091125
+        ],
+        "evaluatedPositionSha256": "249c2d9423699027fed0e0fc6b4a57beb84924a7fc1aa8940ab6e66bf8453985",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-utility.cabinet hinge leaf 1",
+        "min": [
+          0.34849998354911804,
+          -0.37599998712539673,
+          0.7064999938011169
+        ],
+        "max": [
+          0.37549999356269836,
+          -0.3659999966621399,
+          0.7635000348091125
+        ],
+        "evaluatedPositionSha256": "3a4daa6a530d287e0966bf1770cd7f7c458ee555435a8a08ca51595f7972063d",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-utility.cabinet hinge pin -1",
+        "min": [
+          -0.3799999952316284,
+          -0.3760000169277191,
+          0.7070000171661377
+        ],
+        "max": [
+          -0.3619999885559082,
+          -0.3580000102519989,
+          0.7630000114440918
+        ],
+        "evaluatedPositionSha256": "b460046024d63bf7bcd05cce8a9b14e02b26dfbd89c823a1be74f401bad1571c",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-utility.cabinet hinge pin 1",
+        "min": [
+          0.3619999885559082,
+          -0.3760000169277191,
+          0.7070000171661377
+        ],
+        "max": [
+          0.3799999952316284,
+          -0.3580000102519989,
+          0.7630000114440918
+        ],
+        "evaluatedPositionSha256": "31d2df76491ae87a2dd3165b26766bfdb4143097da2810ad0f6010f3de715e14",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-utility.cabinet side cheek -1",
+        "min": [
+          -0.39100000262260437,
+          -0.3659999966621399,
+          0.17999997735023499
+        ],
+        "max": [
+          -0.3789999783039093,
+          -0.19599997997283936,
+          0.7799999713897705
+        ],
+        "evaluatedPositionSha256": "1acf4b3c580351213c8f238fe42762e93ab04f0dd7cd30768ae63b008bfa9b1a",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-utility.cabinet side cheek 1",
+        "min": [
+          0.3789999783039093,
+          -0.3659999966621399,
+          0.17999997735023499
+        ],
+        "max": [
+          0.39100000262260437,
+          -0.19599997997283936,
+          0.7799999713897705
+        ],
+        "evaluatedPositionSha256": "2a1929cff6d2685247dce3b90cb1f7ba4d4088212f3c14aab8cd3886ab1297b1",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-utility.control knob shoulder 0",
+        "min": [
+          -0.21000000834465027,
+          -0.42500001192092896,
+          0.25
+        ],
+        "max": [
+          -0.15000000596046448,
+          -0.4089999794960022,
+          0.3100000023841858
+        ],
+        "evaluatedPositionSha256": "4a74d5eff2c19112669fe5b6186cd8701d4fa6a30bcd48ac6450b9072dfc827d",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-utility.control knob shoulder 1",
+        "min": [
+          0.034999996423721313,
+          -0.42500001192092896,
+          0.25
+        ],
+        "max": [
+          0.0949999988079071,
+          -0.4089999794960022,
+          0.3100000023841858
+        ],
+        "evaluatedPositionSha256": "d5bda0934e9431e4fd1d9c1a03612811e1ff1cfe08a1067c4f92e3b43e2b5ff9",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-utility.monitor bezel horizontal 0.384",
+        "min": [
+          -0.42800000309944153,
+          -0.41600000858306885,
+          0.3779999911785126
+        ],
+        "max": [
+          0.42800000309944153,
+          -0.4039999842643738,
+          0.39000001549720764
+        ],
+        "evaluatedPositionSha256": "2a89a777369e27d76ac77bdf1f59c11be0f76a8e6e9cbabcfc66e5aa10cd1a58",
+        "hideRender": false,
+        "materialNames": [
+          "control panel"
+        ]
+      },
+      {
+        "name": "angled-utility.monitor bezel horizontal 0.716",
+        "min": [
+          -0.42800000309944153,
+          -0.41600000858306885,
+          0.7100000381469727
+        ],
+        "max": [
+          0.42800000309944153,
+          -0.4039999842643738,
+          0.722000002861023
+        ],
+        "evaluatedPositionSha256": "e77f7498acc56d9fcede19c4882aedb6fe2c33f003b966a519954ff6ae1ed349",
+        "hideRender": false,
+        "materialNames": [
+          "control panel"
+        ]
+      },
+      {
+        "name": "angled-utility.monitor bezel vertical -1",
+        "min": [
+          -0.4310000240802765,
+          -0.41600000858306885,
+          0.3889999985694885
+        ],
+        "max": [
+          -0.4189999997615814,
+          -0.4039999842643738,
+          0.7110000252723694
+        ],
+        "evaluatedPositionSha256": "6f6692c5ef09d0e608cf3f14f23e8a72e17780831b12e9c5bd34dd333723314d",
+        "hideRender": false,
+        "materialNames": [
+          "control panel"
+        ]
+      },
+      {
+        "name": "angled-utility.monitor bezel vertical 1",
+        "min": [
+          0.4189999997615814,
+          -0.41600000858306885,
+          0.3889999985694885
+        ],
+        "max": [
+          0.4310000240802765,
+          -0.4039999842643738,
+          0.7110000252723694
+        ],
+        "evaluatedPositionSha256": "91604074b590a5f08b341d64c1ba407fe98e5d4afced6cf300e292e0c1f691d3",
+        "hideRender": false,
+        "materialNames": [
+          "control panel"
+        ]
+      },
+      {
+        "name": "angled-utility.raised amber pointer 0",
+        "min": [
+          -0.18200001120567322,
+          -0.4490000009536743,
+          0.28200000524520874
+        ],
+        "max": [
+          -0.17800000309944153,
+          -0.44599997997283936,
+          0.3019999861717224
+        ],
+        "evaluatedPositionSha256": "2197cc023d8806f42c9d9f14a6541b4cb0488e8764da468d2d26d395622e0477",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-utility.raised amber pointer 1",
+        "min": [
+          0.06300000101327896,
+          -0.4490000009536743,
+          0.28200000524520874
+        ],
+        "max": [
+          0.06699999421834946,
+          -0.44599997997283936,
+          0.3019999861717224
+        ],
+        "evaluatedPositionSha256": "5d1963e39387d05de924d7c9f25ed3c50152dde6d60a2555efeb57ccbf928d2f",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-utility.rear cable gland nut -1",
+        "min": [
+          -0.2669999897480011,
+          0.19999998807907104,
+          0.19300000369548798
+        ],
+        "max": [
+          -0.21299999952316284,
+          0.22200000286102295,
+          0.24699999392032623
+        ],
+        "evaluatedPositionSha256": "cdeb1a55c9ab431ab24fcb3fe5d36e1980be71d6bf5f21fb976bf3d60aee05da",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-utility.rear cable gland nut 1",
+        "min": [
+          0.21299999952316284,
+          0.19999998807907104,
+          0.19300000369548798
+        ],
+        "max": [
+          0.2669999897480011,
+          0.22200000286102295,
+          0.24699999392032623
+        ],
+        "evaluatedPositionSha256": "c9763e0f1d67a94d459bdc03e10de531ce01adb0dd0b79dcbd5dac75ee384303",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-utility.rear cable gland sleeve -1",
+        "min": [
+          -0.2549999952316284,
+          0.2225000113248825,
+          0.20499999821186066
+        ],
+        "max": [
+          -0.22499999403953552,
+          0.2535000145435333,
+          0.23499999940395355
+        ],
+        "evaluatedPositionSha256": "70b237b59dac6004abe958cbb5b71a270ba54cb30fb65bc5f146a3c51bad49cc",
+        "hideRender": false,
+        "materialNames": [
+          "control panel"
+        ]
+      },
+      {
+        "name": "angled-utility.rear cable gland sleeve 1",
+        "min": [
+          0.22499999403953552,
+          0.2225000113248825,
+          0.20499999821186066
+        ],
+        "max": [
+          0.2549999952316284,
+          0.2535000145435333,
+          0.23499999940395355
+        ],
+        "evaluatedPositionSha256": "4473fcc603496cf0b590ad2c565cb6820f8d9238654839f9b2bba2fe273e665c",
+        "hideRender": false,
+        "materialNames": [
+          "control panel"
+        ]
+      },
+      {
+        "name": "angled-utility.round control knob 0",
+        "min": [
+          -0.20400001108646393,
+          -0.44600000977516174,
+          0.25600001215934753
+        ],
+        "max": [
+          -0.15600000321865082,
+          -0.42399999499320984,
+          0.30399999022483826
+        ],
+        "evaluatedPositionSha256": "f8d60ca244d1ede49189cc608165c31c4b0d5b665785e74fd9e8597de22cf8a4",
+        "hideRender": false,
+        "materialNames": [
+          "control panel"
+        ]
+      },
+      {
+        "name": "angled-utility.round control knob 1",
+        "min": [
+          0.04099999740719795,
+          -0.44600000977516174,
+          0.25600001215934753
+        ],
+        "max": [
+          0.08900000154972076,
+          -0.42399999499320984,
+          0.30399999022483826
+        ],
+        "evaluatedPositionSha256": "89c6275365dc381121c2cf75fcc52291c9291fae5624b4e113f70c9d59e8bea9",
+        "hideRender": false,
+        "materialNames": [
+          "control panel"
+        ]
+      },
+      {
+        "name": "angled-utility.service hatch frame horizontal 0.122",
+        "min": [
+          -0.3009999990463257,
+          -0.38449999690055847,
+          0.11800000071525574
+        ],
+        "max": [
+          0.3009999990463257,
+          -0.3735000193119049,
+          0.12600000202655792
+        ],
+        "evaluatedPositionSha256": "755bd6474677874d4a21b49ab0fd16f48cfe767f23b6622304901508012bcc4b",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-utility.service hatch frame horizontal 0.228",
+        "min": [
+          -0.3009999990463257,
+          -0.38449999690055847,
+          0.2240000069141388
+        ],
+        "max": [
+          0.3009999990463257,
+          -0.3735000193119049,
+          0.23199999332427979
+        ],
+        "evaluatedPositionSha256": "e9f3bd3ca600fc9ca7b883580497815b85f2644ea0859fd560dc2b545012fb20",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-utility.service hatch frame vertical -1",
+        "min": [
+          -0.3009999990463257,
+          -0.38449999690055847,
+          0.11800000071525574
+        ],
+        "max": [
+          -0.2929999828338623,
+          -0.3735000193119049,
+          0.23199999332427979
+        ],
+        "evaluatedPositionSha256": "04d005d76bb8fa1dab7337753d5dcdcc0ea7ae53af21d76cfefceb969a7f9158",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-utility.service hatch frame vertical 1",
+        "min": [
+          0.2929999828338623,
+          -0.38449999690055847,
+          0.11800000071525574
+        ],
+        "max": [
+          0.3009999990463257,
+          -0.3735000193119049,
+          0.23199999332427979
+        ],
+        "evaluatedPositionSha256": "8f0638094cc84c8da55a4f8e6d36224d1d82f90938019329a81d39e0197c8945",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-utility.service hatch inset",
+        "min": [
+          -0.28999999165534973,
+          -0.3774999976158142,
+          0.12299999594688416
+        ],
+        "max": [
+          0.28999999165534973,
+          -0.3684999942779541,
+          0.22699999809265137
+        ],
+        "evaluatedPositionSha256": "cf33c73efa4c78cdcf9146d3999f80f2a5af40cabe13c1e2fbda2293005a5a09",
+        "hideRender": false,
+        "materialNames": [
+          "control panel"
+        ]
+      },
+      {
+        "name": "angled-utility.service hatch latch lever",
+        "min": [
+          0.21950000524520874,
+          -0.40800002217292786,
+          0.1704999953508377
+        ],
+        "max": [
+          0.2565000057220459,
+          -0.3959999978542328,
+          0.17949999868869781
+        ],
+        "evaluatedPositionSha256": "f93735071634407cbaf2b4552462224f6d8d8c76f1c5e1f14b823d65bdf982fc",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-utility.service hatch latch spindle",
+        "min": [
+          0.2280000001192093,
+          -0.39799997210502625,
+          0.16499999165534973
+        ],
+        "max": [
+          0.24800001084804535,
+          -0.38199999928474426,
+          0.1850000023841858
+        ],
+        "evaluatedPositionSha256": "1caa27d8f23298fc4808e5bf7b20e83e033e8e3fdf05de89f25321fb1943355b",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "body",
+        "min": [
+          -0.41999998688697815,
+          -0.20249998569488525,
+          0.06999999284744263
+        ],
+        "max": [
+          0.41999998688697815,
+          0.20249998569488525,
+          0.8899999856948853
+        ],
+        "evaluatedPositionSha256": "174e05c5d504e069612353d86999960548280d51a2c9197e734a86b616194cd3",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "control",
+        "min": [
+          -0.31200000643730164,
+          -0.40950000286102295,
+          0.23000000417232513
+        ],
+        "max": [
+          0.31200000643730164,
+          -0.3644999861717224,
+          0.33000001311302185
+        ],
+        "evaluatedPositionSha256": "b4ba8a7b18116d801ab84caee735ae0d39eeb6e275a11c0664e91c770e1d315d",
+        "hideRender": false,
+        "materialNames": [
+          "control panel"
+        ]
+      },
+      {
+        "name": "dial",
+        "min": [
+          0.29600000381469727,
+          -0.4364999830722809,
+          0.23000000417232513
+        ],
+        "max": [
+          0.37599998712539673,
+          -0.40949997305870056,
+          0.33000001311302185
+        ],
+        "evaluatedPositionSha256": "0afb53741871d3dea5f0e823bc66f7cceb1823ed1c22348344f3ab5e0e0a774c",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "foot",
+        "min": [
+          -0.2800000011920929,
+          0.17999999225139618,
+          0.0
+        ],
+        "max": [
+          -0.20000000298023224,
+          0.26999998092651367,
+          0.07999999821186066
+        ],
+        "evaluatedPositionSha256": "f9e2e51b7138ef87b5bc39c71cbdccbeca5b1e0cf9b2ebe2bbed9fdc05c9c539",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "foot.001",
+        "min": [
+          0.20000000298023224,
+          0.17999999225139618,
+          0.0
+        ],
+        "max": [
+          0.2800000011920929,
+          0.26999998092651367,
+          0.07999999821186066
+        ],
+        "evaluatedPositionSha256": "b94353c1a98be726cf42af9b481679dda8174f5444f94f8676e383df9608de60",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "front",
+        "min": [
+          -0.3799999952316284,
+          -0.3734999895095825,
+          0.16999998688697815
+        ],
+        "max": [
+          0.3799999952316284,
+          -0.328499972820282,
+          0.7899999618530273
+        ],
+        "evaluatedPositionSha256": "65c9ebcea66af923237898ae66e2531ac6f2177a9fb30806c5051f619b676e5e",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "monitor",
+        "min": [
+          -0.4320000112056732,
+          -0.4050000011920929,
+          0.3799999952316284
+        ],
+        "max": [
+          0.4320000112056732,
+          -0.36899998784065247,
+          0.7200000286102295
+        ],
+        "evaluatedPositionSha256": "759d7a5a15c8a578cca1e9a97dbcd62c8bc62327e9d36b499f74d964c0525e8e",
+        "hideRender": false,
+        "materialNames": [
+          "monitor glass"
+        ]
+      },
+      {
+        "name": "status",
+        "min": [
+          -0.37599998712539673,
+          -0.4364999830722809,
+          0.23000000417232513
+        ],
+        "max": [
+          -0.29600000381469727,
+          -0.40949997305870056,
+          0.33000001311302185
+        ],
+        "evaluatedPositionSha256": "f81b295198f24f68a196a61affb7b307c685e49d34d6bf2fa779d69ed2e15220",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "top",
+        "min": [
+          -0.4400000274181366,
+          -0.22499999403953552,
+          0.9099999666213989
+        ],
+        "max": [
+          0.4400000274181366,
+          0.22499999403953552,
+          1.0099999904632568
+        ],
+        "evaluatedPositionSha256": "d28836c85438b54e042f4cae029bdb477862d228c7ac7bfe3b121a52a2b0e158",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      }
+    ]
+  },
+  {
+    "source": "assets/source/blender/utility.loading-dock-door.angled-detail.blend",
+    "sourceSha256": "7eeca158b9e5f92abb139ab8164f5dd7a2aa2f2ca47936e4b08e4ea6c79a3aac",
+    "blenderVersion": [
+      5,
+      2,
+      1
+    ],
+    "meshCount": 64,
+    "bounds": {
+      "min": [
+        -0.949999988079071,
+        -0.2199999988079071,
+        0.0
+      ],
+      "max": [
+        0.949999988079071,
+        0.20000000298023224,
+        1.7799999713897705
+      ]
+    },
+    "collections": [],
+    "sourceBytesUnchanged": true,
+    "materialGraphHashes": [
+      {
+        "name": "amber status",
+        "sha256": "d712a7b8d9e6b1d55c73d35a97db8385e1c5c6bf8ef2c5fb7a47366ea3fc3123"
+      },
+      {
+        "name": "control panel",
+        "sha256": "b10908d1a3e2cdbb8ccd7c9f5feae014dbe0fc632fa4f45c4d947e5ce956b1a8"
+      },
+      {
+        "name": "monitor glass",
+        "sha256": "d58fa978f151809507386c5b0fb121f464f1cdd6b6a2570490b30eef246c861a"
+      },
+      {
+        "name": "warm charcoal",
+        "sha256": "050e02f6cce22c87c889830f02700da2cebc3cad0c5a32a6af8fcb6f03d5d85a"
+      }
+    ],
+    "parts": [
+      {
+        "name": "angled-loading-dock.handle lower backing plate",
+        "min": [
+          -0.1120000034570694,
+          -0.16500000655651093,
+          0.20800000429153442
+        ],
+        "max": [
+          0.1120000034570694,
+          -0.13500000536441803,
+          0.28200000524520874
+        ],
+        "evaluatedPositionSha256": "90c2e81770754205df72b2f7838a9bbcf9fe33e772a0d5a66943f49b763f1bb3",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.handle lower mounting bolt -0.084",
+        "min": [
+          -0.09200000017881393,
+          -0.17999999225139618,
+          0.2370000034570694
+        ],
+        "max": [
+          -0.07599999755620956,
+          -0.1679999977350235,
+          0.2529999911785126
+        ],
+        "evaluatedPositionSha256": "887b33b29bb31c5cb3165bf045ad544e5c527166ec33e8117acef522eafd129f",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.handle lower mounting bolt 0.084",
+        "min": [
+          0.07599999755620956,
+          -0.17999999225139618,
+          0.2370000034570694
+        ],
+        "max": [
+          0.09200000017881393,
+          -0.1679999977350235,
+          0.2529999911785126
+        ],
+        "evaluatedPositionSha256": "ea4d1b02b72eca1adbf7be3bd33b32e005cec8904c40b10a0076906679288ba6",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.handle upper backing plate",
+        "min": [
+          -0.1120000034570694,
+          -0.16500000655651093,
+          0.7179999947547913
+        ],
+        "max": [
+          0.1120000034570694,
+          -0.13500000536441803,
+          0.7919999957084656
+        ],
+        "evaluatedPositionSha256": "537c697ab45d89aa0858a0425a4d94befc3eb2041eb633b307737958b153d5e8",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.handle upper mounting bolt -0.084",
+        "min": [
+          -0.09200000017881393,
+          -0.17999999225139618,
+          0.746999979019165
+        ],
+        "max": [
+          -0.07599999755620956,
+          -0.1679999977350235,
+          0.7630000114440918
+        ],
+        "evaluatedPositionSha256": "9cd7e383700306581de0be4b6cef5daa52a2aae6ee90bde8b2e00cbb3018ab3f",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.handle upper mounting bolt 0.084",
+        "min": [
+          0.07599999755620956,
+          -0.17999999225139618,
+          0.746999979019165
+        ],
+        "max": [
+          0.09200000017881393,
+          -0.1679999977350235,
+          0.7630000114440918
+        ],
+        "evaluatedPositionSha256": "a40725f1355b7ad57c9b155d1179c65c96397ea24c7c2696445b78d0b54398b9",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.latch backing plate",
+        "min": [
+          0.6169999837875366,
+          -0.13650000095367432,
+          0.5220000147819519
+        ],
+        "max": [
+          0.7430000305175781,
+          -0.101500004529953,
+          0.6980000138282776
+        ],
+        "evaluatedPositionSha256": "4bf84cb1bdc3bf42151e9301c740f9e7bc635d82a4d3bab0912c2da82261a670",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.latch lock escutcheon",
+        "min": [
+          0.6420000195503235,
+          -0.15299999713897705,
+          0.5720000267028809
+        ],
+        "max": [
+          0.7179999947547913,
+          -0.13699999451637268,
+          0.6480000019073486
+        ],
+        "evaluatedPositionSha256": "79efeb202902613cdfc56ddf8041005746d4dc46eee0a113686f7ce3babe2897",
+        "hideRender": false,
+        "materialNames": [
+          "control panel"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.latch raised lock barrel",
+        "min": [
+          0.6589999794960022,
+          -0.17100000381469727,
+          0.5889999866485596
+        ],
+        "max": [
+          0.7010000348091125,
+          -0.1509999930858612,
+          0.6310000419616699
+        ],
+        "evaluatedPositionSha256": "0f8698b2a003c579b6e6789223491d8bab9269695b7ebae10f33e2b8ceab453b",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left lower hinge frame mount",
+        "min": [
+          -0.8240000009536743,
+          0.08900000154972076,
+          0.2900000214576721
+        ],
+        "max": [
+          -0.7419999837875366,
+          0.14900000393390656,
+          0.44999998807907104
+        ],
+        "evaluatedPositionSha256": "8879eb092627ebb6e9b5acedd10a8c50e1642002bf39d6b4df0e075284039646",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left lower hinge frame screw",
+        "min": [
+          -0.7910000085830688,
+          0.15200001001358032,
+          0.3620000183582306
+        ],
+        "max": [
+          -0.7749999761581421,
+          0.164000004529953,
+          0.3779999911785126
+        ],
+        "evaluatedPositionSha256": "58dd58e3b1e20a2f284f0d43807893a82bbd77f9af38e9b7fda1e707c0abcd5f",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left lower hinge knuckle",
+        "min": [
+          -0.7660000324249268,
+          0.10799999535083771,
+          0.24000000953674316
+        ],
+        "max": [
+          -0.6740000247955322,
+          0.20000000298023224,
+          0.5
+        ],
+        "evaluatedPositionSha256": "cf6932ce2e52e65c11accf62baf79be1fd54c4d0a9a2c423570c584fcf72989a",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left lower hinge leaf mount",
+        "min": [
+          -0.6980000138282776,
+          0.08900000154972076,
+          0.2900000214576721
+        ],
+        "max": [
+          -0.6159999966621399,
+          0.14900000393390656,
+          0.44999998807907104
+        ],
+        "evaluatedPositionSha256": "ab6d74f37b2a0ab97ccb5120d398dd302fcefd045b934810e8803b32b9afc82b",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left lower hinge leaf screw",
+        "min": [
+          -0.6650000214576721,
+          0.15200001001358032,
+          0.3620000183582306
+        ],
+        "max": [
+          -0.6489999890327454,
+          0.164000004529953,
+          0.3779999911785126
+        ],
+        "evaluatedPositionSha256": "86657ef117ca8a87eaf8727795ba2ee39ddbdb47f5967c0200bcc5a50c6a9ae7",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left middle hinge frame mount",
+        "min": [
+          -0.8240000009536743,
+          0.08900000154972076,
+          0.7700000405311584
+        ],
+        "max": [
+          -0.7419999837875366,
+          0.14900000393390656,
+          0.9300000071525574
+        ],
+        "evaluatedPositionSha256": "62639d06909166c3768da5074fca2710bf012c76ac2ce2622032e8d9893b1ef0",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left middle hinge frame screw",
+        "min": [
+          -0.7910000085830688,
+          0.15200001001358032,
+          0.8420000076293945
+        ],
+        "max": [
+          -0.7749999761581421,
+          0.164000004529953,
+          0.8580000400543213
+        ],
+        "evaluatedPositionSha256": "b567d38050aa5b68562756d2c023766d97f3854c90a79fcce562e9397e093046",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left middle hinge knuckle",
+        "min": [
+          -0.7660000324249268,
+          0.10799999535083771,
+          0.7200000286102295
+        ],
+        "max": [
+          -0.6740000247955322,
+          0.20000000298023224,
+          0.9800000190734863
+        ],
+        "evaluatedPositionSha256": "ab414c97518fe01f1eb873411f0ee56b91af64487fd0371d5e67e00c25581fd7",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left middle hinge leaf mount",
+        "min": [
+          -0.6980000138282776,
+          0.08900000154972076,
+          0.7700000405311584
+        ],
+        "max": [
+          -0.6159999966621399,
+          0.14900000393390656,
+          0.9300000071525574
+        ],
+        "evaluatedPositionSha256": "f53cb0e4674908aa28d82a72da2b7ce6b088af071596e510da3587052b12553a",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left middle hinge leaf screw",
+        "min": [
+          -0.6650000214576721,
+          0.15200001001358032,
+          0.8420000076293945
+        ],
+        "max": [
+          -0.6489999890327454,
+          0.164000004529953,
+          0.8580000400543213
+        ],
+        "evaluatedPositionSha256": "3b3465b94218cad7c10231d3ce2476cb07db74cd9b0c86fb121232d272cdce5d",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left upper hinge frame mount",
+        "min": [
+          -0.8240000009536743,
+          0.08900000154972076,
+          1.25
+        ],
+        "max": [
+          -0.7419999837875366,
+          0.14900000393390656,
+          1.4100000858306885
+        ],
+        "evaluatedPositionSha256": "2082dd0cbed3e46b30decee9b2e5b4343ef2f65777d9fc103b87a803a425ea83",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left upper hinge frame screw",
+        "min": [
+          -0.7910000085830688,
+          0.15200001001358032,
+          1.3220000267028809
+        ],
+        "max": [
+          -0.7749999761581421,
+          0.164000004529953,
+          1.3380000591278076
+        ],
+        "evaluatedPositionSha256": "2cb79b62e8fa9539d89035d936020dc3dc1486b2de72e8f85226a49d8983d2cf",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left upper hinge knuckle",
+        "min": [
+          -0.7660000324249268,
+          0.10799999535083771,
+          1.2000000476837158
+        ],
+        "max": [
+          -0.6740000247955322,
+          0.20000000298023224,
+          1.4600000381469727
+        ],
+        "evaluatedPositionSha256": "5c264fd069845e561df8b375222bc8cc28027ecfb51cc28b6d9a6c2af6460e34",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left upper hinge leaf mount",
+        "min": [
+          -0.6980000138282776,
+          0.08900000154972076,
+          1.25
+        ],
+        "max": [
+          -0.6159999966621399,
+          0.14900000393390656,
+          1.4100000858306885
+        ],
+        "evaluatedPositionSha256": "df3cc70c52c74d03206ffb3b2338ebc692be50f959946911be960c11ac6686b9",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left upper hinge leaf screw",
+        "min": [
+          -0.6650000214576721,
+          0.15200001001358032,
+          1.3220000267028809
+        ],
+        "max": [
+          -0.6489999890327454,
+          0.164000004529953,
+          1.3380000591278076
+        ],
+        "evaluatedPositionSha256": "a0209dc751a79ca418d65843350cf259a09db9a83b6be2e1edf74fa39946fac6",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right lower hinge frame mount",
+        "min": [
+          0.7419999837875366,
+          0.08900000154972076,
+          0.2900000214576721
+        ],
+        "max": [
+          0.8240000009536743,
+          0.14900000393390656,
+          0.44999998807907104
+        ],
+        "evaluatedPositionSha256": "0692ced65ec5713b4ba57086463e839adefd8680c9fa5e65f098c9af2da98afd",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right lower hinge frame screw",
+        "min": [
+          0.7749999761581421,
+          0.15200001001358032,
+          0.3620000183582306
+        ],
+        "max": [
+          0.7910000085830688,
+          0.164000004529953,
+          0.3779999911785126
+        ],
+        "evaluatedPositionSha256": "bf596c889ce6db19bf87146244874c54e679535543cc50c4920700de2c7cc4ea",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right lower hinge knuckle",
+        "min": [
+          0.6740000247955322,
+          0.10799999535083771,
+          0.24000000953674316
+        ],
+        "max": [
+          0.7660000324249268,
+          0.20000000298023224,
+          0.5
+        ],
+        "evaluatedPositionSha256": "640e7d84dc7f560054f3a5fb05e08a8b8c5c90e5c0864f08f3a728d36bcd971d",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right lower hinge leaf mount",
+        "min": [
+          0.6159999966621399,
+          0.08900000154972076,
+          0.2900000214576721
+        ],
+        "max": [
+          0.6980000138282776,
+          0.14900000393390656,
+          0.44999998807907104
+        ],
+        "evaluatedPositionSha256": "da8d5a4f8cef4cd37029e5f81fb9dfe6da9c9e29a582a5202a267a35e5f1ced3",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right lower hinge leaf screw",
+        "min": [
+          0.6489999890327454,
+          0.15200001001358032,
+          0.3620000183582306
+        ],
+        "max": [
+          0.6650000214576721,
+          0.164000004529953,
+          0.3779999911785126
+        ],
+        "evaluatedPositionSha256": "170d7efcbf386536de5f8c71038983d43aae19778c2480db8daabbc0a8130bd4",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right middle hinge frame mount",
+        "min": [
+          0.7419999837875366,
+          0.08900000154972076,
+          0.7700000405311584
+        ],
+        "max": [
+          0.8240000009536743,
+          0.14900000393390656,
+          0.9300000071525574
+        ],
+        "evaluatedPositionSha256": "450c52f6d5c57842196bb430a5481d453ca0e611f1dc4c9c375392eb793f21d0",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right middle hinge frame screw",
+        "min": [
+          0.7749999761581421,
+          0.15200001001358032,
+          0.8420000076293945
+        ],
+        "max": [
+          0.7910000085830688,
+          0.164000004529953,
+          0.8580000400543213
+        ],
+        "evaluatedPositionSha256": "a1572f96f8081351dca6289523e8ec47002aa0a0c24446777e944311d9263c26",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right middle hinge knuckle",
+        "min": [
+          0.6740000247955322,
+          0.10799999535083771,
+          0.7200000286102295
+        ],
+        "max": [
+          0.7660000324249268,
+          0.20000000298023224,
+          0.9800000190734863
+        ],
+        "evaluatedPositionSha256": "58338dc3ed3dfd35a3a471f46fd598ce16d076193595983e77150e099af1f4d9",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right middle hinge leaf mount",
+        "min": [
+          0.6159999966621399,
+          0.08900000154972076,
+          0.7700000405311584
+        ],
+        "max": [
+          0.6980000138282776,
+          0.14900000393390656,
+          0.9300000071525574
+        ],
+        "evaluatedPositionSha256": "eb87e768047932992661192d9d1fbcfc565d6273dd6ad0f98443e30e95730836",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right middle hinge leaf screw",
+        "min": [
+          0.6489999890327454,
+          0.15200001001358032,
+          0.8420000076293945
+        ],
+        "max": [
+          0.6650000214576721,
+          0.164000004529953,
+          0.8580000400543213
+        ],
+        "evaluatedPositionSha256": "3294fd5d3e26998135dc7bcacc7a6b7b367268485ef23a6f41f1c4eed73f3b84",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right upper hinge frame mount",
+        "min": [
+          0.7419999837875366,
+          0.08900000154972076,
+          1.25
+        ],
+        "max": [
+          0.8240000009536743,
+          0.14900000393390656,
+          1.4100000858306885
+        ],
+        "evaluatedPositionSha256": "4d797cb6f6c19e1b09306f8b6641c982054a66f45de9f85b469317920cbba5a6",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right upper hinge frame screw",
+        "min": [
+          0.7749999761581421,
+          0.15200001001358032,
+          1.3220000267028809
+        ],
+        "max": [
+          0.7910000085830688,
+          0.164000004529953,
+          1.3380000591278076
+        ],
+        "evaluatedPositionSha256": "3364c0adf51c37238d57ff15534a2075f48a1617983f64361f06d34e0a07a27b",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right upper hinge knuckle",
+        "min": [
+          0.6740000247955322,
+          0.10799999535083771,
+          1.2000000476837158
+        ],
+        "max": [
+          0.7660000324249268,
+          0.20000000298023224,
+          1.4600000381469727
+        ],
+        "evaluatedPositionSha256": "c31c6555f427c803380b037db8ed9cc91ecb502bbb624311e42109e63ce5dae2",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right upper hinge leaf mount",
+        "min": [
+          0.6159999966621399,
+          0.08900000154972076,
+          1.25
+        ],
+        "max": [
+          0.6980000138282776,
+          0.14900000393390656,
+          1.4100000858306885
+        ],
+        "evaluatedPositionSha256": "f529cf1ea250b31016dacab70e68d682d6520758bdc79beb3053f78a01c830c8",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right upper hinge leaf screw",
+        "min": [
+          0.6489999890327454,
+          0.15200001001358032,
+          1.3220000267028809
+        ],
+        "max": [
+          0.6650000214576721,
+          0.164000004529953,
+          1.3380000591278076
+        ],
+        "evaluatedPositionSha256": "4e370980de75c667c6ad37f422d96e22e3df4270f05fedb86e64e45f0500c7b8",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.threshold fixing bolt -0.78",
+        "min": [
+          -0.7879999876022339,
+          -0.12799999117851257,
+          0.14499999582767487
+        ],
+        "max": [
+          -0.7719999551773071,
+          -0.1119999960064888,
+          0.15699999034404755
+        ],
+        "evaluatedPositionSha256": "bbd23c1d93cfca0e684be0b871f7e3e376e8fd555ac0592d4d717c3a47512912",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.threshold fixing bolt 0.78",
+        "min": [
+          0.7719999551773071,
+          -0.12799999117851257,
+          0.14499999582767487
+        ],
+        "max": [
+          0.7879999876022339,
+          -0.1119999960064888,
+          0.15699999034404755
+        ],
+        "evaluatedPositionSha256": "b2e3ac7a72a4f9290589ffe91ac3011dd4efb9270eb54d67ddffb6462b5940b2",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.threshold grip rib 0",
+        "min": [
+          -0.7799999713897705,
+          -0.19499999284744263,
+          0.14000000059604645
+        ],
+        "max": [
+          0.7799999713897705,
+          -0.1850000023841858,
+          0.15399999916553497
+        ],
+        "evaluatedPositionSha256": "f1b910cec0cb215bbded2d905871071247b2832129e7139cf108139a91a274b7",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.threshold grip rib 1",
+        "min": [
+          -0.7799999713897705,
+          -0.14999999105930328,
+          0.14000000059604645
+        ],
+        "max": [
+          0.7799999713897705,
+          -0.14000000059604645,
+          0.15399999916553497
+        ],
+        "evaluatedPositionSha256": "5bc2e521e2abe80fd5e4ed5263aab87a9a1e0eecbed5484e0e928da02c5894b1",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.threshold grip rib 2",
+        "min": [
+          -0.7799999713897705,
+          -0.10500000417232513,
+          0.14000000059604645
+        ],
+        "max": [
+          0.7799999713897705,
+          -0.0949999988079071,
+          0.15399999916553497
+        ],
+        "evaluatedPositionSha256": "ac664def81895dd470d8b24dcf41203247999081158cf22a49835524610176ab",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.threshold grip rib 3",
+        "min": [
+          -0.7799999713897705,
+          -0.05999999865889549,
+          0.14000000059604645
+        ],
+        "max": [
+          0.7799999713897705,
+          -0.05000000074505806,
+          0.15399999916553497
+        ],
+        "evaluatedPositionSha256": "8633c5c22ca28771804d326f310e7cb1ff62cac2ec299167a56908f397a009f2",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window frame screw -0.684 0.834 -0.015",
+        "min": [
+          -0.6890000104904175,
+          -0.16349999606609344,
+          0.8140000104904175
+        ],
+        "max": [
+          -0.6790000200271606,
+          -0.15449999272823334,
+          0.8240000009536743
+        ],
+        "evaluatedPositionSha256": "238eb55e806e9052fdae35c545125776175ad188ebc1ecb776a54a0596c6eaff",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window frame screw -0.684 0.834 0.015",
+        "min": [
+          -0.6890000104904175,
+          -0.16349999606609344,
+          0.843999981880188
+        ],
+        "max": [
+          -0.6790000200271606,
+          -0.15449999272823334,
+          0.8539999723434448
+        ],
+        "evaluatedPositionSha256": "467f0660e8c9621ec1f7827a00b99bc7539e59d5efe4615f0e1f10d562528f2e",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window frame screw -0.684 1.526 -0.015",
+        "min": [
+          -0.6890000104904175,
+          -0.16349999606609344,
+          1.50600004196167
+        ],
+        "max": [
+          -0.6790000200271606,
+          -0.15449999272823334,
+          1.5160000324249268
+        ],
+        "evaluatedPositionSha256": "70090eaabdd7188daf30c6d8faf543915bf7baac3b2d94fadcc17a7dfc351795",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window frame screw -0.684 1.526 0.015",
+        "min": [
+          -0.6890000104904175,
+          -0.16349999606609344,
+          1.5360000133514404
+        ],
+        "max": [
+          -0.6790000200271606,
+          -0.15449999272823334,
+          1.5460000038146973
+        ],
+        "evaluatedPositionSha256": "d5a7ce48bdfa52f808b9fd47289a35e0cf9fd99bd84261f0be9fd774605a2bba",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window frame screw 0.684 0.834 -0.015",
+        "min": [
+          0.6790000200271606,
+          -0.16349999606609344,
+          0.8140000104904175
+        ],
+        "max": [
+          0.6890000104904175,
+          -0.15449999272823334,
+          0.8240000009536743
+        ],
+        "evaluatedPositionSha256": "1964ee22a0e4289ae1b45c897b1f6f1f14c6891f8bf2430be1a711978087c163",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window frame screw 0.684 0.834 0.015",
+        "min": [
+          0.6790000200271606,
+          -0.16349999606609344,
+          0.843999981880188
+        ],
+        "max": [
+          0.6890000104904175,
+          -0.15449999272823334,
+          0.8539999723434448
+        ],
+        "evaluatedPositionSha256": "508dc06344623acd222c99a5265c101ed7e3ff1d0ee4a11dc351681fb1e102ef",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window frame screw 0.684 1.526 -0.015",
+        "min": [
+          0.6790000200271606,
+          -0.16349999606609344,
+          1.50600004196167
+        ],
+        "max": [
+          0.6890000104904175,
+          -0.15449999272823334,
+          1.5160000324249268
+        ],
+        "evaluatedPositionSha256": "0e06f1560954487f6d0b5dad72b465d73beb0a0f07865d1dc64a188cf0e00bd9",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window frame screw 0.684 1.526 0.015",
+        "min": [
+          0.6790000200271606,
+          -0.16349999606609344,
+          1.5360000133514404
+        ],
+        "max": [
+          0.6890000104904175,
+          -0.15449999272823334,
+          1.5460000038146973
+        ],
+        "evaluatedPositionSha256": "f8517acae58db84034b4a03be37b9b8068dfcec64d85822ba6ba9526ba0c2f66",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window horizontal glazing stop 0.828",
+        "min": [
+          -0.7179999947547913,
+          -0.15299999713897705,
+          0.8050000071525574
+        ],
+        "max": [
+          0.7179999947547913,
+          -0.10499998927116394,
+          0.8510000109672546
+        ],
+        "evaluatedPositionSha256": "d4988d5b4a50c6ff320bfb30350d1af6f8e55ffcf8413c92ea56b104ecad4de0",
+        "hideRender": false,
+        "materialNames": [
+          "control panel"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window horizontal glazing stop 1.532",
+        "min": [
+          -0.7179999947547913,
+          -0.15299999713897705,
+          1.5089999437332153
+        ],
+        "max": [
+          0.7179999947547913,
+          -0.10499998927116394,
+          1.5549999475479126
+        ],
+        "evaluatedPositionSha256": "4907279857f2d17bb87f20fd6ca62db9392b121714424ffc9e7ef6b690deef4f",
+        "hideRender": false,
+        "materialNames": [
+          "control panel"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window vertical glazing stop -1",
+        "min": [
+          -0.7179999947547913,
+          -0.15299999713897705,
+          0.8079999685287476
+        ],
+        "max": [
+          -0.671999990940094,
+          -0.10499998927116394,
+          1.5519999265670776
+        ],
+        "evaluatedPositionSha256": "57f0fcf4a85e7b648153d69bd329dcbeda9b6457a0b6b82f713664f21a20e6a4",
+        "hideRender": false,
+        "materialNames": [
+          "control panel"
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window vertical glazing stop 1",
+        "min": [
+          0.671999990940094,
+          -0.15299999713897705,
+          0.8079999685287476
+        ],
+        "max": [
+          0.7179999947547913,
+          -0.10499998927116394,
+          1.5519999265670776
+        ],
+        "evaluatedPositionSha256": "3e5bde066cf5347f66c602267bbb508edc5d1d060efd46315786ff29bc05b04b",
+        "hideRender": false,
+        "materialNames": [
+          "control panel"
+        ]
+      },
+      {
+        "name": "door",
+        "min": [
+          -0.9100000262260437,
+          -0.09000000357627869,
+          0.0
+        ],
+        "max": [
+          0.9100000262260437,
+          0.09000000357627869,
+          1.7000000476837158
+        ],
+        "evaluatedPositionSha256": "87121105ce271f6fa12e2cc0322f4c7b0e5ebaf8b8d1bd7229a043c57526996b",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "handle",
+        "min": [
+          -0.07999999821186066,
+          -0.1599999964237213,
+          0.22499999403953552
+        ],
+        "max": [
+          0.07999999821186066,
+          -0.12000000476837158,
+          0.7749999761581421
+        ],
+        "evaluatedPositionSha256": "6b1a5e3ab201f874244010712391e69a2bf6b25c2d935832257b196bb1075548",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "header",
+        "min": [
+          -0.949999988079071,
+          -0.10999999940395355,
+          1.6600000858306885
+        ],
+        "max": [
+          0.949999988079071,
+          0.10999999940395355,
+          1.7799999713897705
+        ],
+        "evaluatedPositionSha256": "a14838debccded847e429e43541c5417e242cf4b40c6608d398aa0789da7eab3",
+        "hideRender": false,
+        "materialNames": [
+          "warm charcoal"
+        ]
+      },
+      {
+        "name": "hinge",
+        "min": [
+          -0.7700000405311584,
+          0.06999999284744263,
+          0.25
+        ],
+        "max": [
+          -0.6700000166893005,
+          0.17000000178813934,
+          1.4500000476837158
+        ],
+        "evaluatedPositionSha256": "65af60051e0bbcd9fe3657a504cca73e071d0b350b403af41afade7dfd6350a2",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "hinge.001",
+        "min": [
+          0.6700000166893005,
+          0.06999999284744263,
+          0.25
+        ],
+        "max": [
+          0.7700000405311584,
+          0.17000000178813934,
+          1.4500000476837158
+        ],
+        "evaluatedPositionSha256": "e97a5637775cd044f1379fb449c464c16a87edd1085538052518fc26195a18e6",
+        "hideRender": false,
+        "materialNames": [
+          "amber status"
+        ]
+      },
+      {
+        "name": "threshold",
+        "min": [
+          -0.8500000238418579,
+          -0.2199999988079071,
+          0.019999999552965164
+        ],
+        "max": [
+          0.8500000238418579,
+          -0.019999995827674866,
+          0.14000000059604645
+        ],
+        "evaluatedPositionSha256": "f9d5a569c50c0e746a14babcd398d990a3149b127676b9694f847d4a3de29447",
+        "hideRender": false,
+        "materialNames": [
+          "control panel"
+        ]
+      },
+      {
+        "name": "window",
+        "min": [
+          -0.675000011920929,
+          -0.14000000059604645,
+          0.8549999594688416
+        ],
+        "max": [
+          0.675000011920929,
+          -0.09999999403953552,
+          1.5049998760223389
+        ],
+        "evaluatedPositionSha256": "f83110b2387e1c4abc37b0f7f3b36e0a6b718ed48281572749325cb8cd2f3ac6",
+        "hideRender": false,
+        "materialNames": [
+          "monitor glass"
+        ]
+      }
+    ]
+  }
+]

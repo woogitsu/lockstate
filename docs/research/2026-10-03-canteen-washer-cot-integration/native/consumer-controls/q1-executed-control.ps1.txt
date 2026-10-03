@@ -1,0 +1,67 @@
+$ErrorActionPreference = 'Stop'
+$env:PATH=(Join-Path $env:TEMP 'lockstate-pnpm-11-22-20261002')+';C:/Users/matma/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin;'+$env:PATH
+$env:GIT_NO_LAZY_FETCH='1'
+$taskBranch = 'codex/integrate-canteen-washer-cot-20261003'
+$taskFrozen = (git -c core.longpaths=true rev-parse HEAD).Trim()
+if ((git -c core.longpaths=true status --porcelain).Length -gt 0) { throw 'Frozen worktree is not clean' }
+$taskUtf8 = New-Object System.Text.UTF8Encoding($false)
+$taskFiles = @(
+ 'src/rendering/assets/oblique-object-mapping.ts',
+ 'src/rendering/assets/oblique-actor-mapping.ts',
+ 'src/ui/room-template-world-bridge.ts',
+ 'src/main.ts'
+)
+$taskOriginals=@{}
+$taskReceipt=@{ frozen=$taskFrozen; branch=$taskBranch; before=@{}; after=@{}; buildBefore=@{}; buildAfter=@{}; controlExit=$null; restoreBuildExit=$null }
+foreach ($taskFile in $taskFiles) {
+ $taskOriginals[$taskFile]=[IO.File]::ReadAllBytes((Join-Path $PWD $taskFile))
+ $taskReceipt.before[$taskFile]=(Get-FileHash -LiteralPath $taskFile -Algorithm SHA256).Hash.ToLower()
+}
+foreach ($taskFile in (Get-ChildItem -LiteralPath 'dist/client/assets' -File | Where-Object {$_.Name -match '^(index|worker)-.*\.js$'})) { $taskReceipt.buildBefore[$taskFile.Name]=@{sha256=(Get-FileHash -LiteralPath $taskFile.FullName -Algorithm SHA256).Hash.ToLower();bytes=$taskFile.Length} }
+if ($taskReceipt.buildBefore.Count -ne 2) { throw 'Missing frozen worker/index' }
+git -c core.longpaths=true checkout --detach $taskFrozen
+if ($LASTEXITCODE -ne 0) { throw 'Cannot detach sweep target' }
+function Replace-TaskConsumer([string]$taskFile, [string]$taskNeedle) {
+ $taskPath=Join-Path $PWD $taskFile
+ $taskText=[IO.File]::ReadAllText($taskPath)
+ if ([regex]::Matches($taskText,[regex]::Escape($taskNeedle)).Count -ne 1) { throw "Consumer occurrence is not unique: $taskFile" }
+ [IO.File]::WriteAllText($taskPath,$taskText.Replace($taskNeedle,''),$taskUtf8)
+}
+try {
+ Replace-TaskConsumer $taskFiles[0] "  'object.bed': 'furniture.cell.cot.single',"
+ Replace-TaskConsumer $taskFiles[0] "  'object.dining-table': 'furniture.dining.table.wooden',"
+ Replace-TaskConsumer $taskFiles[0] "  'object.washing-machine': 'utility.washing-machine.variants',"
+ # Already killed by the preceding actual control; retained here.
+ # Already killed by the preceding actual control; retained here.
+ # Already killed by the preceding actual control; retained here.
+ Replace-TaskConsumer $taskFiles[3] '      worldRevision: () => renderFeed.readFrame(performance.now() / 1000).revision,'
+ $ErrorActionPreference='Continue'
+ pnpm --config.verify-deps-before-run=false build *> (Join-Path $env:TEMP 'lockstate-consumer-q1-negative-build-20261003.txt')
+ $taskNegativeBuild=$LASTEXITCODE
+ $ErrorActionPreference='Stop'
+ if ($taskNegativeBuild -ne 0) { throw "Negative build failed before native: $taskNegativeBuild" }
+ $env:PLAYWRIGHT_JSON_OUTPUT_NAME=Join-Path $env:TEMP 'lockstate-current-consumer-q1-negative-20261003.json'
+ $ErrorActionPreference='Continue'
+ node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite artifact canteen-dining-table-player-build.spec.ts dedicated-laundry-washing-machine-player-build.spec.ts cell-cot-player-build.spec.ts room-template-second-touch-ownership.spec.ts hired-guard-player-build.spec.ts room-template-history-verdict-player.spec.ts --workers=1 --reporter=list,json --grep 'storage and delivery|delivery and storage|quarterTurns1|cell q1|stationary Cell history cases|oblique FullHD: stationary' --output (Join-Path $env:TEMP 'lockstate-current-consumer-q1-negative-20261003') *> (Join-Path $env:TEMP 'lockstate-current-consumer-q1-negative-20261003.txt')
+ $taskReceipt.controlExit=$LASTEXITCODE
+ $ErrorActionPreference='Stop'
+} finally {
+ foreach ($taskFile in $taskFiles) {
+  [IO.File]::WriteAllBytes((Join-Path $PWD $taskFile),$taskOriginals[$taskFile])
+  $taskReceipt.after[$taskFile]=(Get-FileHash -LiteralPath $taskFile -Algorithm SHA256).Hash.ToLower()
+  if ($taskReceipt.before[$taskFile] -ne $taskReceipt.after[$taskFile]) { throw "Source restoration mismatch: $taskFile" }
+ }
+ $ErrorActionPreference='Continue'
+ pnpm --config.verify-deps-before-run=false build *> (Join-Path $env:TEMP 'lockstate-consumer-q1-restored-build-20261003.txt')
+ $taskReceipt.restoreBuildExit=$LASTEXITCODE
+ $ErrorActionPreference='Stop'
+ foreach ($taskFile in (Get-ChildItem -LiteralPath 'dist/client/assets' -File | Where-Object {$_.Name -match '^(index|worker)-.*\.js$'})) { $taskReceipt.buildAfter[$taskFile.Name]=@{sha256=(Get-FileHash -LiteralPath $taskFile.FullName -Algorithm SHA256).Hash.ToLower();bytes=$taskFile.Length} }
+ [IO.File]::WriteAllText((Join-Path $env:TEMP 'lockstate-consumer-q1-restoration-20261003.json'),($taskReceipt|ConvertTo-Json -Depth 8)+"`n",$taskUtf8)
+ git -c core.longpaths=true checkout $taskBranch
+ if ($LASTEXITCODE -ne 0) { throw 'Restored branch checkout failed' }
+ if ($taskReceipt.restoreBuildExit -ne 0) { throw 'Restored build failed' }
+ foreach($taskName in $taskReceipt.buildBefore.Keys) { if($taskReceipt.buildBefore[$taskName].sha256 -ne $taskReceipt.buildAfter[$taskName].sha256) { throw "Frozen client restoration mismatch: $taskName" } }
+ if ((git -c core.longpaths=true status --porcelain).Length -gt 0) { throw 'Restored worktree is not clean' }
+ Write-Output ('CONSUMER_RESTORED '+$taskFrozen+' CONTROL_EXIT '+$taskReceipt.controlExit)
+}
+if ($taskReceipt.controlExit -eq 0) { throw 'Consumer omission unexpectedly passed' }

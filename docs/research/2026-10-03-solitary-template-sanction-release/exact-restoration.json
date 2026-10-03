@@ -1,0 +1,10 @@
+{
+  "file": "src/simulation/prisoners/sanction-system.ts",
+  "byteExact": true,
+  "sha256": "bbd2320689868a43b1646bdb4c5f0b51a9f6b1d65e460851c3dd95a96ada2e9e",
+  "statuses": {
+    "negativeInPlace": 1,
+    "negativeCapability": 1,
+    "restored": 0
+  }
+}

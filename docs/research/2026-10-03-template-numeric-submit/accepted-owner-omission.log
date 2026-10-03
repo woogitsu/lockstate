@@ -1,0 +1,72 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-numeric-submit-20261003
+
+ ❯ tests/unit/ui-template-numeric-submit-ownership.test.ts (18 tests | 4 failed) 162ms
+   × world/accepted: accepted numeric plan consumes an owning map press; legal untouched/refused map press still commits 48ms
+   × oblique/accepted: accepted numeric plan consumes an owning map press; legal untouched/refused map press still commits 8ms
+   × world/edited-close: delayed numeric result consumes only its original accepted armed selection 6ms
+   × oblique/edited-close: delayed numeric result consumes only its original accepted armed selection 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-numeric-submit-ownership.test.ts > world/accepted: accepted numeric plan consumes an owning map press; legal untouched/refused map press still commits
+ FAIL  tests/unit/ui-template-numeric-submit-ownership.test.ts > oblique/accepted: accepted numeric plan consumes an owning map press; legal untouched/refused map press still commits
+AssertionError: accepted numeric placement should consume same armed tool/old map press: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/ui-template-numeric-submit-ownership.test.ts:209:131
+    207|   expect(beforeRelease).toHaveLength(numeric==='accepted'?1:0);
+    208|   h.close();await settle(h);
+    209|   if(numeric==='accepted')expect.soft(h.tool.isArmed(),'accepted numer…
+       |                                                                                                                                   ^
+    210|   dispatch(h.canvas,'pointerup',h.point,0,0);await settle(h);
+    211|   const actual=submitted(h).map(m=>m.payload.command.data),snapshot=h.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  tests/unit/ui-template-numeric-submit-ownership.test.ts > world/accepted: accepted numeric plan consumes an owning map press; legal untouched/refused map press still commits
+ FAIL  tests/unit/ui-template-numeric-submit-ownership.test.ts > oblique/accepted: accepted numeric plan consumes an owning map press; legal untouched/refused map press still commits
+AssertionError: old map release must not buy a second plan after numeric acceptance: expected [ { …(4) }, { …(4) } ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/unit/ui-template-numeric-submit-ownership.test.ts:213:88
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  tests/unit/ui-template-numeric-submit-ownership.test.ts > world/edited-close: delayed numeric result consumes only its original accepted armed selection
+ FAIL  tests/unit/ui-template-numeric-submit-ownership.test.ts > oblique/edited-close: delayed numeric result consumes only its original accepted armed selection
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/ui-template-numeric-submit-ownership.test.ts:232:28
+    230|   }
+    231|   h.actors.release();await settle(h);
+    232|   expect(h.tool.isArmed()).toBe(next!=='edited-close');
+       |                            ^
+    233|   dispatch(h.canvas,'pointerup',h.point,0,0);await settle(h);expect(su…
+    234|   if(next==='edited-close') {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  4 failed | 22 passed (26)
+   Start at  09:40:14
+   Duration  2.97s (transform 1.88s, setup 0ms, import 5.41s, tests 263ms, environment 0ms)
+

@@ -1,0 +1,186 @@
+{
+  "sourceCommit": "fb5f48ea64ef0e112d1e3da08b4c0e751b07f2b6",
+  "terminalRuns": {
+    "initial-q0-native": {
+      "caseSeconds": [
+        43.4,
+        41.7
+      ],
+      "prepPixelFailureCount": 2
+    },
+    "initial-q1-native": {
+      "caseSeconds": [
+        42.5,
+        39.9
+      ],
+      "prepPixelFailureCount": 2
+    },
+    "calibrated-native": {
+      "caseSeconds": [
+        43.7,
+        39.2,
+        39.6
+      ],
+      "prepPixelFailureCount": 0
+    },
+    "consumer-mutation-q0": {
+      "caseSeconds": [
+        43.4,
+        39.1
+      ],
+      "prepPixelFailureCount": 4
+    },
+    "consumer-mutation-q1": {
+      "caseSeconds": [
+        42.9,
+        39.2
+      ],
+      "prepPixelFailureCount": 4
+    },
+    "exact-restored-native": {
+      "caseSeconds": [
+        43.1,
+        40.2,
+        38.7
+      ],
+      "prepPixelFailureCount": 0
+    }
+  },
+  "accepted": [
+    {
+      "quarterTurns": 1,
+      "actualBefore": [
+        "object.fridge@22,6:orientation=1",
+        "object.prep-counter@24,8:orientation=1",
+        "object.stove@24,6:orientation=1"
+      ],
+      "actualAfter": [
+        "object.fridge@22,6:orientation=1",
+        "object.prep-counter@24,8:orientation=1",
+        "object.stove@24,6:orientation=1"
+      ],
+      "beforePixels": [
+        238,
+        151
+      ],
+      "afterPixels": [
+        238,
+        151
+      ],
+      "commands": [
+        {
+          "type": "PlaceRoomTemplate",
+          "templateId": "kitchen-basic",
+          "origin": {
+            "x": 20,
+            "y": 5
+          },
+          "quarterTurns": 1
+        }
+      ]
+    },
+    {
+      "quarterTurns": 0,
+      "actualBefore": [
+        "object.fridge@21,8:orientation=0",
+        "object.prep-counter@23,6:orientation=0",
+        "object.stove@21,6:orientation=0"
+      ],
+      "actualAfter": [
+        "object.fridge@21,8:orientation=0",
+        "object.prep-counter@23,6:orientation=0",
+        "object.stove@21,6:orientation=0"
+      ],
+      "beforePixels": [
+        149,
+        122
+      ],
+      "afterPixels": [
+        149,
+        122
+      ],
+      "commands": [
+        {
+          "type": "PlaceRoomTemplate",
+          "templateId": "kitchen-basic",
+          "origin": {
+            "x": 20,
+            "y": 5
+          }
+        }
+      ]
+    }
+  ],
+  "images": {
+    "accepted-q0-loaded-fullhd.png": {
+      "bytes": 1456813,
+      "sha256": "b6c85e84fd93d3a016848b9f699f2e952353e1b83defe675d5d27656e250d971"
+    },
+    "accepted-q0-worker-completed-fullhd.png": {
+      "bytes": 1491095,
+      "sha256": "5bac44f3a17dd0bacddcefdfa3c67817ccf66566516145bf1af4bd3c1c08f521"
+    },
+    "accepted-q1-loaded-fullhd.png": {
+      "bytes": 1442919,
+      "sha256": "3cea17ce7f778ba8cd5a657a18fde84fc41fb5ab5f372416d3ea5e7df2b39304"
+    },
+    "accepted-q1-worker-completed-fullhd.png": {
+      "bytes": 1476641,
+      "sha256": "d829ce086395e9b9e827d29a5c21e0de8b1a5d291bc30dcf93d964bd1e8ae9f7"
+    },
+    "calibrated-q0-loaded-fullhd.png": {
+      "bytes": 1456887,
+      "sha256": "27219313198253b746142402772208561834b6d18ff73d25f538c5c13a578560"
+    },
+    "calibrated-q0-worker-completed-fullhd.png": {
+      "bytes": 1491172,
+      "sha256": "54366eb0b2c73c0717fe68e34fa84177011cfd407204cbf25de982ed124ccc88"
+    },
+    "calibrated-q1-loaded-fullhd.png": {
+      "bytes": 1442983,
+      "sha256": "18edb1ab733b71e75d6dcc9440c0185e835cd02277c43da68aee562e41051ee0"
+    },
+    "calibrated-q1-worker-completed-fullhd.png": {
+      "bytes": 1476708,
+      "sha256": "7ea2adec19b4a7f83e4677cb38a6544c52927018590c8db4611b34b36cb11666"
+    },
+    "initial-q0-loaded-fullhd.png": {
+      "bytes": 1456958,
+      "sha256": "37b435cba41e3f95cd02e7435d4de860bbf3e0a8861e9184bcdaeea30837c6fb"
+    },
+    "initial-q0-worker-completed-fullhd.png": {
+      "bytes": 1491208,
+      "sha256": "c856c3d49fcde7f7393cdfb1078718cbfec287701dde8549791e9eb64c1ead47"
+    },
+    "initial-q1-loaded-fullhd.png": {
+      "bytes": 1442975,
+      "sha256": "ee55c0fe1e990f48ff6e9890f10a28f4675336c4b5dd5f600d53f2b18e1e86bd"
+    },
+    "initial-q1-worker-completed-fullhd.png": {
+      "bytes": 1476703,
+      "sha256": "3f19d1fae3165fbbc5b863c3f784fbd588737a7952192707865e0e126594a6e5"
+    },
+    "negative-q0-loaded-fullhd.png": {
+      "bytes": 1446635,
+      "sha256": "25011df164a3551229e28009048daa757eb91b5373f3cd3c5e08cd9c0e9e1d38"
+    },
+    "negative-q0-worker-completed-fullhd.png": {
+      "bytes": 1479916,
+      "sha256": "f95c23141d1b81ab8a08ad94709839d48db54dff0bfebbddf4d1813abb76eff9"
+    },
+    "negative-q1-loaded-fullhd.png": {
+      "bytes": 1436371,
+      "sha256": "d3534e8df41e3b54d53d0c7d6c778237ea382125e979ffe88a2b0d66663bc991"
+    },
+    "negative-q1-worker-completed-fullhd.png": {
+      "bytes": 1469888,
+      "sha256": "909f4964ec30de3559f42be09bfeb807aaa8500c60c850296d7144ba4d85f248"
+    }
+  },
+  "limits": {
+    "caseMs": 60000,
+    "progressMs": 10000,
+    "workers": 1
+  },
+  "claimBoundary": "own isolated production client only; root integration/hosted acceptance not claimed"
+}

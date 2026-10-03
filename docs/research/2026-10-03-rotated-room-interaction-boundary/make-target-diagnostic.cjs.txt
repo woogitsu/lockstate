@@ -1,0 +1,17 @@
+const fs=require('node:fs'),path=require('node:path');
+const scratch=path.join(process.env.TEMP,'lockstate-rotated-fixture-interaction-audit-20261003');
+const raw=fs.readFileSync(path.join(scratch,'run-fresh-admission-anchor-wall.cjs'),'utf8');
+let source=raw.match(/const source=`([\s\S]+?)`;\r?\nconst out=/)[1];
+source=source.replace("import assert from 'node:assert/strict';","import assert from 'node:assert/strict';\nimport {expect,it} from 'vitest';");
+source=source.replace("from './src/","from '../../src/");
+source=source.replaceAll("from './src/","from '../../src/");
+source=source.replace(/import \{writeFileSync\}[^\n]*\n/,'').replace(/import \{join\}[^\n]*\n/,'');
+source=source.replace('const results=[];','function measure(wallOffset:number,loadAfterWall:boolean){\nconst results:any[]=[];');
+source=source.replaceAll('Number(process.env.AUDIT_WALL_OFFSET||0)','wallOffset').replace("process.env.AUDIT_LOAD_AFTER_WALL==='1'",'loadAfterWall');
+const tail=source.indexOf("const final={result:");
+source=source.slice(0,tail)+'return results[0];\n}\n';
+source=source.replace('console.log(JSON.stringify(results.at(-1)));','');
+source=source.replace('function send(r,c)','function send(r:ReturnType<typeof createNewSimulationRuntime>,c:Parameters<typeof packCommand>[0])').replace('function until(r,p,label)','function until(r:ReturnType<typeof createNewSimulationRuntime>,p:()=>boolean,label:string)').replace('function reload(r)','function reload(r:ReturnType<typeof createNewSimulationRuntime>)');
+// This initial diagnostic deliberately retains exact executable measurement structure.
+source+='\nit.each([[0,false],[0,true],[1,false],[1,true]] as const)("completed q1 Canteen remains usable after later interior wall: offset%s V8%s",(offset,load)=>{const actual=measure(offset,load);expect(actual.afterWallActions.map((a:any)=>a.id)).toContain("action.eat-meal");expect(actual.afterHunger).toBeGreaterThan(0);});\n';
+fs.writeFileSync(path.join(process.cwd(),'tests/integration/room-template-canteen-interior-target.test.ts'),source);

@@ -1,0 +1,39 @@
+pnpm : $ pnpm typecheck && pnpm test && node scripts/cloudflare-task.mjs build production
+At line:2 char:333
++ ... 61003.txt'; pnpm --config.verify-deps-before-run=false verify *> $log ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ pnpm typechec...uild production:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+$ tsc -b --pretty false && tsc -b tsconfig.tools.json --pretty false
+$ vitest run
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-integration-20261003
+
+ ❯ tests/foundation/documentation-claims-contract.test.ts (15 tests | 1 failed) 15376ms
+     × cannot reach Supabase from the running app, as the topology and the persistence section both now say 5012ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-claims-contract.test.ts > docs/ARCHITECTURE.md: what the persistence layer actual
+ly does > cannot reach Supabase from the running app, as the topology and the persistence section both now say
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/foundation/documentation-claims-contract.test.ts:622:3
+    620|   });
+    621|
+    622|   it('cannot reach Supabase from the running app, as the topology and …
+       |   ^
+    623|     // The claim being pinned: "Supabase cloud sync (contract and SQL …
+    624|     // not reachable from the app)" and "nothing under `src/` reads
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 707 passed (708)
+      Tests  1 failed | 8447 passed | 2 skipped (8450)
+   Start at  18:12:30
+   Duration  46.42s (transform 44.85s, setup 0ms, import 218.93s, tests 431.89s, environment 54ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+[ELIFECYCLE] Command failed with exit code 1.

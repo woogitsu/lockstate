@@ -1,0 +1,71 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-preflight-session-20261003
+
+stdout | tests/unit/template-session-preflight-diagnostic.test.ts > fresh new session admits a new armed plan while the outgoing placement preflight was in flight
+{"operation":"new","result":{"ok":false,"reason":"busy"},"oldState":"shutting-down","newState":"paused","beforeOrders":0,"afterOrders":0,"beforeTreasury":{"balanceMinorUnits":25000},"afterTreasury":{"balanceMinorUnits":25000},"actualNewCommandMessages":0,"sameAuthoritativeSnapshot":true}
+
+stdout | tests/unit/template-session-preflight-diagnostic.test.ts > fresh new session admits a new armed plan while the outgoing placement preflight was in flight
+{"operation":"new","recoveredOrders":18,"recoveredPending":1,"recoveredTreasury":{"balanceMinorUnits":25000}}
+
+stdout | tests/unit/template-session-preflight-diagnostic.test.ts > fresh load session admits a new armed plan while the outgoing placement preflight was in flight
+{"operation":"load","result":{"ok":false,"reason":"busy"},"oldState":"shutting-down","newState":"paused","beforeOrders":18,"afterOrders":18,"beforeTreasury":{"balanceMinorUnits":25000},"afterTreasury":{"balanceMinorUnits":25000},"actualNewCommandMessages":0,"sameAuthoritativeSnapshot":true}
+
+stdout | tests/unit/template-session-preflight-diagnostic.test.ts > fresh load session admits a new armed plan while the outgoing placement preflight was in flight
+{"operation":"load","recoveredOrders":36,"recoveredPending":2,"recoveredTreasury":{"balanceMinorUnits":25000}}
+
+ ❯ tests/unit/template-session-preflight-diagnostic.test.ts (3 tests | 2 failed) 58ms
+   × fresh new session admits a new armed plan while the outgoing placement preflight was in flight 42ms
+   × fresh load session admits a new armed plan while the outgoing placement preflight was in flight 10ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed (3)
+   Start at  05:56:12
+   Duration  2.61s (transform 886ms, setup 0ms, import 2.43s, tests 58ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/template-session-preflight-diagnostic.test.ts > fresh new session admits a new armed plan while the outgoing placement preflight was in flight
+AssertionError: expected { ok: false, reason: 'busy' } to deeply equal { ok: true }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
++   "ok": false,
++   "reason": "busy",
+  }
+
+ ❯ tests/unit/template-session-preflight-diagnostic.test.ts:94:20
+     92|     sameAuthoritativeSnapshot: JSON.stringify(before) === JSON.stringi…
+     93|   try {
+     94|     expect(result).toEqual({ ok: true });
+       |                    ^
+     95|     expect(after.simulation.roomTemplates?.pending.length).toBe((befor…
+     96|   } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/template-session-preflight-diagnostic.test.ts > fresh load session admits a new armed plan while the outgoing placement preflight was in flight
+AssertionError: expected { ok: false, reason: 'busy' } to deeply equal { ok: true }
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
++   "ok": false,
++   "reason": "busy",
+  }
+
+ ❯ tests/unit/template-session-preflight-diagnostic.test.ts:94:20
+     92|     sameAuthoritativeSnapshot: JSON.stringify(before) === JSON.stringi…
+     93|   try {
+     94|     expect(result).toEqual({ ok: true });
+       |                    ^
+     95|     expect(after.simulation.roomTemplates?.pending.length).toBe((befor…
+     96|   } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

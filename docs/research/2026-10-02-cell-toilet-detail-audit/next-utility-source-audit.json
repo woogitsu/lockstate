@@ -1,0 +1,132 @@
+{
+  "source": "assets\\source\\blender\\utility.utility-panel.variants.blend",
+  "sourceSha256": "05281b06512f7dabab247b183568b249aa8df04e912c7ea89a209e918f9775ea",
+  "meshCount": 9,
+  "materials": [
+    "amber status",
+    "control panel",
+    "monitor glass",
+    "warm charcoal"
+  ],
+  "actualMinimum": [
+    0.0599999725818634,
+    0.06350002437829971,
+    0.0
+  ],
+  "actualMaximum": [
+    0.940000057220459,
+    0.7700000405311584,
+    1.0099999904632568
+  ],
+  "actualResolution": [
+    256,
+    256
+  ],
+  "actualOrthographicSpan": 4.0,
+  "target": [
+    0.5,
+    0.5,
+    0.6499999761581421
+  ],
+  "meshes": [
+    {
+      "name": "body",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "rawPolygons": 6,
+      "outwardFaces": 0,
+      "inwardFaces": 6,
+      "materials": [
+        "warm charcoal"
+      ]
+    },
+    {
+      "name": "control",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "rawPolygons": 6,
+      "outwardFaces": 0,
+      "inwardFaces": 6,
+      "materials": [
+        "control panel"
+      ]
+    },
+    {
+      "name": "dial",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "rawPolygons": 6,
+      "outwardFaces": 0,
+      "inwardFaces": 6,
+      "materials": [
+        "amber status"
+      ]
+    },
+    {
+      "name": "foot",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "rawPolygons": 6,
+      "outwardFaces": 0,
+      "inwardFaces": 6,
+      "materials": [
+        "warm charcoal"
+      ]
+    },
+    {
+      "name": "foot.001",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "rawPolygons": 6,
+      "outwardFaces": 0,
+      "inwardFaces": 6,
+      "materials": [
+        "warm charcoal"
+      ]
+    },
+    {
+      "name": "front",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "rawPolygons": 6,
+      "outwardFaces": 0,
+      "inwardFaces": 6,
+      "materials": [
+        "warm charcoal"
+      ]
+    },
+    {
+      "name": "monitor",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "rawPolygons": 6,
+      "outwardFaces": 0,
+      "inwardFaces": 6,
+      "materials": [
+        "monitor glass"
+      ]
+    },
+    {
+      "name": "status",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "rawPolygons": 6,
+      "outwardFaces": 0,
+      "inwardFaces": 6,
+      "materials": [
+        "amber status"
+      ]
+    },
+    {
+      "name": "top",
+      "rawVertices": 8,
+      "evaluatedVertices": 56,
+      "rawPolygons": 6,
+      "outwardFaces": 0,
+      "inwardFaces": 6,
+      "materials": [
+        "warm charcoal"
+      ]
+    }
+  ]
+}

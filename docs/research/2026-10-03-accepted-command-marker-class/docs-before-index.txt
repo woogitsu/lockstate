@@ -1,0 +1,34 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-accepted-command-marker-class-audit-20261003
+
+ ❯ tests/foundation/research-index-contract.test.ts (5 tests | 1 failed) 66ms
+     × names every collection of records that lives in a subdirectory 42ms
+
+ Test Files  1 failed | 7 passed (8)
+      Tests  1 failed | 61 passed (62)
+   Start at  05:16:12
+   Duration  13.24s (transform 179ms, setup 0ms, import 18.77s, tests 6.01s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/research-index-contract.test.ts > research index contract > names every collection of records that lives in a subdirectory
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-accepted-command-marker-class/ holds records the index neither rows nor links to",
++ ]
+
+ ❯ tests/foundation/research-index-contract.test.ts:195:21
+    193|       );
+    194|
+    195|     expect(unnamed).toEqual([]);
+       |                     ^
+    196|   });
+    197|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-garbage-room-native-preparation-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  13:12:26
+   Duration  3.42s (transform 994ms, setup 0ms, import 2.91s, tests 365ms, environment 0ms)
+
+$ vitest run "tests/integration/native-garbage-room-preparation.test.ts"

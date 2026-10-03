@@ -1,0 +1,55 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-oblique-minimap-reuse-20261003
+
+ ❯ tests/unit/oblique-minimap-projection-reuse.test.ts (5 tests | 2 failed) 33ms
+   × reuses exact pixels and performs no tile reads for unchanged world/revision 25ms
+   × recalculates camera viewport while retaining unchanged physical pixels 3ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  13:07:59
+   Duration  956ms (transform 293ms, setup 0ms, import 770ms, tests 33ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-minimap-projection-reuse.test.ts > reuses exact pixels and performs no tile reads for unchanged world/revision
+AssertionError: expected 30976 to be 256 // Object.is equality
+
+- Expected
++ Received
+
+- 256
++ 30976
+
+ ❯ tests/unit/oblique-minimap-projection-reuse.test.ts:39:35
+     37|   expect(firstReads).toBe(256);
+     38|   for (let frame = 0; frame < 120; frame++) probe.publish();
+     39|   expect(reads.mock.calls.length).toBe(firstReads);
+       |                                   ^
+     40|   expect(probe.views).toHaveLength(121);
+     41|   for (const view of probe.views) expect(view!.pixels).toBe(probe.view…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/oblique-minimap-projection-reuse.test.ts > recalculates camera viewport while retaining unchanged physical pixels
+AssertionError: expected Uint8Array[ 2, 2, 2, 2, 2, 2, 2, …(255) ] to be Uint8Array[ 2, 2, 2, 2, 2, 2, 2, …(255) ] // Object.is equality
+
+If it should pass with deep equality, replace "toBe" with "toStrictEqual"
+
+Expected: Uint8Array[ 2, 2, 2, 2, 2, 2, 2, …(255) ]
+Received: serializes to the same string
+
+
+Compared values have no visual difference.
+
+ ❯ tests/unit/oblique-minimap-projection-reuse.test.ts:69:34
+     67|   Reflect.set(probe.scene, 'pose', { ...probe.pose, target: { x: 10 * …
+     68|   probe.publish();
+     69|   expect(probe.views[1]!.pixels).toBe(probe.views[0]!.pixels);
+       |                                  ^
+     70|   expect(probe.views[1]!.viewport).not.toEqual(probe.views[0]!.viewpor…
+     71|   expect(probe.views[1]!.viewport.width).toBeCloseTo(probe.views[0]!.v…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

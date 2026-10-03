@@ -13,7 +13,7 @@ import { routesForIntent, type ScannedSource } from '../helpers/control-reachabi
  *
  * `docs/IDENTITY_V5_ROLLOUT.md`'s stage 4 restated *"a browser spec per
  * refusal path"* per **surface**: one spec per `(press, success artifact,
- * producer)` triple, because what a browser uniquely adds over the 48-reason
+ * producer)` triple, because what a browser uniquely adds over the 49-reason
  * unit loops in `tests/unit/ui-simulation-alerts.test.ts` is that the
  * **success artifact is absent** -- and that varies by surface rather than by
  * reason. It carried no count, deliberately, because no enumeration had been
@@ -49,7 +49,7 @@ import { routesForIntent, type ScannedSource } from '../helpers/control-reachabi
  */
 
 const ROOT = resolve(__dirname, '../..');
-const read = (path: string): string => readFileSync(join(ROOT, path), 'utf8');
+const read = (path: string): string => readFileSync(join(ROOT, path), 'utf8').replace(/\r\n/g, '\n');
 
 type Producer = 'host' | 'simulation';
 
@@ -503,9 +503,11 @@ describe('the refusal surfaces issue #1160 criterion 4 is counted in', () => {
     // The vacuity guard first: every count below is over a regular expression
     // against a source file, and a pattern that stopped matching would leave
     // the set comparisons passing over two empty sets.
-    expect(reasonSuffixes.length).toBe(48);
-    expect(alertKeys.length).toBe(48);
-    expect(alertKeysPl.length).toBe(48);
+    // Owner-approved #1975 adds the ambiguous saved-object ownership refusal;
+    // the dated 48-member measurements remain historical in the rollout plan.
+    expect(reasonSuffixes.length).toBe(49);
+    expect(alertKeys.length).toBe(49);
+    expect(alertKeysPl.length).toBe(49);
     expect(hostKeys.length).toBe(16);
     expect(hostKeysPl.length).toBe(16);
 

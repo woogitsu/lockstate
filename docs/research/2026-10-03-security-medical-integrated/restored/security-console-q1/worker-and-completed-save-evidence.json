@@ -1,0 +1,20 @@
+{
+  "quarterTurns": 1,
+  "actualBefore": [
+    "object.security-console@23,6:orientation=1"
+  ],
+  "beforePixels": [
+    1494
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "security-office-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      },
+      "quarterTurns": 1
+    }
+  ]
+}

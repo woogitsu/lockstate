@@ -1,0 +1,35 @@
+﻿browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9933760Z   14) tests/browser/app-shell.spec.ts:10371:3 › the assembled application › the Build catalogue offers a door its edge chooser, from the real registry (#531) 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9934327Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9934679Z     Error: ^[[2mexpect(^[[22m^[[31mlocator^[[39m^[[2m).^[[22mtoBeVisible^[[2m(^[[22m^[[2m)^[[22m failed
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9935008Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9935153Z     Locator:  locator('.hud-build .ui-choice')
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9935451Z     Expected: visible
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9935668Z     Received: hidden
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9935889Z     Timeout:  10000ms
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9936163Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9936245Z     Call log:
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9936590Z     ^[[2m  - Expect "toBeVisible" with timeout 10000ms^[[22m
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9937054Z     ^[[2m  - waiting for locator('.hud-build .ui-choice')^[[22m
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9937606Z     ^[[2m    13 × locator resolved to <div hidden="" class="ui-choice">…</div>^[[22m
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9938084Z     ^[[2m       - unexpected value "hidden"^[[22m
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9938292Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9938298Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9938477Z       11007 |       'the wall row did not become the selection',
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9938829Z       11008 |     ).toHaveCount(1);
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9939154Z     > 11009 |     await expect(chooser).toBeVisible();
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9939475Z             |                           ^
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9939729Z       11010 |
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9940083Z       11011 |     // The retained edge the defect leaked. Chosen on the wall, where the
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9940515Z       11012 |     // control is undisputed.
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9940996Z         at /home/runner/work/lockstate/lockstate/tests/browser/app-shell.spec.ts:11009:27
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9941334Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9941996Z     Error Context: test-results/app-shell-the-assembled-ap-e4b72-from-the-real-registry-531-/error-context.md
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9942461Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9942875Z     attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9943549Z     test-results/app-shell-the-assembled-ap-e4b72-from-the-real-registry-531-/trace.zip
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9944003Z     Usage:
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9944111Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9944578Z         pnpm exec playwright show-trace test-results/app-shell-the-assembled-ap-e4b72-from-the-real-registry-531-/trace.zip
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9945070Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9945427Z     ────────────────────────────────────────────────────────────────────────────────────────────────
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:24.9945713Z 

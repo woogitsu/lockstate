@@ -1,0 +1,113 @@
+node : [2m[WebServer] [22m(node:32076) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:2 char:704
++ ... 1003.json'; node --experimental-transform-types --disable-warning=Exp ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 7 tests using 1 worker
+
+(node:64252) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64252) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\dedicated-camera-pan-player.spec.ts:162:3 › world FullHD 100% four physical pan controls and armed room-plan confirmation (8.7s)
+  x  2 tests\browser\dedicated-camera-pan-player.spec.ts:162:3 › world FullHD 200% four physical pan controls and armed room-plan confirmation (5.4s)
+(node:49176) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49176) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 tests\browser\dedicated-camera-pan-player.spec.ts:162:3 › oblique FullHD 100% four physical pan controls and armed room-plan confirmation (11.3s)
+  ok 4 tests\browser\dedicated-camera-pan-player.spec.ts:162:3 › oblique FullHD 200% four physical pan controls and armed room-plan confirmation (10.1s)
+  ok 5 tests\browser\dedicated-loading-dock-door-player-build.spec.ts:216:1 › player creates actual storage and delivery capacity before dedicated loading dock door Delivery Bay (43.1s)
+  ok 6 tests\browser\dedicated-loading-dock-door-player-build.spec.ts:282:3 › player builds Delivery Bay at quarterTurns0 and retains the authored loading dock door glazing palette and anchors after Save/Load (40.0s)
+  x  7 tests\browser\dedicated-loading-dock-door-player-build.spec.ts:282:3 › player builds Delivery Bay at quarterTurns1 and retains the authored loading dock door glazing palette and anchors after Save/Load (41.2s)
+
+
+  1) tests\browser\dedicated-camera-pan-player.spec.ts:162:3 › world FullHD 200% four physical pan controls and armed room-plan confirmation 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+      194 |     const cursor = mode === 'world' ? { x: 700, y: 240 } : { x: 740, y: 420 };
+      195 |     const plan = mode === 'world' ? { name: 'Yard', id: 'yard-basic', count: 64 } : { name: 'Basic cell', id: 'cell-basic', count: 28 };
+    > 196 |     expect(await page.evaluate(p => document.elementFromPoint(p.x, p.y) === document.querySelector('#game-root canvas'), cursor)).toBe(true);
+          |                                                                                                                                   ^
+      197 |     await page.mouse.move(cursor.x, cursor.y); await frames(page);
+      198 |     const marker = await page.evaluate(() => (Reflect.get(window, 'dedicatedPanPointers') as unknown[]).length);
+      199 |     const beforeArm = await view(page);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-pan-dock-integration-20261003\tests\browser\dedicated-camera-pan-player.spec.ts:196:131
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-pan-dock-native-seven-results-20261003\dedicated-camera-pan-playe-9d92a-rmed-room-plan-confirmation\error-context.md
+
+  2) tests\browser\dedicated-loading-dock-door-player-build.spec.ts:282:3 › player builds Delivery Bay at quarterTurns1 and retains the authored loading dock door glazing palette and anchors after Save/Load 
+
+    Error: loading dock door retained glazing 1 after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      226 |   }, null, 2));
+      227 |   beforePixels.forEach((count, index) => expect.soft(count, `loading dock door retained glazing ${index + 1} after construction`)
+    > 228 |     .toBeGreaterThan(100));
+          |      ^
+      229 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      230 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      231 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-pan-dock-integration-20261003\tests\browser\dedicated-loading-dock-door-player-build.spec.ts:228:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-pan-dock-integration-20261003\tests\browser\dedicated-loading-dock-door-player-build.spec.ts:227:16
+
+    Error: loading dock door retained glazing 1 after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      242 |   const afterPixels = await dockPalettePixels(page, loaded, quarterTurns);
+      243 |   afterPixels.forEach((count, index) => expect.soft(count, `loading dock door retained glazing ${index + 1} after Load`)
+    > 244 |     .toBeGreaterThan(100));
+          |      ^
+      245 |   expect(afterPixels).toEqual(beforePixels);
+      246 |   const evidencePath = info.outputPath('dedicated-loading-dock-door-worker-and-save-evidence.json');
+      247 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-pan-dock-integration-20261003\tests\browser\dedicated-loading-dock-door-player-build.spec.ts:244:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-pan-dock-integration-20261003\tests\browser\dedicated-loading-dock-door-player-build.spec.ts:243:15
+
+    attachment #1: dedicated-loading-dock-door-worker-and-save-evidence (application/json) ─────────
+    ..\..\..\AppData\Local\Temp\lockstate-pan-dock-native-seven-results-20261003\dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load\attachments\dedicated-loading-dock-door-worker-and-save-evidence-e1113a813d667dd37b33189d33df35df8ab404ea.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-pan-dock-native-seven-results-20261003\dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load\error-context.md
+
+  2 failed
+    tests\browser\dedicated-camera-pan-player.spec.ts:162:3 › world FullHD 200% four physical pan controls and armed room-plan confirmation 
+    tests\browser\dedicated-loading-dock-door-player-build.spec.ts:282:3 › player builds Delivery Bay at quarterTurns1 and retains the authored loading dock door glazing palette and anchors after Save/Load 
+  5 passed (2.7m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+

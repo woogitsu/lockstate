@@ -1,0 +1,946 @@
+{
+  "byteIdenticalRepeatFiles": 73,
+  "descriptorSha256": "c747970e23e5c738571c5ba396f6db2dd29a16600647652d0e46929eee83fc2f",
+  "minimumTransparentBorderPixels": 21,
+  "oldSameAssetFramesRetired": [
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+00-elev20.3cbb9521e7a8.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+00-elev30.9e1ce4ffcec5.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+00-elev40.3b1952a54741.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+00-elev50.7db835fc56a0.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+00-elev60.e4ad67e891c9.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+00-elev70.2e645e7a338a.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev20.5fc07f7510b8.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev30.d3c5985e15bb.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev40.5b36a49ef7e2.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev50.a501d91428f2.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev60.032b1a3640f4.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev70.9eaab4162cf2.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+60-elev20.3a397c837be6.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+60-elev30.2d89329c2daf.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+60-elev40.98b4100e20d0.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+60-elev50.24ecfeff0d5b.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+60-elev60.b4c35a2480a8.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+60-elev70.275766e80b6f.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+90-elev20.b8bbdd0670d4.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+90-elev30.e03ba7232083.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+90-elev40.de34a0333449.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+90-elev50.6c679a092cbb.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+90-elev60.95b70a3e9270.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+90-elev70.49a692a819af.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+120-elev20.6156d589294a.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+120-elev30.c5b00f7fd529.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+120-elev40.931fe3f1e66c.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+120-elev50.54e92c6d630e.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+120-elev60.2c4fba0eff19.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+120-elev70.f1bf56496424.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+150-elev20.5ff924548963.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+150-elev30.5852f54349ab.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+150-elev40.3c0998ad87ab.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+150-elev50.2736424c6423.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+150-elev60.461b8f00e9ce.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+150-elev70.5a4c68e95bc8.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+180-elev20.6450a2774683.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+180-elev30.1f5051d9f1c4.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+180-elev40.34988bf8fcc8.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+180-elev50.aa886e4994f0.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+180-elev60.52ef15b2dc38.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+180-elev70.b7df7700f11e.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+210-elev20.0c32c134474b.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+210-elev30.304dec0bdae8.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+210-elev40.06b9edd565ed.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+210-elev50.ca7d4fd28b0b.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+210-elev60.774fe7866a56.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+210-elev70.3ebe04e6fa6f.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+240-elev20.e89e04194efa.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+240-elev30.4016265d8942.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+240-elev40.28bba9c07a3d.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+240-elev50.589f125330e4.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+240-elev60.5eeb897010b8.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+240-elev70.be240c4cbd5f.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+270-elev20.80f0f7d46787.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+270-elev30.85ec33d31b67.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+270-elev40.bbd30beea969.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+270-elev50.5025c5f26e8b.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+270-elev60.792cf19373d6.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+270-elev70.6a26d2e1ca73.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev20.5fcddf04dc97.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev30.1c4a66612a55.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev40.3640e6300804.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev50.958159444a1c.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev60.c2bb9e33784e.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev70.7bf66813501c.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+330-elev20.baa15c8ed6a5.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+330-elev30.7a2a768958c5.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+330-elev40.661a99ae7c24.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+330-elev50.b700f3ee2201.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+330-elev60.65c24fb53efa.png",
+    "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+330-elev70.10ef7c411a94.png"
+  ],
+  "allDecodedFrames": [
+    {
+      "yaw": 0,
+      "elevation": 20,
+      "sha256": "a9dbbe22152e20b0dad62542d97993a1b73ee54d9923acc7027d940477980560",
+      "alphaBounds": [
+        36,
+        72,
+        220,
+        186
+      ],
+      "transparentMarginPixels": 36
+    },
+    {
+      "yaw": 0,
+      "elevation": 30,
+      "sha256": "90fc58c7c52bd200f56f35e8d026490eaab0892f32d8219da824443f2803668e",
+      "alphaBounds": [
+        36,
+        75,
+        220,
+        184
+      ],
+      "transparentMarginPixels": 36
+    },
+    {
+      "yaw": 0,
+      "elevation": 40,
+      "sha256": "1c49137bf58e53a0c312ea616dc83b409b8a86907efc4b954f15567f035a6893",
+      "alphaBounds": [
+        36,
+        80,
+        220,
+        180
+      ],
+      "transparentMarginPixels": 36
+    },
+    {
+      "yaw": 0,
+      "elevation": 50,
+      "sha256": "8ffbed3acf52a07b364d53f8c07469d3a392980e8097a717ac4a3ee6da5292e7",
+      "alphaBounds": [
+        36,
+        86,
+        220,
+        175
+      ],
+      "transparentMarginPixels": 36
+    },
+    {
+      "yaw": 0,
+      "elevation": 60,
+      "sha256": "240ee7b29168cf4ed4eb5d05f9d3c080e9a04f11c19e4f0d706369e65cf5a7a6",
+      "alphaBounds": [
+        36,
+        93,
+        220,
+        168
+      ],
+      "transparentMarginPixels": 36
+    },
+    {
+      "yaw": 0,
+      "elevation": 70,
+      "sha256": "be4ddd7e6a1083735a0e942df2ef450d1e1aaefca12d3f2f283877c8e2ae550b",
+      "alphaBounds": [
+        36,
+        102,
+        220,
+        161
+      ],
+      "transparentMarginPixels": 36
+    },
+    {
+      "yaw": 30,
+      "elevation": 20,
+      "sha256": "23203b50fe8e32e3c6a5b55a7c43ae9dda8858e357763adae6bb68d3fe379a39",
+      "alphaBounds": [
+        46,
+        57,
+        210,
+        199
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 30,
+      "elevation": 30,
+      "sha256": "f33677c46cfb5223775981dfa630bb435006c583220296510670840cbea39d0b",
+      "alphaBounds": [
+        46,
+        53,
+        210,
+        203
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 30,
+      "elevation": 40,
+      "sha256": "6a60277bf1c991b0db1d92a4cc5a6e93b01acdf5c39ebd929b0467026d58e2f6",
+      "alphaBounds": [
+        46,
+        52,
+        210,
+        205
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 30,
+      "elevation": 50,
+      "sha256": "4e3a28e67965121829175d14dffcb720535d690d1d970e13d9724b081cefea19",
+      "alphaBounds": [
+        46,
+        53,
+        210,
+        204
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 30,
+      "elevation": 60,
+      "sha256": "b848b39ca3b0694c9aef68d3bf8409fda626f04150ca29804711542d18d4eb8d",
+      "alphaBounds": [
+        46,
+        56,
+        210,
+        202
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 30,
+      "elevation": 70,
+      "sha256": "93f6c2a3c529c62d1dd793af4c31f28ddb7f5c26239190b6d38e44bc8e36e39f",
+      "alphaBounds": [
+        46,
+        61,
+        210,
+        197
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 60,
+      "elevation": 20,
+      "sha256": "fb5c68336c277b897ff5f82d3503fae02555636a5680ba15b92ec2d89303d5e6",
+      "alphaBounds": [
+        75,
+        47,
+        180,
+        208
+      ],
+      "transparentMarginPixels": 47
+    },
+    {
+      "yaw": 60,
+      "elevation": 30,
+      "sha256": "1f37462e1f25db6bb7b77d257e683725e92066fb6b9c26ac53440c0e5154e2de",
+      "alphaBounds": [
+        75,
+        38,
+        180,
+        216
+      ],
+      "transparentMarginPixels": 38
+    },
+    {
+      "yaw": 60,
+      "elevation": 40,
+      "sha256": "2ed6c923af6daef4136bb45bd632f344bff90adabb912adf8a98dffb51bc3020",
+      "alphaBounds": [
+        75,
+        32,
+        180,
+        221
+      ],
+      "transparentMarginPixels": 32
+    },
+    {
+      "yaw": 60,
+      "elevation": 50,
+      "sha256": "8d4923415bf631617eafa558517cf2cc2ba131fc9d207ae8fb05689d17074d4a",
+      "alphaBounds": [
+        75,
+        29,
+        180,
+        223
+      ],
+      "transparentMarginPixels": 29
+    },
+    {
+      "yaw": 60,
+      "elevation": 60,
+      "sha256": "e773e7da2f7b384a1449a7836940a3d1ac6c80e05564ca6ad67f89f15d34f013",
+      "alphaBounds": [
+        75,
+        29,
+        180,
+        223
+      ],
+      "transparentMarginPixels": 29
+    },
+    {
+      "yaw": 60,
+      "elevation": 70,
+      "sha256": "c573380ecbb3149d83ca850d085969e7ac45424fcba39d6650cda9d9a0c17b18",
+      "alphaBounds": [
+        75,
+        32,
+        180,
+        220
+      ],
+      "transparentMarginPixels": 32
+    },
+    {
+      "yaw": 90,
+      "elevation": 20,
+      "sha256": "7ac2eb176953e66e8886fe8cc0ca5f3c99f20fe625ddceaa230fd490bb221eaa",
+      "alphaBounds": [
+        113,
+        43,
+        142,
+        211
+      ],
+      "transparentMarginPixels": 43
+    },
+    {
+      "yaw": 90,
+      "elevation": 30,
+      "sha256": "8de13796136ea7d13758a8c481c7d08e6165d6efca1fcb6f4f5a3d969ea5ca7f",
+      "alphaBounds": [
+        113,
+        33,
+        142,
+        221
+      ],
+      "transparentMarginPixels": 33
+    },
+    {
+      "yaw": 90,
+      "elevation": 40,
+      "sha256": "dd1ed5cf1d9be29c8c78a8486bbec15009b94770bd94a8c64bba3f967eda3dab",
+      "alphaBounds": [
+        113,
+        26,
+        142,
+        227
+      ],
+      "transparentMarginPixels": 26
+    },
+    {
+      "yaw": 90,
+      "elevation": 50,
+      "sha256": "2e51a39fc06de41cb60c6d3cf132d20c0f4bdaedc6fedf79bff8b7005be694e5",
+      "alphaBounds": [
+        113,
+        22,
+        142,
+        231
+      ],
+      "transparentMarginPixels": 22
+    },
+    {
+      "yaw": 90,
+      "elevation": 60,
+      "sha256": "4eac785b3e104aa4fd5f7d27d6df19e1036af19d32532a6a1d9e4bb1e7106326",
+      "alphaBounds": [
+        113,
+        21,
+        142,
+        232
+      ],
+      "transparentMarginPixels": 21
+    },
+    {
+      "yaw": 90,
+      "elevation": 70,
+      "sha256": "b366792a3ded762b04b59a42e744d7dedc3db87135b6a399ae5cdadf8e756131",
+      "alphaBounds": [
+        113,
+        23,
+        142,
+        230
+      ],
+      "transparentMarginPixels": 23
+    },
+    {
+      "yaw": 120,
+      "elevation": 20,
+      "sha256": "cca8ef2c9f4e1f0c2ec7cf3403c040e9e0421e3ff52386b830b96d7b0026c433",
+      "alphaBounds": [
+        75,
+        47,
+        180,
+        208
+      ],
+      "transparentMarginPixels": 47
+    },
+    {
+      "yaw": 120,
+      "elevation": 30,
+      "sha256": "ecf97e3502a40a5cf192b23b831d3d6dc52ff7d2ad100ef1eb1ca15131bf01f5",
+      "alphaBounds": [
+        75,
+        38,
+        180,
+        216
+      ],
+      "transparentMarginPixels": 38
+    },
+    {
+      "yaw": 120,
+      "elevation": 40,
+      "sha256": "e733c99337b251d2eeccc590c57c4fbabef144b33f525b01a94492648c7531af",
+      "alphaBounds": [
+        75,
+        32,
+        180,
+        221
+      ],
+      "transparentMarginPixels": 32
+    },
+    {
+      "yaw": 120,
+      "elevation": 50,
+      "sha256": "34462f86e1fa5a923f3c8d7b2ac33cb55b0f7aa81c0b6235d668f9ffb71ebeae",
+      "alphaBounds": [
+        75,
+        29,
+        180,
+        223
+      ],
+      "transparentMarginPixels": 29
+    },
+    {
+      "yaw": 120,
+      "elevation": 60,
+      "sha256": "f801407eba7163cdd7af721d361ce5ad8ba9872ec4bb90ae310d23b58a77521f",
+      "alphaBounds": [
+        75,
+        29,
+        180,
+        223
+      ],
+      "transparentMarginPixels": 29
+    },
+    {
+      "yaw": 120,
+      "elevation": 70,
+      "sha256": "e0ab98c1103dad34ef68f42f93eb03bce5f0a4bbe965c3e2f43aabfd17594734",
+      "alphaBounds": [
+        75,
+        32,
+        180,
+        220
+      ],
+      "transparentMarginPixels": 32
+    },
+    {
+      "yaw": 150,
+      "elevation": 20,
+      "sha256": "24073a5cff6c3992a4fe7401bdc7e08aa139902b8ffd378d3d50b997c1470d01",
+      "alphaBounds": [
+        46,
+        57,
+        210,
+        198
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 150,
+      "elevation": 30,
+      "sha256": "996758c813a069da8b05b3001b2734339b144a6f8c72ece2a5083635117fa5f5",
+      "alphaBounds": [
+        46,
+        53,
+        210,
+        201
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 150,
+      "elevation": 40,
+      "sha256": "209c003fad238b9f1fcf6f9b4ff4d304d5e18d896e818fb713af0deedc04dc69",
+      "alphaBounds": [
+        46,
+        52,
+        210,
+        202
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 150,
+      "elevation": 50,
+      "sha256": "5fc4f61743ca469a543561dced347474bbce7ee0fe079199f616229584c74c29",
+      "alphaBounds": [
+        46,
+        52,
+        210,
+        201
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 150,
+      "elevation": 60,
+      "sha256": "4e6883a4a4d39d31499a8f6416bbace264598aefbd2a453bdaf771bc1a0d5147",
+      "alphaBounds": [
+        46,
+        55,
+        210,
+        197
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 150,
+      "elevation": 70,
+      "sha256": "e152e4db40f180d7fe01e2105a7f7bcd13acddcc69b7704a44760ff9720f10d9",
+      "alphaBounds": [
+        46,
+        61,
+        210,
+        192
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 180,
+      "elevation": 20,
+      "sha256": "8e958291c81058834fcd1de38d6705c4ee44053ab1051fd083358f050ce56189",
+      "alphaBounds": [
+        36,
+        72,
+        220,
+        183
+      ],
+      "transparentMarginPixels": 36
+    },
+    {
+      "yaw": 180,
+      "elevation": 30,
+      "sha256": "23204b930d2b8117bc8263a72cc05ac951303db49842c6dae5768b4f7e221704",
+      "alphaBounds": [
+        36,
+        75,
+        220,
+        180
+      ],
+      "transparentMarginPixels": 36
+    },
+    {
+      "yaw": 180,
+      "elevation": 40,
+      "sha256": "f0c9c78a5ec03ff6017118027a3cf5fa324894cd4842c70683995c60d0fe5590",
+      "alphaBounds": [
+        36,
+        80,
+        220,
+        175
+      ],
+      "transparentMarginPixels": 36
+    },
+    {
+      "yaw": 180,
+      "elevation": 50,
+      "sha256": "2a772a7ed1455a79823e58d56b886783f6544e5e668c452eece12993cb6a9ac6",
+      "alphaBounds": [
+        36,
+        86,
+        220,
+        169
+      ],
+      "transparentMarginPixels": 36
+    },
+    {
+      "yaw": 180,
+      "elevation": 60,
+      "sha256": "ea3e1b99dd443306fd9e7bf14c0610844f71904ab79ff7d10e55941c35c52245",
+      "alphaBounds": [
+        36,
+        93,
+        220,
+        161
+      ],
+      "transparentMarginPixels": 36
+    },
+    {
+      "yaw": 180,
+      "elevation": 70,
+      "sha256": "fa33c6a2c218726297283aa654efa0fcc44f847e45876646ce9caa8abd12690a",
+      "alphaBounds": [
+        36,
+        102,
+        220,
+        155
+      ],
+      "transparentMarginPixels": 36
+    },
+    {
+      "yaw": 210,
+      "elevation": 20,
+      "sha256": "91fb27108ae25b36cbe8845cb9317d8c5d70ad5de7f8121c161f7aaf3a807ec1",
+      "alphaBounds": [
+        46,
+        57,
+        210,
+        198
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 210,
+      "elevation": 30,
+      "sha256": "00c13b0ee177bacf3cee2a39f47533c46169dd4bbd1be6656a584d0700f7375d",
+      "alphaBounds": [
+        46,
+        53,
+        210,
+        201
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 210,
+      "elevation": 40,
+      "sha256": "99024397976f31ad38ee3883bd413faa3c69b659d6366f334283e317fb1fcaa0",
+      "alphaBounds": [
+        46,
+        52,
+        210,
+        202
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 210,
+      "elevation": 50,
+      "sha256": "4b0513fcf0b2b9364fa75a528f1eb1badc94cd2a97e26a7d372241b7f2c0f9a2",
+      "alphaBounds": [
+        46,
+        53,
+        210,
+        201
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 210,
+      "elevation": 60,
+      "sha256": "89d6d3113e8ca9061f1004f314d0dfb3b8b4d4e42ba271e13aa3b0f6dedfeb2c",
+      "alphaBounds": [
+        46,
+        56,
+        210,
+        197
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 210,
+      "elevation": 70,
+      "sha256": "0c3d9975614a6d33d4fe528ffc418974370ee5bdb02196334f5241c6ea85c4da",
+      "alphaBounds": [
+        46,
+        61,
+        210,
+        192
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 240,
+      "elevation": 20,
+      "sha256": "ec4d11dcb94053639eba3bbef82190da22656afbe487a192d2993f46a6258e31",
+      "alphaBounds": [
+        76,
+        47,
+        181,
+        208
+      ],
+      "transparentMarginPixels": 47
+    },
+    {
+      "yaw": 240,
+      "elevation": 30,
+      "sha256": "663a5dd3d5e3df51c5d4fa68257b6c86999f59c3dac67334fe52d411517bc1b0",
+      "alphaBounds": [
+        76,
+        38,
+        181,
+        216
+      ],
+      "transparentMarginPixels": 38
+    },
+    {
+      "yaw": 240,
+      "elevation": 40,
+      "sha256": "f1e0b51b523f4374ee430862c68e936a9f078d8c244044316df2d0b0417778d4",
+      "alphaBounds": [
+        76,
+        32,
+        181,
+        221
+      ],
+      "transparentMarginPixels": 32
+    },
+    {
+      "yaw": 240,
+      "elevation": 50,
+      "sha256": "dc38fffe207949bc321709e3899e01770da72cbc9ce4e4bc1bfac97b0a8fc5b7",
+      "alphaBounds": [
+        76,
+        29,
+        181,
+        223
+      ],
+      "transparentMarginPixels": 29
+    },
+    {
+      "yaw": 240,
+      "elevation": 60,
+      "sha256": "8e9d99e2818fd32069703142ff427e4f636ef2ebcfa5db359f6bf938c29cd493",
+      "alphaBounds": [
+        76,
+        29,
+        181,
+        223
+      ],
+      "transparentMarginPixels": 29
+    },
+    {
+      "yaw": 240,
+      "elevation": 70,
+      "sha256": "8b6913a215f6aed34db83ec6770a62b9942288f91a6313f8f45cfb41084cc505",
+      "alphaBounds": [
+        76,
+        32,
+        181,
+        220
+      ],
+      "transparentMarginPixels": 32
+    },
+    {
+      "yaw": 270,
+      "elevation": 20,
+      "sha256": "8e8cdc12a5386b64978babb6f06d30bb63f8af53520d85dee7f4148b3c6a9668",
+      "alphaBounds": [
+        114,
+        43,
+        143,
+        211
+      ],
+      "transparentMarginPixels": 43
+    },
+    {
+      "yaw": 270,
+      "elevation": 30,
+      "sha256": "2db74d4cf526e813d0a29796b84b89dc93a0aa1c2846b8dbbb6a5c2ba9b51f5b",
+      "alphaBounds": [
+        114,
+        33,
+        143,
+        221
+      ],
+      "transparentMarginPixels": 33
+    },
+    {
+      "yaw": 270,
+      "elevation": 40,
+      "sha256": "20e920fbcb6001b50648a2d2b5b45445aca5e4458de49a638910c63f11e9c187",
+      "alphaBounds": [
+        114,
+        26,
+        143,
+        227
+      ],
+      "transparentMarginPixels": 26
+    },
+    {
+      "yaw": 270,
+      "elevation": 50,
+      "sha256": "4f16c0054ad20437b12a91d50dab24e8174a4475cc9185d3290597e01335f066",
+      "alphaBounds": [
+        114,
+        22,
+        143,
+        231
+      ],
+      "transparentMarginPixels": 22
+    },
+    {
+      "yaw": 270,
+      "elevation": 60,
+      "sha256": "f813c1a929f9a1987085380b30672d1f2d78b8bdbe4d5635ec3c73cf9f74b109",
+      "alphaBounds": [
+        114,
+        21,
+        143,
+        232
+      ],
+      "transparentMarginPixels": 21
+    },
+    {
+      "yaw": 270,
+      "elevation": 70,
+      "sha256": "3b9099db588dd7c9bec24f4533c1cca4e651071b8db8f6563ce3d695aae25c4c",
+      "alphaBounds": [
+        114,
+        23,
+        143,
+        230
+      ],
+      "transparentMarginPixels": 23
+    },
+    {
+      "yaw": 300,
+      "elevation": 20,
+      "sha256": "a589d63c45e35c205c0bb069a0b448b556c6bd5bc6170ed7ba09fcff0fac07ab",
+      "alphaBounds": [
+        76,
+        47,
+        181,
+        208
+      ],
+      "transparentMarginPixels": 47
+    },
+    {
+      "yaw": 300,
+      "elevation": 30,
+      "sha256": "ee1de93463242b5940d669f3a38fff29f57fdc46273f686c4ec7d721d7067177",
+      "alphaBounds": [
+        76,
+        38,
+        181,
+        216
+      ],
+      "transparentMarginPixels": 38
+    },
+    {
+      "yaw": 300,
+      "elevation": 40,
+      "sha256": "142e26025b0b5e128eb866cf2d1f29bd9295172dc14ead22c9b4a774b60bcfa7",
+      "alphaBounds": [
+        76,
+        32,
+        181,
+        221
+      ],
+      "transparentMarginPixels": 32
+    },
+    {
+      "yaw": 300,
+      "elevation": 50,
+      "sha256": "7b480b822d8ffa3091de6591587b3021027d3b490e4f6a6fcb86413fdd1855c8",
+      "alphaBounds": [
+        76,
+        29,
+        181,
+        223
+      ],
+      "transparentMarginPixels": 29
+    },
+    {
+      "yaw": 300,
+      "elevation": 60,
+      "sha256": "ff1af6b1d86c2af51ac2a6bc6cb98dbb831875a73486248e357bffa00934c8d8",
+      "alphaBounds": [
+        76,
+        29,
+        181,
+        223
+      ],
+      "transparentMarginPixels": 29
+    },
+    {
+      "yaw": 300,
+      "elevation": 70,
+      "sha256": "b00ab84d762651b622df96d33b30bfe8d1dce74e01e74e13000816d20e4b6cb0",
+      "alphaBounds": [
+        76,
+        32,
+        181,
+        220
+      ],
+      "transparentMarginPixels": 32
+    },
+    {
+      "yaw": 330,
+      "elevation": 20,
+      "sha256": "47a5ff79780820b026041a75f892512767c028c5043ad1799d07515df23f62e9",
+      "alphaBounds": [
+        46,
+        57,
+        210,
+        199
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 330,
+      "elevation": 30,
+      "sha256": "b02e6cf3cb07eb1e78aab3d307620cded712334797ef6dbe51c44fa0a876854a",
+      "alphaBounds": [
+        46,
+        53,
+        210,
+        203
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 330,
+      "elevation": 40,
+      "sha256": "af1db667e4b94ce65ba39e49237388e4bc8205ae9bdee41be1b3480fb8be01b7",
+      "alphaBounds": [
+        46,
+        52,
+        210,
+        205
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 330,
+      "elevation": 50,
+      "sha256": "1d412dd3dedca502cde5bb6587ff3e3c27cc87ff5705f988932564fd14eb84c7",
+      "alphaBounds": [
+        46,
+        52,
+        210,
+        204
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 330,
+      "elevation": 60,
+      "sha256": "02dc4fc57cef310a942dfcd463ef65bdbdfad5730f9c7691c5921bab99db8518",
+      "alphaBounds": [
+        46,
+        55,
+        210,
+        201
+      ],
+      "transparentMarginPixels": 46
+    },
+    {
+      "yaw": 330,
+      "elevation": 70,
+      "sha256": "2db6495e49ac148ae47b557f81b72feca7f58435aa5a441daa048ee09364f327",
+      "alphaBounds": [
+        46,
+        61,
+        210,
+        197
+      ],
+      "transparentMarginPixels": 46
+    }
+  ],
+  "originalProductionEntryPointByteIdenticalFiles": 73
+}

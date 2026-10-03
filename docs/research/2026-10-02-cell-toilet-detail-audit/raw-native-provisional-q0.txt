@@ -1,0 +1,80 @@
+node : [WebServer] (node:55360) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:6 char:1
++ node node_modules/@playwright/test/cli.js test --config assets/interm ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Processing dist\lockstate_development\wrangler.js
+on configuration:
+[WebServer] 
+[WebServer]     - No environment found in configuration with name "production".
+[WebServer]       Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[WebServer]   
+[WebServer]       Consider adding an environment configuration section to the wrangler.json file:
+[WebServer]       ```
+[WebServer]       [env.production]
+[WebServer]       ```
+[WebServer]   
+[WebServer] 
+[WebServer] 
+
+Running 3 tests using 1 worker
+
+(node:46184) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46184) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\dedicated-cell-toilet-player-build.spec.ts:168:1 › player creates storage and delivery capacity before Basic cell (43.6s)
+  x  2 tests\browser\dedicated-cell-toilet-player-build.spec.ts:231:3 › player builds Basic cell at quarterTurns0 and retains toilet palettes and anchors after Save/Load (36.0s)
+  -  3 tests\browser\dedicated-cell-toilet-player-build.spec.ts:231:3 › player builds Basic cell at quarterTurns1 and retains toilet palettes and anchors after Save/Load
+
+
+  1) tests\browser\dedicated-cell-toilet-player-build.spec.ts:231:3 › player builds Basic cell at quarterTurns0 and retains toilet palettes and anchors after Save/Load 
+
+    Error: toilet 1 authored palette after construction
+
+    expect(received).toBeGreaterThan(expected)
+
+    Expected: > 100
+    Received:   0
+
+      182 |   }, null, 2));
+      183 |   beforePixels.forEach((count, index) => expect.soft(count, `toilet ${index + 1} authored palette after construction`)
+    > 184 |     .toBeGreaterThan(index === 0 ? 100 : 8));
+          |      ^
+      185 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      186 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      187 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-angled-detail-20261002\tests\browser\dedicated-cell-toilet-player-build.spec.ts:184:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-angled-detail-20261002\tests\browser\dedicated-cell-toilet-player-build.spec.ts:183:16
+
+    Error: toilet 1 authored palette after Load
+
+    expect(received).toBeGreaterThan(expected)
+
+    Expected: > 100
+    Received:   0
+
+      197 |   const afterPixels = await toiletPalettePixels(page, loaded, quarterTurns);
+      198 |   afterPixels.forEach((count, index) => expect.soft(count, `toilet ${index + 1} authored palette after Load`)
+    > 199 |     .toBeGreaterThan(index === 0 ? 100 : 8));
+          |      ^
+      200 |   expect(afterPixels).toEqual(beforePixels);
+      201 |   const evidencePath = info.outputPath('dedicated-cell-toilet-worker-and-save-evidence.json');
+      202 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-angled-detail-20261002\tests\browser\dedicated-cell-toilet-player-build.spec.ts:199:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-cell-toilet-angled-detail-20261002\tests\browser\dedicated-cell-toilet-player-build.spec.ts:198:15
+
+    attachment #1: dedicated-cell-toilet-worker-and-save-evidence (application/json) ───────────────
+    assets\intermediate\cell-toilet-audit\native-results\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\attachments\dedicated-cell-toilet-worker-and-save-evidence-94e1db042c51a94eb6f2dfc2c6a1abadae619167.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: assets\intermediate\cell-toilet-audit\native-results\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\error-context.md
+
+  1 failed
+    tests\browser\dedicated-cell-toilet-player-build.spec.ts:231:3 › player builds Basic cell at quarterTurns0 and retains toilet palettes and anchors after Save/Load 
+  1 did not run
+  1 passed (1.4m)

@@ -1,0 +1,77 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-classroom-teacher-desk-native-prep-20261003
+
+ ❯ tests/integration/native-classroom-desk-preparation.test.ts (2 tests | 2 failed) 380ms
+   × buys a separate public orientation0 desk inside literal Classroom q0 and roundtrips whole V8 218ms
+   × buys a separate public orientation0 desk inside literal Classroom q1 and roundtrips whole V8 161ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  13:47:21
+   Duration  3.14s (transform 870ms, setup 0ms, import 2.63s, tests 380ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+$ vitest run "tests/integration/native-classroom-desk-preparation.test.ts"
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/native-classroom-desk-preparation.test.ts > buys a separate public orientation0 desk inside literal Classroom q0 and roundtrips whole V8
+Error: expect(received).toEqual(expected) // deep equality
+
+- Expected  - 1
++ Received  + 1
+
+@@ -3,10 +3,10 @@
+      "anchorTile": Object {
+        "x": 8,
+        "y": 5,
+      },
+      "objectId": "object.desk",
+-     "orientation": 0,
++     "orientation": 1,
+      "placedObjectId": "object:8:5",
+      "sourceOrderId": "classroom-individual-desk",
+    },
+  ]
+ ❯ Proxy.<anonymous> ../lockstate-1382-doc-anchor-2026-09-24/node_modules/.pnpm/playwright@1.56.1/node_modules/playwright/lib/matchers/expect.js:221:24
+ ❯ assertClassroomDesk tests/browser/native-classroom-desk-evidence.ts:58:113
+     56|   expect(data.construction.orders.every(order => order.state === 'comp…
+     57|   expect(data.simulation?.objects?.placedObjects).toHaveLength(9);
+     58|   expect(data.simulation?.objects?.placedObjects.filter(object => obje…
+       |                                                                                                                 ^
+     59|     { placedObjectId: `object:${desk.x}:${desk.y}`, objectId: 'object.…
+     60|   ]);
+ ❯ tests/integration/native-classroom-desk-preparation.test.ts:76:51
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/integration/native-classroom-desk-preparation.test.ts > buys a separate public orientation0 desk inside literal Classroom q1 and roundtrips whole V8
+Error: expect(received).toEqual(expected) // deep equality
+
+- Expected  - 1
++ Received  + 1
+
+@@ -3,10 +3,10 @@
+      "anchorTile": Object {
+        "x": 5,
+        "y": 8,
+      },
+      "objectId": "object.desk",
+-     "orientation": 0,
++     "orientation": 1,
+      "placedObjectId": "object:5:8",
+      "sourceOrderId": "classroom-individual-desk",
+    },
+  ]
+ ❯ Proxy.<anonymous> ../lockstate-1382-doc-anchor-2026-09-24/node_modules/.pnpm/playwright@1.56.1/node_modules/playwright/lib/matchers/expect.js:221:24
+ ❯ assertClassroomDesk tests/browser/native-classroom-desk-evidence.ts:58:113
+     56|   expect(data.construction.orders.every(order => order.state === 'comp…
+     57|   expect(data.simulation?.objects?.placedObjects).toHaveLength(9);
+     58|   expect(data.simulation?.objects?.placedObjects.filter(object => obje…
+       |                                                                                                                 ^
+     59|     { placedObjectId: `object:${desk.x}:${desk.y}`, objectId: 'object.…
+     60|   ]);
+ ❯ tests/integration/native-classroom-desk-preparation.test.ts:76:51
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

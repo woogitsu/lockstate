@@ -1,0 +1,176 @@
+[
+  {
+    "start": 853913.229,
+    "ms": 28.012999999918975,
+    "method": "newPage"
+  },
+  {
+    "start": 853944.612,
+    "ms": 2.8660000000381842,
+    "method": "setViewportSize"
+  },
+  {
+    "start": 853949.764,
+    "ms": 1437.878000000026,
+    "method": "goto"
+  },
+  {
+    "start": 855504.574,
+    "ms": 193.00699999998324,
+    "method": "waitForSelector",
+    "selector": ".hud"
+  },
+  {
+    "start": 855737.206,
+    "ms": 80.29000000003725,
+    "method": "expect",
+    "selector": ".hud[data-layout-navigation-placement]"
+  },
+  {
+    "start": 855861.075,
+    "ms": 736.3370000000577,
+    "method": "evaluateExpression"
+  },
+  {
+    "start": 853833.56,
+    "ms": 60.64799999992829,
+    "method": "pw:api"
+  },
+  {
+    "start": 853830.313,
+    "ms": 64,
+    "method": "fixture"
+  },
+  {
+    "start": 853900.842,
+    "ms": 5.597999999998137,
+    "method": "pw:api"
+  },
+  {
+    "start": 853895.68,
+    "ms": 14.041999999899417,
+    "method": "fixture"
+  },
+  {
+    "start": 853910.025,
+    "ms": 1.3070000000298023,
+    "method": "fixture"
+  },
+  {
+    "start": 853912.688,
+    "ms": 29.771999999997206,
+    "method": "pw:api"
+  },
+  {
+    "start": 853911.577,
+    "ms": 30.936999999918044,
+    "method": "fixture"
+  },
+  {
+    "start": 853820.042,
+    "ms": 122.51500000001397,
+    "method": "hook"
+  },
+  {
+    "start": 853944.205,
+    "ms": 3.9390000000130385,
+    "method": "pw:api"
+  },
+  {
+    "start": 853949.565,
+    "ms": 1548.0840000000317,
+    "method": "pw:api"
+  },
+  {
+    "start": 855502.952,
+    "ms": 224.21199999994133,
+    "method": "pw:api",
+    "selector": ".hud"
+  },
+  {
+    "start": 855729.701,
+    "ms": 129.99399999994785,
+    "method": "expect"
+  },
+  {
+    "start": 855860.824,
+    "ms": 765.9610000000102,
+    "method": "pw:api"
+  },
+  {
+    "start": 856627.802,
+    "ms": 0.25,
+    "method": "expect"
+  },
+  {
+    "start": 856628.605,
+    "ms": 0.06700000003911555,
+    "method": "expect"
+  },
+  {
+    "start": 856629.39,
+    "ms": 0.06299999996554106,
+    "method": "expect"
+  },
+  {
+    "start": 856633.405,
+    "ms": 0.2829999999376014,
+    "method": "expect"
+  },
+  {
+    "start": 856634.251,
+    "ms": 1.3339999999152496,
+    "method": "expect",
+    "error": "Error: the clearance at the stylesheet’s own threshold has moved\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeCloseTo\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m, \u001b[22mprecision\u001b[2m)\u001b[22m\n\nExpected: \u001b[32m10.19\u001b[39m\nReceived: \u001b[31m-85.8125\u001b[39m\n\nExpected precision:    1\nExpected difference: < \u001b[32m0.05\u001b[39m\nReceived difference:   \u001b[31m96.0025\u001b[39m"
+  },
+  {
+    "start": 856640.092,
+    "ms": 0.106000000028871,
+    "method": "fixture"
+  },
+  {
+    "start": 856640.392,
+    "ms": 1.0820000000530854,
+    "method": "fixture"
+  },
+  {
+    "start": 857307.238,
+    "ms": 6.049999999930151,
+    "method": "pw:api"
+  },
+  {
+    "start": 856641.672,
+    "ms": 671.6689999999944,
+    "method": "fixture"
+  },
+  {
+    "start": 857314.636,
+    "ms": 0.006999999983236194,
+    "method": "test.attach"
+  },
+  {
+    "start": 857315.854,
+    "ms": 0.014999999897554517,
+    "method": "fixture"
+  },
+  {
+    "start": 856639.134,
+    "ms": 680.1720000000205,
+    "method": "hook"
+  },
+  {
+    "start": 857320.186,
+    "ms": 37.305999999982305,
+    "method": "fixture"
+  },
+  {
+    "start": 857358.166,
+    "ms": 0.011999999987892807,
+    "method": "fixture"
+  },
+  {
+    "start": 857319.463,
+    "ms": 39.569000000017695,
+    "method": "hook"
+  }
+]

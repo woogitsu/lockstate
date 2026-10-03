@@ -1,0 +1,66 @@
+{
+  "stats": {
+    "startTime": "2026-10-03T02:47:16.659Z",
+    "duration": 87955.64199999999,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "files": [
+    {
+      "original": "dedicated-loading-dock-doo-0fe13-ding-dock-door-Delivery-Bay/capacity-completed-worker-snapshot.json",
+      "published": "q1-restored/c1/01.json",
+      "sha256": "779119e4f892870ce71e18e23e8bfdd62f0b6a0481143991e49bb9a9ae628551",
+      "bytes": 54386
+    },
+    {
+      "original": "dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load/capacity-loaded-worker-snapshot.json",
+      "published": "q1-restored/c2/01.json",
+      "sha256": "f6c972cb64756e95119d4ae3ec58dd15e0dc88435d26ebef02adde02a77a8d62",
+      "bytes": 54386
+    },
+    {
+      "original": "dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load/dedicated-loading-dock-door-completed-worker-snapshot.json",
+      "published": "q1-restored/c2/02.json",
+      "sha256": "62046eb1e83f36fa21ee40f59a111faa26dd1f072ca4192baa8029b034b2cc83",
+      "bytes": 74534
+    },
+    {
+      "original": "dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load/dedicated-loading-dock-door-hardware-loaded-fullhd.png",
+      "published": "q1-restored/c2/03.png",
+      "sha256": "6b3289ae9b793f872c65f7d73e4285c3d903be9aa606f4f4b11d01d55dc11bcb",
+      "bytes": 299358
+    },
+    {
+      "original": "dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load/dedicated-loading-dock-door-loaded-fullhd.png",
+      "published": "q1-restored/c2/04.png",
+      "sha256": "992660b0ed39e5abd9a8a28a5678d70f70d012bb41f19944a7502037ee7ec844",
+      "bytes": 1463759
+    },
+    {
+      "original": "dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load/dedicated-loading-dock-door-loaded-worker-snapshot.json",
+      "published": "q1-restored/c2/05.json",
+      "sha256": "7f9aae243cb037c926cd250b8036386a112b60a6e3031acbccf5b52fb2fc191e",
+      "bytes": 74534
+    },
+    {
+      "original": "dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load/dedicated-loading-dock-door-worker-and-save-evidence.json",
+      "published": "q1-restored/c2/06.json",
+      "sha256": "34ba6f93416403803c3b0de2007a2d55d7f5ec6c3598abab60608c4d8cc954a5",
+      "bytes": 534
+    },
+    {
+      "original": "dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load/dedicated-loading-dock-door-worker-completed-fullhd.png",
+      "published": "q1-restored/c2/07.png",
+      "sha256": "d318ac3e0973f271c984d7ecdc8d7ed19ca416ad0b166fe43bdf770c4fd2d2e5",
+      "bytes": 1495860
+    },
+    {
+      "original": "dedicated-loading-dock-doo-8b1f9-and-anchors-after-Save-Load/worker-and-completed-save-evidence.json",
+      "published": "q1-restored/c2/08.json",
+      "sha256": "36cdddfc507b69f1170776ab7f79c01f91a685892f7d0c768feeff21588deeaa",
+      "bytes": 376
+    }
+  ]
+}

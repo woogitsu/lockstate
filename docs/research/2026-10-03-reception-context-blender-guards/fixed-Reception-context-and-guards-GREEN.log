@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-reception-context-blender-guards-20261003
+
+
+ Test Files  7 passed (7)
+      Tests  55 passed | 1 skipped (56)
+   Start at  14:38:38
+   Duration  795ms (transform 435ms, setup 0ms, import 1.52s, tests 581ms, environment 0ms)
+
+$ vitest run "tests/unit/oblique-reception-chair-context.test.ts" "tests/unit/oblique-reception-waiting-armchair-art.test.ts" "tests/unit/oblique-classroom-chair-context.test.ts" "tests/unit/oblique-garbage-classroom-context.test.ts" "tests/unit/oblique-object-mapping.test.ts" "tests/unit/oblique-module-registry.test.ts" "tests/determinism/art-pipeline-determinism.test.ts"

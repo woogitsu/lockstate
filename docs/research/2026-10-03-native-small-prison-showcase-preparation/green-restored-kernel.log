@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-native-small-prison-showcase-prep-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  11:57:25
+   Duration  2.99s (transform 777ms, setup 0ms, import 2.36s, tests 506ms, environment 0ms)
+
+$ vitest run "tests/integration/native-small-prison-showcase.test.ts"

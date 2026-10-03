@@ -1,0 +1,13 @@
+NORTH_DOOR_RETAINED_ASSEMBLY_GREEN 29 meshes 10 material graphs [{"partA": "Hinge barrel 0.38", "partB": "door metal reveal -1", "actualTriangleInteriorWitness": [-0.36899998784065247, -0.009829824790358543, 0.3799999952316284]}, {"partA": "Hinge barrel 1.89", "partB": "door metal reveal -1", "actualTriangleInteriorWitness": [-0.36899998784065247, -0.009829824790358543, 1.8899999856948853]}]
+NORTH_DOOR_STUDIO_GREEN original EEVEE64/512/8span/64ppU lighting
+00:01.734  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\assets\intermediate\interior-north-door-repeat-initialization\cell-door-open-yaw-180-elev25.staging.png'
+NORTH_DOOR_BOUNDED_RENDER_GREEN 1
+NORTH_DOOR_RETAINED_ASSEMBLY_GREEN 29 meshes 10 material graphs [{"partA": "Hinge barrel 0.38", "partB": "door metal reveal -1", "actualTriangleInteriorWitness": [-0.36899998784065247, -0.009829824790358543, 0.3799999952316284]}, {"partA": "Hinge barrel 1.89", "partB": "door metal reveal -1", "actualTriangleInteriorWitness": [-0.36899998784065247, -0.009829824790358543, 1.8899999856948853]}]
+NORTH_DOOR_CANONICAL_INITIALIZATION_GREEN -180/25 before bounded later pose
+00:02.156  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\public\assets\environment\oblique\cell-door-open-yaw+135-elev45.staging.png'
+NORTH_DOOR_BOUNDED_RENDER_GREEN 1
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-interior-north-door-oblique.py:124: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  world.use_nodes = True

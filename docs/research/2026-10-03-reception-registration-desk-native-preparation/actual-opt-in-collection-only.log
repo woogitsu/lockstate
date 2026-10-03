@@ -1,0 +1,5 @@
+Listing tests:
+  native-reception-room.recipe.ts:122:1 › 01 public Storage Room and Delivery Bay bootstrap for Reception seating
+  native-reception-room.recipe.ts:169:29 › Reception Room q0: literal two-chair owners, square shell and whole paused Save/Load
+  native-reception-room.recipe.ts:169:29 › Reception Room q1: literal two-chair owners, square shell and whole paused Save/Load
+Total: 3 tests in 1 file

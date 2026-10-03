@@ -1,0 +1,477 @@
+{
+  "schemaVersion": 1,
+  "assetId": "furniture.storage-room.timber-rack",
+  "source": "assets/source/blender/furniture.storage-room.timber-rack.blend",
+  "sourceSha256": "36c75d364d604ee666adf42b287a75f24e3a174bf7b0892a829aeb8a0dc9d435",
+  "resolutionPx": [
+    256,
+    256
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    128,
+    128
+  ],
+  "cameraTargetTiles": [
+    0.5,
+    0.5,
+    0.7
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    0,
+    30,
+    60,
+    90,
+    120,
+    150,
+    180,
+    210,
+    240,
+    270,
+    300,
+    330
+  ],
+  "elevationDegrees": [
+    20,
+    30,
+    40,
+    50,
+    60,
+    70
+  ],
+  "frames": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+00-elev20.e7118adecc60.png",
+      "sha256": "e7118adecc60817f44c4c63f64d48f92ff608a5cf1e0d07a5f2fdf565dbb0bd8"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+00-elev30.04492f6470e1.png",
+      "sha256": "04492f6470e1e13ed86158981370852f69e0709298ba609ec408d8364ad9649a"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+00-elev40.8b7df4260ff1.png",
+      "sha256": "8b7df4260ff1fb56bcc5d744fa8b818f337320c05547b64751fe00adb9838578"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+00-elev50.7c1519031145.png",
+      "sha256": "7c1519031145366992a28c18bdd6d00abe69d983222762b9aa5e62b90b9f97e2"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+00-elev60.c63d238ca6ce.png",
+      "sha256": "c63d238ca6ce8847c8a2c4f7c75423387f12a3cd38acdaa630ecd2668f552918"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+00-elev70.d31946e33d0d.png",
+      "sha256": "d31946e33d0dfff50d65199365e2412b2376e8d948dce5120c8f2379edb56fbb"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+30-elev20.67b18ded1005.png",
+      "sha256": "67b18ded10058c7d3bc47643bac9fcd879118c08bba431f4f5256fe38c159df9"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+30-elev30.08907f75b896.png",
+      "sha256": "08907f75b8964741831bd6e1739915dfcb5b4346863c3f8f9ecdb349d8ec572f"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+30-elev40.29a8e68cbfe5.png",
+      "sha256": "29a8e68cbfe51f41d66b080928cfbb211c7f144f4eeb0cd0075150a2e0d3b06c"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+30-elev50.328f610cafb9.png",
+      "sha256": "328f610cafb9b497dc4444e66723acd80b0f547ede1409d643848a52ef6dd009"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+30-elev60.e268f2ba6e06.png",
+      "sha256": "e268f2ba6e0665ce214bee14ce3bbb0935618bd584e9568935945f13a09c7a63"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+30-elev70.a7f81e311dd8.png",
+      "sha256": "a7f81e311dd8856617726b5b83883d9a7356bd63027eaabdcd952f277f5942a8"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+60-elev20.9a9981e9b10f.png",
+      "sha256": "9a9981e9b10f165806f91573f6b51461cc849f4efd0c0a808ffb80a7006be433"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+60-elev30.27601f399a9e.png",
+      "sha256": "27601f399a9e89f3a59a1891d1b1e197e654845547c5ccb9f9ed3ab8b48d1d44"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+60-elev40.1f7db6b8e731.png",
+      "sha256": "1f7db6b8e731cbdf073e2180605f263213a2b4f36e16353c234aaf2266b0d26b"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+60-elev50.e62181c4ffc4.png",
+      "sha256": "e62181c4ffc4529977a020486a46b6f1b880080e367108cd0efa62da88010c0e"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+60-elev60.b23c5c1df5a2.png",
+      "sha256": "b23c5c1df5a24ec7c3bffcc220e410ff67633b8d49f63329c1b47b33225272e2"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+60-elev70.03c18c357882.png",
+      "sha256": "03c18c357882055f41335eded3af54561b32a6b2ae4c4d0e53a707845933c0a3"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+90-elev20.0812d92c1090.png",
+      "sha256": "0812d92c109046b5db4d363a11d6dc09d7ed8a059e73b123283854d62618b5cd"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+90-elev30.05fb1d189c37.png",
+      "sha256": "05fb1d189c370e96b9ccceeecc1f263918666c9a2bef3de9504d55c7918356fb"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+90-elev40.72b8d4d9df65.png",
+      "sha256": "72b8d4d9df6538e811165d8cc3d00618c9372ab818f965401f10f90a7eff9626"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+90-elev50.56c587e9a8f7.png",
+      "sha256": "56c587e9a8f779294d84b6ef2d07cc45f9ac979c01e7787baa3f16b472f9fde2"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+90-elev60.bf4159dd3f20.png",
+      "sha256": "bf4159dd3f20ceaea278b39f8c6ddb5c81120749b2baa4d72fc425f6795c9939"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+90-elev70.98565ee95954.png",
+      "sha256": "98565ee95954044b3eded0ce63f5deda4539e744d295d6d33baea6f6a797296b"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+120-elev20.911abff72a3a.png",
+      "sha256": "911abff72a3aece9bb2fa4a528d59f66dd12611deae30111a80e0c17b16757f8"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+120-elev30.8595a19386a6.png",
+      "sha256": "8595a19386a69258e27a680813d83bcc97cd6b3981ac53989533d820184c7d91"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+120-elev40.1d4eaf34b21a.png",
+      "sha256": "1d4eaf34b21a516b6aac836dca245cb210dbdefb918ae5631adf2deb5cce02e3"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+120-elev50.84138bba4eb6.png",
+      "sha256": "84138bba4eb6939c9ea1c2a515adc8997fc524c8559575ce1dc16329eb71ead2"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+120-elev60.b4e3b91d147b.png",
+      "sha256": "b4e3b91d147b662bb965a5d258f705a7846737fbe190de6498afa7a5ae6117a1"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+120-elev70.d4ae60e412f7.png",
+      "sha256": "d4ae60e412f786412a7ee6b73b69e2237b22de50324d8818a27dc6263a32102f"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+150-elev20.f748b1eb4843.png",
+      "sha256": "f748b1eb48439a6467a519a428ea729c2814c294ab9cc9aa5dd654faf58ef054"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+150-elev30.8fd2e88b5ce5.png",
+      "sha256": "8fd2e88b5ce55f398df5e1c00664160b577182ecde1013e4ebed8c080292704e"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+150-elev40.884a567b6d81.png",
+      "sha256": "884a567b6d815d00115d3e3c3236beb07445e55e74b0f224d0a14102c52851c9"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+150-elev50.d62e38645e71.png",
+      "sha256": "d62e38645e712da28e58ac58a0b1b65a34af98fc3af56f0f5c5d61a1b67dc1aa"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+150-elev60.d1973da0c005.png",
+      "sha256": "d1973da0c005b9cc0bd6957c5cb830eca77c89cb6186b331696ab3182cc0f491"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+150-elev70.0209136a3fcc.png",
+      "sha256": "0209136a3fcc1e1322fe57977db332482efb7434f48a4b2273243a5b071de200"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+180-elev20.ec0a541e7f4f.png",
+      "sha256": "ec0a541e7f4fd072c7164480dd1c611cbb8d14b0bafdddae127bdb111de5beb4"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+180-elev30.d100d5649c4b.png",
+      "sha256": "d100d5649c4bb5aa140459415db0b416dd3a1b52824ecadf632125e1bb6b3e9b"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+180-elev40.8e4ab828e78b.png",
+      "sha256": "8e4ab828e78b22b48c856729b497bdccc0b34ef0511aacb147bdd97c6d8616d8"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+180-elev50.3fa52a681fd6.png",
+      "sha256": "3fa52a681fd6e838f3844881233f0d5d209cc07efa6018ee1ae26d51aceeeebc"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+180-elev60.a942994013ad.png",
+      "sha256": "a942994013ad0061eee7bc8a4b7ababc2a11466b56ff949fb3a601c337c1abb6"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+180-elev70.833ee96cada7.png",
+      "sha256": "833ee96cada7e77b594731fba6d96d64d63a77193bcebc676178df4059b54efc"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+210-elev20.01195850e1c2.png",
+      "sha256": "01195850e1c229396e48ba4850ff6c39fcb391b0b49cc0493ee90a213a401037"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+210-elev30.20f3e2a50d91.png",
+      "sha256": "20f3e2a50d91fa698db4e34819acf29937b43d39cbf76fa639d257219bb47770"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+210-elev40.e04bd0cdd0b5.png",
+      "sha256": "e04bd0cdd0b51050e7ff6e173fce24bea124a491ce0c171691c8ad0d5d8428ff"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+210-elev50.b69336a13510.png",
+      "sha256": "b69336a13510835ed7876b2128d56f583f83867dd0466b4bac6741a9eca42d83"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+210-elev60.d95dc0aff415.png",
+      "sha256": "d95dc0aff4150100fa33bd77bce658b5155ece23f89802784cde3a90b5714bdf"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+210-elev70.0ff13c5d5ca0.png",
+      "sha256": "0ff13c5d5ca0d7eee471c95f78af9b3ca78ff0ce58256312cc67087a41afb500"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+240-elev20.92a188b38583.png",
+      "sha256": "92a188b385838128b4e45b5518ae587575affc07337d1328368bbcab01ffe3d9"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+240-elev30.c67e1662b68f.png",
+      "sha256": "c67e1662b68fe85a5b7b00cfb8eab9f7599fb8f73783d97e1f4a7a54d246b48b"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+240-elev40.8fd590895131.png",
+      "sha256": "8fd59089513170b01288dc9e678be09ef8fdaf54004e1a72dfc994b4dbd82df7"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+240-elev50.80fbe92f4b66.png",
+      "sha256": "80fbe92f4b66d0b0e9540a3d17b18e6a98eae86ca1b16d0127fa6a80bb3995c3"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+240-elev60.170c77189766.png",
+      "sha256": "170c77189766c949550dc6e1ff0ce732fb9484a3b34af3c83524ba13f7cd3ef3"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+240-elev70.f0bd315405ad.png",
+      "sha256": "f0bd315405ad73136a6f9d0e28dab5f6321525d8dfdde1ca811aec4d524ee84a"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+270-elev20.5e65e6621fd6.png",
+      "sha256": "5e65e6621fd66f387b7104b132614eaeb3ad02800cff516bee2e62770ae53596"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+270-elev30.615eacc33892.png",
+      "sha256": "615eacc338920ae8e6c38ab8d0303014b93aa2e1ee57ede96ebc7df62d47bfdc"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+270-elev40.306688b65d69.png",
+      "sha256": "306688b65d6993e7cd5c0d991f82f06a58c70ccc29642597c13c417753276637"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+270-elev50.14d2c10d3996.png",
+      "sha256": "14d2c10d3996456e91ef19b52876f87ec37c042a5c45d922d86a9d8b978a98ec"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+270-elev60.916c6a1dd71b.png",
+      "sha256": "916c6a1dd71b30efaa5b2f6816846f4ec5b1ee8a982e2448de1869f08d769a53"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+270-elev70.5b4ce0e07c47.png",
+      "sha256": "5b4ce0e07c47e7ed91ed68eda0214456d585bd700022687c587c5ada1d86cfda"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+300-elev20.82008d6086ef.png",
+      "sha256": "82008d6086ef53fbe950e6b6730064ea92f520dcadb2de9dcaffb8026c579720"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+300-elev30.e35235f06607.png",
+      "sha256": "e35235f066072b41967d7fe14fd8238e531b24798f047efdb81a4175b3841ebb"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+300-elev40.13d9fadda21f.png",
+      "sha256": "13d9fadda21f26afd30b16e61999905bf6f9e1ff9b3922ba1d20236dc3145b57"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+300-elev50.42e5d095750a.png",
+      "sha256": "42e5d095750a4061a79f0b0f01b35129f0076a57c8ead30916b5acffadd18f8e"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+300-elev60.a17ac2a4bb9e.png",
+      "sha256": "a17ac2a4bb9e2349484ef10f5b2f32ec26214346c659b8850efd3a8657e60804"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+300-elev70.22a33ec1b266.png",
+      "sha256": "22a33ec1b2663d87653e140e8638bf703467fd2eb16eae95ce8384410d9e5be2"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+330-elev20.37d18f711d27.png",
+      "sha256": "37d18f711d27e1f9c63ec4ed6fab00ad5070941ae12a0cd94e62a32272532029"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+330-elev30.6750c405fcc9.png",
+      "sha256": "6750c405fcc9d4deb09d74dc0f0438163a32a497636b99dcb30730f72c1b1c4e"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+330-elev40.7ebbeb67ea3a.png",
+      "sha256": "7ebbeb67ea3a2ef4c18233a5469a450633149d15450722fd3d8274c0898b2d21"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+330-elev50.b8d8d7079051.png",
+      "sha256": "b8d8d70790519a840461f108238798d784f5163ffa50e7d9a076fdcbd7aa1f31"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+330-elev60.e6d85bcbdb8f.png",
+      "sha256": "e6d85bcbdb8f5fec67b8baa4e62297708846eaa198a8bd34d33cd58663bbf079"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+330-elev70.3d46b776321b.png",
+      "sha256": "3d46b776321b029baa8ad5bf3c51ea7918051cab05d47985fd1b56e72a84feb5"
+    }
+  ]
+}

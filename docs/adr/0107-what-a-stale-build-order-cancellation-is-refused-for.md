@@ -253,7 +253,7 @@ Decision §4.
 
 [ADR 0106](./0106-how-a-finished-wall-comes-down-without-a-keyboard.md),
 accepted 2026-09-10, added a sibling command, `RemoveWall`
-(`src/simulation/protocol/commands.ts:564-569`, VERIFIED), and named
+(`src/simulation/protocol/commands.ts:577`, `export const removeWallSchema = z.object({`), and named
 `destroysSpendOnCancel(state)` as the predicate `cancelOrder` and `undo()`
 both consult for what a cancellation destroys rather than pays for
 (`system.ts:84-86`). Both are already implemented on this tree, not merely
@@ -268,7 +268,7 @@ stating precisely rather than assuming.** `ConstructionSystem.completedOrderClai
 (`system.ts:1496-1506`, VERIFIED) is called at the tick the command executes,
 resolving the edge fresh against whatever the world holds *then* — there is
 no client-held expectation on the wire for it to have gone stale against,
-because `removeWallSchema` (`commands.ts:564-569`) carries a tile and an edge,
+because `removeWallSchema` (`commands.ts:577-582`) carries a tile and an edge,
 not an order id read off a row painted on an earlier tick. A `RemoveWall`
 press cannot be "stale" in #853's sense because it never carries a prediction
 to begin with. So this document's design is additive to `CancelBuildOrder`

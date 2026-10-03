@@ -38,7 +38,7 @@ import { buy, currentTick, installTee, openApp, sentCommands, showPanel, tab } f
  * needs is the one `tests/integration/security-default-sector.test.ts`'s
  * `admitOne` builds, reached here through the HUD a player uses:
  *
- * 1. **walls** round the smallest legal `room.cell` (2x3, ten segments),
+ * 1. **whole-square walls** outside the smallest legal `room.cell` (2x3, ten faces),
  *    because `room.cell` authors `{ type: 'enclosed' }` and ADR 0045 refuses
  *    zoning an open perimeter;
  * 2. **a `ZoneRoom`**, typed into the Rooms panel's coordinate form;
@@ -136,7 +136,6 @@ interface TileRectangle {
 interface WallSegment {
   readonly x: number;
   readonly y: number;
-  readonly edge: 'north' | 'west';
 }
 
 /**
@@ -147,15 +146,15 @@ interface WallSegment {
  */
 const CELL: TileRectangle = { x: 4, y: 4, width: 2, height: 3 };
 
-/** The perimeter as the wall grid stores it: `north` and `west` edges only. */
+/** Full-square cardinal perimeter faces outside the unchanged room interior. */
 function perimeterSegments(rectangle: TileRectangle): readonly WallSegment[] {
   const segments: WallSegment[] = [];
   for (let x = rectangle.x; x < rectangle.x + rectangle.width; x += 1) {
-    segments.push({ x, y: rectangle.y, edge: 'north' });
-    segments.push({ x, y: rectangle.y + rectangle.height, edge: 'north' });
+    segments.push({ x, y: rectangle.y - 1 });
+    segments.push({ x, y: rectangle.y + rectangle.height });
   }
-  for (const x of [rectangle.x, rectangle.x + rectangle.width]) {
-    for (let y = rectangle.y; y < rectangle.y + rectangle.height; y += 1) segments.push({ x, y, edge: 'west' });
+  for (const x of [rectangle.x - 1, rectangle.x + rectangle.width]) {
+    for (let y = rectangle.y; y < rectangle.y + rectangle.height; y += 1) segments.push({ x, y });
   }
   return segments;
 }
@@ -197,7 +196,7 @@ async function wallTheCell(page: Page): Promise<void> {
   for (const segment of segments) {
     await page.getByRole('spinbutton', { name: 'Tile X' }).fill(String(segment.x));
     await page.getByRole('spinbutton', { name: 'Tile Y' }).fill(String(segment.y));
-    await coordinates.locator(`[data-choice="${segment.edge}"]`).click();
+    // Canonical walls occupy whole squares; no edge chooser is offered.
     await coordinates.locator('.ui-action').click();
   }
   await expect(

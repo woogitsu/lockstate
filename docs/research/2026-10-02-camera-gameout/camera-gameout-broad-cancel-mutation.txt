@@ -1,0 +1,43 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-camera-gameout-audit-20261002
+
+ ❯ tests/unit/oblique-camera-gameout.test.ts (7 tests | 1 failed) 7ms
+   × preserves a retained construction hover, pressed footprint and touch tracker on canvas exit 4ms
+pnpm : 
+At line:2 char:639
++ ... w($false)); pnpm exec vitest run tests/unit/oblique-camera-gameout.te ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-camera-gameout.test.ts > preserves a retained construction hover, pressed footprint and touch
+ tracker on canvas exit
+AssertionError: expected undefined to be { x: 900, y: 440 } // Object.is equality
+
+- Expected:
+{
+  "x": 900,
+  "y": 440,
+}
+
++ Received:
+undefined
+
+ ❯ tests/unit/oblique-camera-gameout.test.ts:85:53
+     83|   pointers.add(3);
+     84|   plumbing.handlers.get('gameout')!(123, { type: 'mouseout', timeStamp…
+     85|   expect(Reflect.get(actual, 'hoveredScreenPoint')).toBe(hover);
+       |                                                     ^
+     86|   expect(Reflect.get(actual, 'gesture')).toBe(gesture);
+     87|   expect(Reflect.get(actual, 'touchPointers')).toEqual(new Set([3]));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  23:00:23
+   Duration  839ms (transform 254ms, setup 0ms, import 711ms, tests 7ms, environment 0ms)
+

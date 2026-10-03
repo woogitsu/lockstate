@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-missing-room-fixture-oblique-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  12:49:42
+   Duration  665ms (transform 57ms, setup 0ms, import 154ms, tests 399ms, environment 0ms)
+
+$ vitest run "tests/unit/oblique-garbage-room-bin-art.test.ts"

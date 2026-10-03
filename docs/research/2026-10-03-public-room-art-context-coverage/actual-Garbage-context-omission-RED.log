@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-classroom-coursebook-station-model-20261003
+
+················································································································································xxxxxxxx·······························
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 175 passed (183)
+   Start at  16:23:03
+   Duration  910ms (transform 172ms, setup 0ms, import 483ms, tests 311ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+$ vitest run "tests/unit/public-room-oblique-context-coverage.test.ts" "--reporter=dot"
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room art > 'garbage-room-basic' q+0 mirror=false retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room art > 'garbage-room-basic' q+0 mirror=true retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room art > 'garbage-room-basic' q1 mirror=false retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room art > 'garbage-room-basic' q1 mirror=true retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room art > 'garbage-room-basic' q2 mirror=false retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room art > 'garbage-room-basic' q2 mirror=true retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room art > 'garbage-room-basic' q3 mirror=false retains owners, complete occupied squares and source-local poses
+ FAIL  tests/unit/public-room-oblique-context-coverage.test.ts > actual public template consumers reach intended room art > 'garbage-room-basic' q3 mirror=true retains owners, complete occupied squares and source-local poses
+AssertionError: garbage-room-basic object 0 actual completed context: expected 'fixture.cell.waste_bin' to be 'fixture.garbage-room.waste-bin' // Object.is equality
+
+Expected: "fixture.garbage-room.waste-bin"
+Received: "fixture.cell.waste_bin"
+
+ ❯ tests/unit/public-room-oblique-context-coverage.test.ts:77:80
+     75|     for (const [index, object] of plan.objects.entries()) {
+     76|       const solid = projected.raised.find(item => item.id === `${id}:o…
+     77|       expect(solid?.assetId, `${id} object ${index} actual completed c…
+       |                                                                                ^
+     78|       if (solid === undefined || solid.kind !== 'structure') throw new…
+     79|       const zone = rooms.find(room => object.x >= room.anchorTileX && …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯

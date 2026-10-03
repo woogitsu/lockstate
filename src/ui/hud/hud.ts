@@ -1,4 +1,6 @@
+import { createRendererSelectionControl, type HudRendererMode } from './renderer-selection-control';
 import { createCameraPoseControl, type CameraPoseStep } from './camera-pose-control';
+import { createCameraPanControl, type CameraPanStep } from './camera-pan-control';
 import type { LocalizationKey } from '../../content/localization';
 import type { MinimapView } from '../../shared/minimap-view';
 import type { RoomTemplateTool } from '../room-template-tool';
@@ -124,6 +126,11 @@ export interface HudBuildEdgeTarget {
   readonly edge: HudBuildEdge;
 }
 
+export interface HudBuildSquareTarget {
+  readonly x: number;
+  readonly y: number;
+}
+
 /**
  * What one build gesture asked for: a buildable, and the edges it covered.
  *
@@ -134,7 +141,9 @@ export interface HudBuildEdgeTarget {
  */
 export interface HudBuildOrder {
   readonly definitionId: string;
+  /** Empty only when the gesture names occupied squares instead. */
   readonly edges: readonly HudBuildEdgeTarget[];
+  readonly squares?: readonly HudBuildSquareTarget[];
 }
 
 /**
@@ -869,6 +878,8 @@ export interface HudUnavailableNotice {
 
 export interface MountHudOptions {
   readonly localizer: HudLocalizer;
+  readonly roomTemplateTool?: RoomTemplateTool;
+  readonly onBuildCategoryKeyboardOwnership?: () => void;
   readonly roomTemplatePreflight?: (request: RoomTemplatePlacementRequest) => Promise<RoomTemplatePreflight>;
   /**
    * The player's stored layout: which regions are folded and how wide or tall
@@ -1067,8 +1078,12 @@ export interface MountHudOptions {
    * every harness in `tests/browser/` that does not pass it.
    */
   readonly onCameraZoom?: (direction: 'in' | 'out') => void;
+  /** Four existing direction actions, supplied only with a live camera host. */
+  readonly onCameraPan?: CameraPanStep;
   /** Renderer-only pose controls; omitted for the fixed top-down renderer. */
   readonly onCameraPoseStep?: CameraPoseStep;
+  /** Live renderer port; preserves the current simulation session. */
+  readonly rendererSelection?: { readonly mode: HudRendererMode; readonly select: (mode: HudRendererMode) => Promise<void>; readonly focus?: () => void };
   /**
    * Receives every player action, and may be async.
    *
@@ -1147,6 +1162,7 @@ export interface HudHandle {
   updateMinimap(view: MinimapView | undefined): void;
   /** Makes the empty-session minimap a truthful, inert instruction. */
   setMinimapSessionActive(active: boolean): void;
+  setRendererMode(mode: HudRendererMode): void;
   /**
    * Live feedback from the world pointer into the Build panel's readout.
    *
@@ -2069,9 +2085,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     const visible = view !== undefined && hasActivePrison;
     minimapCanvas.hidden = !visible;
     minimapViewport.hidden = !visible;
-    minimapPlaceholder.textContent = t(!hasActivePrison
+    const placeholderText = t(!hasActivePrison
       ? HUD_MESSAGE_KEY.minimapNoPrison
       : visible ? HUD_MESSAGE_KEY.minimapMapReady : HUD_MESSAGE_KEY.minimapPlaceholder);
+    if (minimapPlaceholder.textContent !== placeholderText) minimapPlaceholder.textContent = placeholderText;
     minimapPlaceholder.classList.toggle('hud-minimap__placeholder--sr-only', visible);
     if (view === undefined || !hasActivePrison) {
       lastMinimapPixels = undefined;
@@ -2289,21 +2306,28 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     children: [zoomLegend, zoomOut.element, zoomIn.element],
   });
 
-  corner = element('div', { className: 'hud__corner', children: [zoomControl, ...(options.onCameraPoseStep === undefined ? [] : [createCameraPoseControl(localizer, options.onCameraPoseStep)]), minimapPanel.element] });
+  const poseControl = options.onCameraPoseStep === undefined ? undefined : createCameraPoseControl(localizer, options.onCameraPoseStep);
+  const panControl = options.onCameraPan === undefined ? undefined : createCameraPanControl(localizer, options.onCameraPan);
+  if (poseControl !== undefined && options.rendererSelection?.mode === 'world') poseControl.hidden = true;
+  const rendererControl = options.rendererSelection === undefined ? undefined : createRendererSelectionControl({
+    region: t(HUD_MESSAGE_KEY.cameraView), world: t(HUD_MESSAGE_KEY.cameraViewWorld), oblique: t(HUD_MESSAGE_KEY.cameraViewOblique), failure: t(HUD_MESSAGE_KEY.cameraViewFailed),
+  }, options.rendererSelection.mode, options.rendererSelection.select, error => console.warn('Renderer selection failed', error), options.rendererSelection.focus);
+  corner = element('div', { className: 'hud__corner', children: [...(rendererControl === undefined ? [] : [rendererControl.element]), zoomControl, ...(panControl === undefined ? [] : [panControl]), ...(poseControl === undefined ? [] : [poseControl]), minimapPanel.element] });
 
   // ---- bottom-right build panel ------------------------------------
   // Placing an order is a *command*: it asks the host to change the
   // simulation, so it goes through the same gate as the transport controls
   // and a rejection is reported rather than dropped. Nothing changes locally
   // -- the wall appears when a snapshot says it was built.
-  const roomTemplateTool: RoomTemplateTool | undefined = options.roomTemplatePreflight === undefined || options.onIntent === undefined
+  const roomTemplateTool: RoomTemplateTool | undefined = options.roomTemplateTool ?? (options.roomTemplatePreflight === undefined || options.onIntent === undefined
     ? undefined
     : new RoomTemplateToolState({
         preflight: options.roomTemplatePreflight,
         place: async (request) => { await options.onIntent?.({ kind: 'place-room-template', ...request }); },
-      });
+      }));
   const buildPanel: BuildPanel = createBuildPanel({
     localizer,
+    ...(options.onBuildCategoryKeyboardOwnership === undefined ? {} : { onCategoryKeyboardOwnership: options.onBuildCategoryKeyboardOwnership }),
     ...(roomTemplateTool === undefined ? {} : { roomTemplateTool }),
     model: options.build ?? { buildables: [], origin: { x: 0, y: 0 } },
     onPlace: (intent) => {
@@ -2340,6 +2364,13 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
           { kind: 'place-object', definitionId: intent.definitionId, x: intent.x, y: intent.y },
           buildPanel.submitControl,
         );
+        return;
+      }
+      if (intent.squareFootprint === true) {
+        dispatchCommand({
+          kind: 'place-build-order', definitionId: intent.definitionId,
+          edges: [], squares: [{ x: intent.x, y: intent.y }],
+        }, buildPanel.submitControl);
         return;
       }
       // A run of one. The numeric route names exactly one edge, and it says
@@ -3465,6 +3496,10 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
     update,
     updateMinimap,
     setMinimapSessionActive,
+    setRendererMode: mode => {
+      rendererControl?.update(mode);
+      if (poseControl !== undefined) poseControl.hidden = mode !== 'oblique';
+    },
     setBuildTarget: (target) => buildPanel.setTarget(target),
     setUnavailable,
     clearPrisonerSelection: () => rosterPanel.clearPrisonerSelection(),

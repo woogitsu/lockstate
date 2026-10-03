@@ -1,0 +1,71 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-angled-cutaway-occupancy-audit-20261003
+
+ ❯ tests/unit/oblique-pending-wall-depth.test.ts (14 tests | 14 failed) 16ms
+   × actual scene yaw0 elevation45 'behind partially loaded wall, actor P…' 6ms
+   × actual scene yaw0 elevation45 'behind partially loaded wall, actor f…' 1ms
+   × actual scene yaw0 elevation45 'behind fully loaded wall, actor PNG r…' 1ms
+   × actual scene yaw0 elevation45 'behind fully loaded wall, actor fallb…' 1ms
+   × actual scene yaw0 elevation45 'in front of partially loaded wall' 1ms
+   × actual scene yaw0 elevation45 'in front of fully loaded wall' 1ms
+   × actual scene yaw180 elevation65 'behind partially loaded wall, actor P…' 0ms
+   × actual scene yaw180 elevation65 'behind partially loaded wall, actor f…' 1ms
+   × actual scene yaw180 elevation65 'behind fully loaded wall, actor PNG r…' 1ms
+   × actual scene yaw180 elevation65 'behind fully loaded wall, actor fallb…' 1ms
+   × actual scene yaw180 elevation65 'in front of partially loaded wall' 0ms
+   × actual scene yaw180 elevation65 'in front of fully loaded wall' 1ms
+   × actual loader completion restores correct PNG ordering yaw+0 elevation45 1ms
+   × actual loader completion restores correct PNG ordering yaw180 elevation65 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 14 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'behind partially loaded wall, actor P…'
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'behind partially loaded wall, actor f…'
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'behind fully loaded wall, actor PNG r…'
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'behind fully loaded wall, actor fallb…'
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'in front of partially loaded wall'
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'in front of fully loaded wall'
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'behind partially loaded wall, actor P…'
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'behind partially loaded wall, actor f…'
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'behind fully loaded wall, actor PNG r…'
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'behind fully loaded wall, actor fallb…'
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'in front of partially loaded wall'
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'in front of fully loaded wall'
+TypeError: Cannot read properties of undefined (reading 'type')
+ ❯ ObliqueWorldScene.paintGround src/rendering/scene/oblique-world-scene.ts:676:28
+    674|     this.floorMeshes = [];
+    675|     const painted = new Set<string>();
+    676|     if (this.game.renderer.type === Phaser.WEBGL) {
+       |                            ^
+    677|       for (const batch of obliqueFloorBatches(projection.ground)) {
+    678|         const key = `oblique-floor:${batch.assetId}`;
+ ❯ ObliqueWorldScene.repaint src/rendering/scene/oblique-world-scene.ts:916:12
+ ❯ ObliqueWorldScene.update src/rendering/scene/oblique-world-scene.ts:655:10
+ ❯ prepare tests/unit/oblique-pending-wall-depth.test.ts:69:46
+ ❯ tests/unit/oblique-pending-wall-depth.test.ts:85:43
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/14]⎯
+
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual loader completion restores correct PNG ordering yaw+0 elevation45
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual loader completion restores correct PNG ordering yaw180 elevation65
+TypeError: Cannot read properties of undefined (reading 'type')
+ ❯ ObliqueWorldScene.paintGround src/rendering/scene/oblique-world-scene.ts:676:28
+    674|     this.floorMeshes = [];
+    675|     const painted = new Set<string>();
+    676|     if (this.game.renderer.type === Phaser.WEBGL) {
+       |                            ^
+    677|       for (const batch of obliqueFloorBatches(projection.ground)) {
+    678|         const key = `oblique-floor:${batch.assetId}`;
+ ❯ ObliqueWorldScene.repaint src/rendering/scene/oblique-world-scene.ts:916:12
+ ❯ ObliqueWorldScene.update src/rendering/scene/oblique-world-scene.ts:655:10
+ ❯ prepare tests/unit/oblique-pending-wall-depth.test.ts:69:46
+ ❯ tests/unit/oblique-pending-wall-depth.test.ts:108:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/14]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  14 failed (14)
+   Start at  04:15:18
+   Duration  1.16s (transform 473ms, setup 0ms, import 995ms, tests 16ms, environment 0ms)
+

@@ -330,6 +330,7 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
   const onDrawerKeyDown = (event: KeyboardEvent): void => {
     if (event.key !== 'Escape' || !drawerOpen) return;
     event.preventDefault();
+    event.stopPropagation();
     setDrawerOpen(false);
   };
   options.navigation.container.addEventListener('keydown', onDrawerKeyDown);
@@ -665,6 +666,10 @@ export function createHudLayoutShell(options: HudLayoutShellOptions): HudLayoutS
   const onMenuKeyDown = (event: KeyboardEvent): void => {
     if (event.key !== 'Escape' || menuBody.hidden !== false) return;
     event.preventDefault();
+    // This Escape belongs to the open menu. The world also listens on window
+    // for build cancellation, so preventDefault alone would close the menu
+    // and silently disarm the player's current placement tool in one press.
+    event.stopPropagation();
     setMenuOpen(false);
   };
   menu.addEventListener('keydown', onMenuKeyDown);

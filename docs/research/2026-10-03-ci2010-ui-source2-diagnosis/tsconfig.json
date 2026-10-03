@@ -1,0 +1,8 @@
+{
+  "extends": "../../../tsconfig.json",
+  "include": [
+    "./quote-clamp-dom.test.ts",
+    "./minimap-geometry-probe.ts",
+    "./vitest.config.ts"
+  ]
+}

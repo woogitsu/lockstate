@@ -34,3 +34,24 @@ assets/rendered/**/*.png filter=lfs diff=lfs merge=lfs -text
 *.sql text eol=lf
 *.sh text eol=lf
 *.mjs text eol=lf
+docs/PLAYER_STRINGS.md text eol=lf
+docs/research/2026-10-03-kitchen-construction-session-integration/native/** -text
+docs/research/2026-10-03-kitchen-construction-session-integration/native/**/*.png filter=lfs diff=lfs merge=lfs -text
+docs/research/2026-10-03-bookshelf-hover-integration/native/**/*.png filter=lfs diff=lfs merge=lfs -text
+
+docs/research/2026-10-03-bookshelf-hover-integration/native/** -text
+
+# Exact actual model integration evidence
+docs/research/2026-10-03-canteen-washer-cot-integration/native/** -text
+docs/research/2026-10-03-canteen-washer-cot-integration/native/**/*.png filter=lfs diff=lfs merge=lfs -text
+docs/research/2026-10-03-classroom-desk-native-preparation/native/** -text
+docs/research/2026-10-03-classroom-desk-native-preparation/native/**/*.png filter=lfs diff=lfs merge=lfs -text
+docs/research/2026-10-03-reception-armchair-native-preparation/native/** -text
+docs/research/2026-10-03-reception-armchair-native-preparation/native/**/*.png filter=lfs diff=lfs merge=lfs -text
+
+docs/research/2026-10-03-combined-student-rotation-minimap/native/** -text
+docs/research/2026-10-03-combined-student-rotation-minimap/native/**/*.png filter=lfs diff=lfs merge=lfs -text
+# Actual combined-product evidence: preserve logs; archive screenshots in LFS.
+docs/research/2026-10-03-authoritative-object-model-integration/native/** -text
+docs/research/2026-10-03-authoritative-object-model-integration/native/**/*.png filter=lfs diff=lfs merge=lfs -text
+docs/research/2026-10-03-authoritative-object-model-integration/native/**/*.zip filter=lfs diff=lfs merge=lfs -text

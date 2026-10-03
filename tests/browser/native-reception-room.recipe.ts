@@ -1,0 +1,158 @@
+/** Opt-in built-client public Reception Room journey. No standard suite collects
+ * .recipe.ts, no injected fixture/snapshot/command, no visual ROI guess. */
+import { writeFile } from 'node:fs/promises';
+import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
+import { expect, test as base, type Page } from './network-changed-fixture';
+import { installTee, sentCommands, currentClock } from './playtest-harness';
+import { installShowcaseReadProbe, showcaseSnapshot, showcaseRooms } from './native-small-prison-showcase-evidence';
+import { assertReceptionCapacity, assertReceptionRoom, observeReceptionNetwork } from './native-reception-room-evidence';
+import { RECEPTION_BOOTSTRAP, RECEPTION_CASES, RECEPTION_ORIGIN, RECEPTION_PLAN } from '../fixtures/native-reception-room-plan';
+
+let capacityStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
+let wholeCapacity: SessionSnapshotBundle | undefined;
+const test = base.extend({ storageState: async ({}, use) => use(capacityStorage ?? { cookies: [], origins: [] }) });
+test.describe.configure({ mode: 'serial' });
+const observers = new WeakMap<Page, Awaited<ReturnType<typeof observeReceptionNetwork>>>();
+
+async function placePublicPlan(page: Page, name: string, origin: { x: number; y: number }, turns: 0 | 1 = 0): Promise<void> {
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Room plans', exact: true });
+  await dialog.getByRole('button', { name, exact: true }).click();
+  await dialog.getByRole('combobox', { name: 'Room plan rotation (clockwise)', exact: true }).selectOption(String(turns));
+  await dialog.getByRole('checkbox', { name: 'Mirror horizontally before rotation', exact: true }).uncheck();
+  const x = dialog.getByRole('spinbutton', { name: 'Plan origin X' });
+  if (!await x.isVisible()) await dialog.getByText('Enter coordinates', { exact: true }).click();
+  await x.fill(String(origin.x));
+  await dialog.getByRole('spinbutton', { name: 'Plan origin Y' }).fill(String(origin.y));
+  await expect(dialog.getByRole('status')).toContainText('clear');
+  await dialog.getByRole('button', { name: 'Place room plan', exact: true }).click();
+  await expect(dialog.getByRole('status')).toContainText('submitted');
+  await page.keyboard.press('Escape');
+}
+
+async function finishRealOwners(page: Page, target: number): Promise<void> {
+  const progress = async () => {
+    const data = await showcaseSnapshot(page);
+    return data.construction.orders.filter(order => order.state === 'completed').length
+      + (data.simulation?.roomTemplates?.completed?.length ?? 0);
+  };
+  let current = await progress();
+  while (current < target) {
+    await expect.poll(progress, { message: `actual ordered builder work must advance from ${current}/${target}` }).toBeGreaterThan(current);
+    current = await progress();
+  }
+}
+
+async function publicFastThenPause(page: Page, completionTarget: number): Promise<void> {
+  await page.getByRole('button', { name: 'Fast forward', exact: true }).click();
+  await page.getByRole('button', { name: 'Fast forward', exact: true }).click();
+  await expect.poll(() => currentClock(page)).toEqual({ mode: 'running', speed: 4 });
+  await finishRealOwners(page, completionTarget);
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  // Initial restored HUD clock is not a later observer broadcast. Use the
+  // public pressed state and the whole worker snapshot instead.
+  await expect(page.getByRole('button', { name: 'Pause', exact: true })).toHaveAttribute('aria-pressed', 'true');
+}
+
+async function framePublicRoom(page: Page): Promise<void> {
+  const minimap = page.locator('.hud-minimap__surface');
+  if (!await minimap.isVisible()) await page.getByRole('region', { name: 'Minimap', exact: true }).getByRole('button', { name: 'Expand', exact: true }).click();
+  const bounds = await minimap.boundingBox();
+  if (bounds === null) throw new Error('Actual public minimap absent');
+  await minimap.click({ position: { x: bounds.width * 7 / 32, y: bounds.height * 7 / 32 } });
+  await page.mouse.move(1300, 700);
+}
+
+test('01 public Storage Room and Delivery Bay bootstrap for Reception seating', async ({ page }, info) => {
+  await installShowcaseReadProbe(page); await installTee(page);
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/?renderer=oblique');
+  await page.getByRole('button', { name: 'New prison', exact: true }).click();
+  await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Pause', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  for (const plan of RECEPTION_BOOTSTRAP) await placePublicPlan(page, plan.name, plan.origin);
+  expect(await sentCommands(page)).toEqual(RECEPTION_BOOTSTRAP.map(plan => ({ type: 'PlaceRoomTemplate', templateId: plan.templateId, origin: plan.origin })));
+  await publicFastThenPause(page, 41);
+  await expect(page.locator('[data-metric="rooms"] .ui-stat__value')).toHaveText('2');
+  wholeCapacity = await showcaseSnapshot(page, info.outputPath('actual-public-capacity-whole-paused.json'));
+  assertReceptionCapacity(wholeCapacity);
+  await page.getByRole('button', { name: 'Overview', exact: true }).click();
+  await page.getByRole('button', { name: 'Save now', exact: true }).click();
+  await expect(page.locator('.save-panel__status')).toContainText('Saved');
+  expect(await showcaseSnapshot(page)).toEqual(wholeCapacity);
+  capacityStorage = await page.context().storageState({ indexedDB: true });
+});
+
+for (const turns of [0, 1] as const) test(`Reception Room q${turns}: literal two-chair owners, square shell and whole paused Save/Load`, async ({ page }, info) => {
+  expect(capacityStorage, 'prior actual public IndexedDB capacity save').toBeDefined();
+  await installShowcaseReadProbe(page); await installTee(page);
+  const network = await observeReceptionNetwork(page); observers.set(page, network);
+  await page.setViewportSize({ width: 1920, height: 1080 }); await page.goto('/?renderer=oblique');
+  await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
+  await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+  // Initial restored HUD clock is not a later observer broadcast. Use the
+  // public pressed state and the whole worker snapshot instead.
+  await expect(page.getByRole('button', { name: 'Pause', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  const capacity = await showcaseSnapshot(page);
+  expect(capacity).toEqual(wholeCapacity); assertReceptionCapacity(capacity);
+  await placePublicPlan(page, RECEPTION_PLAN.name, RECEPTION_ORIGIN, turns);
+  const queued = await showcaseSnapshot(page, info.outputPath('actual-reception-queued-whole-paused.json'));
+  assertReceptionRoom(queued, turns, false);
+  const commands = [{ type: 'PlaceRoomTemplate', templateId: RECEPTION_PLAN.templateId, origin: RECEPTION_ORIGIN,
+    ...(turns === 0 ? {} : { quarterTurns: turns }) }];
+  expect(await sentCommands(page)).toEqual(commands);
+  await publicFastThenPause(page, 65);
+  await expect(page.locator('[data-metric="rooms"] .ui-stat__value')).toHaveText('3');
+  const built = await showcaseSnapshot(page, info.outputPath('actual-reception-completed-whole-paused.json'));
+  assertReceptionRoom(built, turns, true);
+  const rooms = await showcaseRooms(page);
+  expect(rooms.totals).toEqual({ instances: 3, occupants: 0, capacity: 0 });
+  expect(rooms.rooms.rows.find(room => room.roomCatalogId === 'room.reception')).toMatchObject({
+    instanceId: 'room.reception:5:5', access: 'doorway', concurrentUse: [{ capability: 'seating', capacity: 2, inUse: 0 }, { capability: 'workstation', capacity: 2, inUse: 0 }],
+    requirementSummary: { missingCapability: 0 },
+  });
+  // Existing public camera rule: local art yaw = camera yaw + object quarter turn.
+  // q0: initial-45 +7*15 =60; q1: initial-45 +1*15 +90 =60.
+  for (let step = 0; step < RECEPTION_CASES[turns].cameraRightClicks; step++)
+    await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
+  // Clamp at20 then raise twice: exact camera elevation40 through public UI.
+  for (let step = 0; step < 3; step++)
+    await page.getByRole('button', { name: 'Lower camera angle', exact: true }).click();
+  for (let step = 0; step < 2; step++)
+    await page.getByRole('button', { name: 'Raise camera angle', exact: true }).click();
+  await framePublicRoom(page);
+  await page.screenshot({ path: info.outputPath('reception-room-actual-before-save-fullhd.png') });
+  await page.locator('#game-root canvas').screenshot({ path: info.outputPath('reception-room-actual-before-save-canvas.png') });
+  const provenance = await network.evidence(info, turns);
+  expect(await showcaseSnapshot(page), 'public camera preserved all stopped simulation state').toEqual(built);
+  await page.getByRole('button', { name: 'Overview', exact: true }).click();
+  await page.getByRole('button', { name: 'Save now', exact: true }).click();
+  await expect(page.locator('.save-panel__status')).toContainText('Saved');
+  await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
+  await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+  // Initial restored HUD clock is not a later observer broadcast. Use the
+  // public pressed state and the whole worker snapshot instead.
+  await expect(page.getByRole('button', { name: 'Pause', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  const loaded = await showcaseSnapshot(page, info.outputPath('actual-reception-whole-paused-after-save-load.json'));
+  expect(loaded, 'ALL V8 persisted state survives actual Save/Load').toEqual(built);
+  assertReceptionRoom(loaded, turns, true); expect(await showcaseRooms(page)).toEqual(rooms);
+  await framePublicRoom(page);
+  await page.screenshot({ path: info.outputPath('reception-room-actual-after-load-fullhd.png') });
+  await page.locator('#game-root canvas').screenshot({ path: info.outputPath('reception-room-actual-after-load-canvas.png') });
+  await writeFile(info.outputPath('reception-room-native-prepared-route-receipt.json'), JSON.stringify({ turns, commands,
+    queued, built, loaded, rooms, provenance, publicCameraRightClicks: RECEPTION_CASES[turns].cameraRightClicks,
+    publicLowerCameraClicks: 3, publicRaiseCameraClicks: 2,
+    intendedSourcePose: [60, 40], fixtureOwners: RECEPTION_CASES[turns].chairs,
+    perChairVisualCalibrationComplete: false, visualAcceptancePending: true,
+    registrationDeskVisualCalibrationComplete: false,
+    rootMustReview: 'Calibrate separate disjoint regions for both actual chairs and the registration desk before/after Load and test consumer omissions; network/image decoding alone is not gameplay visual acceptance.' }, null, 2));
+});
+
+test.afterEach(async ({ page }, info) => {
+  if (info.status === info.expectedStatus || page.isClosed()) return;
+  await observers.get(page)?.raw(info.outputPath('failed-reception-network.json')).catch(() => undefined);
+  await showcaseSnapshot(page, info.outputPath('failed-reception-actual-worker.json')).catch(() => undefined);
+  await page.screenshot({ path: info.outputPath('failed-reception-fullhd.png') }).catch(() => undefined);
+});

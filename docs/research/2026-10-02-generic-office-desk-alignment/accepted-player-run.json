@@ -1,0 +1,100 @@
+{
+  "testedHead": "781d9dbf8f7e7e4eb1e0f479236d36ba21b24975",
+  "sourceExportCheckpoint": "d7cb215d38b5ca9b9f01e8104327f98e36a15cd2",
+  "actualRestoredPlayerExitCode": 0,
+  "casesPassed": 3,
+  "caseSeconds": [
+    45.8,
+    38.9,
+    38.9
+  ],
+  "nativeRecords": [
+    {
+      "quarterTurns": 0,
+      "actualBefore": [
+        "object.desk@21,6:orientation=0"
+      ],
+      "actualAfter": [
+        "object.desk@21,6:orientation=0"
+      ],
+      "beforePixels": [
+        339,
+        111
+      ],
+      "afterPixels": [
+        339,
+        111
+      ],
+      "commands": [
+        {
+          "type": "PlaceRoomTemplate",
+          "templateId": "reception-basic",
+          "origin": {
+            "x": 20,
+            "y": 5
+          }
+        }
+      ]
+    },
+    {
+      "quarterTurns": 1,
+      "actualBefore": [
+        "object.desk@24,6:orientation=1"
+      ],
+      "actualAfter": [
+        "object.desk@24,6:orientation=1"
+      ],
+      "beforePixels": [
+        353,
+        455
+      ],
+      "afterPixels": [
+        353,
+        455
+      ],
+      "commands": [
+        {
+          "type": "PlaceRoomTemplate",
+          "templateId": "reception-basic",
+          "origin": {
+            "x": 20,
+            "y": 5
+          },
+          "quarterTurns": 1
+        }
+      ]
+    }
+  ],
+  "images": [
+    {
+      "path": "docs/research/2026-10-02-generic-office-desk-alignment/accepted-q1-completed-fullhd.png",
+      "sha256": "8177564c2d63cdc3a5ec5b2492aaba390a66039a7c58ab1e8061fcbf79b28cd0",
+      "bytes": 1476803
+    },
+    {
+      "path": "docs/research/2026-10-02-generic-office-desk-alignment/accepted-q1-loaded-fullhd.png",
+      "sha256": "05e758e6b2d39b981047103c3b1c5cd3e1510208ae36bc1ca78d58299094e50b",
+      "bytes": 1442941
+    },
+    {
+      "path": "docs/research/2026-10-02-generic-office-desk-alignment/accepted-q0-completed-fullhd.png",
+      "sha256": "8a95a448cd399be2e089f116fb60ca7c94977f8f109de150a2ba907e91858da3",
+      "bytes": 1483375
+    },
+    {
+      "path": "docs/research/2026-10-02-generic-office-desk-alignment/accepted-q0-loaded-fullhd.png",
+      "sha256": "e7c8064b75973bbdfcf62ee1610ebbf5b60eb9f7c3e3f7c65b9d2ef321f707db",
+      "bytes": 1450159
+    }
+  ],
+  "consumerNegativeExpectedPixelFailures": 8,
+  "browserProcesses": "all terminal; exclusive lease released to root and HUD",
+  "hostedAcceptanceClaim": false,
+  "reservedWorkflowEdits": false,
+  "finalLoadedImagesActuallyOpened": true,
+  "focusedTests": {
+    "passed": 52,
+    "generalBlenderLiveSceneSkipped": 1
+  },
+  "appAndToolsTypeScript": "passed"
+}

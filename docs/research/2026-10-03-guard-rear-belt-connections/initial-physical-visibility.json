@@ -1,0 +1,51 @@
+{
+  "actualSourceExportsOnly": true,
+  "nativePixelsCalibrated": false,
+  "poses": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "changedPixels": 36,
+      "rgbaDifferenceBounds": [
+        239,
+        214,
+        270,
+        263
+      ]
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "changedPixels": 53,
+      "rgbaDifferenceBounds": [
+        243,
+        201,
+        275,
+        264
+      ]
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 45,
+      "changedPixels": 146,
+      "rgbaDifferenceBounds": [
+        243,
+        198,
+        268,
+        237
+      ]
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 45,
+      "changedPixels": 263,
+      "rgbaDifferenceBounds": [
+        238,
+        192,
+        271,
+        255
+      ]
+    }
+  ],
+  "sourceSha256": "b1f402e1096c49e1ea65c2e7727df2b6c498a77d09fc485679f1dcf72c95b456"
+}

@@ -1,0 +1,733 @@
+{
+  "pixelUnchangedFrames": 0,
+  "changedCameraPoses": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 70
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70
+    }
+  ],
+  "retiredUnreferencedSameAssetFrames": [
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+00-elev20.e41c1768efa1.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+00-elev30.c29c4a2d22c3.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+00-elev40.b46af992c351.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+00-elev50.e0701e776e98.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+00-elev60.525e9e5addf0.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+00-elev70.defb99d792dd.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+30-elev20.8900d4b1be93.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+30-elev30.616236459ce0.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+30-elev40.e902e2bc1ac0.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+30-elev50.dc21cfae7823.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+30-elev60.aa146ee0dc27.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+30-elev70.291c8309747a.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+60-elev20.562b3952d12a.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+60-elev30.c8d22101e070.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+60-elev40.7e73c27f6bef.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+60-elev50.8db0d05f7a94.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+60-elev60.1be1e0dc379c.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+60-elev70.7f3b437b799c.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+90-elev20.09de26372075.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+90-elev30.cc0142eb1c0a.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+90-elev40.425ffe8baa6b.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+90-elev50.05341c17e96c.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+90-elev60.ba7e01546f7c.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+90-elev70.eff7454f48fa.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+120-elev20.1a2cf35d4272.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+120-elev30.0c92b9d3fb18.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+120-elev40.52c66e3294c5.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+120-elev50.521923abcfc3.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+120-elev60.7a41c2a328fd.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+120-elev70.44c3b2b6d19e.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+150-elev20.355b86bb29b7.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+150-elev30.31c8c212a56f.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+150-elev40.494666da8348.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+150-elev50.140094addefd.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+150-elev60.b8136ed18a48.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+150-elev70.d05401742821.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+180-elev20.4ba195c62010.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+180-elev30.d7970accf35a.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+180-elev40.5e185cca6a4d.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+180-elev50.14bc1391a343.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+180-elev60.a6ce1fc7d5e9.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+180-elev70.c82bf3d5318b.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+210-elev20.1a225b4392d9.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+210-elev30.936b908505cc.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+210-elev40.cb0340c18f7d.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+210-elev50.9ad68d5b744b.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+210-elev60.4a29073d2657.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+210-elev70.d19e9da957b0.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+240-elev20.8a1dca69604d.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+240-elev30.fc56dc4df14c.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+240-elev40.31e39421265a.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+240-elev50.0356d8413561.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+240-elev60.19c221b3c4e8.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+240-elev70.14770b742d3b.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+270-elev20.86daef36d39e.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+270-elev30.53e85a204342.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+270-elev40.7b6a8ff820a2.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+270-elev50.9979c4e2447d.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+270-elev60.5b99a86c1f30.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+270-elev70.fb1d68c4df86.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+300-elev20.6cd2d40a6d1c.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+300-elev30.00d4a0ec9fd8.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+300-elev40.116c3471f29e.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+300-elev50.bbde356665e2.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+300-elev60.56312da5b05c.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+300-elev70.73a207e43916.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+330-elev20.57f1be2cad41.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+330-elev30.50991d3d0d4c.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+330-elev40.631c72931321.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+330-elev50.70198e30a58e.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+330-elev60.1478c98b8ee4.png",
+    "public/assets/environment/oblique/furniture.cell.cot.single-yaw+330-elev70.4928d5ce04c2.png"
+  ],
+  "allCurrentCatalogReferencesPreserved": true,
+  "changedFileHashes": 72,
+  "physicallyChangedFrames": 72,
+  "decodedPixelComparisons": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "changedPixels": 208
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30,
+      "changedPixels": 198
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "changedPixels": 175
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50,
+      "changedPixels": 156
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "changedPixels": 137
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "changedPixels": 114
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20,
+      "changedPixels": 216
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30,
+      "changedPixels": 208
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "changedPixels": 183
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "changedPixels": 169
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "changedPixels": 148
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "changedPixels": 120
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20,
+      "changedPixels": 203
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30,
+      "changedPixels": 200
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "changedPixels": 179
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "changedPixels": 166
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "changedPixels": 149
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "changedPixels": 125
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20,
+      "changedPixels": 185
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "changedPixels": 181
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "changedPixels": 178
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "changedPixels": 154
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "changedPixels": 146
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "changedPixels": 125
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20,
+      "changedPixels": 161
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30,
+      "changedPixels": 170
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "changedPixels": 165
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "changedPixels": 163
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "changedPixels": 147
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "changedPixels": 127
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20,
+      "changedPixels": 168
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30,
+      "changedPixels": 177
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "changedPixels": 181
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "changedPixels": 160
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "changedPixels": 140
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "changedPixels": 126
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "changedPixels": 161
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "changedPixels": 159
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "changedPixels": 157
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "changedPixels": 138
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "changedPixels": 122
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "changedPixels": 110
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "changedPixels": 145
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "changedPixels": 160
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "changedPixels": 158
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "changedPixels": 145
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "changedPixels": 131
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "changedPixels": 119
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "changedPixels": 129
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "changedPixels": 133
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "changedPixels": 135
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "changedPixels": 129
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "changedPixels": 129
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "changedPixels": 115
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "changedPixels": 135
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "changedPixels": 141
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "changedPixels": 137
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "changedPixels": 124
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "changedPixels": 122
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "changedPixels": 108
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "changedPixels": 183
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "changedPixels": 160
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "changedPixels": 153
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "changedPixels": 147
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "changedPixels": 141
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "changedPixels": 116
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "changedPixels": 205
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "changedPixels": 198
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "changedPixels": 182
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "changedPixels": 161
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "changedPixels": 136
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "changedPixels": 117
+    }
+  ],
+  "originalFrameComparisonCheckout": "clean09b6548641 washer worktree"
+}

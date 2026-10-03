@@ -125,6 +125,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'object.prep-counter.name': 'Blat roboczy',
   'object.fridge.name': 'Lodówka',
   'object.dining-table.name': 'Stół jadalny',
+  'object.exercise-station.name': 'Stanowisko ćwiczeń',
   'object.bench.name': 'Ławka',
   'object.bookshelf.name': 'Regał na książki',
   'object.medicine-cabinet.name': 'Szafka na leki',
@@ -800,6 +801,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
     'Nikogo nie przyjęto — to więzienie przetrzymuje już tylu ludzi, ilu może.',
   'hud.alert.refusal.build.duplicate-order': 'Zlecenie budowy nie doszło do skutku — takie zlecenie już istnieje.',
   'hud.alert.refusal.build.out-of-bounds': 'Zlecenie budowy nie doszło do skutku — to pole leży poza mapą.',
+  'hud.alert.refusal.construction.object-ownership-unknown': 'Nie można ustalić, które zlecenie utworzyło zapisany obiekt. Usuń go ręcznie, zanim cofniesz lub anulujesz plan pomieszczenia.',
   'hud.alert.refusal.build.unbuildable': 'Zlecenie budowy nie doszło do skutku — na tym polu nie da się nic zbudować.',
   'hud.alert.refusal.build.unbuildable-terrain': 'Zlecenie budowy nie doszło do skutku — na tym gruncie nie da się budować.',
   'hud.alert.refusal.build.unknown-buildable':
@@ -1068,7 +1070,10 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-position-hint': 'Wybierz początek. Przed postawieniem sprawdzimy cały obrys wzoru.',
   'hud.build.template-x': 'Początek wzoru X',
   'hud.build.template-y': 'Początek wzoru Y',
-  'hud.build.template-mirror': 'Odbij poziomo',
+  'hud.build.template-mirror': 'Odbij poziomo przed obrotem',
+  'hud.build.template-on-map': 'Postaw na mapie',
+  'hud.build.template-map-hint': 'Kliknij map\u0119, aby postawi\u0107; Esc anuluje.',
+  'hud.build.template-catalogue-value': 'Katalogowa warto\u015b\u0107 materia\u0142\u00f3w: {value}',
   'hud.build.template-place': 'Postaw wzór pomieszczenia',
   'hud.build.template-invalid-position': 'Wpisz całkowite współrzędne.',
   'hud.build.template-ready': 'Cały obrys jest wolny.',
@@ -1079,6 +1084,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.template-cell-basic': 'Cela podstawowa',
   'hud.build.template-cell-large': 'Cela duża',
   'hud.build.template-shower-room': 'Łaźnia',
+  'hud.build.template-cell-row-four': 'Blok czterech cel',
   'hud.build.template-wall': 'Ściana',
   'hud.build.template-door': 'Drzwi',
   'hud.build.template-furniture': 'Wyposażenie',
@@ -1088,6 +1094,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.catalogue-empty': 'Nie ma nic do zbudowania',
   'hud.build.catalogue-row-price': '{buildable} · {total}',
   'hud.build.catalogue-row-price-segment': '{buildable} · {total} za segment',
+  'hud.build.catalogue-row-price-square': '{buildable} · {total} za pole',
   'hud.build.selected': 'Wybrane',
   'hud.build.placement': 'Gdzie',
   // *pole*, not *kafelek*: a Polish strategy game calls a grid square a pole.
@@ -1110,6 +1117,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'hud.build.arm': 'Stawiaj na mapie',
   'hud.build.arm-hint':
     'Kliknij krawędź pola, aby postawić ścianę. Przeciągnij wzdłuż niej, aby położyć cały ciąg. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
+  'hud.build.arm-hint-square':
+    'Kliknij całe pole, aby postawić ścianę. Przeciągnij przez pola, aby położyć cały ciąg. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
   'hud.build.arm-hint-object':
     'Kliknij pole wewnątrz wyznaczonego pomieszczenia, aby go postawić. Jedno naciśnięcie, jeden obiekt. Dwa palce, środkowy przycisk i strzałki nadal poruszają kamerą.',
   'hud.build.disarm': 'Przestań stawiać',
@@ -1123,6 +1132,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // alone, and numerals do not decline.
   'hud.build.target-value': '{x}, {y} · {edge}',
   'hud.build.target-run': '{count} × {edge} od {x}, {y}',
+  'hud.build.target-squares': { one: '{count} pe\u0142ne pole od {x}, {y} | warto\u015b\u0107 katalogowa {cost}', few: '{count} pe\u0142ne pola od {x}, {y} | warto\u015b\u0107 katalogowa {cost}', many: '{count} pe\u0142nych p\u00f3l od {x}, {y} | warto\u015b\u0107 katalogowa {cost}', other: '{count} pe\u0142nego pola od {x}, {y} | warto\u015b\u0107 katalogowa {cost}' },
+  'hud.build.object-footprint': 'Zajmowane pola: {width} × {height}',
   'hud.build.target-tile': '{x}, {y}',
   'hud.build.coordinates': 'Wpisz współrzędne',
   'hud.build.coordinates-hint': 'Droga przez klawiaturę. Wskazanie na mapie jest szybsze.',
@@ -1556,6 +1567,10 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   'input.action.camera.right': 'Przesuń kamerę w prawo',
   'input.action.camera.zoom.in': 'Przybliż',
   'input.action.camera.zoom.out': 'Oddal',
+  'hud.camera.view.failed': 'Nie uda\u0142o si\u0119 zmieni\u0107 widoku. Wybierz widok, aby spr\u00f3bowa\u0107 ponownie.',
+  'hud.camera.view': 'Widok',
+  'hud.camera.view.world': 'Z g\u00f3ry',
+  'hud.camera.view.oblique': 'Pod k\u0105tem',
   'input.action.camera.rotate.left': 'Obróć kamerę w lewo',
   'input.action.camera.rotate.right': 'Obróć kamerę w prawo',
   'input.action.camera.tilt.up': 'Podnieś kąt kamery',
@@ -1610,6 +1625,7 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
   // save first -- so both halves of the sentence are true of the code.
   'display.language.cycle': 'Zmień język interfejsu i przeładuj grę',
   'app.shell.label': 'Aplikacja gry Lockstate',
+  'hud.build.template-rotation': 'Obrót planu pomieszczenia (w prawo)',
 };
 
 export const localePlCatalog: LocalizationCatalog = buildLocalizationCatalog(plMessages);

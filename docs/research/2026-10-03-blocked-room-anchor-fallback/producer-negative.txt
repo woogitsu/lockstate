@@ -1,0 +1,28 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-blocked-room-anchor-fallback-20261003
+
+ ❯ tests/integration/room-template-blocked-anchor-fallback.test.ts (4 tests | 2 failed) 2004ms
+   × uses existing meal fallback when q1 Canteen anchor is blocked: wall offset0 / V8false 536ms
+   × uses existing meal fallback when q1 Canteen anchor is blocked: wall offset0 / V8true 555ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  08:42:47
+   Duration  4.50s (transform 808ms, setup 0ms, import 2.38s, tests 2.00s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/room-template-blocked-anchor-fallback.test.ts > uses existing meal fallback when q1 Canteen anchor is blocked: wall offset0 / V8false
+ FAIL  tests/integration/room-template-blocked-anchor-fallback.test.ts > uses existing meal fallback when q1 Canteen anchor is blocked: wall offset0 / V8true
+AssertionError: expected [] to include 'action.eat-in-cell'
+ ❯ tests/integration/room-template-blocked-anchor-fallback.test.ts:101:24
+     99|       }
+    100|     }
+    101|     expect(performing).toContain(offset === 0 ? 'action.eat-in-cell' :…
+       |                        ^
+    102|     expect(performing.has(offset === 0 ? 'action.eat-meal' : 'action.e…
+    103|     expect(runtime.prisoners.needs.getScaled(0, 'hunger')).toBeGreater…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+

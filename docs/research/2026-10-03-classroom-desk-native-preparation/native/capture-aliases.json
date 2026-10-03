@@ -1,0 +1,299 @@
+[
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-classroom-plan-queued.json",
+    "archived": "compiled-fullhd-first-observation/006-actual-classroom-plan-queued.json",
+    "sourceBytes": 65767,
+    "sourceSha256": "5e6d5ef556f7e9d7669d47859123342f28cb2c3bd33538338e651b38ba037c77",
+    "archivedBytes": 65767,
+    "archivedSha256": "5e6d5ef556f7e9d7669d47859123342f28cb2c3bd33538338e651b38ba037c77"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\classroom-desk-actual-network.json",
+    "archived": "compiled-fullhd-first-observation/007-classroom-desk-actual-network.json",
+    "sourceBytes": 4241,
+    "sourceSha256": "f3deec39e5963f9297040a8a56ba78e6435d14ab464ab6e4ddade6d14fa641b7",
+    "archivedBytes": 4241,
+    "archivedSha256": "f3deec39e5963f9297040a8a56ba78e6435d14ab464ab6e4ddade6d14fa641b7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-classroom-plan-queued.json",
+    "archived": "compiled-fullhd-first-observation/008-actual-classroom-plan-queued.json",
+    "sourceBytes": 65801,
+    "sourceSha256": "ac4f40b00763bf6c779c25618ca7e862e12ee14a295d60254ba95fae98b6f782",
+    "archivedBytes": 65801,
+    "archivedSha256": "ac4f40b00763bf6c779c25618ca7e862e12ee14a295d60254ba95fae98b6f782"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\classroom-desk-actual-network.json",
+    "archived": "compiled-fullhd-first-observation/009-classroom-desk-actual-network.json",
+    "sourceBytes": 4241,
+    "sourceSha256": "f3deec39e5963f9297040a8a56ba78e6435d14ab464ab6e4ddade6d14fa641b7",
+    "archivedBytes": 4241,
+    "archivedSha256": "f3deec39e5963f9297040a8a56ba78e6435d14ab464ab6e4ddade6d14fa641b7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003.json",
+    "archived": "compiled-fullhd-first-observation/report.json",
+    "sourceBytes": 5971,
+    "sourceSha256": "862f1e16ea38c141621bebddea4ac5ebc9f1fad9061451601d50479b938285ee",
+    "archivedBytes": 5971,
+    "archivedSha256": "862f1e16ea38c141621bebddea4ac5ebc9f1fad9061451601d50479b938285ee"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003.txt",
+    "archived": "compiled-fullhd-first-observation/console.txt",
+    "sourceBytes": 4388,
+    "sourceSha256": "114b8de7b1665a6457ecd7887ac4f9650d702bdc82c7b3d91474a54470b54ab5",
+    "archivedBytes": 2201,
+    "archivedSha256": "563904a4bad88a92fc1a6d301bb3705d75a016db86a4ef63d99756704548b693",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\.last-run.json",
+    "archived": "compiled-fullhd-first-observation/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\executed-literal-oracle.ts.txt",
+    "archived": "compiled-fullhd-first-observation/002-executed-literal-oracle.ts.txt",
+    "sourceBytes": 3069,
+    "sourceSha256": "ef0a864765381b065f2076b2483ee007e1f26e17815b484433557b935e1a269a",
+    "archivedBytes": 3069,
+    "archivedSha256": "ef0a864765381b065f2076b2483ee007e1f26e17815b484433557b935e1a269a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\executed-network-and-owner-observer.ts.txt",
+    "archived": "compiled-fullhd-first-observation/003-executed-network-and-owner-observer.ts.txt",
+    "sourceBytes": 10047,
+    "sourceSha256": "54e1cd033ee68d7f080f0668081d488e54d9129194e8f45126181e962296bba8",
+    "archivedBytes": 10047,
+    "archivedSha256": "54e1cd033ee68d7f080f0668081d488e54d9129194e8f45126181e962296bba8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\executed-recipe.ts.txt",
+    "archived": "compiled-fullhd-first-observation/004-executed-recipe.ts.txt",
+    "sourceBytes": 12975,
+    "sourceSha256": "6eb1d8ec7381826734808de9d100470707a198dd32e77ab25f22ff33a4fde1d4",
+    "archivedBytes": 12975,
+    "archivedSha256": "6eb1d8ec7381826734808de9d100470707a198dd32e77ab25f22ff33a4fde1d4"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-aca5e--and-separately-bought-desk\\actual-capacity-whole-paused.json",
+    "archived": "compiled-fullhd-first-observation/005-actual-capacity-whole-paused.json",
+    "sourceBytes": 54464,
+    "sourceSha256": "b6147fd2e724fac5cd4bbee30bf6e31c40a3ce0e910ea2e81971927cf0567b03",
+    "archivedBytes": 54464,
+    "archivedSha256": "b6147fd2e724fac5cd4bbee30bf6e31c40a3ce0e910ea2e81971927cf0567b03"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-classroom-desk-after-load-canvas.png",
+    "archived": "compiled-fullhd-first-observation/006-actual-classroom-desk-after-load-canvas.png",
+    "sourceBytes": 1537146,
+    "sourceSha256": "f302a3b5aa9c5ea3307a97f08fdeeeceb62101fdda44ada1580729ec17184999",
+    "archivedBytes": 1537146,
+    "archivedSha256": "f302a3b5aa9c5ea3307a97f08fdeeeceb62101fdda44ada1580729ec17184999"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-classroom-desk-after-load-fullhd.png",
+    "archived": "compiled-fullhd-first-observation/007-actual-classroom-desk-after-load-fullhd.png",
+    "sourceBytes": 1537146,
+    "sourceSha256": "f302a3b5aa9c5ea3307a97f08fdeeeceb62101fdda44ada1580729ec17184999",
+    "archivedBytes": 1537146,
+    "archivedSha256": "f302a3b5aa9c5ea3307a97f08fdeeeceb62101fdda44ada1580729ec17184999"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-classroom-desk-before-save-canvas.png",
+    "archived": "compiled-fullhd-first-observation/008-actual-classroom-desk-before-save-canvas.png",
+    "sourceBytes": 1575700,
+    "sourceSha256": "e123dd2b4767c5c312925262a0057d9a55952e6753c22ce838b2dec40697e32c",
+    "archivedBytes": 1575700,
+    "archivedSha256": "e123dd2b4767c5c312925262a0057d9a55952e6753c22ce838b2dec40697e32c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-classroom-desk-before-save-fullhd.png",
+    "archived": "compiled-fullhd-first-observation/009-actual-classroom-desk-before-save-fullhd.png",
+    "sourceBytes": 1575700,
+    "sourceSha256": "e123dd2b4767c5c312925262a0057d9a55952e6753c22ce838b2dec40697e32c",
+    "archivedBytes": 1575700,
+    "archivedSha256": "e123dd2b4767c5c312925262a0057d9a55952e6753c22ce838b2dec40697e32c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-classroom-desk-prepared-route-receipt.json",
+    "archived": "compiled-fullhd-first-observation/010-actual-classroom-desk-prepared-route-receipt.json",
+    "sourceBytes": 272092,
+    "sourceSha256": "37a05a23f3aae96f39e60dee866d0146c19ea593e7e74ab2c9d82d7b545835f0",
+    "archivedBytes": 272092,
+    "archivedSha256": "37a05a23f3aae96f39e60dee866d0146c19ea593e7e74ab2c9d82d7b545835f0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-classroom-desk-whole-paused-after-load.json",
+    "archived": "compiled-fullhd-first-observation/011-actual-classroom-desk-whole-paused-after-load.json",
+    "sourceBytes": 83286,
+    "sourceSha256": "0620659d8610237b45c62bea79424a7dd193a1d583e9ba5de5d141dcb8d6327f",
+    "archivedBytes": 83286,
+    "archivedSha256": "0620659d8610237b45c62bea79424a7dd193a1d583e9ba5de5d141dcb8d6327f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-classroom-plan-queued.json",
+    "archived": "compiled-fullhd-first-observation/012-actual-classroom-plan-queued.json",
+    "sourceBytes": 65767,
+    "sourceSha256": "5e6d5ef556f7e9d7669d47859123342f28cb2c3bd33538338e651b38ba037c77",
+    "archivedBytes": 65767,
+    "archivedSha256": "5e6d5ef556f7e9d7669d47859123342f28cb2c3bd33538338e651b38ba037c77"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-completed-original-classroom-before-desk.json",
+    "archived": "compiled-fullhd-first-observation/013-actual-completed-original-classroom-before-desk.json",
+    "sourceBytes": 82215,
+    "sourceSha256": "d0f2a077c36c7c6a4440b0bbb9accda1085e7c80879ec83300257a6fbb16cb57",
+    "archivedBytes": 82215,
+    "archivedSha256": "d0f2a077c36c7c6a4440b0bbb9accda1085e7c80879ec83300257a6fbb16cb57"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-separate-desk-completed-whole-paused.json",
+    "archived": "compiled-fullhd-first-observation/014-actual-separate-desk-completed-whole-paused.json",
+    "sourceBytes": 83286,
+    "sourceSha256": "46a0d70fe3d420516b07e4f350b7862a68e1f04a165851aee1b70b0067172ff3",
+    "archivedBytes": 83286,
+    "archivedSha256": "46a0d70fe3d420516b07e4f350b7862a68e1f04a165851aee1b70b0067172ff3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\actual-separate-desk-two-plank130-purchase-quote.png",
+    "archived": "compiled-fullhd-first-observation/015-actual-separate-desk-two-plank130-purchase-quote.png",
+    "sourceBytes": 1639731,
+    "sourceSha256": "ad542378195ace04298e5d8586dc95fbc2d7a2dcba5e8cb6dbe4bf817d422c4c",
+    "archivedBytes": 1639731,
+    "archivedSha256": "ad542378195ace04298e5d8586dc95fbc2d7a2dcba5e8cb6dbe4bf817d422c4c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\classroom-desk-actual-network-and-decoder-receipt.json",
+    "archived": "compiled-fullhd-first-observation/016-classroom-desk-actual-network-and-decoder-receipt.json",
+    "sourceBytes": 47848,
+    "sourceSha256": "3098de74bfe909fb16640c493ba4e5ee69154be04a1de2248ca15d3f1807cf2a",
+    "archivedBytes": 47848,
+    "archivedSha256": "3098de74bfe909fb16640c493ba4e5ee69154be04a1de2248ca15d3f1807cf2a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\classroom-desk-actual-network.json",
+    "archived": "compiled-fullhd-first-observation/017-classroom-desk-actual-network.json",
+    "sourceBytes": 4241,
+    "sourceSha256": "f3deec39e5963f9297040a8a56ba78e6435d14ab464ab6e4ddade6d14fa641b7",
+    "archivedBytes": 4241,
+    "archivedSha256": "f3deec39e5963f9297040a8a56ba78e6435d14ab464ab6e4ddade6d14fa641b7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-da1c3--and-whole-paused-Save-Load\\classroom-desk-actual200-source60-elev40.png",
+    "archived": "compiled-fullhd-first-observation/018-classroom-desk-actual200-source60-elev40.png",
+    "sourceBytes": 7707,
+    "sourceSha256": "721cae760da76bdb6830e99255ee7e9c01c0d1733735621b419a62997094a561",
+    "archivedBytes": 7707,
+    "archivedSha256": "721cae760da76bdb6830e99255ee7e9c01c0d1733735621b419a62997094a561"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-classroom-desk-after-load-canvas.png",
+    "archived": "compiled-fullhd-first-observation/019-actual-classroom-desk-after-load-canvas.png",
+    "sourceBytes": 1530605,
+    "sourceSha256": "fabef552eb97e49b7ba339a387ad26f7dec621ea6052c9bc3a96457fe40e809c",
+    "archivedBytes": 1530605,
+    "archivedSha256": "fabef552eb97e49b7ba339a387ad26f7dec621ea6052c9bc3a96457fe40e809c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-classroom-desk-after-load-fullhd.png",
+    "archived": "compiled-fullhd-first-observation/020-actual-classroom-desk-after-load-fullhd.png",
+    "sourceBytes": 1530605,
+    "sourceSha256": "fabef552eb97e49b7ba339a387ad26f7dec621ea6052c9bc3a96457fe40e809c",
+    "archivedBytes": 1530605,
+    "archivedSha256": "fabef552eb97e49b7ba339a387ad26f7dec621ea6052c9bc3a96457fe40e809c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-classroom-desk-before-save-canvas.png",
+    "archived": "compiled-fullhd-first-observation/021-actual-classroom-desk-before-save-canvas.png",
+    "sourceBytes": 1567203,
+    "sourceSha256": "a21ec0bb0b799167c4b009120db6661e8b0323931f39fc7d4ade477145182c7e",
+    "archivedBytes": 1567203,
+    "archivedSha256": "a21ec0bb0b799167c4b009120db6661e8b0323931f39fc7d4ade477145182c7e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-classroom-desk-before-save-fullhd.png",
+    "archived": "compiled-fullhd-first-observation/022-actual-classroom-desk-before-save-fullhd.png",
+    "sourceBytes": 1567203,
+    "sourceSha256": "a21ec0bb0b799167c4b009120db6661e8b0323931f39fc7d4ade477145182c7e",
+    "archivedBytes": 1567203,
+    "archivedSha256": "a21ec0bb0b799167c4b009120db6661e8b0323931f39fc7d4ade477145182c7e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-classroom-desk-prepared-route-receipt.json",
+    "archived": "compiled-fullhd-first-observation/023-actual-classroom-desk-prepared-route-receipt.json",
+    "sourceBytes": 274978,
+    "sourceSha256": "4a80eb1685211c80a201463dc8d5505a27b7b60bdc56ff71d6973061ca833661",
+    "archivedBytes": 274978,
+    "archivedSha256": "4a80eb1685211c80a201463dc8d5505a27b7b60bdc56ff71d6973061ca833661"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-classroom-desk-whole-paused-after-load.json",
+    "archived": "compiled-fullhd-first-observation/024-actual-classroom-desk-whole-paused-after-load.json",
+    "sourceBytes": 83197,
+    "sourceSha256": "892cf2936f48127a53ec709f5704395a739d4ed4d004f3dd2ffb52599a542009",
+    "archivedBytes": 83197,
+    "archivedSha256": "892cf2936f48127a53ec709f5704395a739d4ed4d004f3dd2ffb52599a542009"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-classroom-plan-queued.json",
+    "archived": "compiled-fullhd-first-observation/025-actual-classroom-plan-queued.json",
+    "sourceBytes": 65801,
+    "sourceSha256": "ac4f40b00763bf6c779c25618ca7e862e12ee14a295d60254ba95fae98b6f782",
+    "archivedBytes": 65801,
+    "archivedSha256": "ac4f40b00763bf6c779c25618ca7e862e12ee14a295d60254ba95fae98b6f782"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-completed-original-classroom-before-desk.json",
+    "archived": "compiled-fullhd-first-observation/026-actual-completed-original-classroom-before-desk.json",
+    "sourceBytes": 82126,
+    "sourceSha256": "0da5e0dc2dff76ca392e85c1524472b38aaf323f4e4290b8055fd96a0663a914",
+    "archivedBytes": 82126,
+    "archivedSha256": "0da5e0dc2dff76ca392e85c1524472b38aaf323f4e4290b8055fd96a0663a914"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-separate-desk-completed-whole-paused.json",
+    "archived": "compiled-fullhd-first-observation/027-actual-separate-desk-completed-whole-paused.json",
+    "sourceBytes": 83197,
+    "sourceSha256": "e67fc06776143d2552000d33a9f2a5dc1d6d3efa0d106afb637e420249638d57",
+    "archivedBytes": 83197,
+    "archivedSha256": "e67fc06776143d2552000d33a9f2a5dc1d6d3efa0d106afb637e420249638d57"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\actual-separate-desk-two-plank130-purchase-quote.png",
+    "archived": "compiled-fullhd-first-observation/028-actual-separate-desk-two-plank130-purchase-quote.png",
+    "sourceBytes": 1635877,
+    "sourceSha256": "6eca6cd5f82fdf16a74760ddf0b0e1a365238dbf21298bd840f975b13b882b59",
+    "archivedBytes": 1635877,
+    "archivedSha256": "6eca6cd5f82fdf16a74760ddf0b0e1a365238dbf21298bd840f975b13b882b59"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\classroom-desk-actual-network-and-decoder-receipt.json",
+    "archived": "compiled-fullhd-first-observation/029-classroom-desk-actual-network-and-decoder-receipt.json",
+    "sourceBytes": 50712,
+    "sourceSha256": "b769f67b6b44979cc30a4d6dea69c1cf0c54a13864bf14d5587b06d5c4aedacd",
+    "archivedBytes": 50712,
+    "archivedSha256": "b769f67b6b44979cc30a4d6dea69c1cf0c54a13864bf14d5587b06d5c4aedacd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\classroom-desk-actual-network.json",
+    "archived": "compiled-fullhd-first-observation/030-classroom-desk-actual-network.json",
+    "sourceBytes": 4241,
+    "sourceSha256": "f3deec39e5963f9297040a8a56ba78e6435d14ab464ab6e4ddade6d14fa641b7",
+    "archivedBytes": 4241,
+    "archivedSha256": "f3deec39e5963f9297040a8a56ba78e6435d14ab464ab6e4ddade6d14fa641b7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-classroom-actual-native-20261003\\native-classroom-desk.reci-ee20e--and-whole-paused-Save-Load\\classroom-desk-actual200-source60-elev40.png",
+    "archived": "compiled-fullhd-first-observation/031-classroom-desk-actual200-source60-elev40.png",
+    "sourceBytes": 7707,
+    "sourceSha256": "721cae760da76bdb6830e99255ee7e9c01c0d1733735621b419a62997094a561",
+    "archivedBytes": 7707,
+    "archivedSha256": "721cae760da76bdb6830e99255ee7e9c01c0d1733735621b419a62997094a561"
+  }
+]

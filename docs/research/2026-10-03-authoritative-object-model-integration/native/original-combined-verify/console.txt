@@ -1,0 +1,575 @@
+pnpm : $ pnpm typecheck && pnpm test && node scripts/cloudflare-task.mjs build production
+At line:3 char:1
++ pnpm --config.verify-deps-before-run=false verify *> (Join-Path $env: ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ pnpm typechec...uild production:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+$ tsc -b --pretty false && tsc -b tsconfig.tools.json --pretty false
+$ vitest run
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-integration-20261003
+
+ ❯ tests/unit/ui-template-numeric-submit-session-controls.test.ts (8 tests | 8 failed) 10ms
+   × world/new/same: stale numeric session result cannot stand down a current public arm 6ms
+   × world/new/new: stale numeric session result cannot stand down a current public arm 1ms
+   × world/load/same: stale numeric session result cannot stand down a current public arm 1ms
+   × world/load/new: stale numeric session result cannot stand down a current public arm 0ms
+   × oblique/new/same: stale numeric session result cannot stand down a current public arm 1ms
+   × oblique/new/new: stale numeric session result cannot stand down a current public arm 0ms
+   × oblique/load/same: stale numeric session result cannot stand down a current public arm 0ms
+   × oblique/load/new: stale numeric session result cannot stand down a current public arm 0ms
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts (9 tests | 9 failed) 16ms
+   × fresh 'new' session admits a new plan after outgoing preflight, armed=false 10ms
+   × fresh 'new' session admits a new plan after outgoing preflight, armed=true 1ms
+   × fresh 'load' session admits a new plan after outgoing preflight, armed=false 1ms
+   × fresh 'load' session admits a new plan after outgoing preflight, armed=true 1ms
+   × a delayed genuine same-session preflight submits exactly one plan 1ms
+   × cancel/rearm keeps the newer pending owner when an older real preflight settles, armed=false 0ms
+   × cancel/rearm keeps the newer pending owner when an older real preflight settles, armed=true 0ms
+   × an abandoned old session requester timing out cannot release a newer generation busy token 0ms
+   × standing down a numeric unarmed request discards its actual late clear result 0ms
+ ❯ tests/unit/ordinary-build-session-ownership.test.ts (30 tests | 30 failed) 26ms
+   × world/new/wall: outgoing held gesture cannot report or submit into replacement worker 10ms
+   × world/new/object: outgoing held gesture cannot report or submit into replacement worker 1ms
+   × world/new/room: outgoing held gesture cannot report or submit into replacement worker 2ms
+   × world/load/wall: outgoing held gesture cannot report or submit into replacement worker 1ms
+   × world/load/object: outgoing held gesture cannot report or submit into replacement worker 1ms
+   × world/load/room: outgoing held gesture cannot report or submit into replacement worker 0ms
+   × oblique/new/wall: outgoing held gesture cannot report or submit into replacement worker 1ms
+   × oblique/new/object: outgoing held gesture cannot report or submit into replacement worker 0ms
+   × oblique/new/room: outgoing held gesture cannot report or submit into replacement worker 0ms
+   × oblique/load/wall: outgoing held gesture cannot report or submit into replacement worker 1ms
+   × oblique/load/object: outgoing held gesture cannot report or submit into replacement worker 0ms
+   × oblique/load/room: outgoing held gesture cannot report or submit into replacement worker 0ms
+   × world/wall: ordinary same-session held primary release remains legal 0ms
+   × world/new/wall: a fresh replacement-session press remains legal 0ms
+   × world/load/wall: a fresh replacement-session press remains legal 1ms
+   × world/object: ordinary same-session held primary release remains legal 0ms
+   × world/new/object: a fresh replacement-session press remains legal 0ms
+   × world/load/object: a fresh replacement-session press remains legal 0ms
+   × world/room: ordinary same-session held primary release remains legal 0ms
+   × world/new/room: a fresh replacement-session press remains legal 0ms
+   × world/load/room: a fresh replacement-session press remains legal 0ms
+   × oblique/wall: ordinary same-session held primary release remains legal 0ms
+   × oblique/new/wall: a fresh replacement-session press remains legal 0ms
+   × oblique/load/wall: a fresh replacement-session press remains legal 0ms
+   × oblique/object: ordinary same-session held primary release remains legal 0ms
+   × oblique/new/object: a fresh replacement-session press remains legal 0ms
+   × oblique/load/object: a fresh replacement-session press remains legal 0ms
+   × oblique/room: ordinary same-session held primary release remains legal 0ms
+   × oblique/new/room: a fresh replacement-session press remains legal 0ms
+   × oblique/load/room: a fresh replacement-session press remains legal 0ms
+ ❯ tests/foundation/typecheck-coverage-contract.test.ts (4 tests | 1 failed) 113ms
+     × leaves no tracked module file outside every TypeScript project 111ms
+ ❯ tests/unit/ui-orchestration-boundaries.test.ts (8 tests | 3 failed) 68ms
+     × finds the top-level UI sources it is meant to be checking 6ms
+     × depends on no layer outside src/ui/ that is not recorded with a reason 1ms
+     × keeps its manifest honest in all three directions 1ms
+ ❯ tests/unit/ui-save-panel-status.test.ts (31 tests | 1 failed) 25ms
+     × covers every module in the directory, so a new one cannot land outside it 4ms
+ ❯ tests/unit/oblique-staff-room-desk-art.test.ts (4 tests | 1 failed) 18ms
+     × selects employee art only when the entire real 2 x 1 desk fits the Staff Room 3ms
+ ❯ tests/foundation/documentation-anchor-quotation-contract.test.ts (12 tests | 1 failed) 18ms
+     × adds no unverified anchor to any document beyond its pinned budget 9ms
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts (8 tests | 1 failed) 11ms
+     × cites only commits this repository publishes, so CI reads the same history a reader can 4ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 55 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-anchor-quotation-contract.test.ts > rooted src/ and tests/ anchors in the documen
+tation carry a checkable quoted fragment > adds no unverified anchor to any document beyond its pinned budget
+AssertionError: these documents cite code by a line number nothing can check: expected [ …(3) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/WORLD.md: 1 anchor into src/ or tests/ carry no quoted fragment that occurs within 3 lines of them, against a
+ budget of 0. Quote the code beside the anchor -- `file.ts:123`, `theSymbolOnThatLine` -- rather than raising the budge
+t.",
++   "docs/adr/0019-tile-ownership-under-overlapping-parcels.md: 12 anchors into src/ or tests/ carry no quoted fragment
+ that occurs within 3 lines of them, against a budget of 11. Quote the code beside the anchor -- `file.ts:123`, `theSym
+bolOnThatLine` -- rather than raising the budget.",
++   "docs/adr/0031-build-queue-cancellation-surface.md: 1 anchor into src/ or tests/ carry no quoted fragment that occu
+rs within 3 lines of them, against a budget of 0. Quote the code beside the anchor -- `file.ts:123`, `theSymbolOnThatLi
+ne` -- rather than raising the budget.",
++ ]
+
+ ❯ tests/foundation/documentation-anchor-quotation-contract.test.ts:984:82
+    982|     }
+    983|
+    984|     expect(over, 'these documents cite code by a line number nothing c…
+       |                                                                                  ^
+    985|   });
+    986|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/55]⎯
+
+ FAIL  tests/foundation/documentation-commit-citation-contract.test.ts > a commit sha cited in prose names a commit tha
+t exists > cites only commits this repository publishes, so CI reads the same history a reader can
+AssertionError: these cite a commit that exists on this disk and on no ref this repository publishes, so nobody else ca
+n check them and CI cannot either: `fetch-depth: 0` fetches all history for every published branch and tag and nothing 
+more. The usual cause is a sha read out of an agent's own worktree before the coordinator cherry-picked it, which rewri
+tes it -- `git branch -r --contains <sha>` tells you. Cite the commit as published, or record it in UNPUBLISHED_BY_ORIG
+IN with what it is and why the anchor cannot move: expected [ …(11) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-individual-object-preflight/CONSUMER.md:3 -> 8a8aa7a02b6ba98136bb628a9d403df40b4c1108",
++   "docs/research/2026-10-03-individual-object-preflight/CONSUMER.md:5 -> fa830d556e8e",
++   "docs/research/2026-10-03-individual-object-preflight/README.md:23 -> fa830d556e8e",
++   "docs/research/2026-10-03-object-preflight-session-arm-review/README.md:19 -> 83b2ce08dc240c6776c9822fef6c5f62e2487
+a95",
++   "docs/research/2026-10-03-ordinary-object-preflight-native-prep/README.md:5 -> 0133444974a5d14dcf0884c7162f940cd09f
+bee8",
++   "docs/research/2026-10-03-ordinary-object-preflight-native-prep/README.md:5 -> 8a8aa7a02b6ba98136bb628a9d403df40b4c
+1108",
++   "docs/research/2026-10-03-public-room-art-context-coverage/README.md:5 -> a7db8b1fe3c2ee7340213b71dad4580a40d6bc10"
+,
++   "docs/research/2026-10-03-reception-registration-desk-native-preparation/README.md:3 -> 09282871d9cf27f2bd222ad9368
+26aa397861ffd",
++   "docs/research/2026-10-03-reception-registration-desk/README.md:5 -> 3bda88ae6d8ea9ac72e227a5cda6f6235fb1630c",
++   "docs/research/2026-10-03-square-wall-removal-readout-consumer/README.md:3 -> a7db8b1fe3c2ee7340213b71dad4580a40d6b
+c10",
++   "docs/research/2026-10-03-yard-bench-target-consumer/README.md:3 -> a7db8b1fe3c2ee7340213b71dad4580a40d6bc10",
++ ]
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts:748:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/55]⎯
+
+ FAIL  tests/foundation/typecheck-coverage-contract.test.ts > typecheck coverage contract > leaves no tracked module fi
+le outside every TypeScript project
+AssertionError: a tracked module file is in no tsconfig `include`, so no typechecker reads it. That is how #602 happene
+d: a benchmark kept calling a production signature that had changed, and neither `pnpm typecheck` nor `pnpm test` could
+ see it. Add the path to `tsconfig.json` or to `tsconfig.tools.json`: expected [ …(4) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-combined-student-rotation-minimap/native/world-control/actual-control.cjs",
++   "docs/research/2026-10-03-ordinary-object-preflight-native-prep/evidence-helper.ts",
++   "docs/research/2026-10-03-ordinary-object-preflight-native-prep/ordinary-object-preflight.native.ts",
++   "docs/research/2026-10-03-ordinary-object-preflight-native-prep/playwright.native.config.ts",
++ ]
+
+ ❯ tests/foundation/typecheck-coverage-contract.test.ts:126:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/55]⎯
+
+ FAIL  tests/unit/oblique-staff-room-desk-art.test.ts > existing employee desk in the Staff Room > selects employee art
+ only when the entire real 2 x 1 desk fits the Staff Room
+AssertionError: expected 'furniture.reception.registration-desk' to be 'furniture.office.desk.generic' // Object.is equ
+ality
+
+Expected: "furniture.office.desk.generic"
+Received: "furniture.reception.registration-desk"
+
+ ❯ tests/unit/oblique-staff-room-desk-art.test.ts:60:8
+     58|       .toBe('furniture.office.desk.generic');
+     59|     expect(obliqueAssetIdForPlacedObject('object.desk', 4, 4, footprin…
+     60|       .toBe('furniture.office.desk.generic');
+       |        ^
+     61|     expect(obliqueAssetIdForPlacedObject('object.desk', 4, 4, footprin…
+     62|       .toBe('furniture.office.desk.generic');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/55]⎯
+
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/new/wall: outgoing held gesture cannot report or sub
+mit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/new/object: outgoing held gesture cannot report or s
+ubmit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/new/room: outgoing held gesture cannot report or sub
+mit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/load/wall: outgoing held gesture cannot report or su
+bmit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/load/object: outgoing held gesture cannot report or 
+submit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/load/room: outgoing held gesture cannot report or su
+bmit into replacement worker
+ReferenceError: objectTool is not defined
+ ❯ eval tests/unit/ordinary-build-session-ownership.test.ts:94:19
+     92|   let activeScene: WorldScene | ObliqueWorldScene | undefined;
+     93|   const host = new WorkerPerSessionHost(channel, { onWorkerAvailabilit…
+     94|     const apply = new Function('roomTemplateTool', 'worldScene', 'Obli…
+       |                   ^
+     95|       (undefined, activeScene, ObliqueWorldScene, hud, { labelKey: 'un…
+     96|     apply(available);
+ ❯ Object.onWorkerAvailability tests/unit/ordinary-build-session-ownership.test.ts:96:5
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ordinary-build-session-ownership.test.ts:136:3
+ ❯ tests/unit/ordinary-build-session-ownership.test.ts:142:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/55]⎯
+
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/new/wall: outgoing held gesture cannot report or s
+ubmit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/new/object: outgoing held gesture cannot report or
+ submit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/new/room: outgoing held gesture cannot report or s
+ubmit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/load/wall: outgoing held gesture cannot report or 
+submit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/load/object: outgoing held gesture cannot report o
+r submit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/load/room: outgoing held gesture cannot report or 
+submit into replacement worker
+ReferenceError: objectTool is not defined
+ ❯ eval tests/unit/ordinary-build-session-ownership.test.ts:94:19
+     92|   let activeScene: WorldScene | ObliqueWorldScene | undefined;
+     93|   const host = new WorkerPerSessionHost(channel, { onWorkerAvailabilit…
+     94|     const apply = new Function('roomTemplateTool', 'worldScene', 'Obli…
+       |                   ^
+     95|       (undefined, activeScene, ObliqueWorldScene, hud, { labelKey: 'un…
+     96|     apply(available);
+ ❯ Object.onWorkerAvailability tests/unit/ordinary-build-session-ownership.test.ts:96:5
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ordinary-build-session-ownership.test.ts:136:3
+ ❯ tests/unit/ordinary-build-session-ownership.test.ts:142:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/55]⎯
+
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/wall: ordinary same-session held primary release rem
+ains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/object: ordinary same-session held primary release r
+emains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/room: ordinary same-session held primary release rem
+ains legal
+ReferenceError: objectTool is not defined
+ ❯ eval tests/unit/ordinary-build-session-ownership.test.ts:94:19
+     92|   let activeScene: WorldScene | ObliqueWorldScene | undefined;
+     93|   const host = new WorkerPerSessionHost(channel, { onWorkerAvailabilit…
+     94|     const apply = new Function('roomTemplateTool', 'worldScene', 'Obli…
+       |                   ^
+     95|       (undefined, activeScene, ObliqueWorldScene, hud, { labelKey: 'un…
+     96|     apply(available);
+ ❯ Object.onWorkerAvailability tests/unit/ordinary-build-session-ownership.test.ts:96:5
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ordinary-build-session-ownership.test.ts:136:3
+ ❯ tests/unit/ordinary-build-session-ownership.test.ts:165:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/55]⎯
+
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/new/wall: a fresh replacement-session press remains 
+legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/load/wall: a fresh replacement-session press remains
+ legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/new/object: a fresh replacement-session press remain
+s legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/load/object: a fresh replacement-session press remai
+ns legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/new/room: a fresh replacement-session press remains 
+legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/load/room: a fresh replacement-session press remains
+ legal
+ReferenceError: objectTool is not defined
+ ❯ eval tests/unit/ordinary-build-session-ownership.test.ts:94:19
+     92|   let activeScene: WorldScene | ObliqueWorldScene | undefined;
+     93|   const host = new WorkerPerSessionHost(channel, { onWorkerAvailabilit…
+     94|     const apply = new Function('roomTemplateTool', 'worldScene', 'Obli…
+       |                   ^
+     95|       (undefined, activeScene, ObliqueWorldScene, hud, { labelKey: 'un…
+     96|     apply(available);
+ ❯ Object.onWorkerAvailability tests/unit/ordinary-build-session-ownership.test.ts:96:5
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ordinary-build-session-ownership.test.ts:136:3
+ ❯ tests/unit/ordinary-build-session-ownership.test.ts:172:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/55]⎯
+
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/wall: ordinary same-session held primary release r
+emains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/object: ordinary same-session held primary release
+ remains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/room: ordinary same-session held primary release r
+emains legal
+ReferenceError: objectTool is not defined
+ ❯ eval tests/unit/ordinary-build-session-ownership.test.ts:94:19
+     92|   let activeScene: WorldScene | ObliqueWorldScene | undefined;
+     93|   const host = new WorkerPerSessionHost(channel, { onWorkerAvailabilit…
+     94|     const apply = new Function('roomTemplateTool', 'worldScene', 'Obli…
+       |                   ^
+     95|       (undefined, activeScene, ObliqueWorldScene, hud, { labelKey: 'un…
+     96|     apply(available);
+ ❯ Object.onWorkerAvailability tests/unit/ordinary-build-session-ownership.test.ts:96:5
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ordinary-build-session-ownership.test.ts:136:3
+ ❯ tests/unit/ordinary-build-session-ownership.test.ts:165:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/55]⎯
+
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/new/wall: a fresh replacement-session press remain
+s legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/load/wall: a fresh replacement-session press remai
+ns legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/new/object: a fresh replacement-session press rema
+ins legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/load/object: a fresh replacement-session press rem
+ains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/new/room: a fresh replacement-session press remain
+s legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/load/room: a fresh replacement-session press remai
+ns legal
+ReferenceError: objectTool is not defined
+ ❯ eval tests/unit/ordinary-build-session-ownership.test.ts:94:19
+     92|   let activeScene: WorldScene | ObliqueWorldScene | undefined;
+     93|   const host = new WorkerPerSessionHost(channel, { onWorkerAvailabilit…
+     94|     const apply = new Function('roomTemplateTool', 'worldScene', 'Obli…
+       |                   ^
+     95|       (undefined, activeScene, ObliqueWorldScene, hud, { labelKey: 'un…
+     96|     apply(available);
+ ❯ Object.onWorkerAvailability tests/unit/ordinary-build-session-ownership.test.ts:96:5
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ordinary-build-session-ownership.test.ts:136:3
+ ❯ tests/unit/ordinary-build-session-ownership.test.ts:172:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/55]⎯
+
+ FAIL  tests/unit/ui-orchestration-boundaries.test.ts > UI orchestration boundaries > finds the top-level UI sources it
+ is meant to be checking
+AssertionError: expected [ 'src/ui/affordability.ts', …(45) ] to deeply equal [ 'src/ui/affordability.ts', …(44) ]
+
+- Expected
++ Received
+
+@@ -28,10 +28,11 @@
+    "src/ui/simulation-counts.ts",
+    "src/ui/simulation-events.ts",
+    "src/ui/simulation-held-guards.ts",
+    "src/ui/simulation-incidents.ts",
+    "src/ui/simulation-intake.ts",
++   "src/ui/simulation-object-placement-port.ts",
+    "src/ui/simulation-pending-deliveries.ts",
+    "src/ui/simulation-prisoner-detail.ts",
+    "src/ui/simulation-prisoner-roster.ts",
+    "src/ui/simulation-projections.ts",
+    "src/ui/simulation-regime.ts",
+
+ ❯ tests/unit/ui-orchestration-boundaries.test.ts:697:56
+    695|     // avoid, and the one `rendering-module-boundaries.test.ts` and
+    696|     // `ui-hud-messages.test.ts` both carry a guard for.
+    697|     expect(orchestrationFiles.map(({ file }) => file)).toEqual([
+       |                                                        ^
+    698|       'src/ui/affordability.ts',
+    699|       'src/ui/app-shell-messages.ts',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/55]⎯
+
+ FAIL  tests/unit/ui-orchestration-boundaries.test.ts > UI orchestration boundaries > depends on no layer outside src/u
+i/ that is not recorded with a reason
+AssertionError: a top-level UI module now depends on a layer this manifest does not record. If that is orchestration AG
+ENTS.md boundary 3 allows, add the entry with the reason and the measured kind; if it is a panel reaching past its view
+-model, remove the import: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "src/ui/object-tool.ts:4 depends on src/simulation/ (type-only: ../simulation/objects/object-placement-service)",
++   "src/ui/simulation-object-placement-port.ts:1 depends on src/simulation/ (type-only: ../simulation/objects/object-p
+lacement-service, ../simulation/worker/worker-channel)",
++ ]
+
+ ❯ tests/unit/ui-orchestration-boundaries.test.ts:830:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/55]⎯
+
+ FAIL  tests/unit/ui-orchestration-boundaries.test.ts > UI orchestration boundaries > keeps its manifest honest in all 
+three directions
+AssertionError: expected 75 to be 73 // Object.is equality
+
+- Expected
++ Received
+
+- 73
++ 75
+
+ ❯ tests/unit/ui-orchestration-boundaries.test.ts:847:33
+    845|     // The manifest accounts for every cross-layer dependency and noth…
+    846|     // more, so its length is the number a reviewer has to audit.
+    847|     expect(dependencies.length).toBe(ALLOWED_FOREIGN_TREES.length);
+       |                                 ^
+    848|   });
+    849|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/55]⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > fresh 'new' session admits a new plan after outgoing pre
+flight, armed=false
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > fresh 'new' session admits a new plan after outgoing pre
+flight, armed=true
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > fresh 'load' session admits a new plan after outgoing pr
+eflight, armed=false
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > fresh 'load' session admits a new plan after outgoing pr
+eflight, armed=true
+ReferenceError: objectTool is not defined
+ ❯ Object.eval [as onWorkerAvailability] tests/unit/ui-room-template-session-preflight.test.ts:42:10
+     40| const callback = stripTypeScriptTypes(source.slice(start, end + '\n   …
+     41| function availability(tool: RoomTemplateTool) {
+     42|   return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldS…
+       |          ^
+     43|     (tool, { cancelConstructionGesture() {} }, class {}, { setUnavaila…
+     44| }
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ui-room-template-session-preflight.test.ts:59:3
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:75:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/55]⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > a delayed genuine same-session preflight submits exactly
+ one plan
+ReferenceError: objectTool is not defined
+ ❯ Object.eval [as onWorkerAvailability] tests/unit/ui-room-template-session-preflight.test.ts:42:10
+     40| const callback = stripTypeScriptTypes(source.slice(start, end + '\n   …
+     41| function availability(tool: RoomTemplateTool) {
+     42|   return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldS…
+       |          ^
+     43|     (tool, { cancelConstructionGesture() {} }, class {}, { setUnavaila…
+     44| }
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ui-room-template-session-preflight.test.ts:59:3
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:119:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/55]⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > cancel/rearm keeps the newer pending owner when an older
+ real preflight settles, armed=false
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > cancel/rearm keeps the newer pending owner when an older
+ real preflight settles, armed=true
+ReferenceError: objectTool is not defined
+ ❯ Object.eval [as onWorkerAvailability] tests/unit/ui-room-template-session-preflight.test.ts:42:10
+     40| const callback = stripTypeScriptTypes(source.slice(start, end + '\n   …
+     41| function availability(tool: RoomTemplateTool) {
+     42|   return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldS…
+       |          ^
+     43|     (tool, { cancelConstructionGesture() {} }, class {}, { setUnavaila…
+     44| }
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ui-room-template-session-preflight.test.ts:59:3
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:133:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/55]⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > an abandoned old session requester timing out cannot rel
+ease a newer generation busy token
+ReferenceError: objectTool is not defined
+ ❯ Object.eval [as onWorkerAvailability] tests/unit/ui-room-template-session-preflight.test.ts:42:10
+     40| const callback = stripTypeScriptTypes(source.slice(start, end + '\n   …
+     41| function availability(tool: RoomTemplateTool) {
+     42|   return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldS…
+       |          ^
+     43|     (tool, { cancelConstructionGesture() {} }, class {}, { setUnavaila…
+     44| }
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ui-room-template-session-preflight.test.ts:59:3
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:159:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/55]⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > standing down a numeric unarmed request discards its act
+ual late clear result
+ReferenceError: objectTool is not defined
+ ❯ Object.eval [as onWorkerAvailability] tests/unit/ui-room-template-session-preflight.test.ts:42:10
+     40| const callback = stripTypeScriptTypes(source.slice(start, end + '\n   …
+     41| function availability(tool: RoomTemplateTool) {
+     42|   return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldS…
+       |          ^
+     43|     (tool, { cancelConstructionGesture() {} }, class {}, { setUnavaila…
+     44| }
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ui-room-template-session-preflight.test.ts:59:3
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:186:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/55]⎯
+
+ FAIL  tests/unit/ui-save-panel-status.test.ts > no module in src/ui/ renders a hard-coded sentence (issue #208) > cove
+rs every module in the directory, so a new one cannot land outside it
+AssertionError: expected [ 'affordability.ts', …(45) ] to deeply equal [ 'affordability.ts', …(44) ]
+
+- Expected
++ Received
+
+@@ -28,10 +28,11 @@
+    "simulation-counts.ts",
+    "simulation-events.ts",
+    "simulation-held-guards.ts",
+    "simulation-incidents.ts",
+    "simulation-intake.ts",
++   "simulation-object-placement-port.ts",
+    "simulation-pending-deliveries.ts",
+    "simulation-prisoner-detail.ts",
+    "simulation-prisoner-roster.ts",
+    "simulation-projections.ts",
+    "simulation-regime.ts",
+
+ ❯ tests/unit/ui-save-panel-status.test.ts:319:19
+    317|       .filter((entry) => entry.endsWith('.ts'))
+    318|       .sort();
+    319|     expect(found).toEqual([...MODULES].sort());
+       |                   ^
+    320|     // And the scanner really reads source, not whitespace: every one …
+    321|     // exports something.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/55]⎯
+
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > world/new/same: stale numeric session result ca
+nnot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > world/new/new: stale numeric session result can
+not stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > world/load/same: stale numeric session result c
+annot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > world/load/new: stale numeric session result ca
+nnot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > oblique/new/same: stale numeric session result 
+cannot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > oblique/new/new: stale numeric session result c
+annot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > oblique/load/same: stale numeric session result
+ cannot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > oblique/load/new: stale numeric session result 
+cannot stand down a current public arm
+ReferenceError: objectTool is not defined
+ ❯ Object.eval [as onWorkerAvailability] tests/unit/ui-template-numeric-submit-session-controls.test.ts:47:10
+     45| const callback = stripTypeScriptTypes(source.slice(start, end + '\n   …
+     46| function availability(tool: RoomTemplateTool, scene: WorldScene | Obli…
+     47|   return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldS…
+       |          ^
+     48|     (tool, scene, ObliqueWorldScene, { setUnavailable() {} }, 'unavail…
+     49| }
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ui-template-numeric-submit-session-controls.test.ts:93:2
+ ❯ tests/unit/ui-template-numeric-submit-session-controls.test.ts:106:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/55]⎯
+
+
+ Test Files  9 failed | 698 passed (707)
+      Tests  55 failed | 8386 passed | 2 skipped (8443)
+   Start at  16:56:20
+   Duration  45.64s (transform 37.00s, setup 0ms, import 231.13s, tests 421.18s, environment 62ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+[ELIFECYCLE] Command failed with exit code 1.

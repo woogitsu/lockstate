@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-camera-build-gesture-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  30 passed (30)
+   Start at  05:43:16
+   Duration  3.64s (transform 1.28s, setup 0ms, import 3.40s, tests 95ms, environment 0ms)
+

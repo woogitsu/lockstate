@@ -1,0 +1,30 @@
+
+Running 3 tests using 1 worker
+
+  ok 1 tests\browser\oblique-demand-loading.profile.ts:200:1 › opt-in #2018 empty paused public New: actual floor loader and stable 30s CDP profile (34.6s)
+  ok 2 tests\browser\oblique-demand-loading.profile.ts:291:1 › opt-in #2018 genuine public capacity stage: Storage and Delivery completion (41.7s)
+  x  3 tests\browser\oblique-demand-loading.profile.ts:338:1 › opt-in #2018 completed public cot: required PNG, real camera turn and whole paused Save/Load (39.0s)
+
+
+  1) tests\browser\oblique-demand-loading.profile.ts:338:1 › opt-in #2018 completed public cot: required PNG, real camera turn and whole paused Save/Load 
+
+    Error: response.body: Target page, context or browser has been closed
+
+       at oblique-demand-native-observers.ts:97
+
+       95 |     async scripts() {
+       96 |       const actual = [];
+    >  97 |       for (const response of scripts) actual.push(requireFrozenBytes(buildRoot, response.url(), await response.body()));
+          |                                                                                                                ^
+       98 |       expect(actual.length).toBeGreaterThan(0); return actual;
+       99 |     },
+      100 |   };
+        at Object.scripts (C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-demand-native-execution-20261003\tests\browser\oblique-demand-native-observers.ts:97:112)
+        at stage (C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-demand-native-execution-20261003\tests\browser\oblique-demand-loading.profile.ts:42:32)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-oblique-demand-native-execution-20261003\tests\browser\oblique-demand-loading.profile.ts:159:3
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-demand-native-execution-20261003\test-results\oblique-demand-loading.pro-829c7--and-whole-paused-Save-Load\error-context.md
+
+  1 failed
+    tests\browser\oblique-demand-loading.profile.ts:338:1 › opt-in #2018 completed public cot: required PNG, real camera turn and whole paused Save/Load 
+  2 passed (2.0m)

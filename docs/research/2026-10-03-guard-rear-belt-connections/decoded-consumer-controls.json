@@ -1,0 +1,16 @@
+{
+  "controls": [
+    {
+      "control": "correct-hash-name-opaque-edge-decoded-PNG",
+      "exitCode": 1,
+      "expectedFailure": "decoded transparent-border assertion"
+    },
+    {
+      "control": "actual-canonical-target",
+      "exitCode": 1
+    }
+  ],
+  "descriptorAndPNGBytesExactlyRestored": true,
+  "exactRestoredUnitExitCode": 0,
+  "descriptorSha512": "8a1a96d3639b76f1f94d0cae9009a40251ec3e58a7f534bc107a13970ffcbe6e"
+}

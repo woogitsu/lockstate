@@ -1,0 +1,20 @@
+pnpm : $ vitest run "tests/unit/oblique-wooden-bench-crossrails-integrity.test.ts" "tests/unit/oblique-cell-toilet-flus
+h-neck-integrity.test.ts" "tests/integration/room-template-blocked-anchor-fallback.test.ts" "tests/integration/template
+-storage-anchor-delivery.test.ts" "tests/integration/room-template-door-square-run.test.ts" "tests/unit/ui-template-num
+eric-submit-session-controls.test.ts" "tests/unit/ui-template-numeric-submit-ownership.test.ts" "tests/foundation/resea
+rch-index-contract.test.ts" "--maxWorkers=2"
+At line:3 char:1
++ pnpm --config.verify-deps-before-run=false test tests/unit/oblique-wo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-bench-gameplay-integration-20261003
+
+
+ Test Files  8 passed (8)
+      Tests  63 passed (63)
+   Start at  10:20:59
+   Duration  8.64s (transform 2.09s, setup 0ms, import 6.87s, tests 8.03s, environment 0ms)
+

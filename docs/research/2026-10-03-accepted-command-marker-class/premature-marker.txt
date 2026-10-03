@@ -1,0 +1,66 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-accepted-command-marker-class-audit-20261003
+
+ ❯ tests/integration/accepted-command-marker-class.test.ts (60 tests | 18 failed) 869ms
+   × actual non-changing command after completed template: saved=false surface='zone-refused' 13ms
+   × actual non-changing command after completed template: saved=false surface='admit-refused' 6ms
+   × actual non-changing command after completed template: saved=false surface='buy-refused' 5ms
+   × actual non-changing command after completed template: saved=false surface='sell-refused' 6ms
+   × actual non-changing command after completed template: saved=false surface='hire-refused' 7ms
+   × actual non-changing command after completed template: saved=false surface='release-refused' 5ms
+   × actual non-changing command after completed template: saved=false surface='dismiss-refused' 5ms
+   × actual non-changing command after completed template: saved=false surface='regime-refused' 5ms
+   × actual non-changing command after completed template: saved=false surface='regime-unchanged' 4ms
+   × actual non-changing command after completed template: saved=true surface='zone-refused' 8ms
+   × actual non-changing command after completed template: saved=true surface='admit-refused' 16ms
+   × actual non-changing command after completed template: saved=true surface='buy-refused' 9ms
+   × actual non-changing command after completed template: saved=true surface='sell-refused' 7ms
+   × actual non-changing command after completed template: saved=true surface='hire-refused' 6ms
+   × actual non-changing command after completed template: saved=true surface='release-refused' 8ms
+   × actual non-changing command after completed template: saved=true surface='dismiss-refused' 6ms
+   × actual non-changing command after completed template: saved=true surface='regime-refused' 5ms
+   × actual non-changing command after completed template: saved=true surface='regime-unchanged' 8ms
+
+ Test Files  1 failed (1)
+      Tests  18 failed | 42 passed (60)
+   Start at  05:14:25
+   Duration  3.69s (transform 926ms, setup 0ms, import 2.68s, tests 869ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 18 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=false surface='zone-refused'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=false surface='admit-refused'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=false surface='buy-refused'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=false surface='sell-refused'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=false surface='hire-refused'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=false surface='release-refused'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=false surface='dismiss-refused'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=false surface='regime-refused'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=false surface='regime-unchanged'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=true surface='zone-refused'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=true surface='admit-refused'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=true surface='buy-refused'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=true surface='sell-refused'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=true surface='hire-refused'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=true surface='release-refused'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=true surface='dismiss-refused'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=true surface='regime-refused'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > actual non-changing command after completed template: saved=true surface='regime-unchanged'
+AssertionError: expected [ { …(10) } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/integration/accepted-command-marker-class.test.ts:76:77
+     74|     else expect(runtime.refusals.count).toBe(0);
+     75|     send(runtime, { type: 'Undo' });
+     76|     expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.ya…
+       |                                                                             ^
+     77|       surface === 'dismiss-absent-acknowledgement' ? 1 : 0,
+     78|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/18]⎯

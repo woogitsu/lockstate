@@ -1,0 +1,12 @@
+{
+  "args": [
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/unit/ordinary-build-session-ownership.test.ts",
+    "tests/unit/ui-room-template-session-preflight.test.ts",
+    "tests/unit/ui-template-numeric-submit-session-controls.test.ts",
+    "--maxWorkers=2"
+  ],
+  "exitCode": 0,
+  "subject": "f80088fc60dc2c1caa83dcc045fb2be2d879d4a2"
+}

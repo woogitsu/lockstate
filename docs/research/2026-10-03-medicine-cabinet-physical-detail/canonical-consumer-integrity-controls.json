@@ -1,0 +1,16 @@
+{
+  "controls": [
+    {
+      "control": "actual-canonical-PNG-pixel-change",
+      "exitCode": 1
+    },
+    {
+      "control": "actual-canonical-descriptor-target-change",
+      "exitCode": 1
+    }
+  ],
+  "exactRestoredUnitExitCode": 0,
+  "pngSha256": "b63ba39036bdb083b479c321a182cb966f72954b137d2b753ab27f914bf303fe",
+  "descriptorSha256": "4b9f10c8ab4c0c1357da949462d2ed689e0e8a29d19fee0cb47d910e2d09ae10",
+  "bothFilesByteExactlyRestored": true
+}

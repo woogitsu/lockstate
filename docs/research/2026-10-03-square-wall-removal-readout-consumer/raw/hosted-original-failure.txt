@@ -1,0 +1,33 @@
+﻿browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0223313Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0223789Z     Error: ^[[2mexpect(^[[22m^[[31mlocator^[[39m^[[2m).^[[22mtoHaveAttribute^[[2m(^[[22m^[[32mexpected^[[39m^[[2m)^[[22m failed
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0224394Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0224530Z     Locator: locator('.hud-build__target')
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0225008Z     Expected pattern: ^[[32m/^-?\d+,-?\d+,(?:north|west),\d+$/u^[[39m
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0225437Z     Received string:  ^[[31m"0,1"^[[39m
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0225700Z     Timeout: 10000ms
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0225837Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0225919Z     Call log:
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0226275Z     ^[[2m  - Expect "toHaveAttribute" with timeout 10000ms^[[22m
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0226743Z     ^[[2m  - waiting for locator('.hud-build__target')^[[22m
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0227342Z     ^[[2m    13 × locator resolved to <div data-target="0,1" class="hud-build__target">…</div>^[[22m
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0227855Z     ^[[2m       - unexpected value "0,1"^[[22m
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0228053Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0228059Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0228140Z       130 |
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0228439Z       131 |     await page.mouse.move(points.a.x, points.a.y);
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0228913Z     > 132 |     await expect(block).toHaveAttribute('data-target', EDGE_AIM);
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0229318Z           |                         ^
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0229723Z       133 |     const wallAtA = tileOf(await block.getAttribute('data-target'));
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0230093Z       134 |
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0230382Z       135 |     await page.mouse.move(points.b.x, points.b.y);
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0230973Z         at /home/runner/work/lockstate/lockstate/tests/browser/ui-build-where-readout.spec.ts:132:25
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0231359Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0232132Z     Error Context: test-results/ui-build-where-readout-the-99f0d-t-the-wall-tool-s-last-edge/error-context.md
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0232614Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0233072Z     attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0233747Z     test-results/ui-build-where-readout-the-99f0d-t-the-wall-tool-s-last-edge/trace.zip
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0234214Z     Usage:
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0234335Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0234807Z         pnpm exec playwright show-trace test-results/ui-build-where-readout-the-99f0d-t-the-wall-tool-s-last-edge/trace.zip
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0235302Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0235668Z     ────────────────────────────────────────────────────────────────────────────────────────────────

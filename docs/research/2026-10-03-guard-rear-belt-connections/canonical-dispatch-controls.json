@@ -1,0 +1,20 @@
+{
+  "controls": [
+    {
+      "control": "wrong-source-in-canonical-dispatch",
+      "rejectedActualLoadedScene": true,
+      "error": "EXPECTED_REAL_SOURCE_REJECTION Guard exporter dispatch loads wrong source"
+    },
+    {
+      "control": "wrong-target-in-canonical-dispatch",
+      "rejectedActualLoadedScene": true,
+      "error": "EXPECTED_REAL_SOURCE_REJECTION Guard target/resolution changed"
+    },
+    {
+      "control": "wrong-camera-span-in-canonical-dispatch",
+      "rejectedActualLoadedScene": true,
+      "error": "EXPECTED_REAL_SOURCE_REJECTION Guard accepted actual camera span changed"
+    }
+  ],
+  "canonicalWrapperBytesExactlyRestored": true
+}

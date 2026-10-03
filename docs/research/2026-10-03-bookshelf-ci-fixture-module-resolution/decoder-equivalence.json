@@ -1,0 +1,19 @@
+{
+  "oldRoot": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-1382-doc-anchor-2026-09-24\\node_modules\\.pnpm\\@playwright+test@1.56.1\\node_modules\\@playwright\\test\\index.js",
+  "newRoot": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-1382-doc-anchor-2026-09-24\\node_modules\\.pnpm\\@playwright+test@1.56.1\\node_modules\\@playwright\\test\\package.json",
+  "oldDecoder": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-1382-doc-anchor-2026-09-24\\node_modules\\.pnpm\\playwright-core@1.56.1\\node_modules\\playwright-core\\lib\\utilsBundle.js",
+  "newDecoder": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-1382-doc-anchor-2026-09-24\\node_modules\\.pnpm\\playwright-core@1.56.1\\node_modules\\playwright-core\\lib\\utilsBundle.js",
+  "modulePathIdentical": true,
+  "moduleBytesIdentical": true,
+  "moduleSHA256": "a0f08138e7b23a04491b0cc2cedbe77f0a853b2b6232292a92996137fe85ad7c",
+  "samePNGExport": true,
+  "pngFile": "public/assets/actors/actor.guard.base.idle.png",
+  "pngSHA256": "07e7bdc13111816790218ae646057c385746b5c6a6a58ef3b2a7e831e50ac838",
+  "dimensions": {
+    "width": 260,
+    "height": 3104
+  },
+  "decodedDimensionsIdentical": true,
+  "decodedRGBAIdentical": true,
+  "decodedRGBA_SHA256": "b883b016eb588250409e6719621b3f0dd1ac4b9b2cbcb6d0615e85a6c7d3eb8f"
+}

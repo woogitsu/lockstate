@@ -1,0 +1,59 @@
+{
+  "controls": [
+    {
+      "control": "omit-physical-hinge",
+      "exitCode": 1,
+      "error": "ValueError: Medicine cabinet retained/authored mesh set changed"
+    },
+    {
+      "control": "move-physical-handle-mount",
+      "exitCode": 1,
+      "error": "ValueError: Medicine cabinet actual evaluated authored geometry changed"
+    },
+    {
+      "control": "change-retained-bevel",
+      "exitCode": 1,
+      "error": "ValueError: Medicine cabinet actual evaluated authored geometry changed"
+    },
+    {
+      "control": "change-retained-material-graph",
+      "exitCode": 1,
+      "error": "ValueError: Medicine cabinet retained three material graphs changed"
+    },
+    {
+      "control": "change-retained-face-material",
+      "exitCode": 1,
+      "error": "ValueError: Medicine cabinet retained vertex/topology/material/modifier data changed"
+    },
+    {
+      "control": "wrong-loaded-X-scale",
+      "exitCode": 1,
+      "error": "ValueError: Medicine cabinet declared occupied footprint and source scale changed"
+    },
+    {
+      "control": "wrong-measured-target",
+      "exitCode": 1,
+      "error": "ValueError: Medicine cabinet declared target differs from measured source height"
+    },
+    {
+      "control": "wrong-canonical-descriptor",
+      "exitCode": 1,
+      "error": "ValueError: Medicine cabinet exporter targets the wrong canonical descriptor"
+    },
+    {
+      "control": "wrong-camera-span",
+      "exitCode": 1,
+      "error": "ValueError: Medicine cabinet actual camera pitch differs from64pixels per tile"
+    },
+    {
+      "control": "wrong-camera-vector",
+      "exitCode": 1,
+      "error": "ValueError: Medicine cabinet actual camera ground basis differs from world projection"
+    }
+  ],
+  "exactRestoredNativeVerifyExitCode": 0,
+  "sourceBytesUnchanged": true,
+  "wrapperSha256": "f519204368404cc327745c361c5a0d4e3b57ed061a01aeeade8efd2490dbdfc9",
+  "sourceSha256": "f03b6fc2d33d83c069b181073616ae95031839e130d890b9f5374cfd947be5ea",
+  "originalSourceSha256": "17670457233caef94855cdaf64b2cf1bd3c8623318941cbd3ce2e5c50224ac75"
+}

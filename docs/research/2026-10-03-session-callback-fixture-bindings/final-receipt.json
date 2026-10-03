@@ -1,0 +1,19 @@
+﻿{
+    "productionDiffEmpty":  true,
+    "strictTypeExitCode":  0,
+    "subject":  "f80088fc60dc2c1caa83dcc045fb2be2d879d4a2",
+    "researchIndexPassed":  5,
+    "rawSha256":  {
+                      "fixed47.txt":  "1b68727dc9a09c5e638ffac708ea20010702e503db6e87c6460655bb45f09c1e",
+                      "fixed47.json":  "2bce408e6ab3d3d696e839e3906d1468f01b3aa502672c0be117d57c8a6cb82a",
+                      "object-state-controls4.json":  "6da28522a79c18795b7b870f00a5a5c49c92320fd0e8cf86890e6bdd250e90bc",
+                      "fixed-executed.cjs.txt":  "9e2d1773a4292574e17e3b0fb2962b3a0066dd4a02a1ea727e063a280c60eda7",
+                      "original47.json":  "cfb6895ef85891111cfd69fda3e4e34cd2cc0e9d668c5a5202cf5a496d0bb4b0",
+                      "strict-types.txt":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                      "object-state-controls4.txt":  "ba316a30b31778f78477d663ff14ddebecb0c131ab20f873171337ce0fe8eef1",
+                      "baseline-executed.cjs.txt":  "3f8a7b59a7107f3840889260acb408362b31cde2658ec0eb41a21bffe484faa1",
+                      "state-controls-executed.cjs.txt":  "18f3aed536db9ebea193735c61ac0b79f287d46b90065e06b5be05051bd95ff9",
+                      "original47.txt":  "77fe90e34e61b6b2232654d6bdb099d4ed96b3c100477fe88887840e6087fe0b"
+                  },
+    "fix":  "ad28daa77719a9ac8f5078c03708aee6598c1052"
+}

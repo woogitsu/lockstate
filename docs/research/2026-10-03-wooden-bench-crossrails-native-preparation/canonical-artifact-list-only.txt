@@ -1,0 +1,5 @@
+Listing tests:
+  wooden-bench-player-build.spec.ts:178:1 › player creates storage and delivery capacity before Holding Cell
+  wooden-bench-player-build.spec.ts:244:3 › player builds Holding Cell at quarterTurns0 and retains authored timber palette after Save/Load
+  wooden-bench-player-build.spec.ts:244:3 › player builds Holding Cell at quarterTurns1 and retains authored timber palette after Save/Load
+Total: 3 tests in 1 file

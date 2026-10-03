@@ -1,0 +1,149 @@
+pnpm : $ vitest run "tests/unit/world-scene-minimap-real-camera.test.ts" "--maxWorkers=2"
+At line:2 char:178
++ ...  $env:Path; pnpm --config.verify-deps-before-run=false test tests/uni ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-world-minimap-camera-bounds-20261003
+
+ ❯ tests/unit/world-scene-minimap-real-camera.test.ts (24 tests | 20 failed) 20ms
+   × actual World minimap rectangle names real Camera corners at zoom=0.2 offset={ x: +0, y: +0 } chunkY=+0 7ms
+   × actual World minimap rectangle names real Camera corners at zoom=0.2 offset={ x: +0, y: +0 } chunkY=-2 2ms
+   × actual World minimap rectangle names real Camera corners at zoom=0.2 offset={ x: 140, y: 90 } chunkY=+0 1ms
+   × actual World minimap rectangle names real Camera corners at zoom=0.2 offset={ x: 140, y: 90 } chunkY=-2 1ms
+   × actual World minimap rectangle names real Camera corners at zoom=0.5 offset={ x: +0, y: +0 } chunkY=+0 1ms
+   × actual World minimap rectangle names real Camera corners at zoom=0.5 offset={ x: +0, y: +0 } chunkY=-2 1ms
+   × actual World minimap rectangle names real Camera corners at zoom=0.5 offset={ x: 140, y: 90 } chunkY=+0 0ms
+   × actual World minimap rectangle names real Camera corners at zoom=0.5 offset={ x: 140, y: 90 } chunkY=-2 1ms
+   × actual World minimap rectangle names real Camera corners at zoom=1.25 offset={ x: +0, y: +0 } chunkY=+0 0ms
+   × actual World minimap rectangle names real Camera corners at zoom=1.25 offset={ x: +0, y: +0 } chunkY=-2 0ms
+   × actual World minimap rectangle names real Camera corners at zoom=1.25 offset={ x: 140, y: 90 } chunkY=+0 0ms
+   × actual World minimap rectangle names real Camera corners at zoom=1.25 offset={ x: 140, y: 90 } chunkY=-2 0ms
+   × actual World minimap rectangle names real Camera corners at zoom=2 offset={ x: +0, y: +0 } chunkY=+0 0ms
+   × actual World minimap rectangle names real Camera corners at zoom=2 offset={ x: +0, y: +0 } chunkY=-2 0ms
+   × actual World minimap rectangle names real Camera corners at zoom=2 offset={ x: 140, y: 90 } chunkY=+0 0ms
+   × actual World minimap rectangle names real Camera corners at zoom=2 offset={ x: 140, y: 90 } chunkY=-2 0ms
+   × actual World minimap rectangle names real Camera corners at zoom=3 offset={ x: +0, y: +0 } chunkY=+0 0ms
+   × actual World minimap rectangle names real Camera corners at zoom=3 offset={ x: +0, y: +0 } chunkY=-2 0ms
+   × actual World minimap rectangle names real Camera corners at zoom=3 offset={ x: 140, y: 90 } chunkY=+0 0ms
+   × actual World minimap rectangle names real Camera corners at zoom=3 offset={ x: 140, y: 90 } chunkY=-2 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 20 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=0.2 offset={ x: +0, y: +0 } chunkY=+0
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=0.2 offset={ x: +0, y: +0 } chunkY=-2
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=0.2 offset={ x: 140, y: 90 } chunkY=+0
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=0.2 offset={ x: 140, y: 90 } chunkY=-2
+AssertionError: expected 100 to be close to -3739.999944269658, received difference is 3839.999944269658, but expected 
+0.0005
+ ❯ tests/unit/world-scene-minimap-real-camera.test.ts:61:21
+     59|     const shown = { x: bounds.minTileX * 64 + (emitted.viewport.x + dx…
+     60|       y: bounds.minTileY * 64 + (emitted.viewport.y + dy * emitted.vie…
+     61|     expect(shown.x).toBeCloseTo(expected.x, 3);
+       |                     ^
+     62|     expect(shown.y).toBeCloseTo(expected.y, 3);
+     63|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/20]⎯
+
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=0.5 offset={ x: +0, y: +0 } chunkY=+0
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=0.5 offset={ x: +0, y: +0 } chunkY=-2
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=0.5 offset={ x: 140, y: 90 } chunkY=+0
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=0.5 offset={ x: 140, y: 90 } chunkY=-2
+AssertionError: expected 100 to be close to -860, received difference is 960, but expected 0.0005
+ ❯ tests/unit/world-scene-minimap-real-camera.test.ts:61:21
+     59|     const shown = { x: bounds.minTileX * 64 + (emitted.viewport.x + dx…
+     60|       y: bounds.minTileY * 64 + (emitted.viewport.y + dy * emitted.vie…
+     61|     expect(shown.x).toBeCloseTo(expected.x, 3);
+       |                     ^
+     62|     expect(shown.y).toBeCloseTo(expected.y, 3);
+     63|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/20]⎯
+
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=1.25 offset={ x: +0, y: +0 } chunkY=+0
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=1.25 offset={ x: +0, y: +0 } chunkY=-2
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=1.25 offset={ x: 140, y: 90 } chunkY=+0
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=1.25 offset={ x: 140, y: 90 } chunkY=-2
+AssertionError: expected 100 to be close to 292, received difference is 192, but expected 0.0005
+ ❯ tests/unit/world-scene-minimap-real-camera.test.ts:61:21
+     59|     const shown = { x: bounds.minTileX * 64 + (emitted.viewport.x + dx…
+     60|       y: bounds.minTileY * 64 + (emitted.viewport.y + dy * emitted.vie…
+     61|     expect(shown.x).toBeCloseTo(expected.x, 3);
+       |                     ^
+     62|     expect(shown.y).toBeCloseTo(expected.y, 3);
+     63|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/20]⎯
+
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=2 offset={ x: +0, y: +0 } chunkY=+0
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=2 offset={ x: +0, y: +0 } chunkY=-2
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=2 offset={ x: 140, y: 90 } chunkY=+0
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=2 offset={ x: 140, y: 90 } chunkY=-2
+AssertionError: expected 100 to be close to 580, received difference is 480, but expected 0.0005
+ ❯ tests/unit/world-scene-minimap-real-camera.test.ts:61:21
+     59|     const shown = { x: bounds.minTileX * 64 + (emitted.viewport.x + dx…
+     60|       y: bounds.minTileY * 64 + (emitted.viewport.y + dy * emitted.vie…
+     61|     expect(shown.x).toBeCloseTo(expected.x, 3);
+       |                     ^
+     62|     expect(shown.y).toBeCloseTo(expected.y, 3);
+     63|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/20]⎯
+
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=3 offset={ x: +0, y: +0 } chunkY=+0
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=3 offset={ x: +0, y: +0 } chunkY=-2
+AssertionError: expected 100 to be close to 740, received difference is 640, but expected 0.0005
+ ❯ tests/unit/world-scene-minimap-real-camera.test.ts:61:21
+     59|     const shown = { x: bounds.minTileX * 64 + (emitted.viewport.x + dx…
+     60|       y: bounds.minTileY * 64 + (emitted.viewport.y + dy * emitted.vie…
+     61|     expect(shown.x).toBeCloseTo(expected.x, 3);
+       |                     ^
+     62|     expect(shown.y).toBeCloseTo(expected.y, 3);
+     63|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/20]⎯
+
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=3 offset={ x: 140, y: 90 } chunkY=+0
+ FAIL  tests/unit/world-scene-minimap-real-camera.test.ts > actual World minimap rectangle names real Camera corners at
+ zoom=3 offset={ x: 140, y: 90 } chunkY=-2
+AssertionError: expected 100 to be close to 739.9999999999999, received difference is 639.9999999999999, but expected 0
+.0005
+ ❯ tests/unit/world-scene-minimap-real-camera.test.ts:61:21
+     59|     const shown = { x: bounds.minTileX * 64 + (emitted.viewport.x + dx…
+     60|       y: bounds.minTileY * 64 + (emitted.viewport.y + dy * emitted.vie…
+     61|     expect(shown.x).toBeCloseTo(expected.x, 3);
+       |                     ^
+     62|     expect(shown.y).toBeCloseTo(expected.y, 3);
+     63|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/20]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  20 failed | 4 passed (24)
+   Start at  01:09:40
+   Duration  1.95s (transform 980ms, setup 0ms, import 1.78s, tests 20ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

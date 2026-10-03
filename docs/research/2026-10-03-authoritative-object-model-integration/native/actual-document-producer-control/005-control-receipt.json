@@ -1,0 +1,17 @@
+{
+  "source": "src/simulation/protocol/types.ts",
+  "mutation": "remove actual refusalSchema routeDecidedSince optional member",
+  "originalSha256": "ce70ba1e88d9a5ef34d273a9b5d8d6f299bc17d7bd0e78b99ad2f59859072839",
+  "negative": {
+    "exit": 1,
+    "elapsedMs": 748,
+    "sourceSha256": "8fa17df3a4308d89f9336cb27c16cd048b533e111091d366cba519d29dcbbb11"
+  },
+  "restored": {
+    "exit": 0,
+    "elapsedMs": 748,
+    "sourceSha256": "ce70ba1e88d9a5ef34d273a9b5d8d6f299bc17d7bd0e78b99ad2f59859072839"
+  },
+  "exactRestoration": true,
+  "thresholds": "original 5000ms cases, same required fields, enumeration floor, exact resolution rows and all membership assertions"
+}

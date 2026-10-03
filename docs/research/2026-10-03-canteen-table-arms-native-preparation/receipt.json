@@ -1,0 +1,32 @@
+{
+  "base": "d12504085593e844990685b0dbd67fefbacce733",
+  "observedPriorGates": [
+    {
+      "name": "types",
+      "status": 0
+    },
+    {
+      "name": "build",
+      "status": 0
+    },
+    {
+      "name": "collection",
+      "status": 0
+    },
+    {
+      "name": "docs-before-owned-row-correction",
+      "status": 1,
+      "passed": 11,
+      "failed": 4
+    }
+  ],
+  "browserExecuted": false,
+  "serverStarted": false,
+  "nativeProducerNegativeVerified": false,
+  "boundPerObjectRuntimeFrameObserved": false,
+  "nativeSupportPixelCalibrationPending": true,
+  "productionChanged": false,
+  "collectedCases": 3,
+  "existingArtifactRoutingPreserved": true,
+  "finalScopedDocsExit": 1
+}

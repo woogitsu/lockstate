@@ -1,0 +1,48 @@
+pnpm : $ vitest run "tests/unit/oblique-wooden-chair-detail-integrity.test.ts" "tests/unit/oblique-generic-rack-detail-
+integrity.test.ts" "tests/unit/oblique-shower-head-detail-integrity.test.ts" "tests/unit/oblique-pending-wall-depth.tes
+t.ts" "tests/unit/pending-wall-guards-fixture.test.ts" "tests/integration/search-target-departure.test.ts" "tests/integ
+ration/refused-unzone-template-undo.test.ts" "tests/foundation/browser-suite-partition-contract.test.ts" "tests/foundat
+ion/research-index-contract.test.ts" "tests/foundation/documentation-commit-citation-contract.test.ts" "tests/foundatio
+n/adr-quotation-verbatim-contract.test.ts" "tests/foundation/documentation-anchor-quotation-contract.test.ts" "--maxWor
+kers=2"
+At line:7 char:1
++ pnpm --config.verify-deps-before-run=false test $cases --maxWorkers=2 ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-chair-rack-depth-integration-20261003
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts (8 tests | 1 failed) 15ms
+     × resolves every cited commit 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-commit-citation-contract.test.ts > a commit sha cited in prose names a commit tha
+t exists > resolves every cited commit
+AssertionError: these cite a commit that does not exist in this repository. A sha is how a claim about a tree stops exp
+iring, so a sha that names nothing is a claim that can never be checked -- and `git cat-file -e <sha>^{commit}` before 
+writing one is two seconds. If a citation is real but unreachable from any published branch or tag, it belongs in UNPUB
+LISHED_BY_ORIGIN with the reason, not here: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-shower-head-physical-detail/README.md:19 -> 9e2066aef7ef",
++ ]
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts:726:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 11 passed (12)
+      Tests  1 failed | 85 passed (86)
+   Start at  05:02:59
+   Duration  5.52s (transform 1.17s, setup 0ms, import 7.69s, tests 1.80s, environment 1ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

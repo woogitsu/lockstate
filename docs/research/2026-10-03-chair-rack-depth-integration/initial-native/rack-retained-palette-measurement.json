@@ -1,0 +1,70 @@
+[
+  {
+    "capture": "generic-wooden-rack-loaded-fullhd.png",
+    "sha256": "dd9de01843ab886781e395539b13e8280e035993b0e8d81b203e1824318dcce8",
+    "rect": [
+      820,
+      330,
+      930,
+      490
+    ],
+    "rgb": [
+      93,
+      69,
+      42
+    ],
+    "exact": 153,
+    "one8BitChannelStep": 360
+  },
+  {
+    "capture": "generic-wooden-rack-loaded-fullhd.png",
+    "sha256": "dd9de01843ab886781e395539b13e8280e035993b0e8d81b203e1824318dcce8",
+    "rect": [
+      935,
+      330,
+      1045,
+      490
+    ],
+    "rgb": [
+      93,
+      69,
+      42
+    ],
+    "exact": 214,
+    "one8BitChannelStep": 423
+  },
+  {
+    "capture": "generic-wooden-rack-worker-completed-fullhd.png",
+    "sha256": "36672d7fd69385bddcace41fea9aab9b600ed5f585902685924242affd628328",
+    "rect": [
+      820,
+      330,
+      930,
+      490
+    ],
+    "rgb": [
+      93,
+      69,
+      42
+    ],
+    "exact": 153,
+    "one8BitChannelStep": 360
+  },
+  {
+    "capture": "generic-wooden-rack-worker-completed-fullhd.png",
+    "sha256": "36672d7fd69385bddcace41fea9aab9b600ed5f585902685924242affd628328",
+    "rect": [
+      935,
+      330,
+      1045,
+      490
+    ],
+    "rgb": [
+      93,
+      69,
+      42
+    ],
+    "exact": 214,
+    "one8BitChannelStep": 423
+  }
+]

@@ -1,0 +1,18 @@
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/catalogue-category-geometry-probe.test.ts > actual catalogue geometry callback measures Category, not earlier View with reused class
+AssertionError: {"heading":"What to build","headingFits":true,"headingInsideControlRow":false,"controlVisible":true}: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ actual tests/unit/catalogue-category-geometry-probe.test.ts:13:96
+
+ ❯ tests/unit/catalogue-category-geometry-probe.test.ts:13:208
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

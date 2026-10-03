@@ -1,0 +1,8 @@
+{
+  "subject": "5bed2d9d8689789d3660771d30a227ea35736d87",
+  "producer": "src/ui/hud/room-template-preview.ts",
+  "mutation": "omit unique numeric accepted standDown statement",
+  "sha256Before": "25f90ad451f43d4a62ab22fa2bc8f2cc6c70799499994669b728cd279400f2bb",
+  "sha256Restored": "25f90ad451f43d4a62ab22fa2bc8f2cc6c70799499994669b728cd279400f2bb",
+  "byteExact": true
+}

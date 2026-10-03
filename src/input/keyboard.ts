@@ -16,8 +16,12 @@ export class KeyboardInputAdapter {
 
   public keyDown(event: KeyboardEventLike): readonly SemanticActionEvent[] {
     if (event.repeat || this.pressedCodes.has(event.code)) return [];
+    const started = this.eventsFor(event.code, 'started');
+    // A key pressed while a field or modal owns focus must not become a held
+    // world action merely because focus moves to the canvas before key-up.
+    if (started.length === 0) return [];
     this.pressedCodes.add(event.code);
-    return this.eventsFor(event.code, 'started');
+    return started;
   }
 
   public keyUp(event: KeyboardEventLike): readonly SemanticActionEvent[] {
@@ -55,6 +59,16 @@ export class KeyboardInputAdapter {
 
   public isActive(action: ActionId): boolean {
     const contexts = this.activeContexts();
+    if (contexts.includes('modal')) {
+      // Native select popups can consume keyup before it reaches the page.
+      // A modal takes ownership of excluded held codes, rather than merely
+      // pausing them and reviving a physically released key after it closes.
+      for (const code of this.pressedCodes) {
+        if (!this.bindings.some(binding => binding.code === code && intersects(binding.contexts, contexts))) {
+          this.pressedCodes.delete(code);
+        }
+      }
+    }
     return this.bindings.some((binding) =>
       binding.action === action && this.pressedCodes.has(binding.code) && intersects(binding.contexts, contexts),
     );

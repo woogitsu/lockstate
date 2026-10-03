@@ -1,0 +1,40 @@
+﻿$ErrorActionPreference='Continue'
+$env:PATH=(Join-Path $env:TEMP 'lockstate-pnpm-11-22-20261002')+';C:/Users/matma/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin;'+$env:PATH
+$subject=(git rev-parse HEAD).Trim();$branch=(git branch --show-current).Trim()
+if($branch -ne 'codex/integrate-fridge-world-chord-20261003' -or (git status --porcelain).Length -gt 0){throw 'Controls require own clean named subject'}
+$utf8=New-Object System.Text.UTF8Encoding($false)
+$mutations=@(
+ @{path='src/rendering/assets/oblique-object-mapping.ts';needle="  'object.stove': 'furniture.kitchen.stove.variants',";replacement=''},
+ @{path='src/rendering/assets/oblique-object-mapping.ts';needle="  'object.fridge': 'furniture.kitchen.fridge.variants',";replacement=''},
+ @{path='src/rendering/scene/world-scene.ts';needle='const releasedPrimary = pointer.wasTouch || (pointer.button === 0 && (pointer.buttons & 1) === 0);';replacement='const releasedPrimary = true;'},
+ @{path='src/ui/room-template-tool.ts';needle='    this.busy = undefined;';replacement='    // Negative control: retain abandoned preflight owner.'})
+$mainPath='src/main.ts';$main=[IO.File]::ReadAllText((Join-Path (Get-Location) $mainPath));$nl=if($main.Contains("`r`n")){"`r`n"}else{"`n"}
+$mainNeedle='        roomTemplateTool?.standDown();'+$nl+'        worldScene.cancelConstructionGesture();'+$nl+'        // This page keeps one renderer and one feed across prisons.'
+$mainReplacement='        roomTemplateTool?.standDown();'+$nl+'        // Negative control: omit ordinary construction session cancellation.'+$nl+'        // This page keeps one renderer and one feed across prisons.'
+$mutations+=@{path=$mainPath;needle=$mainNeedle;replacement=$mainReplacement}
+$backups=@{};$preHashes=@{}
+foreach($m in $mutations){$p=Join-Path (Get-Location) $m.path;if(-not $backups.ContainsKey($m.path)){$backups[$m.path]=[IO.File]::ReadAllBytes($p);$preHashes[$m.path]=(Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash};$s=$utf8.GetString($backups[$m.path]);if($s.Split(@($m.needle),[StringSplitOptions]::None).Count -ne 2){throw ('Actual mutation needle not unique before writing: '+$m.path)}}
+function Build-Subject($label){pnpm --config.verify-deps-before-run=false build *> (Join-Path $env:TEMP ('lockstate-kitchen-session-control-'+$label+'-build-20261003.txt'));if($LASTEXITCODE -ne 0){throw ('Production build failed '+$label)}}
+function Worker-Receipt{$w=@(Get-ChildItem -LiteralPath dist/client/assets -Filter 'worker-*.js' -File);if($w.Count -ne 1){throw 'Expected exactly one actual worker'};return @{file=$w[0].Name;bytes=$w[0].Length;sha256=(Get-FileHash -LiteralPath $w[0].FullName -Algorithm SHA256).Hash}}
+function Run-Native($label,$q1=$false){$env:PLAYWRIGHT_JSON_OUTPUT_NAME=Join-Path $env:TEMP ('lockstate-kitchen-session-'+$label+'-20261003.json');$args=@('--experimental-transform-types','--disable-warning=ExperimentalWarning','tests/browser/run-suite.ts','--suite','artifact','tests/browser/dedicated-kitchen-stove-player-build.spec.ts');if(-not $q1){$args+=@('tests/browser/world-construction-chord-release.spec.ts','tests/browser/room-template-session-preflight.spec.ts','tests/browser/world-build-session-ownership.spec.ts')};if($q1){$args+=@('--grep','player creates|quarterTurns1')}elseif($label -eq 'q0-negative'){$args+=@('--grep','player creates|quarterTurns0|FullHD|Full HD')};$args+=@('--workers=1','--reporter=list,json','--output',(Join-Path $env:TEMP ('lockstate-kitchen-session-'+$label+'-20261003')));& node @args *> (Join-Path $env:TEMP ('lockstate-kitchen-session-'+$label+'-20261003.txt'));return $LASTEXITCODE}
+$receipt=[ordered]@{subject=$subject;branch=$branch;sourceSha256=$preHashes;mutationPaths=@($backups.Keys)}
+$q0=-1;$q1=-1;$restored=-1
+ git switch --detach $subject
+ if($LASTEXITCODE -ne 0){throw 'Detach failed; no mutation'}
+try{
+ Build-Subject 'baseline';$receipt.baselineWorker=Worker-Receipt
+ $texts=@{};foreach($p in $backups.Keys){$texts[$p]=$utf8.GetString($backups[$p])};foreach($m in $mutations){$texts[$m.path]=$texts[$m.path].Replace($m.needle,$m.replacement)};foreach($p in $texts.Keys){[IO.File]::WriteAllText((Join-Path (Get-Location) $p),$texts[$p],$utf8)}
+ git diff -- src/rendering/assets/oblique-object-mapping.ts src/rendering/scene/world-scene.ts src/ui/room-template-tool.ts src/main.ts | Out-File -Encoding utf8 -FilePath (Join-Path $env:TEMP 'lockstate-kitchen-session-producer-control-mutation-20261003.txt')
+ Build-Subject 'negative';$receipt.negativeWorker=Worker-Receipt
+ $q0=Run-Native 'q0-negative';$receipt.q0NegativeExit=$q0
+ $q1=Run-Native 'q1-negative' $true;$receipt.q1NegativeExit=$q1
+}finally{
+ $post=@{};foreach($p in $backups.Keys){[IO.File]::WriteAllBytes((Join-Path (Get-Location) $p),$backups[$p]);$post[$p]=(Get-FileHash -LiteralPath (Join-Path (Get-Location) $p) -Algorithm SHA256).Hash;if($post[$p] -ne $preHashes[$p]){throw ('Exact source restore failed: '+$p)}};$receipt.restoredSourceSha256=$post
+ Build-Subject 'restored';$receipt.restoredWorker=Worker-Receipt
+ if($receipt.baselineWorker.sha256 -ne $receipt.restoredWorker.sha256){throw 'Frozen actual worker restoration mismatch'}
+ $restored=Run-Native 'restored';$receipt.restoredExit=$restored
+ $receipt|ConvertTo-Json -Depth 8|Out-File -Encoding utf8 -FilePath (Join-Path $env:TEMP 'lockstate-kitchen-session-producer-control-receipt-20261003.json')
+ git switch $branch
+ if($LASTEXITCODE -ne 0){throw 'Return to restored branch failed'}
+}
+if($q0 -ne 1 -or $q1 -ne 1 -or $restored -ne 0){throw "Unexpected native producer exits q0=$q0 q1=$q1 restored=$restored"}

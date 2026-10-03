@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-classroom-coursebook-station-model-20261003
+
+··························································································································································································································
+
+ Test Files  5 passed (5)
+      Tests  218 passed (218)
+   Start at  16:24:44
+   Duration  753ms (transform 403ms, setup 0ms, import 1.21s, tests 369ms, environment 0ms)
+
+$ vitest run "tests/unit/public-room-oblique-context-coverage.test.ts" "tests/unit/room-template-oblique-art-coverage.test.ts" "tests/unit/oblique-reception-registration-desk-context.test.ts" "tests/unit/oblique-classroom-student-chair-context.test.ts" "tests/unit/oblique-registry-all-manifests.test.ts" "--reporter=dot"

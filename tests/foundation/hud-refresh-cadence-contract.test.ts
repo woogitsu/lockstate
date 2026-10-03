@@ -408,7 +408,7 @@ describe('what refreshes a pulled HUD readout (#718)', () => {
     // it works. What it buys is that the executable half above cannot drift
     // away from the file it is a statement about, since that file is
     // unreachable from `pnpm test`.
-    const main = readFileSync(MAIN_PATH, 'utf8');
+    const main = readFileSync(MAIN_PATH, 'utf8').replace(/\r\n/g, '\n');
     expect(main.length, 'src/main.ts moved or shrank; every assertion here would pass vacuously').toBeGreaterThan(2_000);
     expect(
       main,

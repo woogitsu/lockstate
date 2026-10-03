@@ -1,0 +1,18 @@
+pnpm : $ vitest run "tests/unit/oblique-interior-north-door-pose-completion.test.ts" "tests/unit/oblique-world-projecti
+on.test.ts" "tests/unit/oblique-object-mapping.test.ts" "tests/unit/oblique-module-registry.test.ts" "tests/determinism
+/art-pipeline-determinism.test.ts" "--reporter=dot"
+At line:2 char:150
++ ... +$env:PATH; pnpm --config.verify-deps-before-run=false test tests/uni ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--reporter=dot":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-structural-component-art-audit-20261003
+
+-··········································
+
+ Test Files  5 passed (5)
+      Tests  42 passed | 1 skipped (43)
+   Start at  17:35:46
+   Duration  549ms (transform 338ms, setup 0ms, import 1.03s, tests 74ms, environment 0ms)

@@ -1,0 +1,56 @@
+const cp = require('node:child_process');
+const fs = require('node:fs');
+const ref = '63f8288f1386f6ac4194c189e1888e5b261a501d';
+const main = '6d25ebd896c76fb09c2d387185eb1bd8b2a48b8d';
+const git = args => cp.execFileSync('git', args, { maxBuffer: 30 * 1024 * 1024, env: {...process.env, GIT_NO_LAZY_FETCH:'1'} });
+const read = p => git(['show', `${ref}:${p}`]).toString('utf8').replace(/^\uFEFF/, '');
+const registry = JSON.parse(read('public/game-content/oblique-module-registry.v1.json'));
+const trees = git(['ls-tree','-r',ref,'--','public/assets/environment/oblique','assets/source/blender']).toString('utf8').trim().split('\n');
+const ids = new Map(trees.map(row => { const [meta,p] = row.split('\t'); return [p,meta.split(' ')[2]]; }));
+const frames = new Map();
+const errors=[];
+const catalogs=[];
+const assets=new Set();
+const sources=[];
+for(const e of registry.entries) {
+ if(assets.has(e.assetId)) errors.push('Duplicate registry asset '+e.assetId);
+ assets.add(e.assetId);
+ const p='public'+e.manifest;
+ let c;
+ try { c=JSON.parse(read(p)); } catch(err) { errors.push(p+': '+err.message); continue; }
+ if(c.assetId!==e.assetId) errors.push('Registry/catalog identity mismatch '+e.assetId);
+ const pairs=new Set(c.frames.map(f=>f.yawDegrees+','+f.elevationDegrees));
+ if(pairs.size!==c.frames.length||pairs.size!==c.yawDegrees.length*c.elevationDegrees.length) errors.push('Invalid pose cardinality '+e.assetId);
+ for(const y of c.yawDegrees) for(const elev of c.elevationDegrees) if(!pairs.has(y+','+elev)) errors.push('Missing pose '+e.assetId);
+ for(const f of c.frames) {
+  const p='public'+f.image;
+  if(!ids.has(p)) errors.push('Missing PNG Git path '+p);
+  if(frames.has(p)&&frames.get(p)!==f.sha256) errors.push('Conflicting PNG declared SHA '+p);
+  frames.set(p,f.sha256);
+ }
+ for(const s of [{source:c.source,sha256:c.sourceSha256},...(c.sourceDependencies||[])]) {
+  const sourcePath=s.source.includes('/')?s.source:'assets/source/blender/'+s.source;
+  if(!ids.has(sourcePath)) errors.push('Missing Blender source Git path '+sourcePath);
+  sources.push({...s,source:sourcePath});
+ }
+ catalogs.push({assetId:e.assetId,manifest:e.manifest,poses:c.frames.length});
+}
+const mapping=read('src/rendering/assets/oblique-object-mapping.ts')+'\n'+read('src/rendering/assets/oblique-actor-mapping.ts');
+const mapped=[...mapping.matchAll(/:\s*'((?:furniture|fixture|utility|actor)\.[^']+)'/g)].map(m=>m[1]);
+for(const id of new Set(mapped)) if(!assets.has(id)) errors.push('Missing mapped asset '+id);
+const requested=[...frames.entries()].map(([p,sha])=>({p,sha}));
+requested.push(...sources.map(s=>({p:s.source,sha:s.sha256})));
+const objects=[...new Set(requested.map(r=>ids.get(r.p)).filter(Boolean))];
+const batch=cp.execFileSync('git',['cat-file','--batch'],{input:objects.join('\n')+'\n',maxBuffer:80*1024*1024,env:{...process.env,GIT_NO_LAZY_FETCH:'1'}});
+const blobs=new Map();
+let at=0;
+while(at<batch.length){const end=batch.indexOf(10,at);const [id,type,n]=batch.subarray(at,end).toString('ascii').split(' ');if(type!=='blob')throw new Error('Unexpected '+type);const size=Number(n);blobs.set(id,batch.subarray(end+1,end+1+size));at=end+size+2;}
+const crypto=require('node:crypto');let lfs=0,inline=0;
+for(const r of requested){const b=blobs.get(ids.get(r.p));if(!b)continue;const pointer=/^version https:\/\/git-lfs.github.com\/spec\/v1\r?\noid sha256:([0-9a-f]{64})\r?\nsize \d+/.exec(b.toString('utf8'));const sha=pointer?pointer[1]:crypto.createHash('sha256').update(b).digest('hex');if(pointer)lfs++;else inline++;if(sha!==r.sha)errors.push('Declared SHA mismatch '+r.p);}
+const changed=git(['diff','--name-only',main,ref,'--','src','.github']).toString('utf8').trim().split('\n');
+const groups={};for(const p of changed){const group=p.startsWith('.github')?'.github':p.split('/').slice(0,2).join('/');groups[group]=(groups[group]||0)+1;}
+const result={subject:ref,main,changedGroups:groups,catalogCount:catalogs.length,mappedObjectAndActorIds:new Set(mapped).size,uniqueFrames:frames.size,declaredSourceReferences:sources.length,lfsPointerReferencesChecked:lfs,inlineReferencesChecked:inline,errors,catalogs,
+ limits:['Read-only Git integrity audit; no render/build/browser/native execution.','LFS pointer OIDs compared to published descriptor SHA, not local hydration or GPU upload.','Physical art size/pixels are covered by earlier separately recorded native proof, not revalidated here.']};
+fs.writeFileSync('C:/Users/matma/AppData/Local/Temp/lockstate-root63-release-review-20261003.json',JSON.stringify(result,null,2)+'\n');
+console.log(JSON.stringify({...result,catalogs:undefined},null,2));
+if(errors.length)process.exitCode=1;

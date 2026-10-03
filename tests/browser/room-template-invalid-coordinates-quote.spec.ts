@@ -1,0 +1,34 @@
+import { expect, test } from './network-changed-fixture';
+import { installTee, sentCommands } from './playtest-harness';
+
+test('invalid advanced coordinates do not erase independent map-placement materials quote', async ({ page }, testInfo) => {
+  await installTee(page);
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/?renderer=oblique');
+  await page.getByRole('button', { name: 'New prison' }).click();
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Room plans' });
+  const quote = dialog.locator('.hud-template__quote');
+  await expect(quote).toHaveText('Brick \u00d7 35 \u00b7 Wood Plank \u00d7 2 \u00b7 Materials catalogue value: 1,530');
+  await dialog.getByText('Enter coordinates', { exact: true }).click();
+  await dialog.getByRole('spinbutton', { name: 'Plan origin X' }).fill('');
+  await expect(dialog.getByRole('button', { name: 'Place room plan', exact: true })).toBeDisabled();
+  await dialog.getByText('Enter coordinates', { exact: true }).click();
+  await dialog.getByRole('button', { name: 'Yard', exact: true }).click();
+  await page.screenshot({ path: testInfo.outputPath('map-quote-invalid-advanced-coordinate.png') });
+  await expect(quote).toHaveText('Materials catalogue value: 0');
+  await dialog.getByRole('button', { name: 'Basic cell', exact: true }).click();
+  await expect(quote).toHaveText('Brick \u00d7 35 \u00b7 Wood Plank \u00d7 2 \u00b7 Materials catalogue value: 1,530');
+  const originalTiles = await dialog.locator('.hud-template__diagram .hud-template__tile').evaluateAll(tiles => tiles.map(tile => tile.className));
+  await dialog.getByRole('checkbox', { name: 'Mirror horizontally' }).check();
+  const mirroredTiles = await dialog.locator('.hud-template__diagram .hud-template__tile').evaluateAll(tiles => tiles.map(tile => tile.className));
+  expect(mirroredTiles).toEqual(Array.from({ length: 7 }, (_, y) => originalTiles.slice(y * 4, y * 4 + 4).reverse()).flat());
+  await expect(quote).toContainText('Materials catalogue value: 1,530');
+  await dialog.getByRole('button', { name: 'Place on map', exact: true }).click();
+  await page.mouse.move(880, 380);
+  await expect(page.locator('.room-template-world-ghost')).toContainText('Materials catalogue value: 1,530');
+  await expect(page.locator('.room-template-world-ghost polygon')).toHaveCount(28);
+  await page.mouse.click(880, 380);
+  await expect.poll(async () => (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toMatchObject([{ type: 'PlaceRoomTemplate', templateId: 'cell-basic', mirrorX: true }]);
+});

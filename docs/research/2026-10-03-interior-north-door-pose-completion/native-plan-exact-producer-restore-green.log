@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-structural-component-art-audit-20261003
+
+·······
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  17:47:06
+   Duration  713ms (transform 192ms, setup 0ms, import 550ms, tests 31ms, environment 0ms)
+
+$ vitest run "tests/unit/oblique-interior-north-door-pose-completion.test.ts" "--reporter=dot"

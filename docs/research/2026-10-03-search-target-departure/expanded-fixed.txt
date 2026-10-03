@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-next-search-lifecycle-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  04:23:41
+   Duration  3.21s (transform 845ms, setup 0ms, import 2.44s, tests 650ms, environment 0ms)
+

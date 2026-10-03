@@ -391,6 +391,10 @@ export const HUD_MESSAGE_KEY = {
   zoomRegion: 'hud.zoom.title',
   zoomIn: 'hud.zoom.in',
   zoomOut: 'hud.zoom.out',
+  cameraView: 'hud.camera.view',
+  cameraViewWorld: 'hud.camera.view.world',
+  cameraViewOblique: 'hud.camera.view.oblique',
+  cameraViewFailed: 'hud.camera.view.failed',
 
   minimapTitle: 'hud.minimap.title',
     minimapPlaceholder: 'hud.minimap.placeholder',
@@ -553,6 +557,7 @@ export const HUD_MESSAGE_KEY = {
   buildCatalogueRowPrice: 'hud.build.catalogue-row-price',
   /** The per-segment twin of `buildCatalogueRowPrice` above; see its comment. */
   buildCatalogueRowPriceSegment: 'hud.build.catalogue-row-price-segment',
+  buildCatalogueRowPriceSquare: 'hud.build.catalogue-row-price-square',
   buildPlacement: 'hud.build.placement',
   buildTileX: 'hud.build.tile-x',
   buildTileY: 'hud.build.tile-y',
@@ -561,6 +566,7 @@ export const HUD_MESSAGE_KEY = {
   buildEdge: 'hud.build.edge',
   buildSubmit: 'hud.build.submit',
   buildNote: 'hud.build.note',
+  buildTemplateCatalogueValue: 'hud.build.template-catalogue-value',
   buildTemplates: 'hud.build.templates',
   buildTemplatesShort: 'hud.build.templates-short',
   buildTemplatePreviewOnly: 'hud.build.template-preview-only',
@@ -568,6 +574,7 @@ export const HUD_MESSAGE_KEY = {
   buildTemplateX: 'hud.build.template-x',
   buildTemplateY: 'hud.build.template-y',
   buildTemplateMirror: 'hud.build.template-mirror',
+  buildTemplateRotation: 'hud.build.template-rotation',
   buildTemplatePlace: 'hud.build.template-place',
   buildTemplateInvalidPosition: 'hud.build.template-invalid-position',
   buildTemplateReady: 'hud.build.template-ready',
@@ -575,6 +582,8 @@ export const HUD_MESSAGE_KEY = {
   buildTemplateUnavailable: 'hud.build.template-unavailable',
   buildTemplateSubmitted: 'hud.build.template-submitted',
   buildTemplateClose: 'hud.build.template-close',
+  buildTemplateCellRowFour: 'hud.build.template-cell-row-four',
+  buildTemplateOnMap: 'hud.build.template-on-map',
   buildTemplateCellBasic: 'hud.build.template-cell-basic',
   buildTemplateCellLarge: 'hud.build.template-cell-large',
   buildTemplateShowerRoom: 'hud.build.template-shower-room',
@@ -588,6 +597,7 @@ export const HUD_MESSAGE_KEY = {
   buildArm: 'hud.build.arm',
   buildDisarm: 'hud.build.disarm',
   buildArmHint: 'hud.build.arm-hint',
+  buildArmHintSquare: 'hud.build.arm-hint-square',
   /**
    * The armed-tool hint for a row that stands on a tile rather than on an edge
    * (issue #904).
@@ -606,6 +616,7 @@ export const HUD_MESSAGE_KEY = {
   buildTargetNone: 'hud.build.target-none',
   buildTargetValue: 'hud.build.target-value',
   buildTargetRun: 'hud.build.target-run',
+  buildTargetSquares: 'hud.build.target-squares',
   /*
    * The readout for an aim that is on a *tile* rather than on a tile edge
    * (#550).
@@ -623,6 +634,7 @@ export const HUD_MESSAGE_KEY = {
    * the simulation's to know and the ghost's to draw.
    */
   buildTargetTile: 'hud.build.target-tile',
+  buildObjectFootprint: 'hud.build.object-footprint',
   buildCoordinates: 'hud.build.coordinates',
   buildCoordinatesHint: 'hud.build.coordinates-hint',
   /*

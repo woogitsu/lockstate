@@ -1,0 +1,79 @@
+{
+  "controls": [
+    {
+      "control": "omit-real-EW-grate-shoe",
+      "exitCode": 1,
+      "error": "ValueError: Kitchen stove retained/authored mesh set changed"
+    },
+    {
+      "control": "move-real-NS-grate-shoe",
+      "exitCode": 1,
+      "error": "ValueError: Kitchen stove actual evaluated authored geometry changed"
+    },
+    {
+      "control": "move-retained-stove-body",
+      "exitCode": 1,
+      "error": "ValueError: Kitchen stove actual evaluated authored geometry changed"
+    },
+    {
+      "control": "change-retained-bevel",
+      "exitCode": 1,
+      "error": "ValueError: Kitchen stove actual authored topology/material assignment/modifier data changed"
+    },
+    {
+      "control": "change-retained-material-graph",
+      "exitCode": 1,
+      "error": "ValueError: Kitchen stove retained six stored material graphs changed"
+    },
+    {
+      "control": "change-added-joint-material",
+      "exitCode": 1,
+      "error": "ValueError: Kitchen stove actual authored topology/material assignment/modifier data changed"
+    },
+    {
+      "control": "actual-reversed-joint-winding",
+      "exitCode": 1,
+      "error": "ValueError: Evaluated Kitchen stove geometric surfaces face inward: physical-kitchen-stove.north-south grate shoe 0 -1"
+    },
+    {
+      "control": "actual-shoe-in-empty-collar-hole",
+      "exitCode": 1,
+      "error": "ValueError: Stove mounting shoe lacks real triangle-interior contact: physical-kitchen-stove.east-west grate shoe 0 -1 / angled-stove.burner collar 0"
+    },
+    {
+      "control": "actual-reversed-retained-hollow-collar-winding",
+      "exitCode": 1,
+      "error": "ValueError: Evaluated Kitchen stove geometric surfaces face inward: angled-stove.burner collar 0"
+    },
+    {
+      "control": "wrong-loaded-fit",
+      "exitCode": 1,
+      "error": "ValueError: Kitchen stove declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-accepted-target",
+      "exitCode": 1,
+      "error": "ValueError: Kitchen stove declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-canonical-descriptor",
+      "exitCode": 1,
+      "error": "ValueError: Kitchen stove exporter targets the wrong canonical descriptor"
+    },
+    {
+      "control": "wrong-camera-span",
+      "exitCode": 1,
+      "error": "ValueError: Kitchen stove actual camera pitch differs from64pixels per tile"
+    },
+    {
+      "control": "wrong-camera-vector",
+      "exitCode": 1,
+      "error": "ValueError: Kitchen stove actual camera ground basis differs from world projection"
+    }
+  ],
+  "exactRestoredNativeVerifyExitCode": 0,
+  "sourceBytesUnchanged": true,
+  "wrapperSha256": "fe22720910a698e2f92685611ae640b96f5f14c5676309eae9081ad31a894245",
+  "sourceSha256": "2a912331e9c20a35ea417c25d371cf89a5f80092c3f066504c7b792cb1a042a2",
+  "originalSourceSha256": "540c8b22be73848bb1520fae9ffeabfce7711bb0c629161e529b6d6ae33ca5fc"
+}

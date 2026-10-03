@@ -1,0 +1,51 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-oblique-empty-asset-demand-audit-20261003
+
+ ❯ tests/unit/oblique-demand-texture-lifecycle.test.ts (8 tests | 1 failed | 7 skipped) 8ms
+   × floor and model requests are serialized even when demand precedes descriptor reply 7ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 skipped (8)
+     Errors  1 error
+   Start at  13:56:41
+   Duration  779ms (transform 240ms, setup 0ms, import 655ms, tests 8ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-demand-texture-lifecycle.test.ts > floor and model requests are serialized even when demand precedes descriptor reply
+AssertionError: expected [ [ { …(2) } ] ] to have a length of 2 but got 1
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ tests/unit/oblique-demand-texture-lifecycle.test.ts:56:175
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+AssertionError: one actual Phaser loader batch at a time: expected true to be false // Object.is equality
+ ❯ Object.start tests/unit/oblique-demand-texture-lifecycle.test.ts:23:84
+     21|   readonly textures={exists:(key:string)=>observed.loaded.has(key)};
+     22|   readonly load={image:(key:string,url:string)=>observed.queued.push({…
+     23|     start:()=>{expect(observed.running,'one actual Phaser loader batch…
+       |                                                                                    ^
+     24| },Scenes:{Events:{SHUTDOWN:'shutdown'}},Loader:{Events:{COMPLETE:'comp…
+     25| vi.mock('../../src/rendering/assets/rendered-art-catalog',()=>({Render…
+ ❯ ObliqueWorldScene.flushAssetTextureQueue src/rendering/scene/oblique-world-scene.ts:896:15
+ ❯ lastPaintedPoseRevision src/rendering/scene/oblique-world-scene.ts:744:14
+ ❯ ObliqueWorldScene.loadFloorTextures src/rendering/scene/oblique-world-scene.ts:739:13
+ ❯ processTicksAndRejections node:internal/process/task_queues:104:5
+
+This error originated in "tests/unit/oblique-demand-texture-lifecycle.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+

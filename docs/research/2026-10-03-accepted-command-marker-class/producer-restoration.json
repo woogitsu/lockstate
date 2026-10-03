@@ -1,0 +1,25 @@
+{
+  "branch": "codex/accepted-command-marker-class-audit-20261003",
+  "head": "0f7eb83acb79dfe5f78038dce5344848d5e8791f",
+  "productionFiles": [
+    "src/simulation/runtime/session-commands.ts"
+  ],
+  "beforeSha256": "c46e801353fc1b6475c488bc748bef6c28c5a22562da076ee7ea4525afc14d1e",
+  "afterSha256": "c46e801353fc1b6475c488bc748bef6c28c5a22562da076ee7ea4525afc14d1e",
+  "byteExact": true,
+  "productionDiff": "",
+  "receipts": [
+    {
+      "name": "premature-marker",
+      "status": 1
+    },
+    {
+      "name": "missing-marker",
+      "status": 1
+    },
+    {
+      "name": "canonical-reader-disconnected",
+      "status": 1
+    }
+  ]
+}

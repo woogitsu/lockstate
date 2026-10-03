@@ -1,0 +1,64 @@
+node : [2m[WebServer] [22m(node:34496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:9 char:1
++ node node_modules/@playwright/test/cli.js test --config assets/interm ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 7 tests using 1 worker
+
+(node:50900) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50900) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\native-small-prison-showcase.recipe.ts:166:3 › 01 public Storage Room and Delivery Bay capacity (43.8s)
+  ok 2 tests\browser\native-small-prison-showcase.recipe.ts:166:3 › 02 horizontal four-cell wing and two-tile corridor (1.1m)
+  ok 3 tests\browser\native-small-prison-showcase.recipe.ts:166:3 › 03 completed Kitchen (39.0s)
+  ok 4 tests\browser\native-small-prison-showcase.recipe.ts:166:3 › 04 completed Shower room (36.5s)
+  ok 5 tests\browser\native-small-prison-showcase.recipe.ts:166:3 › 05 completed Canteen (53.8s)
+  ok 6 tests\browser\native-small-prison-showcase.recipe.ts:166:3 › 06 completed outdoor Yard (26.6s)
+  x  7 tests\browser\native-small-prison-showcase.recipe.ts:231:1 › 07 same completed prison at three public camera poses and whole paused Save/Load (21.3s)
+
+
+  1) tests\browser\native-small-prison-showcase.recipe.ts:231:1 › 07 same completed prison at three public camera poses and whole paused Save/Load 
+
+    Error: canonical PNG body for fixture.cell.toilet_sink
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m0[39m
+    Received:   [31m0[39m
+
+       at native-small-prison-showcase-evidence.ts:160
+
+      158 |         expect(descriptor, `canonical descriptor for ${assetId}`).toMatchObject({ status: 200, data: { assetId, sourceSha256 } });
+      159 |         const canonical = images.filter(row => descriptor!.data.frames.some(frame => frame.image === row.path && frame.sha256 === row.sha256));
+    > 160 |         expect(canonical.length, `canonical PNG body for ${assetId}`).toBeGreaterThan(0);
+          |                                                                       ^
+      161 |         expect(canonical.some(row => row.width === 256 && row.height === 256 && decoded.images.some(image =>
+      162 |           image.sha256 === row.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)),
+      163 |         `actual loader decoded ${assetId}`).toBe(true);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-connectivity-integration-20261003\tests\browser\native-small-prison-showcase-evidence.ts:160:71
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-connectivity-integration-20261003\tests\browser\native-small-prison-showcase.recipe.ts:175:15
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-small-prison-terminal-art-20261003\native-small-prison-showca-38e13--and-whole-paused-Save-Load\error-context.md
+
+  1 failed
+    tests\browser\native-small-prison-showcase.recipe.ts:231:1 › 07 same completed prison at three public camera poses and whole paused Save/Load 
+  6 passed (4.8m)

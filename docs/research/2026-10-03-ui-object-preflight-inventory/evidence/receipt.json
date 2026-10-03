@@ -1,0 +1,40 @@
+{
+    "sha256":  [
+                   {
+                       "sha256":  "fabb8a7d9d959d19c1ac21cf2a8556c434930b586d26996248c33c08d1b9f58d",
+                       "path":  "docs/research/2026-10-03-ui-object-preflight-inventory/evidence/original-red.raw.txt"
+                   },
+                   {
+                       "sha256":  "3c5b71f7925be164b8bb167dc52d660226ff67b2041e869f202bf74495a55f1a",
+                       "path":  "docs/research/2026-10-03-ui-object-preflight-inventory/evidence/fixed-green.raw.txt"
+                   },
+                   {
+                       "sha256":  "53bf23ce805f8dd501819815d2762c558f1c26c954692a7b65bdddbf2876bce2",
+                       "path":  "docs/research/2026-10-03-ui-object-preflight-inventory/evidence/value-drift-red.raw.txt"
+                   },
+                   {
+                       "sha256":  "e5b01b51f5f90e8dc02c2bd1a04fbfe578c0a43393d793704ff98eeca9164632",
+                       "path":  "docs/research/2026-10-03-ui-object-preflight-inventory/evidence/restored-neighbors-green.raw.txt"
+                   },
+                   {
+                       "sha256":  "6f44a11ab9caa3bbaef037c73c1d54d667cb15b0a94fadf97082d688a683802d",
+                       "path":  "docs/research/2026-10-03-ui-object-preflight-inventory/evidence/types.raw.txt"
+                   }
+               ],
+    "valueDriftGreen":  38,
+    "fixedExit":  0,
+    "buildStarted":  false,
+    "baselineGreen":  35,
+    "valueDriftExit":  1,
+    "browserStarted":  false,
+    "source":  "f80088fc60dc2c1caa83dcc045fb2be2d879d4a2",
+    "restoredNeighborsExit":  0,
+    "restoredNeighborsGreen":  52,
+    "baselineRed":  4,
+    "serverStarted":  false,
+    "typesExit":  0,
+    "fixedGreen":  39,
+    "restoredNeighborFiles":  3,
+    "baselineExit":  1,
+    "valueDriftRed":  1
+}

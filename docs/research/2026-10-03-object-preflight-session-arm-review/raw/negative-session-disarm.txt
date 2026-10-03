@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-object-preflight-independent-review-20261003
+
+ ❯ tests/unit/ui-object-preflight-session-arm.test.ts (4 tests | 4 failed) 6ms
+   × ready preserves the publicly armed placement while invalidating old preview ownership 4ms
+   × ready preserves the publicly armed removal while invalidating old preview ownership 0ms
+   × availability preserves the publicly armed placement while invalidating old preview ownership 0ms
+   × availability preserves the publicly armed removal while invalidating old preview ownership 0ms
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  16:28:56
+   Duration  257ms (transform 53ms, setup 0ms, import 139ms, tests 6ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-object-preflight-session-arm.test.ts > ready preserves the publicly armed placement while invalidating old preview ownership
+ FAIL  tests/unit/ui-object-preflight-session-arm.test.ts > ready preserves the publicly armed removal while invalidating old preview ownership
+ FAIL  tests/unit/ui-object-preflight-session-arm.test.ts > availability preserves the publicly armed placement while invalidating old preview ownership
+ FAIL  tests/unit/ui-object-preflight-session-arm.test.ts > availability preserves the publicly armed removal while invalidating old preview ownership
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/ui-object-preflight-session-arm.test.ts:38:28
+     36|       payload: { sessionId: 'replacement', tick: 0, clock: { mode: 'pa…
+     37|     // The UI's Stop placing/Remove selection does not change on New/L…
+     38|     expect(tool.isArmed()).toBe(true);
+       |                            ^
+     39|     expect(tool.isRemoving()).toBe(removing);
+     40|     expect(tool.selectedDefinitionId).toBe('bed-wooden');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+

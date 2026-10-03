@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-old-browser-failure-current-audit-20261003
+
+
+ Test Files  4 passed (4)
+      Tests  43 passed (43)
+   Start at  17:47:52
+   Duration  2.49s (transform 1.49s, setup 0ms, import 4.09s, tests 372ms, environment 0ms)
+

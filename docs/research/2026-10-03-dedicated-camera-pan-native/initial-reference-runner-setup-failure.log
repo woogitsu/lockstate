@@ -1,0 +1,4 @@
+TypeError: Cannot read properties of undefined (reading 'Latest')
+reference-offline-audit.cjs:5 used TypeScript7 ScriptTarget compiler API, which is not exported.
+Node.js v24.19.0
+Harness setup only; no native or production execution. Corrected to node:module.stripTypeScriptTypes.

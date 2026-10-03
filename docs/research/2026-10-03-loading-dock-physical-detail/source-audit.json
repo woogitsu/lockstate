@@ -1,0 +1,3597 @@
+[
+  {
+    "assetId": "utility.loading-dock-door.variants",
+    "source": "assets/source/blender/utility.loading-dock-door.variants.blend",
+    "sourceSha256": "9a8b5cd29ed5809ec1c3f2c6f36f3d97d3a9a7f69551c0743e096591c26908c4",
+    "meshCount": 7,
+    "materials": [
+      "amber status",
+      "control panel",
+      "monitor glass",
+      "warm charcoal"
+    ],
+    "sourceBounds": {
+      "min": [
+        -0.949999988079071,
+        -0.2199999988079071,
+        0.0
+      ],
+      "max": [
+        0.949999988079071,
+        0.17000000178813934,
+        1.7799999713897705
+      ]
+    },
+    "acceptedFit": [
+      1.5,
+      1,
+      1
+    ],
+    "declaredTarget": [
+      1.5,
+      0.5,
+      0.89
+    ],
+    "preparedBounds": {
+      "min": [
+        0.07500004768371582,
+        0.2800000011920929,
+        0.0
+      ],
+      "max": [
+        2.924999952316284,
+        0.6700000166893005,
+        1.7799999713897705
+      ]
+    },
+    "allFourFootprints": [
+      {
+        "quarterTurns": 0,
+        "footprint": [
+          3,
+          1
+        ],
+        "bounds": {
+          "min": [
+            0.07500004768371582,
+            0.2800000011920929,
+            0.0
+          ],
+          "max": [
+            2.924999952316284,
+            0.6700000166893005,
+            1.7799999713897705
+          ]
+        }
+      },
+      {
+        "quarterTurns": 1,
+        "footprint": [
+          1,
+          3
+        ],
+        "bounds": {
+          "min": [
+            0.32999998331069946,
+            0.07500004768371582,
+            0.0
+          ],
+          "max": [
+            0.7200000286102295,
+            2.924999952316284,
+            1.7799999713897705
+          ]
+        }
+      },
+      {
+        "quarterTurns": 2,
+        "footprint": [
+          3,
+          1
+        ],
+        "bounds": {
+          "min": [
+            0.07500004768371582,
+            0.32999998331069946,
+            0.0
+          ],
+          "max": [
+            2.924999952316284,
+            0.7200000286102295,
+            1.7799999713897705
+          ]
+        }
+      },
+      {
+        "quarterTurns": 3,
+        "footprint": [
+          1,
+          3
+        ],
+        "bounds": {
+          "min": [
+            0.2800000011920929,
+            0.07500004768371582,
+            0.0
+          ],
+          "max": [
+            0.6700000166893005,
+            2.924999952316284,
+            1.7799999713897705
+          ]
+        }
+      }
+    ],
+    "meshes": [
+      {
+        "name": "door",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 6,
+        "rawOutwardFaces": 0,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 54,
+        "evaluatedOutwardFaces": 0,
+        "minimumEvaluatedOutwardDistance": -1.1507036983966827,
+        "maximumEvaluatedOutwardDistance": -0.09000000357627869,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8500000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "handle",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 6,
+        "rawOutwardFaces": 0,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 54,
+        "evaluatedOutwardFaces": 0,
+        "minimumEvaluatedOutwardDistance": -0.2770280595868826,
+        "maximumEvaluatedOutwardDistance": -0.019999966025352478,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.14000000059604645
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.5
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "header",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 6,
+        "rawOutwardFaces": 0,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 54,
+        "evaluatedOutwardFaces": 0,
+        "minimumEvaluatedOutwardDistance": -0.949999988079071,
+        "maximumEvaluatedOutwardDistance": -0.05999934673309326,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.7200000286102295
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "hinge",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 6,
+        "rawOutwardFaces": 0,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 54,
+        "evaluatedOutwardFaces": 0,
+        "minimumEvaluatedOutwardDistance": -0.6000000834465027,
+        "maximumEvaluatedOutwardDistance": -0.04999995231628418,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.7200000286102295
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.11999999731779099
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8500000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "hinge.001",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 6,
+        "rawOutwardFaces": 0,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 54,
+        "evaluatedOutwardFaces": 0,
+        "minimumEvaluatedOutwardDistance": -0.6000000834465027,
+        "maximumEvaluatedOutwardDistance": -0.04999995231628418,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.7200000286102295
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.11999999731779099
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8500000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "threshold",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 6,
+        "rawOutwardFaces": 0,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 54,
+        "evaluatedOutwardFaces": 0,
+        "minimumEvaluatedOutwardDistance": -0.8500000238418579,
+        "maximumEvaluatedOutwardDistance": -0.0599999837577343,
+        "materials": [
+          "control panel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.11999999731779099
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.07999999821186066
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "window",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 6,
+        "rawOutwardFaces": 0,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 54,
+        "evaluatedOutwardFaces": 0,
+        "minimumEvaluatedOutwardDistance": -0.7403372228145599,
+        "maximumEvaluatedOutwardDistance": -0.01999995857477188,
+        "materials": [
+          "monitor glass"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.11999999731779099
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.1799999475479126
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      }
+    ],
+    "totalRawInwardFaces": 42,
+    "totalEvaluatedInwardFaces": 378,
+    "totalEvaluatedFaces": 378
+  },
+  {
+    "assetId": "utility.loading-dock-door.angled-detail",
+    "source": "assets/source/blender/utility.loading-dock-door.angled-detail.blend",
+    "sourceSha256": "7eeca158b9e5f92abb139ab8164f5dd7a2aa2f2ca47936e4b08e4ea6c79a3aac",
+    "meshCount": 64,
+    "materials": [
+      "amber status",
+      "control panel",
+      "monitor glass",
+      "warm charcoal"
+    ],
+    "sourceBounds": {
+      "min": [
+        -0.949999988079071,
+        -0.2199999988079071,
+        0.0
+      ],
+      "max": [
+        0.949999988079071,
+        0.20000000298023224,
+        1.7799999713897705
+      ]
+    },
+    "acceptedFit": [
+      1.5,
+      1,
+      1
+    ],
+    "declaredTarget": [
+      1.5,
+      0.5,
+      0.89
+    ],
+    "preparedBounds": {
+      "min": [
+        0.07500004768371582,
+        0.2800000011920929,
+        0.0
+      ],
+      "max": [
+        2.924999952316284,
+        0.699999988079071,
+        1.7799999713897705
+      ]
+    },
+    "allFourFootprints": [
+      {
+        "quarterTurns": 0,
+        "footprint": [
+          3,
+          1
+        ],
+        "bounds": {
+          "min": [
+            0.07500004768371582,
+            0.2800000011920929,
+            0.0
+          ],
+          "max": [
+            2.924999952316284,
+            0.699999988079071,
+            1.7799999713897705
+          ]
+        }
+      },
+      {
+        "quarterTurns": 1,
+        "footprint": [
+          1,
+          3
+        ],
+        "bounds": {
+          "min": [
+            0.30000001192092896,
+            0.07500004768371582,
+            0.0
+          ],
+          "max": [
+            0.7200000286102295,
+            2.924999952316284,
+            1.7799999713897705
+          ]
+        }
+      },
+      {
+        "quarterTurns": 2,
+        "footprint": [
+          3,
+          1
+        ],
+        "bounds": {
+          "min": [
+            0.07500004768371582,
+            0.30000001192092896,
+            0.0
+          ],
+          "max": [
+            2.924999952316284,
+            0.7200000286102295,
+            1.7799999713897705
+          ]
+        }
+      },
+      {
+        "quarterTurns": 3,
+        "footprint": [
+          1,
+          3
+        ],
+        "bounds": {
+          "min": [
+            0.2800000011920929,
+            0.07500004768371582,
+            0.0
+          ],
+          "max": [
+            0.699999988079071,
+            2.924999952316284,
+            1.7799999713897705
+          ]
+        }
+      }
+    ],
+    "meshes": [
+      {
+        "name": "angled-loading-dock.handle lower backing plate",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.014999955892562866,
+        "maximumEvaluatedOutwardDistance": 0.11686844192445278,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.15000000596046448
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.24500000476837158
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.handle lower mounting bolt -0.084",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.005999907851222109,
+        "maximumEvaluatedOutwardDistance": 0.009345502767246217,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.08399999886751175
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.17399999499320984
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.24500000476837158
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.handle lower mounting bolt 0.084",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.0059999078512227595,
+        "maximumEvaluatedOutwardDistance": 0.009345502767246217,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.08399999886751175
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.17399999499320984
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.24500000476837158
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.handle upper backing plate",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.014999955892562866,
+        "maximumEvaluatedOutwardDistance": 0.11686848755925894,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.15000000596046448
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.7549999952316284
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.handle upper mounting bolt -0.084",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.005999907851218852,
+        "maximumEvaluatedOutwardDistance": 0.00934544950723648,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.08399999886751175
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.17399999499320984
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.7549999952316284
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.handle upper mounting bolt 0.084",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.0059999078512195025,
+        "maximumEvaluatedOutwardDistance": 0.00934544950723648,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.08399999886751175
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.17399999499320984
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.7549999952316284
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.latch backing plate",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.01749999076128006,
+        "maximumEvaluatedOutwardDistance": 0.10464526899158955,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.6800000071525574
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.11900000274181366
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.6100000143051147
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.latch lock escutcheon",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.0079999268054839,
+        "maximumEvaluatedOutwardDistance": 0.037817324511703956,
+        "materials": [
+          "control panel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.6800000071525574
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.14499999582767487
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.6100000143051147
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.latch raised lock barrel",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.009999960660937706,
+        "maximumEvaluatedOutwardDistance": 0.022752497112378478,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.6800000071525574
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.16099999845027924
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.6100000143051147
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left lower hinge frame mount",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.0299999937415123,
+        "maximumEvaluatedOutwardDistance": 0.09279461018741131,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.7829999923706055
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.11900000274181366
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.3700000047683716
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left lower hinge frame screw",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.005999982357018633,
+        "maximumEvaluatedOutwardDistance": 0.009345536236651242,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.7829999923706055
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            0.15800000727176666
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.3700000047683716
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left lower hinge knuckle",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.045777877763612196,
+        "maximumEvaluatedOutwardDistance": 0.13704936252906919,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.7200000286102295
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.15399999916553497
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.3700000047683716
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left lower hinge leaf mount",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.0299999937415123,
+        "maximumEvaluatedOutwardDistance": 0.09279455151408911,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.6570000052452087
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.11900000274181366
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.3700000047683716
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left lower hinge leaf screw",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.005999982356995157,
+        "maximumEvaluatedOutwardDistance": 0.009345720522105694,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.6570000052452087
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            0.15800000727176666
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.3700000047683716
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left middle hinge frame mount",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.0299999937415123,
+        "maximumEvaluatedOutwardDistance": 0.09279474429786205,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.7829999923706055
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.11900000274181366
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8500000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left middle hinge frame screw",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.005999982357027752,
+        "maximumEvaluatedOutwardDistance": 0.009345463360659778,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.7829999923706055
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            0.15800000727176666
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.8500000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left middle hinge knuckle",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.045777877763612196,
+        "maximumEvaluatedOutwardDistance": 0.13704938907176256,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.7200000286102295
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.15399999916553497
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8500000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left middle hinge leaf mount",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.0299999937415123,
+        "maximumEvaluatedOutwardDistance": 0.09279468562453985,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.6570000052452087
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.11900000274181366
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8500000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left middle hinge leaf screw",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.005999982357004276,
+        "maximumEvaluatedOutwardDistance": 0.00934568396769464,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.6570000052452087
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            0.15800000727176666
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.8500000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left upper hinge frame mount",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.0299999937415123,
+        "maximumEvaluatedOutwardDistance": 0.09279479645192623,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.7829999923706055
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.11900000274181366
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.3300000429153442
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left upper hinge frame screw",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.00599998235704599,
+        "maximumEvaluatedOutwardDistance": 0.009345837432192639,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.7829999923706055
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            0.15800000727176666
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            1.3300000429153442
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left upper hinge knuckle",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.045777877763612196,
+        "maximumEvaluatedOutwardDistance": 0.1370500479824841,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.7200000286102295
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.15399999916553497
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.3300000429153442
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left upper hinge leaf mount",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.0299999937415123,
+        "maximumEvaluatedOutwardDistance": 0.09279473777860403,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.6570000052452087
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.11900000274181366
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.3300000429153442
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.left upper hinge leaf screw",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.005999982357022514,
+        "maximumEvaluatedOutwardDistance": 0.00934593309648335,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.6570000052452087
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            0.15800000727176666
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            1.3300000429153442
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right lower hinge frame mount",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.0299999937415123,
+        "maximumEvaluatedOutwardDistance": 0.09279455151408911,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.7829999923706055
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.11900000274181366
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.3700000047683716
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right lower hinge frame screw",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.005999982357013938,
+        "maximumEvaluatedOutwardDistance": 0.00934556219726801,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.7829999923706055
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            0.15800000727176666
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.3700000047683716
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right lower hinge knuckle",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.045778172061545774,
+        "maximumEvaluatedOutwardDistance": 0.13704925263300538,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.7200000286102295
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.15399999916553497
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.3700000047683716
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right lower hinge leaf mount",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.0299999937415123,
+        "maximumEvaluatedOutwardDistance": 0.09279455151408911,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.6570000052452087
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.11900000274181366
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.3700000047683716
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right lower hinge leaf screw",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.005999982357023328,
+        "maximumEvaluatedOutwardDistance": 0.00934556219726801,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.6570000052452087
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            0.15800000727176666
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.3700000047683716
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right middle hinge frame mount",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.0299999937415123,
+        "maximumEvaluatedOutwardDistance": 0.09279468562453985,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.7829999923706055
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.11900000274181366
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8500000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right middle hinge frame screw",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.005999982357023057,
+        "maximumEvaluatedOutwardDistance": 0.009345498168841004,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.7829999923706055
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            0.15800000727176666
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.8500000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right middle hinge knuckle",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.045778172061545774,
+        "maximumEvaluatedOutwardDistance": 0.13704927917569876,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.7200000286102295
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.15399999916553497
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8500000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right middle hinge leaf mount",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.0299999937415123,
+        "maximumEvaluatedOutwardDistance": 0.09279468562453985,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.6570000052452087
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.11900000274181366
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8500000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right middle hinge leaf screw",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.005999982357032447,
+        "maximumEvaluatedOutwardDistance": 0.009345498168841004,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.6570000052452087
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            0.15800000727176666
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.8500000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right upper hinge frame mount",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.0299999937415123,
+        "maximumEvaluatedOutwardDistance": 0.09279473777860403,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.7829999923706055
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.11900000274181366
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.3300000429153442
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right upper hinge frame screw",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.005999982357041295,
+        "maximumEvaluatedOutwardDistance": 0.009345842830953188,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.7829999923706055
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            0.15800000727176666
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            1.3300000429153442
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right upper hinge knuckle",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.045778172061545774,
+        "maximumEvaluatedOutwardDistance": 0.1370499380864203,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.7200000286102295
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.15399999916553497
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.3300000429153442
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right upper hinge leaf mount",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.0299999937415123,
+        "maximumEvaluatedOutwardDistance": 0.09279473777860403,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.6570000052452087
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.11900000274181366
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.3300000429153442
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.right upper hinge leaf screw",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.005999982357050685,
+        "maximumEvaluatedOutwardDistance": 0.009345842830953188,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.6570000052452087
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            0.15800000727176666
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            1.3300000429153442
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.threshold fixing bolt -0.78",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.005999982357015756,
+        "maximumEvaluatedOutwardDistance": 0.009345536353066564,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.7799999713897705
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.11999999731779099
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.1509999930858612
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.threshold fixing bolt 0.78",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.0059999823570345365,
+        "maximumEvaluatedOutwardDistance": 0.009345536353066564,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.7799999713897705
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.11999999731779099
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.1509999930858612
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.threshold grip rib 0",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.004999995231628418,
+        "maximumEvaluatedOutwardDistance": 0.7799999713897705,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.1899999976158142
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.1469999998807907
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.threshold grip rib 1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.00499996542930603,
+        "maximumEvaluatedOutwardDistance": 0.7799999713897705,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.14499999582767487
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.1469999998807907
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.threshold grip rib 2",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.004999972879886627,
+        "maximumEvaluatedOutwardDistance": 0.7799999713897705,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.10000000149011612
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.1469999998807907
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.threshold grip rib 3",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.004999987781047821,
+        "maximumEvaluatedOutwardDistance": 0.7799999713897705,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.054999999701976776
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.1469999998807907
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window frame screw -0.684 0.834 -0.015",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.004499971866621727,
+        "maximumEvaluatedOutwardDistance": 0.006089999427786097,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.6840000152587891
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.1589999943971634
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.8190000057220459
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window frame screw -0.684 0.834 0.015",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.00449997186661391,
+        "maximumEvaluatedOutwardDistance": 0.00608984415885061,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.6840000152587891
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.1589999943971634
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.8489999771118164
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window frame screw -0.684 1.526 -0.015",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.0044999718666113055,
+        "maximumEvaluatedOutwardDistance": 0.006089820759370923,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.6840000152587891
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.1589999943971634
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            1.5110000371932983
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window frame screw -0.684 1.526 0.015",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.004499971866616516,
+        "maximumEvaluatedOutwardDistance": 0.006089912094466854,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.6840000152587891
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.1589999943971634
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            1.5410000085830688
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window frame screw 0.684 0.834 -0.015",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.00449997186662487,
+        "maximumEvaluatedOutwardDistance": 0.006090000155381858,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.6840000152587891
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.1589999943971634
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.8190000057220459
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window frame screw 0.684 0.834 0.015",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.0044999718666170535,
+        "maximumEvaluatedOutwardDistance": 0.006089844042435288,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.6840000152587891
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.1589999943971634
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            0.8489999771118164
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window frame screw 0.684 1.526 -0.015",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.004499971866614449,
+        "maximumEvaluatedOutwardDistance": 0.006089820759370923,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.6840000152587891
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.1589999943971634
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            1.5110000371932983
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window frame screw 0.684 1.526 0.015",
+        "rawVertices": 64,
+        "rawFaces": 34,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 34,
+        "evaluatedFaces": 162,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 162,
+        "minimumEvaluatedOutwardDistance": 0.004499971866619659,
+        "maximumEvaluatedOutwardDistance": 0.006089912094466854,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.6840000152587891
+          ],
+          [
+            0.0,
+            -4.371138828673793e-08,
+            -1.0,
+            -0.1589999943971634
+          ],
+          [
+            0.0,
+            1.0,
+            -4.371138828673793e-08,
+            1.5410000085830688
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window horizontal glazing stop 0.828",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.022999823093414307,
+        "maximumEvaluatedOutwardDistance": 0.7179999947547913,
+        "materials": [
+          "control panel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.1289999932050705
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.828000009059906
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window horizontal glazing stop 1.532",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.02299952507019043,
+        "maximumEvaluatedOutwardDistance": 0.7179999947547913,
+        "materials": [
+          "control panel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.1289999932050705
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.531999945640564
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window vertical glazing stop -1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.022999882698059082,
+        "maximumEvaluatedOutwardDistance": 0.3720000982284546,
+        "materials": [
+          "control panel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.6949999928474426
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.1289999932050705
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.1799999475479126
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "angled-loading-dock.window vertical glazing stop 1",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.023000001907348633,
+        "maximumEvaluatedOutwardDistance": 0.3720000982284546,
+        "materials": [
+          "control panel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.6949999928474426
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.1289999932050705
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.1799999475479126
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "door",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.09000000357627869,
+        "maximumEvaluatedOutwardDistance": 1.1507036983966827,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8500000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "handle",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.019999980926513672,
+        "maximumEvaluatedOutwardDistance": 0.2770280297845602,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.14000000059604645
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.5
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "header",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.05999934673309326,
+        "maximumEvaluatedOutwardDistance": 0.949999988079071,
+        "materials": [
+          "warm charcoal"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.7200000286102295
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "hinge",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.04999995231628418,
+        "maximumEvaluatedOutwardDistance": 0.6000000834465027,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            -0.7200000286102295
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.11999999731779099
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8500000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "hinge.001",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.04999995231628418,
+        "maximumEvaluatedOutwardDistance": 0.6000000834465027,
+        "materials": [
+          "amber status"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.7200000286102295
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            0.11999999731779099
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.8500000238418579
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "threshold",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.0599999837577343,
+        "maximumEvaluatedOutwardDistance": 0.8500000238418579,
+        "materials": [
+          "control panel"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.11999999731779099
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.07999999821186066
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      },
+      {
+        "name": "window",
+        "rawVertices": 8,
+        "rawFaces": 6,
+        "rawInwardFaces": 0,
+        "rawOutwardFaces": 6,
+        "evaluatedFaces": 54,
+        "evaluatedInwardFaces": 0,
+        "evaluatedOutwardFaces": 54,
+        "minimumEvaluatedOutwardDistance": 0.01999995857477188,
+        "maximumEvaluatedOutwardDistance": 0.7403372228145599,
+        "materials": [
+          "monitor glass"
+        ],
+        "matrixWorld": [
+          [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0,
+            -0.11999999731779099
+          ],
+          [
+            0.0,
+            0.0,
+            1.0,
+            1.1799999475479126
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "modifiers": [
+          {
+            "name": "soft_edges",
+            "type": "BEVEL"
+          }
+        ]
+      }
+    ],
+    "totalRawInwardFaces": 0,
+    "totalEvaluatedInwardFaces": 0,
+    "totalEvaluatedFaces": 7128
+  }
+]

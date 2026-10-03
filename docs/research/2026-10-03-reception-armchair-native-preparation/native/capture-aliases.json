@@ -1,0 +1,235 @@
+[
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003.json",
+    "archived": "compiled-fullhd-first-observation/report.json",
+    "sourceBytes": 5915,
+    "sourceSha256": "4e2cc9556c21c233a05c8b67dd77c0b3a8d42ac8870e635705c49ef1ea3d58fd",
+    "archivedBytes": 5915,
+    "archivedSha256": "4e2cc9556c21c233a05c8b67dd77c0b3a8d42ac8870e635705c49ef1ea3d58fd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003.txt",
+    "archived": "compiled-fullhd-first-observation/console.txt",
+    "sourceBytes": 4302,
+    "sourceSha256": "ab7d5a7ecbb35ae8ee22f305ca0fcca5e2379b164d072173214d7ecb60ab9fcc",
+    "archivedBytes": 2158,
+    "archivedSha256": "3f74cdd7c76eafea382c16b591fd0e7a467d7ddeb7e6bb93e10da80207a64622",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\.last-run.json",
+    "archived": "compiled-fullhd-first-observation/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\executed-literal-oracle.ts.txt",
+    "archived": "compiled-fullhd-first-observation/002-executed-literal-oracle.ts.txt",
+    "sourceBytes": 3031,
+    "sourceSha256": "5358f1dada6b166fa2d6d52354746759dcf3c43a4763b00d3ff3e42812391af7",
+    "archivedBytes": 3031,
+    "archivedSha256": "5358f1dada6b166fa2d6d52354746759dcf3c43a4763b00d3ff3e42812391af7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\executed-observer.ts.txt",
+    "archived": "compiled-fullhd-first-observation/003-executed-observer.ts.txt",
+    "sourceBytes": 10087,
+    "sourceSha256": "79c091a44575ec8f900296f42cceac6fc83a122643ebd25291acae2bb07d3b04",
+    "archivedBytes": 10087,
+    "archivedSha256": "79c091a44575ec8f900296f42cceac6fc83a122643ebd25291acae2bb07d3b04"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\executed-recipe.ts.txt",
+    "archived": "compiled-fullhd-first-observation/004-executed-recipe.ts.txt",
+    "sourceBytes": 11582,
+    "sourceSha256": "e0f23ca5689bd6ea6b468d4145eb4e726bf865a1e276a927749f0f6ea05d5b0b",
+    "archivedBytes": 11582,
+    "archivedSha256": "e0f23ca5689bd6ea6b468d4145eb4e726bf865a1e276a927749f0f6ea05d5b0b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-13948-strap-for-Reception-seating\\actual-public-capacity-whole-paused.json",
+    "archived": "compiled-fullhd-first-observation/005-actual-public-capacity-whole-paused.json",
+    "sourceBytes": 54463,
+    "sourceSha256": "df597970b9d0368bc58475afd59a5ff930b1b3fa3affa90c4a6d85784aa414b9",
+    "archivedBytes": 54463,
+    "archivedSha256": "df597970b9d0368bc58475afd59a5ff930b1b3fa3affa90c4a6d85784aa414b9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\actual-reception-completed-whole-paused.json",
+    "archived": "compiled-fullhd-first-observation/006-actual-reception-completed-whole-paused.json",
+    "sourceBytes": 76812,
+    "sourceSha256": "665d2325920c049f4089fe51b4815298019834389b7718253a87f7dc424ed14c",
+    "archivedBytes": 76812,
+    "archivedSha256": "665d2325920c049f4089fe51b4815298019834389b7718253a87f7dc424ed14c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\actual-reception-queued-whole-paused.json",
+    "archived": "compiled-fullhd-first-observation/007-actual-reception-queued-whole-paused.json",
+    "sourceBytes": 63958,
+    "sourceSha256": "eb92651eca420787fe676c54f7d24ed427ac40614a794d227ab512e49d8cb7e7",
+    "archivedBytes": 63958,
+    "archivedSha256": "eb92651eca420787fe676c54f7d24ed427ac40614a794d227ab512e49d8cb7e7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\actual-reception-whole-paused-after-save-load.json",
+    "archived": "compiled-fullhd-first-observation/008-actual-reception-whole-paused-after-save-load.json",
+    "sourceBytes": 76812,
+    "sourceSha256": "859f6b594c6d463696a3255eda649a03d0bbb4645ee0bce04e1d9a1226b27fd1",
+    "archivedBytes": 76812,
+    "archivedSha256": "859f6b594c6d463696a3255eda649a03d0bbb4645ee0bce04e1d9a1226b27fd1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\reception-room-actual-after-load-canvas.png",
+    "archived": "compiled-fullhd-first-observation/009-reception-room-actual-after-load-canvas.png",
+    "sourceBytes": 1494741,
+    "sourceSha256": "fc79c3206b1b021026a82aed0eecac22d1b6f6ee66318a54acc751fde5c4f5a7",
+    "archivedBytes": 1494741,
+    "archivedSha256": "fc79c3206b1b021026a82aed0eecac22d1b6f6ee66318a54acc751fde5c4f5a7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\reception-room-actual-after-load-fullhd.png",
+    "archived": "compiled-fullhd-first-observation/010-reception-room-actual-after-load-fullhd.png",
+    "sourceBytes": 1494741,
+    "sourceSha256": "fc79c3206b1b021026a82aed0eecac22d1b6f6ee66318a54acc751fde5c4f5a7",
+    "archivedBytes": 1494741,
+    "archivedSha256": "fc79c3206b1b021026a82aed0eecac22d1b6f6ee66318a54acc751fde5c4f5a7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\reception-room-actual-before-save-canvas.png",
+    "archived": "compiled-fullhd-first-observation/011-reception-room-actual-before-save-canvas.png",
+    "sourceBytes": 1524531,
+    "sourceSha256": "72a8fe29527989a8e731863fab4c6ef298a2597f5b3e2281af1a6c9b1123ddcb",
+    "archivedBytes": 1524531,
+    "archivedSha256": "72a8fe29527989a8e731863fab4c6ef298a2597f5b3e2281af1a6c9b1123ddcb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\reception-room-actual-before-save-fullhd.png",
+    "archived": "compiled-fullhd-first-observation/012-reception-room-actual-before-save-fullhd.png",
+    "sourceBytes": 1520652,
+    "sourceSha256": "e1ee3277ee05e0508974222c3a52aefcd8412165ccf7bc1c5994319894599aa8",
+    "archivedBytes": 1520652,
+    "archivedSha256": "e1ee3277ee05e0508974222c3a52aefcd8412165ccf7bc1c5994319894599aa8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\reception-room-actual-network-and-decoder-receipt.json",
+    "archived": "compiled-fullhd-first-observation/013-reception-room-actual-network-and-decoder-receipt.json",
+    "sourceBytes": 40967,
+    "sourceSha256": "b7238a14f4e62243f59b18a8c9d42fab038e833aa7477c9087b37e6bcbf523e5",
+    "archivedBytes": 40967,
+    "archivedSha256": "b7238a14f4e62243f59b18a8c9d42fab038e833aa7477c9087b37e6bcbf523e5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\reception-room-actual-network.json",
+    "archived": "compiled-fullhd-first-observation/014-reception-room-actual-network.json",
+    "sourceBytes": 3581,
+    "sourceSha256": "f1830c83171f512d5ed2b784ccd50a136cb6af886f1483dd5ee6eb87f53d7013",
+    "archivedBytes": 3581,
+    "archivedSha256": "f1830c83171f512d5ed2b784ccd50a136cb6af886f1483dd5ee6eb87f53d7013"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\reception-room-actual200-source60-elev40.png",
+    "archived": "compiled-fullhd-first-observation/015-reception-room-actual200-source60-elev40.png",
+    "sourceBytes": 7901,
+    "sourceSha256": "4e6ee8fdb156be06a9d023f8806d90aede0b12552d048dcdba383c5f68b4cb0d",
+    "archivedBytes": 7901,
+    "archivedSha256": "4e6ee8fdb156be06a9d023f8806d90aede0b12552d048dcdba383c5f68b4cb0d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-7c760--and-whole-paused-Save-Load\\reception-room-native-prepared-route-receipt.json",
+    "archived": "compiled-fullhd-first-observation/016-reception-room-native-prepared-route-receipt.json",
+    "sourceBytes": 237389,
+    "sourceSha256": "5edf8346a49ac7c86dcb772bb860365f66a9d58b3d11c3658bdc7439a1efed24",
+    "archivedBytes": 237389,
+    "archivedSha256": "5edf8346a49ac7c86dcb772bb860365f66a9d58b3d11c3658bdc7439a1efed24"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\actual-reception-completed-whole-paused.json",
+    "archived": "compiled-fullhd-first-observation/017-actual-reception-completed-whole-paused.json",
+    "sourceBytes": 76975,
+    "sourceSha256": "3b3e355b0424dd59f268458575c6267a261adb15d5f9e2cd33e154900a8a88b7",
+    "archivedBytes": 76975,
+    "archivedSha256": "3b3e355b0424dd59f268458575c6267a261adb15d5f9e2cd33e154900a8a88b7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\actual-reception-queued-whole-paused.json",
+    "archived": "compiled-fullhd-first-observation/018-actual-reception-queued-whole-paused.json",
+    "sourceBytes": 63924,
+    "sourceSha256": "2b333cfd32e1d8eb120d88ea33d4a0eb456cefbb5599b29fb732defd0861d312",
+    "archivedBytes": 63924,
+    "archivedSha256": "2b333cfd32e1d8eb120d88ea33d4a0eb456cefbb5599b29fb732defd0861d312"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\actual-reception-whole-paused-after-save-load.json",
+    "archived": "compiled-fullhd-first-observation/019-actual-reception-whole-paused-after-save-load.json",
+    "sourceBytes": 76975,
+    "sourceSha256": "7f86a39195307be5b61343f75ed7d17b74649beb0b588b90df57f97345f6ac5e",
+    "archivedBytes": 76975,
+    "archivedSha256": "7f86a39195307be5b61343f75ed7d17b74649beb0b588b90df57f97345f6ac5e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\reception-room-actual-after-load-canvas.png",
+    "archived": "compiled-fullhd-first-observation/020-reception-room-actual-after-load-canvas.png",
+    "sourceBytes": 1520480,
+    "sourceSha256": "e819e731f319b3f7506043003f426888cc6203a93e145b5eed2f104361179c6c",
+    "archivedBytes": 1520480,
+    "archivedSha256": "e819e731f319b3f7506043003f426888cc6203a93e145b5eed2f104361179c6c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\reception-room-actual-after-load-fullhd.png",
+    "archived": "compiled-fullhd-first-observation/021-reception-room-actual-after-load-fullhd.png",
+    "sourceBytes": 1520480,
+    "sourceSha256": "e819e731f319b3f7506043003f426888cc6203a93e145b5eed2f104361179c6c",
+    "archivedBytes": 1520480,
+    "archivedSha256": "e819e731f319b3f7506043003f426888cc6203a93e145b5eed2f104361179c6c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\reception-room-actual-before-save-canvas.png",
+    "archived": "compiled-fullhd-first-observation/022-reception-room-actual-before-save-canvas.png",
+    "sourceBytes": 1560542,
+    "sourceSha256": "7d75730b679aa206f143421abaeafa2947aafa02c4c4f7bbd9232c8568eebf48",
+    "archivedBytes": 1560542,
+    "archivedSha256": "7d75730b679aa206f143421abaeafa2947aafa02c4c4f7bbd9232c8568eebf48"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\reception-room-actual-before-save-fullhd.png",
+    "archived": "compiled-fullhd-first-observation/023-reception-room-actual-before-save-fullhd.png",
+    "sourceBytes": 1560542,
+    "sourceSha256": "7d75730b679aa206f143421abaeafa2947aafa02c4c4f7bbd9232c8568eebf48",
+    "archivedBytes": 1560542,
+    "archivedSha256": "7d75730b679aa206f143421abaeafa2947aafa02c4c4f7bbd9232c8568eebf48"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\reception-room-actual-network-and-decoder-receipt.json",
+    "archived": "compiled-fullhd-first-observation/024-reception-room-actual-network-and-decoder-receipt.json",
+    "sourceBytes": 51563,
+    "sourceSha256": "b8c13e166a3b23ccfc5a93d21694b95640644de5dee24a1d6d062ddf40dd4fb2",
+    "archivedBytes": 51563,
+    "archivedSha256": "b8c13e166a3b23ccfc5a93d21694b95640644de5dee24a1d6d062ddf40dd4fb2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\reception-room-actual-network.json",
+    "archived": "compiled-fullhd-first-observation/025-reception-room-actual-network.json",
+    "sourceBytes": 5865,
+    "sourceSha256": "be6f307c94bd81345f2244bca515f68ed2ec5f4bb5b28b2b0d60ee5b88e8ec66",
+    "archivedBytes": 5865,
+    "archivedSha256": "be6f307c94bd81345f2244bca515f68ed2ec5f4bb5b28b2b0d60ee5b88e8ec66"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\reception-room-actual200-source60-elev40.png",
+    "archived": "compiled-fullhd-first-observation/026-reception-room-actual200-source60-elev40.png",
+    "sourceBytes": 7901,
+    "sourceSha256": "4e6ee8fdb156be06a9d023f8806d90aede0b12552d048dcdba383c5f68b4cb0d",
+    "archivedBytes": 7901,
+    "archivedSha256": "4e6ee8fdb156be06a9d023f8806d90aede0b12552d048dcdba383c5f68b4cb0d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-reception-actual-native-20261003\\native-reception-room.reci-f260f--and-whole-paused-Save-Load\\reception-room-native-prepared-route-receipt.json",
+    "archived": "compiled-fullhd-first-observation/027-reception-room-native-prepared-route-receipt.json",
+    "sourceBytes": 248652,
+    "sourceSha256": "9757c8b2aeb99726850b571b902673395131c4841399721166f6555af39c7d00",
+    "archivedBytes": 248652,
+    "archivedSha256": "9757c8b2aeb99726850b571b902673395131c4841399721166f6555af39c7d00"
+  }
+]

@@ -1,0 +1,1568 @@
+{
+  "quarterTurns": 0,
+  "catalog": {
+    "schemaVersion": 1,
+    "assetId": "fixture.garbage-room.waste-bin",
+    "source": "assets/source/blender/fixture.garbage-room.waste-bin.blend",
+    "sourceSha256": "5d9cafee94af08098b045e389b642ec655536fe0cc8aae8b5e026822f7d984cc",
+    "resolutionPx": [
+      256,
+      256
+    ],
+    "nominalPixelsPerTile": 64,
+    "pivotPx": [
+      128,
+      128
+    ],
+    "cameraTargetTiles": [
+      0.5,
+      0.5,
+      0.5949999681859961
+    ],
+    "projection": "orthographic",
+    "yawDegrees": [
+      0,
+      30,
+      60,
+      90,
+      120,
+      150,
+      180,
+      210,
+      240,
+      270,
+      300,
+      330
+    ],
+    "elevationDegrees": [
+      20,
+      30,
+      40,
+      50,
+      60,
+      70
+    ],
+    "frames": [
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+00-elev20.27b3ff2e2c53.png",
+        "sha256": "27b3ff2e2c53f13312572b4ecdc107e7959ff8abb0a67b761e15f93e73416beb"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+00-elev30.017e7477a9ef.png",
+        "sha256": "017e7477a9efbe6ad22698cef093bc01ea76075b795ce70cd80aa88c152f2d61"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+00-elev40.12651a040ff3.png",
+        "sha256": "12651a040ff337a65975291bfdc1cdb5277245b0247653c823f86c665c3c3284"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+00-elev50.b1cd2c26486c.png",
+        "sha256": "b1cd2c26486c26b2c16988b9b0af260c9e7a88827acb951e0f3cd5e0ff645da9"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+00-elev60.2dbc164f0c00.png",
+        "sha256": "2dbc164f0c00361f4eef8d71a32a5c301985a1ad9d455dfe3b372ee081d2384e"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+00-elev70.4bf477f7f119.png",
+        "sha256": "4bf477f7f11989f9024a967dffb7bd19f54a7364905309381baa67821bc02248"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+30-elev20.869e6bcc439f.png",
+        "sha256": "869e6bcc439fd6d54800f03cd686934d2cd91108ed296e913b4ae0266302cf07"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+30-elev30.53f62c38a777.png",
+        "sha256": "53f62c38a77793b6ebd1679a2e5cd956e5c0bc0253f2cb4bf1304caf5c5f9090"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+30-elev40.4bca18430593.png",
+        "sha256": "4bca184305934d447463bba66a94076de35c56c3918a642678bee7c1ce41ab00"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+30-elev50.42b956ba3966.png",
+        "sha256": "42b956ba39663eb00dbd5e7d7a2d7768a1642dcc8789633961dac6a3db89025b"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+30-elev60.06352c539cc6.png",
+        "sha256": "06352c539cc624432af5b866ec215349815e820c0813d11687b63a8567279ed3"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+30-elev70.be5fbbc9d205.png",
+        "sha256": "be5fbbc9d205ab93018cbe6347fbf32834c56522d4f10584eeba9c7ee66f01c0"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+60-elev20.3ed309fafe9c.png",
+        "sha256": "3ed309fafe9c802b2a226e5dd91fdc6b345cc4be17f3d9375574cc74f1da5336"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+60-elev30.4b23d396d9b7.png",
+        "sha256": "4b23d396d9b7734875a5a5a9924797bc09824e68ee24f80284fd33519c9e9df4"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+60-elev40.a573c065a873.png",
+        "sha256": "a573c065a8733517712fdbecd752a47599b407cd1dcd0847a9fc00470cb9e348"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+60-elev50.a2d4a53b4166.png",
+        "sha256": "a2d4a53b4166e38c3fc43064c02163659f0a2bcec60f7828cc0618ff644a1962"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+60-elev60.8242d96b5f54.png",
+        "sha256": "8242d96b5f5417310a876cf9ba9db35299919bc53d937b1e56d077daf0930424"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+60-elev70.32bbc6fcd562.png",
+        "sha256": "32bbc6fcd562e3cf9a17e50dc45e1721c0fe1b6f34759169db081bc6fd9a094d"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+90-elev20.da6ceaf7310c.png",
+        "sha256": "da6ceaf7310c315c5311dac1fc0aa986cf7ad4752cf2cb6b450155e30d3ea843"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+90-elev30.91ae4872db75.png",
+        "sha256": "91ae4872db75b10b62e18069cc886a119b489c846458fdcbda7e844ca7d62ef0"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+90-elev40.8852ad80c499.png",
+        "sha256": "8852ad80c4990cd2da70951be46f652143227d22e9d2a519adeaf9cff24e5353"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+90-elev50.e752535efa82.png",
+        "sha256": "e752535efa825b183e4e3aef4ba8c6a7c8e1b75ed8bc0a131a922447664ef81c"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+90-elev60.bb63453ad7bc.png",
+        "sha256": "bb63453ad7bcbb333bdfd6c4a768ca3316d5b599b2534dd5d144ae11f70dc3d8"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+90-elev70.3452af8a60da.png",
+        "sha256": "3452af8a60da2f05b8c639a5966a6e4843b8a645dc610570cd53badc558250c7"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+120-elev20.591f6ad6a169.png",
+        "sha256": "591f6ad6a1692f208be2e58f8b22db8eeb34ee6681eda965881079ac844cfedc"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+120-elev30.3c992d08a5e7.png",
+        "sha256": "3c992d08a5e712ba3c64036b69e1ebe3581f8d2471b64890ea41b90861880c27"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+120-elev40.de974ee045e1.png",
+        "sha256": "de974ee045e17510a463666b2aec5323421b841d7598e83bcf8d39fb0a54ed06"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+120-elev50.99b50261b785.png",
+        "sha256": "99b50261b7855397b3dea2225b33413da98d7cfad6cc807a81635552e7fa856d"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+120-elev60.feee605fed87.png",
+        "sha256": "feee605fed87ca29b5b10f7ba941665bde30c108b8251d37e9e66761a015cd89"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+120-elev70.39954a2d8ab6.png",
+        "sha256": "39954a2d8ab66e8e3bfd640fbeedc006e87470684c1cfef5c6bed42837e49d63"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+150-elev20.7db7869ff2b7.png",
+        "sha256": "7db7869ff2b7cf28a6509f83f1460af3bc2a576b4dba7ef69d2076c67dcdc5bc"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+150-elev30.bf9eb54756b6.png",
+        "sha256": "bf9eb54756b682e63e4a158eebf0ebf3c542039da0d302f7cd30c8f6f809f5de"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+150-elev40.200517e8ed97.png",
+        "sha256": "200517e8ed974a376c01bf59cdf829eec70b11d7438b0f01024fb63eebb191d6"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+150-elev50.ef2f2bfe36dd.png",
+        "sha256": "ef2f2bfe36ddc05cfe2079bed9ec2624121be5222e914316a6f3a8ba47af528e"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+150-elev60.d1192ff143ed.png",
+        "sha256": "d1192ff143ed48898a3a21957e077fb5f10ccfebe54e9582986d5421461a4db0"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+150-elev70.3e6173f9b0b3.png",
+        "sha256": "3e6173f9b0b3c727a6e0b89eea3c54af7b2229db1e150bbd56460eaf80aff123"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+180-elev20.472f4579c39b.png",
+        "sha256": "472f4579c39bbb0b730df2fe88754ef243afa3b1834d74d9d9780a7a236fa203"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+180-elev30.da64ebc433a2.png",
+        "sha256": "da64ebc433a2b9e758ed3c7402f32779ec1dd1365f7967fd009a8e5ba0dca576"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+180-elev40.ce1796e03f84.png",
+        "sha256": "ce1796e03f84592837e8e9cc602bc8f8d44706e840f15df0d70424bc87958581"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+180-elev50.acada4821d99.png",
+        "sha256": "acada4821d99ef9c79d765de436dd319a6a0a29ab56559108a35f1d11e798a94"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+180-elev60.ff2e3dd86278.png",
+        "sha256": "ff2e3dd86278ec6af9f7c31137fe3cc15e2f6633e18a5998eb2be6a6c9e39388"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+180-elev70.c3113eb95e55.png",
+        "sha256": "c3113eb95e55e306cd4ee3c17db6a2fbbac56f7b4ebd6d5d00d69b600e133a43"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+210-elev20.4d12f1988395.png",
+        "sha256": "4d12f198839546f6a56b2b898258ad05a14af0594ce6a819eb14077b7460f79b"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+210-elev30.037cc858b7cb.png",
+        "sha256": "037cc858b7cb10283150ddd41794ded47081de69dd18ba56e72ff9226088ecce"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+210-elev40.071eb76eb0dc.png",
+        "sha256": "071eb76eb0dcf78dfbb784acfcec91bf18a0aba88da95c2060a4ced6f4d01721"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+210-elev50.37111e6780e9.png",
+        "sha256": "37111e6780e926401dce1150153abd06551457e09bc1ed03a1c66924f7b933cd"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+210-elev60.91452166ef7e.png",
+        "sha256": "91452166ef7eda830ce9337bd6748da6812e5580503f8012b27aae76d6ea2172"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+210-elev70.49a67b1d66ae.png",
+        "sha256": "49a67b1d66ae956cecb2cdf8e3ce2447b807845261fb01e2c48610f3599edfef"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+240-elev20.4af954ba3fce.png",
+        "sha256": "4af954ba3fce97b0b4b068bd67bb585d06cb1fa0594b742df87ef8cd00213784"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+240-elev30.dd464340b31c.png",
+        "sha256": "dd464340b31ce75c622a4dcd75b6f92ff9dffeca9fccb6849fb6289008bf0961"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+240-elev40.77771ccc0810.png",
+        "sha256": "77771ccc0810b4ab85bb7706775ac333c7019575d2bbb581a01a1405ac5a8ba6"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+240-elev50.2a917ccb4a42.png",
+        "sha256": "2a917ccb4a4265594204d30f084da9fd562dd186f505c82324145d6a2d84cde0"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+240-elev60.23c7a548fccf.png",
+        "sha256": "23c7a548fccff60bdf65e3648b6f06d0381e7ef50fcf0ac7b0ab90d9a996d151"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+240-elev70.96ddaac91302.png",
+        "sha256": "96ddaac9130273f37dee28d4bd3648352895ad30eb4c69924211ac9e950a4fb6"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+270-elev20.1f6c88225a12.png",
+        "sha256": "1f6c88225a12b9b3f1a6919ebd2e90da483c87be41bf1ae6deeaf2027e34f142"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+270-elev30.2a30bc6b22ee.png",
+        "sha256": "2a30bc6b22ee8ae8284e589eb2be62c7238d67f727038bf5460d02330fecb855"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+270-elev40.ac43e19bf527.png",
+        "sha256": "ac43e19bf527b5c6819ba7cf4511da44f217444f6215576496925212d6b9805d"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+270-elev50.6fa345bf4b80.png",
+        "sha256": "6fa345bf4b80a47833e00023c6a24c76aa3d4544e853495192e933d7543c88cb"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+270-elev60.1a30cccebfa6.png",
+        "sha256": "1a30cccebfa6a185d23383f35b7890d374250b0f3404ba6213ee8c72727066b7"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+270-elev70.7db4f4b36aa2.png",
+        "sha256": "7db4f4b36aa2f40f6daceadb81d60234edd8d539bba310588a8a101f2b8eda6d"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev20.33f0ea8c1ea0.png",
+        "sha256": "33f0ea8c1ea000f7ba069fac10026dabbf779dd0fc297911350e235d41442ecc"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev30.d1b0a51fa3ba.png",
+        "sha256": "d1b0a51fa3ba368ddd0d06a6f6e5c70c3d68aaac4d1c668d4635ec8d22407b6c"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev40.2a807505ad10.png",
+        "sha256": "2a807505ad10545931ca717ac4cf8627d50e380323fb6052af4531f082df812b"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev50.30f9f2e92e19.png",
+        "sha256": "30f9f2e92e193252148dae3e0a25cc750139d357bd5e7a2dad61a7dd514e38c8"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev60.90a7cbdb532b.png",
+        "sha256": "90a7cbdb532b6b3b53df16e4fe2ab2c7b4b2cdfc36235707fb30a52b5d53eb08"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev70.81ac2c99ce68.png",
+        "sha256": "81ac2c99ce685c7558b9b0f02a7dd85956e83aa634e8853c3e2b2d5ce66e4742"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+330-elev20.57aae9c256a1.png",
+        "sha256": "57aae9c256a13ef2f682bfc5e1efece196407822fdc9d420a30ca3a4d0fe0437"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+330-elev30.576761371a3f.png",
+        "sha256": "576761371a3fb025980ebdfff9311b58bae96e81b7facb529d352ffd4a3568db"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+330-elev40.b1dade694cb5.png",
+        "sha256": "b1dade694cb57f30eb61633ee7def3578ce25dd380373912af2a711c50ec62d0"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+330-elev50.b6f66e6bfbd7.png",
+        "sha256": "b6f66e6bfbd70f8b2f7273db2a75a906fe126ae09cd86e9edf53f12e982d0124"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+330-elev60.8b147ad1e7e7.png",
+        "sha256": "8b147ad1e7e78f13ca55a78baf4d8d30580e3d70616ca8ded7088c345710bb2d"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+330-elev70.a2babbb8615a.png",
+        "sha256": "a2babbb8615adf57b09bd3d62ba8b3ae421d9e6db9635e78db82276190d3c8e0"
+      }
+    ]
+  },
+  "descriptorBodySha256": "3d0f33f3372f02021c81474877997595065ee9b4430f42e835cd1a33819978d3",
+  "exposedFrameSha256": "a573c065a8733517712fdbecd752a47599b407cd1dcd0847a9fc00470cb9e348",
+  "network": [
+    {
+      "url": "http://127.0.0.1:5365/assets/worker-BA42u9rG.js",
+      "path": "/assets/worker-BA42u9rG.js",
+      "status": 200,
+      "sha256": "5cbab442c9a45106c589077537eb10b94417373240b850fb949f61ed19dbca4f",
+      "bytes": 442752
+    },
+    {
+      "url": "http://127.0.0.1:5365/game-content/oblique-fixture.garbage-room-waste-bin.v1.json",
+      "path": "/game-content/oblique-fixture.garbage-room-waste-bin.v1.json",
+      "status": 200,
+      "sha256": "3d0f33f3372f02021c81474877997595065ee9b4430f42e835cd1a33819978d3",
+      "bytes": 19806
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev40.2a807505ad10.png",
+      "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev40.2a807505ad10.png",
+      "status": 307,
+      "location": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B300-elev40.2a807505ad10.png"
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B300-elev40.2a807505ad10.png",
+      "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev40.2a807505ad10.png",
+      "status": 200,
+      "sha256": "2a807505ad10545931ca717ac4cf8627d50e380323fb6052af4531f082df812b",
+      "bytes": 7065
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+330-elev40.b1dade694cb5.png",
+      "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+330-elev40.b1dade694cb5.png",
+      "status": 307,
+      "location": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B330-elev40.b1dade694cb5.png"
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B330-elev40.b1dade694cb5.png",
+      "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+330-elev40.b1dade694cb5.png",
+      "status": 200,
+      "sha256": "b1dade694cb57f30eb61633ee7def3578ce25dd380373912af2a711c50ec62d0",
+      "bytes": 6776
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+00-elev40.12651a040ff3.png",
+      "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+00-elev40.12651a040ff3.png",
+      "status": 307,
+      "location": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B00-elev40.12651a040ff3.png"
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B00-elev40.12651a040ff3.png",
+      "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+00-elev40.12651a040ff3.png",
+      "status": 200,
+      "sha256": "12651a040ff337a65975291bfdc1cdb5277245b0247653c823f86c665c3c3284",
+      "bytes": 4208
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+30-elev40.4bca18430593.png",
+      "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+30-elev40.4bca18430593.png",
+      "status": 307,
+      "location": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B30-elev40.4bca18430593.png"
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B30-elev40.4bca18430593.png",
+      "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+30-elev40.4bca18430593.png",
+      "status": 200,
+      "sha256": "4bca184305934d447463bba66a94076de35c56c3918a642678bee7c1ce41ab00",
+      "bytes": 6959
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+60-elev40.a573c065a873.png",
+      "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+60-elev40.a573c065a873.png",
+      "status": 307,
+      "location": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B60-elev40.a573c065a873.png"
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B60-elev40.a573c065a873.png",
+      "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+60-elev40.a573c065a873.png",
+      "status": 200,
+      "sha256": "a573c065a8733517712fdbecd752a47599b407cd1dcd0847a9fc00470cb9e348",
+      "bytes": 7095
+    }
+  ],
+  "actualDecodedImages": [
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/f466bb0d-f162-419a-ad83-634338a55b75",
+      "currentSrc": "blob:http://127.0.0.1:5365/f466bb0d-f162-419a-ad83-634338a55b75",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "d11380f7c0ac5d972b431d64f23fa25b759ff3de011f0ba295d6efa95bf9fe53"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/80bb2a17-e231-40dd-975e-af931cce1791",
+      "currentSrc": "blob:http://127.0.0.1:5365/80bb2a17-e231-40dd-975e-af931cce1791",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "961310abe6780382d3c958519ab93c2340457087941cfb2ed5c81b46545f748a"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/d01c6fa8-04b5-4d85-879e-49ae0f6701a0",
+      "currentSrc": "blob:http://127.0.0.1:5365/d01c6fa8-04b5-4d85-879e-49ae0f6701a0",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "e9397ac4b9d63f5a18988d31e0aabf36b9cefa4efaeeb4927a43beaab14669ac"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/ea73ddeb-9741-4c01-b96e-625d4fa90350",
+      "currentSrc": "blob:http://127.0.0.1:5365/ea73ddeb-9741-4c01-b96e-625d4fa90350",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "d98fa663476fcc9adf6f15346e53605215f58fd3f1c5089049284b096f86a07b"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/111c0168-f955-4cb4-8239-f25b885a6b99",
+      "currentSrc": "blob:http://127.0.0.1:5365/111c0168-f955-4cb4-8239-f25b885a6b99",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "74095e5922cdc2e62fc7826a20ff9848e2583227f3bdf428b2a9855894d14243"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/10e1bca9-5485-4c63-8ed6-23c161c706f2",
+      "currentSrc": "blob:http://127.0.0.1:5365/10e1bca9-5485-4c63-8ed6-23c161c706f2",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "40921f9613417d04bd8ec9e842a93abf32982a48326bfecaf641153afbdfd2ec"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/413dd2f1-8b64-4e27-9bda-6c45f58e74c1",
+      "currentSrc": "blob:http://127.0.0.1:5365/413dd2f1-8b64-4e27-9bda-6c45f58e74c1",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "03ababd95b126c05b85b12241e2aad53589791d8f33152189968abbb60004930"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/628875bd-5583-481d-860e-fe7542ca17ab",
+      "currentSrc": "blob:http://127.0.0.1:5365/628875bd-5583-481d-860e-fe7542ca17ab",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "6109b4c8f99c8aed492c32fe36948f401640d763a7fce8e689b130ba6617b1b6"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/c9b479fa-8d0b-4208-b8e5-9b8966050f31",
+      "currentSrc": "blob:http://127.0.0.1:5365/c9b479fa-8d0b-4208-b8e5-9b8966050f31",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "ec435cdad35d052a7cb35fe45e97f5a960b1c1cef6439125c847b649e0608acc"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/1d94bbf6-c5e6-4b30-ad27-1acce1bb6fcc",
+      "currentSrc": "blob:http://127.0.0.1:5365/1d94bbf6-c5e6-4b30-ad27-1acce1bb6fcc",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "b3fe27fabbbfcbb68426c616196e2b221f0b67107b6f1312c170b150ab710b49"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/00bb3100-291d-43d1-b780-a1b0008d90d4",
+      "currentSrc": "blob:http://127.0.0.1:5365/00bb3100-291d-43d1-b780-a1b0008d90d4",
+      "complete": true,
+      "width": 128,
+      "height": 128,
+      "error": false,
+      "sha256": "f362fceb7be335feb4161d55cc330db00752ee358726ce513b2124d656f40afc"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/7a39225c-7d73-4704-a403-e0250ee7fd10",
+      "currentSrc": "blob:http://127.0.0.1:5365/7a39225c-7d73-4704-a403-e0250ee7fd10",
+      "complete": true,
+      "width": 128,
+      "height": 128,
+      "error": false,
+      "sha256": "c0ef65857ded2b12b7b106666b854de5efb278e3aba8131967ad2851ac1febc5"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/7c11dd79-5fb7-4f7b-b312-37ba19637c32",
+      "currentSrc": "blob:http://127.0.0.1:5365/7c11dd79-5fb7-4f7b-b312-37ba19637c32",
+      "complete": true,
+      "width": 128,
+      "height": 128,
+      "error": false,
+      "sha256": "b8bf710d732d2f6ed0b2047683741b81d8d4258cf82e507ffe8019905a5e22be"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/93dc660a-5971-4480-b856-4039a25d8811",
+      "currentSrc": "blob:http://127.0.0.1:5365/93dc660a-5971-4480-b856-4039a25d8811",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "2ecf5465679a998e5cf4380a1ea9413ea8cdc915a6a985976e2ffb4c5e2370d2"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/197c38f6-300f-486c-b728-dfd2cea27fb2",
+      "currentSrc": "blob:http://127.0.0.1:5365/197c38f6-300f-486c-b728-dfd2cea27fb2",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "c7352a388ac2bb8075e924066c4abe39019d09272582ad2273a8dec5ffa55b17"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/be5a90bd-cbee-4f22-aa9f-9e411901f5c9",
+      "currentSrc": "blob:http://127.0.0.1:5365/be5a90bd-cbee-4f22-aa9f-9e411901f5c9",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "16b8abd3656c3395333538bb6dda8bf1c843c3e55e31565ea2bd3f9fa0462f45"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/2c6cf3a7-8cf4-4c12-b874-b03fca5ff916",
+      "currentSrc": "blob:http://127.0.0.1:5365/2c6cf3a7-8cf4-4c12-b874-b03fca5ff916",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "3c68840d1fbf6b57018b2367c84ef74f3c46e787739f521cfbcdb308171e9c9f"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/345b768f-7c2a-4254-8134-71afc22b35e8",
+      "currentSrc": "blob:http://127.0.0.1:5365/345b768f-7c2a-4254-8134-71afc22b35e8",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "bb8d15f97f7d596fa816fc4d496bebbeb6cf49bc413d15011acdac24e297303a"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/da366070-7b08-4fec-8515-68d8212f6457",
+      "currentSrc": "blob:http://127.0.0.1:5365/da366070-7b08-4fec-8515-68d8212f6457",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "46222ac72e320a839af9d57f0d7a53a3ec4c57f3028dc2bd759542a3578f72b5"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/9af7aa8f-4d7a-42d7-b05f-f7894438e7ca",
+      "currentSrc": "blob:http://127.0.0.1:5365/9af7aa8f-4d7a-42d7-b05f-f7894438e7ca",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "f871ecb6f11f97851cb3c416c21a9dab15580675c1ea64b7970aaa523b545092"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/c69e0ca2-e126-4b87-9643-866b053a2229",
+      "currentSrc": "blob:http://127.0.0.1:5365/c69e0ca2-e126-4b87-9643-866b053a2229",
+      "complete": true,
+      "width": 128,
+      "height": 128,
+      "error": false,
+      "sha256": "421ea8f74f06ad53e01811820c8c23d83a692cea675e667a755b6cd791d73524"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/dd54db7c-6326-4dd9-85dd-c10509a72171",
+      "currentSrc": "blob:http://127.0.0.1:5365/dd54db7c-6326-4dd9-85dd-c10509a72171",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "18b909749016599155528a35af28cf2c99fb2e1929e776fd2cefda20c0c2346c"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/3bb53e3b-0ac8-4747-8dc5-4944a4d49e1a",
+      "currentSrc": "blob:http://127.0.0.1:5365/3bb53e3b-0ac8-4747-8dc5-4944a4d49e1a",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "e992058304fe6be2d8944c883491c87e9485399d7633568f0a566d07630c0ef4"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/df7d7a5b-8697-48e2-8092-49b4899db3f5",
+      "currentSrc": "blob:http://127.0.0.1:5365/df7d7a5b-8697-48e2-8092-49b4899db3f5",
+      "complete": true,
+      "width": 128,
+      "height": 128,
+      "error": false,
+      "sha256": "40d4eca89db2508bafdf7996586a7e3844f6e68c6767a4c340f227f8fd97e813"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/4e30909c-716f-49ef-8ccc-04f713926b9a",
+      "currentSrc": "blob:http://127.0.0.1:5365/4e30909c-716f-49ef-8ccc-04f713926b9a",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "96bf089124afaa1fb73f14c939452bfa070d5cd88fa5a3fc920c57975f71bd96"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/982c0968-564b-4f37-9888-d77840a8acb0",
+      "currentSrc": "blob:http://127.0.0.1:5365/982c0968-564b-4f37-9888-d77840a8acb0",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "64c2e24677ead61d8a7a0b8f6143171c5550fc029894f58e68bc47be416983ef"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/1e4ea12a-884e-4d59-97e1-e1f470b140e0",
+      "currentSrc": "blob:http://127.0.0.1:5365/1e4ea12a-884e-4d59-97e1-e1f470b140e0",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "4edfe021a8670ce6b704fb523764016aa35393689f1ac04a27cd8e8d1c9109f8"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/b7a37f91-1959-4467-a09f-6124bfa08cd1",
+      "currentSrc": "blob:http://127.0.0.1:5365/b7a37f91-1959-4467-a09f-6124bfa08cd1",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "faccdd4d94af62dbb9bf239a5bfbdecac1daeab6c9542aed8a9a9a874368eae7"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/8c3fcd0e-4faa-4806-a99a-cddf01d6ed30",
+      "currentSrc": "blob:http://127.0.0.1:5365/8c3fcd0e-4faa-4806-a99a-cddf01d6ed30",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "13d9fadda21f26afd30b16e61999905bf6f9e1ff9b3922ba1d20236dc3145b57"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/32140ec4-1a72-44a1-8e96-6db8f53a92da",
+      "currentSrc": "blob:http://127.0.0.1:5365/32140ec4-1a72-44a1-8e96-6db8f53a92da",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "8846d69e23162f459677865a6c62f7772b3d189630380323bd6ed7267363dd12"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/062a50b7-b827-43ef-83d3-e5144e537510",
+      "currentSrc": "blob:http://127.0.0.1:5365/062a50b7-b827-43ef-83d3-e5144e537510",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "2f3d110ea54c5305300070d398ebb846478baf2ea848d9103f5b14f6ee8d6e88"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/edbd48da-416a-41b3-a0c5-92ffefe065a8",
+      "currentSrc": "blob:http://127.0.0.1:5365/edbd48da-416a-41b3-a0c5-92ffefe065a8",
+      "complete": true,
+      "width": 128,
+      "height": 128,
+      "error": false,
+      "sha256": "751dcd28f827c10dca1853c5df2876a7df64afc6284d4c1631d405d0210f3af5"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/d23abf60-8ad1-4233-b34d-b05f18434caa",
+      "currentSrc": "blob:http://127.0.0.1:5365/d23abf60-8ad1-4233-b34d-b05f18434caa",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "84bd56fcf5f16dc981bfbb9f4db28c178c4c5262c7b39d75cb086e266a2d0a1a"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/42645502-d5b8-4bd7-901d-e2a5242c818d",
+      "currentSrc": "blob:http://127.0.0.1:5365/42645502-d5b8-4bd7-901d-e2a5242c818d",
+      "complete": true,
+      "width": 128,
+      "height": 128,
+      "error": false,
+      "sha256": "a681371bbea096e78ae0d9d4cc71334d8feb6847846a15f7f4bfe5b8dc4a975a"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/ba7eb72a-f805-4149-bc39-b96bd980f37a",
+      "currentSrc": "blob:http://127.0.0.1:5365/ba7eb72a-f805-4149-bc39-b96bd980f37a",
+      "complete": true,
+      "width": 128,
+      "height": 128,
+      "error": false,
+      "sha256": "b4392b01567c952b264fb925e6787988fe1bf4b7ad5b19512f800e7c913a5803"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/7cc38f79-33b2-4092-8baa-755cce09ede0",
+      "currentSrc": "blob:http://127.0.0.1:5365/7cc38f79-33b2-4092-8baa-755cce09ede0",
+      "complete": true,
+      "width": 128,
+      "height": 128,
+      "error": false,
+      "sha256": "c07bdc4b76ab6476561be6eb739c5a7978342554a86b9154f8a30f908f84e449"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/78194391-5712-493e-b5e8-39d33ef1bd4d",
+      "currentSrc": "blob:http://127.0.0.1:5365/78194391-5712-493e-b5e8-39d33ef1bd4d",
+      "complete": true,
+      "width": 128,
+      "height": 128,
+      "error": false,
+      "sha256": "a2ec3336433803ea1c29e391d01e38275d8ff6a005e3061919fbde5daa260be1"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/3f7c66a1-4dbc-46f6-b2b1-4a4fc8c0b36d",
+      "currentSrc": "blob:http://127.0.0.1:5365/3f7c66a1-4dbc-46f6-b2b1-4a4fc8c0b36d",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "0d98bdcab1dfb8882e87530ad3b1eba4e98c36039d8af03d4e11fea377e78527"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/c59318f4-a48e-41d6-9e23-615ab21ab22e",
+      "currentSrc": "blob:http://127.0.0.1:5365/c59318f4-a48e-41d6-9e23-615ab21ab22e",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "307a1fd32c82aa171b168e95bb1ea7686c2520268d83c441868b18a7a6d43f68"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/666abe55-473a-4517-83fe-81fa29016fe5",
+      "currentSrc": "blob:http://127.0.0.1:5365/666abe55-473a-4517-83fe-81fa29016fe5",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "e9f94d81d85a28e4e6071819a1a70b109b23abcb9948bc74b5404197b34d8a94"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/9682a331-e558-4af6-8b9e-85e219076e54",
+      "currentSrc": "blob:http://127.0.0.1:5365/9682a331-e558-4af6-8b9e-85e219076e54",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "06bf1b3a0d8a6f98dc0cefd9ea43e5ee14225bb36e319944ad2d0d454035dfe1"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/6fb6f403-4ac0-4920-bdbf-1d5e1e9a9ba7",
+      "currentSrc": "blob:http://127.0.0.1:5365/6fb6f403-4ac0-4920-bdbf-1d5e1e9a9ba7",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "c5e0ff6eca9d0ab41094d2b0d4f0ca427c7149302a1f264d77f366737ece50c9"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/52937eba-9dd9-46b4-99bb-4340856760cf",
+      "currentSrc": "blob:http://127.0.0.1:5365/52937eba-9dd9-46b4-99bb-4340856760cf",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "13f7928a8d509d1ef9f24970d316c3f64aad4d8cd47e6b9870fae1d87a44371b"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/c95c1ed6-3aa2-420e-9036-4d780fd85de8",
+      "currentSrc": "blob:http://127.0.0.1:5365/c95c1ed6-3aa2-420e-9036-4d780fd85de8",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "b17091c17260d041d14d4594e60a670bc4e0465412855b101a9b97f54b34762f"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/8c46aaf4-5be5-42ae-ac22-b222782dc98d",
+      "currentSrc": "blob:http://127.0.0.1:5365/8c46aaf4-5be5-42ae-ac22-b222782dc98d",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "1f712df62e5e4e7b5533bd14c3b438ee94255e3e682c64f6e093e02a4f308a47"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/90c9d533-251c-4425-b974-198146e13ff7",
+      "currentSrc": "blob:http://127.0.0.1:5365/90c9d533-251c-4425-b974-198146e13ff7",
+      "complete": true,
+      "width": 128,
+      "height": 128,
+      "error": false,
+      "sha256": "6dcaf6e6b44bf6c0ada95c94ae2f7afb5b24054b5e797e536c29b1c444c2ec76"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/a7a5f4dd-f683-4c50-8c42-f7c13873ca0f",
+      "currentSrc": "blob:http://127.0.0.1:5365/a7a5f4dd-f683-4c50-8c42-f7c13873ca0f",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "88831c70a40decd8db51c3a0e475fd547564d31be0275d60c2b68f49481935d8"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/980fd5c9-ee36-4ee9-9989-e78fc94fa8b0",
+      "currentSrc": "blob:http://127.0.0.1:5365/980fd5c9-ee36-4ee9-9989-e78fc94fa8b0",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "788a2ecb837d71162595e2b0b9701924fcb0f29fcf4a5c77d6c32dc21a7827e7"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/c71f43c1-3b09-4b6e-9288-4103aea64a0e",
+      "currentSrc": "blob:http://127.0.0.1:5365/c71f43c1-3b09-4b6e-9288-4103aea64a0e",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "09dee978bfed1a2fdcf32a66ed5f25ae7547e9e3b2e79386f5e96e3e9acb1737"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/b814e19e-32fa-4a53-99c9-9257deae6f49",
+      "currentSrc": "blob:http://127.0.0.1:5365/b814e19e-32fa-4a53-99c9-9257deae6f49",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "bd2db1e500072bc0fe8c26de9e07b32002def9aaf673e7938ecb6759ade992b3"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/6106c672-d09d-490d-a267-e53cc503738e",
+      "currentSrc": "blob:http://127.0.0.1:5365/6106c672-d09d-490d-a267-e53cc503738e",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "717733ee6861ddc89bde35f6a054f402f27b5196f153f7c371b30a8a5354ea44"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/99a39486-2bd3-4f71-a999-be9ac9a3a197",
+      "currentSrc": "blob:http://127.0.0.1:5365/99a39486-2bd3-4f71-a999-be9ac9a3a197",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "9efe0d30115dcad9ec7a490a86c68eddc68604e7715f8c9f6eba6056e05eb59b"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/b35e134c-b9e8-45c7-b3a5-0b7d6dca5f25",
+      "currentSrc": "blob:http://127.0.0.1:5365/b35e134c-b9e8-45c7-b3a5-0b7d6dca5f25",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "142e26025b0b5e128eb866cf2d1f29bd9295172dc14ead22c9b4a774b60bcfa7"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/d4242187-9382-492a-9491-9bce15ed0928",
+      "currentSrc": "blob:http://127.0.0.1:5365/d4242187-9382-492a-9491-9bce15ed0928",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "b7048d770cd11bc7ea838f1a733620b856d7d72ae87f2ef890ab3afebbb99dbc"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/910d111e-6089-4db8-a170-085b8d47d4b9",
+      "currentSrc": "blob:http://127.0.0.1:5365/910d111e-6089-4db8-a170-085b8d47d4b9",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "ec72ac7ae01dff96f4b1d79852334d4af60e80a0de87a7240f33aa63b854c643"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/5bf398c6-ae02-4d47-9ffb-a2cb9659b71c",
+      "currentSrc": "blob:http://127.0.0.1:5365/5bf398c6-ae02-4d47-9ffb-a2cb9659b71c",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "b8b57a8d367e0d23e1e4820475bed3f9027545951e0d0d7151316bcc76e43fe4"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/0878cf66-7891-4268-981c-e93d84ab8bbd",
+      "currentSrc": "blob:http://127.0.0.1:5365/0878cf66-7891-4268-981c-e93d84ab8bbd",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "daa34902b62027994251f9e67b7b6264e8ebd86ab8938e94d2edef7a506f96a7"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/966e2fc7-8da9-4ab1-b294-77fe1b734049",
+      "currentSrc": "blob:http://127.0.0.1:5365/966e2fc7-8da9-4ab1-b294-77fe1b734049",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "09bfb9c9da1a6a4a37e86cb2124a6884e4b4e22daa16f5d2757882de87704576"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/6e7605e8-6a8f-48a5-b3c7-793d6b0eecc5",
+      "currentSrc": "blob:http://127.0.0.1:5365/6e7605e8-6a8f-48a5-b3c7-793d6b0eecc5",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "b285c8f9ed0a515600023fc2030ea17e510f10a0a965db28a47a5bd6f54aaf7f"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/e42432c3-acf7-4993-b41f-b2676e7ae8cb",
+      "currentSrc": "blob:http://127.0.0.1:5365/e42432c3-acf7-4993-b41f-b2676e7ae8cb",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "9cf00229dd97fe12839f2588c31416e972608a9315250ef7fb28229e8c7ea8c0"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/6a063218-094c-4ec5-a9f9-e41859d08aa2",
+      "currentSrc": "blob:http://127.0.0.1:5365/6a063218-094c-4ec5-a9f9-e41859d08aa2",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "4b149587d26e459fdd9c90c17ff890c189081e0be9803f19be7f46b3a5cdab0f"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/9f2ead0a-5760-4fde-b419-6492ba9057d6",
+      "currentSrc": "blob:http://127.0.0.1:5365/9f2ead0a-5760-4fde-b419-6492ba9057d6",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "9a0b41e7cdc2ad36e228b3d772bbdeb7cc16e777b7cf2d33a12cdaeff2d31947"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/4565a950-5f80-414a-b544-b672e1799c16",
+      "currentSrc": "blob:http://127.0.0.1:5365/4565a950-5f80-414a-b544-b672e1799c16",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "5e4ce93fa297120ed8ea22b4afe49ff1141ebcfc2934fe3b2f0d7d2aeb54c6e8"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/6275ea07-0500-4ae7-9670-f31828c3d016",
+      "currentSrc": "blob:http://127.0.0.1:5365/6275ea07-0500-4ae7-9670-f31828c3d016",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "963e6e5c124221556fd4fa580d1f8dc9dd3665e23a761fc002d6e842ddef72d7"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/427bf34d-99c0-4c3d-b4a8-d3f3e5cd55a3",
+      "currentSrc": "blob:http://127.0.0.1:5365/427bf34d-99c0-4c3d-b4a8-d3f3e5cd55a3",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "2a807505ad10545931ca717ac4cf8627d50e380323fb6052af4531f082df812b"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/fceed192-326f-46e7-9229-5d181ab35ac2",
+      "currentSrc": "blob:http://127.0.0.1:5365/fceed192-326f-46e7-9229-5d181ab35ac2",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "63ce4baba5e51423a4b320b914454bfeeaf0e7c392e42b18c6fad6524e71959b"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/f77724f5-7ac0-400c-a0e1-6165d690b0d5",
+      "currentSrc": "blob:http://127.0.0.1:5365/f77724f5-7ac0-400c-a0e1-6165d690b0d5",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "cb4bae62ae53809dba9e61f8556cfa7e854c22e243126379742ad0fbfd116a1f"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/ee4c80d4-ca7f-4212-8850-bd23dccac5e4",
+      "currentSrc": "blob:http://127.0.0.1:5365/ee4c80d4-ca7f-4212-8850-bd23dccac5e4",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "71ccffb2cc51119ea19ce62d6bc84a416a24f2f6928de7624e3fb020facbe0f6"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/b5bc75bd-2ce0-41a9-9a75-332a3c8a3396",
+      "currentSrc": "blob:http://127.0.0.1:5365/b5bc75bd-2ce0-41a9-9a75-332a3c8a3396",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "e9335cef165fe3e84a90cdf3bb629ddd884e34ecc248f64a60321f4a44937529"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/8fa664dd-613e-4618-8e9b-b0fa7bd62eda",
+      "currentSrc": "blob:http://127.0.0.1:5365/8fa664dd-613e-4618-8e9b-b0fa7bd62eda",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "fcfa401381d129d186f54dc13e9832869e4ed3153cae55e91d5d38d528f9cdb0"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/e051a370-dbf0-43d3-9001-d0e0b587886e",
+      "currentSrc": "blob:http://127.0.0.1:5365/e051a370-dbf0-43d3-9001-d0e0b587886e",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "24f4e0f9b2718e92c0f01ed849049ddc3d759c31278517e72c34ff6e6a331dc0"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/1614d1a9-946d-4e1e-a292-584fd1094113",
+      "currentSrc": "blob:http://127.0.0.1:5365/1614d1a9-946d-4e1e-a292-584fd1094113",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "4e656013fc9cb562777c71ed4b94ed2de7ce485116a6f934f00146e102cc0458"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/b92b6911-ed4d-4c07-b5a2-391644ae58b0",
+      "currentSrc": "blob:http://127.0.0.1:5365/b92b6911-ed4d-4c07-b5a2-391644ae58b0",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "9e83b26d596c40780ccfaf5bdeaea34fd3fb9423382023d2bd54f1bc5c622d92"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/d470e9c7-9b04-4d50-8e7c-752c925a5a70",
+      "currentSrc": "blob:http://127.0.0.1:5365/d470e9c7-9b04-4d50-8e7c-752c925a5a70",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "a1f31f17de5a327f36605d69251bc76d91dc7b82aa5970e82b665659dbfcb800"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/8cfc29b6-f7de-4bdb-a373-b55a2352c57d",
+      "currentSrc": "blob:http://127.0.0.1:5365/8cfc29b6-f7de-4bdb-a373-b55a2352c57d",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "6917ab6272c49c2a64aaf56ed9cfdd59d5c23f2f5101af67ea2446519f1df818"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/ff70a8c5-a3aa-43ae-8bb1-2565f3d0ac41",
+      "currentSrc": "blob:http://127.0.0.1:5365/ff70a8c5-a3aa-43ae-8bb1-2565f3d0ac41",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "1355322ca365edf6db9c561b66c9953de8a6263a6939c35d8aa051f7f5a60655"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/1d866cde-92bb-47e1-898a-0a18df8a33b7",
+      "currentSrc": "blob:http://127.0.0.1:5365/1d866cde-92bb-47e1-898a-0a18df8a33b7",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "8d8ce9ca121fe947e6dbfb8db4e7654efbfe28515ba9bb0dc6456396123d3ee0"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/95127191-d137-4840-b762-473a9540401b",
+      "currentSrc": "blob:http://127.0.0.1:5365/95127191-d137-4840-b762-473a9540401b",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "3447b706bed88addd78a51cc025eeac54f79ef79ce0b1fd949510dba52f2c6dc"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/f96d239e-dd0d-4cc7-bc71-2223ab2a8c69",
+      "currentSrc": "blob:http://127.0.0.1:5365/f96d239e-dd0d-4cc7-bc71-2223ab2a8c69",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "05788bcaeb3341e3ddb55506ecd56ebb01baa46efa2277578be4583931276b16"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/ec7031a0-8ec0-486b-966e-7f69965e4391",
+      "currentSrc": "blob:http://127.0.0.1:5365/ec7031a0-8ec0-486b-966e-7f69965e4391",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "9304f6a7697b1242d4c26d563b7bb2a4598b8b4dcd43cce008d7eaa81b91834d"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/256ad9ad-a8f4-4e33-b72a-54dab4ac4fe7",
+      "currentSrc": "blob:http://127.0.0.1:5365/256ad9ad-a8f4-4e33-b72a-54dab4ac4fe7",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "ce7e0bef821387716337a715515c628010c51b34db4ead050b6066fa51d29448"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/cb748ce0-b41d-4841-85db-3a02b017818f",
+      "currentSrc": "blob:http://127.0.0.1:5365/cb748ce0-b41d-4841-85db-3a02b017818f",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "f279d76d4d3035576ec232d68de20f079b2584394dc587662799a4d3be7aa635"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/3a8b6474-d5a1-4de8-a934-a1c17779caaa",
+      "currentSrc": "blob:http://127.0.0.1:5365/3a8b6474-d5a1-4de8-a934-a1c17779caaa",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "8a17ffe2678ca2c2c0246a89996aba64097fa29dead9c3eb2c9682ca594d73b8"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/98bd08ae-28cd-4993-b50d-71b9010e4fcc",
+      "currentSrc": "blob:http://127.0.0.1:5365/98bd08ae-28cd-4993-b50d-71b9010e4fcc",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "19250d460ee942a48ed88c8c5ab3dc1d6fdd4d9b21439a8c32d41759ec3be604"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/9592f649-af14-4772-b868-43abfee56ea7",
+      "currentSrc": "blob:http://127.0.0.1:5365/9592f649-af14-4772-b868-43abfee56ea7",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "6e34ad2b3b0780272f87fc7085f6ea282a4bc5d53c77cc1b3b080c5a2b2b2a2c"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/ca594c7c-e81a-4183-8779-800f3dff8b0e",
+      "currentSrc": "blob:http://127.0.0.1:5365/ca594c7c-e81a-4183-8779-800f3dff8b0e",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "7ebbeb67ea3a2ef4c18233a5469a450633149d15450722fd3d8274c0898b2d21"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/73300d9c-47f1-415f-b750-e6d415ed25f5",
+      "currentSrc": "blob:http://127.0.0.1:5365/73300d9c-47f1-415f-b750-e6d415ed25f5",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "af1db667e4b94ce65ba39e49237388e4bc8205ae9bdee41be1b3480fb8be01b7"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/329cbd46-5209-47f6-97c1-b229a8dc61fc",
+      "currentSrc": "blob:http://127.0.0.1:5365/329cbd46-5209-47f6-97c1-b229a8dc61fc",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "b1dade694cb57f30eb61633ee7def3578ce25dd380373912af2a711c50ec62d0"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/5aac81b4-a4bc-43c6-b0fd-3ca1bb30ca55",
+      "currentSrc": "blob:http://127.0.0.1:5365/5aac81b4-a4bc-43c6-b0fd-3ca1bb30ca55",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "34529e35c6967bc502c02486803e4cce95afc95e9867309194e1a1de68e2ad52"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/20f96027-0d16-4367-ac40-8553fa3baa12",
+      "currentSrc": "blob:http://127.0.0.1:5365/20f96027-0d16-4367-ac40-8553fa3baa12",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "6400567e6befd5b9cf05291053d00e64f31f36d896ec04d55a688cc385fcd0e0"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/990ba8ed-ce29-4809-bd75-8827915c48a4",
+      "currentSrc": "blob:http://127.0.0.1:5365/990ba8ed-ce29-4809-bd75-8827915c48a4",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "8b7df4260ff1fb56bcc5d744fa8b818f337320c05547b64751fe00adb9838578"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/3aeae5ee-6fb3-4939-b68d-140be22fdf5a",
+      "currentSrc": "blob:http://127.0.0.1:5365/3aeae5ee-6fb3-4939-b68d-140be22fdf5a",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "66eaf497a3846d8295b98a47571e6bc236481a5b0cb1cb5194a8599ccabb48db"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/a8207bf2-7a2f-4c7f-8370-e4a43fe0a4f6",
+      "currentSrc": "blob:http://127.0.0.1:5365/a8207bf2-7a2f-4c7f-8370-e4a43fe0a4f6",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "1c49137bf58e53a0c312ea616dc83b409b8a86907efc4b954f15567f035a6893"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/3eb23c20-a403-4748-aaf4-08fcb296e639",
+      "currentSrc": "blob:http://127.0.0.1:5365/3eb23c20-a403-4748-aaf4-08fcb296e639",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "12651a040ff337a65975291bfdc1cdb5277245b0247653c823f86c665c3c3284"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/ce1fecdb-08a7-49e8-a601-eba4e3854b73",
+      "currentSrc": "blob:http://127.0.0.1:5365/ce1fecdb-08a7-49e8-a601-eba4e3854b73",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "a8b8fbee8cd5f93bef4a2a4488a8104813ee6989dee7ea02d1608791c80a42a6"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/4978bc97-d150-4d2f-bced-5cc11fd0139a",
+      "currentSrc": "blob:http://127.0.0.1:5365/4978bc97-d150-4d2f-bced-5cc11fd0139a",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "e13a3e2ef5bf984ca2086f4d71ce0323f5d54e9978ab6342b93d6475a23190d9"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/b143b6a8-b150-42b8-a6bf-957640cd9c0b",
+      "currentSrc": "blob:http://127.0.0.1:5365/b143b6a8-b150-42b8-a6bf-957640cd9c0b",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "31d2677710f5bc394eb54e3a12348968daab038412e2d86ad74c1fe2ca1c825b"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/8bd02d7f-2687-4be5-91e9-f2f678d84c31",
+      "currentSrc": "blob:http://127.0.0.1:5365/8bd02d7f-2687-4be5-91e9-f2f678d84c31",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "219f5f189783babdcbe7b73cb166057729ab339c532b9b42c6203280dc16d499"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/a37ee81b-0f6a-4975-bde5-783ee6e61b86",
+      "currentSrc": "blob:http://127.0.0.1:5365/a37ee81b-0f6a-4975-bde5-783ee6e61b86",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "4bca184305934d447463bba66a94076de35c56c3918a642678bee7c1ce41ab00"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/fb19172a-eab5-4232-a21c-c5dd54cc4bd4",
+      "currentSrc": "blob:http://127.0.0.1:5365/fb19172a-eab5-4232-a21c-c5dd54cc4bd4",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "eb756ff209de38741708095cd83daa2f61c49447e44bc1809174128559b7ab6c"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/4c47ca5d-6c2a-4326-9d30-b1fbfff9ad22",
+      "currentSrc": "blob:http://127.0.0.1:5365/4c47ca5d-6c2a-4326-9d30-b1fbfff9ad22",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "b4f70db7c66d29296479a34d38127045e13f55fb54d1dbac80e0c9d4e576187a"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/734d8e7a-2785-4b4b-bd3e-9ac62d9d3319",
+      "currentSrc": "blob:http://127.0.0.1:5365/734d8e7a-2785-4b4b-bd3e-9ac62d9d3319",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "f0061be8c6240361aa7a4ae76d4b63c2d12733619edec1b65163cf74d0de01e4"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/d2740255-ae2c-4de8-8ced-377ab1c045d5",
+      "currentSrc": "blob:http://127.0.0.1:5365/d2740255-ae2c-4de8-8ced-377ab1c045d5",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "6a60277bf1c991b0db1d92a4cc5a6e93b01acdf5c39ebd929b0467026d58e2f6"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/acf29d27-b36a-4ebb-964e-35306d1928a7",
+      "currentSrc": "blob:http://127.0.0.1:5365/acf29d27-b36a-4ebb-964e-35306d1928a7",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "29a8e68cbfe51f41d66b080928cfbb211c7f144f4eeb0cd0075150a2e0d3b06c"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/ab256e30-460d-4c50-98dd-801d8117c89a",
+      "currentSrc": "blob:http://127.0.0.1:5365/ab256e30-460d-4c50-98dd-801d8117c89a",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "48603357483db36f76af57ab81f77d19461416efa0c5c4a648d094d670279ec3"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/92a62131-3838-4807-ac00-91ca478e579d",
+      "currentSrc": "blob:http://127.0.0.1:5365/92a62131-3838-4807-ac00-91ca478e579d",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "e0bf5374ce4dbe0319557af8fe8f096f70e9a5c1cee491fb3cb1e6ed29fa47a0"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/f72fd5e4-bb99-421c-9a01-b78263abd890",
+      "currentSrc": "blob:http://127.0.0.1:5365/f72fd5e4-bb99-421c-9a01-b78263abd890",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "2ed6c923af6daef4136bb45bd632f344bff90adabb912adf8a98dffb51bc3020"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/2dba9ff9-29a7-4ffe-9b04-7f92b33e68ec",
+      "currentSrc": "blob:http://127.0.0.1:5365/2dba9ff9-29a7-4ffe-9b04-7f92b33e68ec",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "a573c065a8733517712fdbecd752a47599b407cd1dcd0847a9fc00470cb9e348"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/78345bbf-22db-42ab-b412-147b95aecec5",
+      "currentSrc": "blob:http://127.0.0.1:5365/78345bbf-22db-42ab-b412-147b95aecec5",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "b0befdfa1112861e4e9394b24c9155d3f80d07db8c981762d8ffa66a8d703129"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/056b85ef-a9d9-473f-8c01-51e329dae2d1",
+      "currentSrc": "blob:http://127.0.0.1:5365/056b85ef-a9d9-473f-8c01-51e329dae2d1",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "1f7db6b8e731cbdf073e2180605f263213a2b4f36e16353c234aaf2266b0d26b"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/eaf8fe87-811a-45d6-8214-542297220b2f",
+      "currentSrc": "blob:http://127.0.0.1:5365/eaf8fe87-811a-45d6-8214-542297220b2f",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "62cd5ad67992a0aadf1572ee09b66ac34be54ac45d12a6b3a223766e9fcbec03"
+    }
+  ],
+  "syntheticFetchUsed": false,
+  "rendererTextureReadUsed": false,
+  "perBinVisualCalibrationComplete": false,
+  "visualAcceptancePending": true
+}

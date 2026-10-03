@@ -1,0 +1,563 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-washer-cot-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-current-consumer-q1-negative-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-washer-cot-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build|dedicated-security-console-player-build|dedicated-medical-bed-player-build|dedicated-loading-dock-door-player-build|dedicated-camera-pan-player|oblique-pending-wall-player|room-template-renderer-stationary-hover|world-construction-chord-release|room-template-session-preflight|world-build-session-ownership|cell-cot-player-build|room-template-second-touch-ownership|hired-guard-player-build|room-template-history-verdict-player)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5184 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5184/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "canteen-dining-table-player-build.spec.ts",
+      "file": "canteen-dining-table-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Canteen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 45011,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T07:47:30.936Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b692cd9cd048f51d3b66-472b23b7516399244e0f",
+          "file": "canteen-dining-table-player-build.spec.ts",
+          "line": 167,
+          "column": 1
+        },
+        {
+          "title": "player builds Canteen at quarterTurns1 and retains authored plates after Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 60522,
+                  "error": {
+                    "message": "Error: table1 authored plate rims after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: table1 authored plate rims after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:191:121)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:191:16",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts",
+                      "column": 121,
+                      "line": 191
+                    },
+                    "snippet": "  189 |     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),\n  190 |   }, null, 2));\n> 191 |   beforePixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after construction`).toBeGreaterThan(200));\n      |                                                                                                                         ^\n  192 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  193 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  194 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts",
+                        "column": 121,
+                        "line": 191
+                      },
+                      "message": "Error: table1 authored plate rims after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  189 |     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),\n  190 |   }, null, 2));\n> 191 |   beforePixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after construction`).toBeGreaterThan(200));\n      |                                                                                                                         ^\n  192 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  193 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  194 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:191:121)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:191:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts",
+                        "column": 121,
+                        "line": 191
+                      },
+                      "message": "Error: table2 authored plate rims after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  189 |     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),\n  190 |   }, null, 2));\n> 191 |   beforePixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after construction`).toBeGreaterThan(200));\n      |                                                                                                                         ^\n  192 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  193 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  194 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:191:121)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:191:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts",
+                        "column": 112,
+                        "line": 207
+                      },
+                      "message": "Error: table1 authored plate rims after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  205 |   const loaded = await page.screenshot({ path: info.outputPath('dining-loaded-fullhd.png') });\n  206 |   const afterPixels = await platePixels(page, loaded, quarterTurns);\n> 207 |   afterPixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after Load`).toBeGreaterThan(200));\n      |                                                                                                                ^\n  208 |   expect(afterPixels).toEqual(beforePixels);\n  209 |   // Keep the historical plate crop/palette/threshold above unchanged. This new\n  210 |   // low camera capture is pending native support-pixel calibration by root.\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:207:112)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:207:15"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts",
+                        "column": 112,
+                        "line": 207
+                      },
+                      "message": "Error: table2 authored plate rims after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  205 |   const loaded = await page.screenshot({ path: info.outputPath('dining-loaded-fullhd.png') });\n  206 |   const afterPixels = await platePixels(page, loaded, quarterTurns);\n> 207 |   afterPixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after Load`).toBeGreaterThan(200));\n      |                                                                                                                ^\n  208 |   expect(afterPixels).toEqual(beforePixels);\n  209 |   // Keep the historical plate crop/palette/threshold above unchanged. This new\n  210 |   // low camera capture is pending native support-pixel calibration by root.\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:207:112)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:207:15"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts",
+                        "column": 3,
+                        "line": 212
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\nCall Log:\n- Test timeout of 60000ms exceeded\n\n  210 |   // low camera capture is pending native support-pixel calibration by root.\n  211 |   const cameraControls = await publicSupportPose(page, quarterTurns);\n> 212 |   await expect.poll(async () => (await loadedImages()).responses.some(response =>\n      |   ^\n  213 |     decodeURIComponent(new URL(response.url).pathname) === SUPPORT_FRAME.url && response.sha256 === SUPPORT_FRAME.sha256)).toBe(true);\n  214 |   await expect.poll(async () => (await loadedImages()).images.some(image =>\n  215 |     image.sha256 === SUPPORT_FRAME.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:212:3"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T07:48:16.076Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts",
+                    "column": 121,
+                    "line": 191
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b692cd9cd048f51d3b66-4f16157b13aab1e63149",
+          "file": "canteen-dining-table-player-build.spec.ts",
+          "line": 231,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "cell-cot-player-build.spec.ts",
+      "file": "cell-cot-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player furnishes delivery and storage plans before the cot test",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43699,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T07:49:17.170Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "aa9a0c8e618a314db016-382f61b31fea1074e287",
+          "file": "cell-cot-player-build.spec.ts",
+          "line": 167,
+          "column": 1
+        },
+        {
+          "title": "player builds the existing bed in a Basic cell q1 and keeps it after Save/Load at Full HD",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 49244,
+                  "error": {
+                    "message": "Error: real cot loader decodes the canonical source-visible headboard PNG\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate",
+                    "stack": "Error: real cot loader decodes the canonical source-visible headboard PNG\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\cell-cot-player-build.spec.ts:202:3",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\cell-cot-player-build.spec.ts",
+                      "column": 3,
+                      "line": 202
+                    },
+                    "snippet": "  200 |   const loadElapsedMs = Date.now() - started;\n  201 |   const publicPose = await publicHeadboardPose(page, quarterTurns);\n> 202 |   await expect.poll(async () => (await readImages()).images.some(image =>\n      |   ^\n  203 |     image.sha256 === HEADBOARD_FRAME.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256),\n  204 |     { message: 'real cot loader decodes the canonical source-visible headboard PNG' }).toBe(true);\n  205 |   const images = await readImages();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\cell-cot-player-build.spec.ts",
+                        "column": 3,
+                        "line": 202
+                      },
+                      "message": "Error: real cot loader decodes the canonical source-visible headboard PNG\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate\n\n  200 |   const loadElapsedMs = Date.now() - started;\n  201 |   const publicPose = await publicHeadboardPose(page, quarterTurns);\n> 202 |   await expect.poll(async () => (await readImages()).images.some(image =>\n      |   ^\n  203 |     image.sha256 === HEADBOARD_FRAME.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256),\n  204 |     { message: 'real cot loader decodes the canonical source-visible headboard PNG' }).toBe(true);\n  205 |   const images = await readImages();\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\cell-cot-player-build.spec.ts:202:3"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T07:50:00.945Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\cell-cot-player-build.spec.ts",
+                    "column": 3,
+                    "line": 202
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "aa9a0c8e618a314db016-66dd97464410eebf5057",
+          "file": "cell-cot-player-build.spec.ts",
+          "line": 232,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "dedicated-laundry-washing-machine-player-build.spec.ts",
+      "file": "dedicated-laundry-washing-machine-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Laundry",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43122,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T07:50:50.731Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b2134c71373b9d15230c-6e89ff704e523d72e54c",
+          "file": "dedicated-laundry-washing-machine-player-build.spec.ts",
+          "line": 193,
+          "column": 1
+        },
+        {
+          "title": "player builds Laundry at quarterTurns1 and retains washing machine palettes and anchors after Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 54526,
+                  "error": {
+                    "message": "Error: washing machine 1 authored palette after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: washing machine 1 authored palette after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts:232:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts:231:16",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts",
+                      "column": 6,
+                      "line": 232
+                    },
+                    "snippet": "  230 |   }, null, 2));\n  231 |   beforePixels.forEach((count, index) => expect.soft(count, `washing machine ${index + 1} authored palette after construction`)\n> 232 |     .toBeGreaterThan(100));\n      |      ^\n  233 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  234 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  235 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts",
+                        "column": 6,
+                        "line": 232
+                      },
+                      "message": "Error: washing machine 1 authored palette after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  230 |   }, null, 2));\n  231 |   beforePixels.forEach((count, index) => expect.soft(count, `washing machine ${index + 1} authored palette after construction`)\n> 232 |     .toBeGreaterThan(100));\n      |      ^\n  233 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  234 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  235 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts:232:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts:231:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts",
+                        "column": 6,
+                        "line": 232
+                      },
+                      "message": "Error: washing machine 2 authored palette after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  230 |   }, null, 2));\n  231 |   beforePixels.forEach((count, index) => expect.soft(count, `washing machine ${index + 1} authored palette after construction`)\n> 232 |     .toBeGreaterThan(100));\n      |      ^\n  233 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  234 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  235 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts:232:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts:231:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts",
+                        "column": 6,
+                        "line": 253
+                      },
+                      "message": "Error: washing machine 1 authored palette after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  251 |   const afterPixels = await washerPalettePixels(page, loaded, quarterTurns);\n  252 |   afterPixels.forEach((count, index) => expect.soft(count, `washing machine ${index + 1} authored palette after Load`)\n> 253 |     .toBeGreaterThan(100));\n      |      ^\n  254 |   expect(afterPixels).toEqual(beforePixels);\n  255 |   // Preserve all original native glass crops/colours/minima above. These new\n  256 |   // service-grip pixels must be calibrated from the actual screenshot by root.\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts:253:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts:252:15"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts",
+                        "column": 6,
+                        "line": 253
+                      },
+                      "message": "Error: washing machine 2 authored palette after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  251 |   const afterPixels = await washerPalettePixels(page, loaded, quarterTurns);\n  252 |   afterPixels.forEach((count, index) => expect.soft(count, `washing machine ${index + 1} authored palette after Load`)\n> 253 |     .toBeGreaterThan(100));\n      |      ^\n  254 |   expect(afterPixels).toEqual(beforePixels);\n  255 |   // Preserve all original native glass crops/colours/minima above. These new\n  256 |   // service-grip pixels must be calibrated from the actual screenshot by root.\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts:253:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts:252:15"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts",
+                        "column": 3,
+                        "line": 258
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate\n\n  256 |   // service-grip pixels must be calibrated from the actual screenshot by root.\n  257 |   const cameraControls = await publicGripPose(page, quarterTurns);\n> 258 |   await expect.poll(async () => (await loadedImages()).responses.some(response =>\n      |   ^\n  259 |     decodeURIComponent(new URL(response.url).pathname) === GRIP_FRAME.url && response.sha256 === GRIP_FRAME.sha256)).toBe(true);\n  260 |   await expect.poll(async () => (await loadedImages()).images.some(image =>\n  261 |     image.sha256 === GRIP_FRAME.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts:258:3"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T07:51:33.985Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\dedicated-laundry-washing-machine-player-build.spec.ts",
+                    "column": 6,
+                    "line": 232
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b2134c71373b9d15230c-9439ca6c0d49b5535d43",
+          "file": "dedicated-laundry-washing-machine-player-build.spec.ts",
+          "line": 257,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "room-template-history-verdict-player.spec.ts",
+      "file": "room-template-history-verdict-player.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player completes and saves actual Storage/Delivery capacity before stationary Cell history cases",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43852,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T07:52:29.027Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "89339ddd74f99ca79aa7-47f3edf3640520d3027d",
+          "file": "room-template-history-verdict-player.spec.ts",
+          "line": 352,
+          "column": 1
+        },
+        {
+          "title": "oblique FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 46149,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: \u001b[32m\"clear\"\u001b[39m\nReceived: \u001b[31m\"blocked\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div data-ready=\"blocked\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"blocked\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: \u001b[32m\"clear\"\u001b[39m\nReceived: \u001b[31m\"blocked\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div data-ready=\"blocked\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"blocked\"\u001b[22m\n\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts:276:23",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts",
+                      "column": 23,
+                      "line": 276
+                    },
+                    "snippet": "  274 |   for (let y=5;y<9;y++) for(let x=20;x<27;x++) { expect(plane(undone,x,y,'squareStructure')).toBe(0); expect(plane(undone,x,y,'zoning')).toBe(0); }\n  275 |   expect(undone.simulation?.roomTemplates?.undone).toEqual(expect.arrayContaining([expect.objectContaining({templateId:'cell-basic',origin,quarterTurns:1})]));\n> 276 |   await expect(ghost).toHaveAttribute('data-ready','clear');\n      |                       ^\n  277 |   const undoQueries = (await replies(page)).slice(queryCount);\n  278 |   expect(undoQueries.some(q => q.target.templateId === 'cell-basic' && q.target.quarterTurns === 1 && q.target.origin.x === 20 && q.target.origin.y === 5 && q.verdict.ok)).toBe(true);\n  279 |   expect(await viewIdentity(page)).toEqual(identity); await assertNoPointerSince(page,eventCount);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts",
+                        "column": 23,
+                        "line": 276
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: \u001b[32m\"clear\"\u001b[39m\nReceived: \u001b[31m\"blocked\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div data-ready=\"blocked\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"blocked\"\u001b[22m\n\n\n  274 |   for (let y=5;y<9;y++) for(let x=20;x<27;x++) { expect(plane(undone,x,y,'squareStructure')).toBe(0); expect(plane(undone,x,y,'zoning')).toBe(0); }\n  275 |   expect(undone.simulation?.roomTemplates?.undone).toEqual(expect.arrayContaining([expect.objectContaining({templateId:'cell-basic',origin,quarterTurns:1})]));\n> 276 |   await expect(ghost).toHaveAttribute('data-ready','clear');\n      |                       ^\n  277 |   const undoQueries = (await replies(page)).slice(queryCount);\n  278 |   expect(undoQueries.some(q => q.target.templateId === 'cell-basic' && q.target.quarterTurns === 1 && q.target.origin.x === 20 && q.target.origin.y === 5 && q.verdict.ok)).toBe(true);\n  279 |   expect(await viewIdentity(page)).toEqual(identity); await assertNoPointerSince(page,eventCount);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts:276:23"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T07:53:12.947Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-current-consumer-q1-negative-20261003\\room-template-history-verd-bda8f-leted-Undo-and-pending-Redo\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts",
+                    "column": 23,
+                    "line": 276
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "89339ddd74f99ca79aa7-8e69968e37fc5fda1781",
+          "file": "room-template-history-verdict-player.spec.ts",
+          "line": 450,
+          "column": 42
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T07:47:20.644Z",
+    "duration": 399015.42,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 4,
+    "flaky": 0
+  }
+}

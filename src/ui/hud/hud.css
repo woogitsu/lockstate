@@ -114,6 +114,7 @@
  * -- the two mirror-image checks, because an opt-in that overshot would be a
  * worse defect than #1054's.
  */
+.hud__corner > select.hud-build__category,
 .hud__corner .ui-panel__toggle,
 .hud__corner .hud-zoom__out,
 .hud__corner .hud-zoom__in,
@@ -1591,7 +1592,7 @@
    */
   min-height: calc(
     var(--hud-build-catalogue-floor) + var(--tap-target) + var(--hud-build-catalogue-gutter) + var(--hairline) +
-      4 * var(--hud-build-map-gutter) + var(--tap-target) + var(--space-5) +
+      4 * var(--hud-build-map-gutter) + var(--tap-target) + 3 * var(--space-5) +
       var(--text-size-label) * var(--label-line-height) + var(--hairline) + var(--tap-target)
   );
 }
@@ -1700,7 +1701,8 @@
 .hud-build__template-open:focus-visible,
 .hud-template button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .hud-template {
-  width: min(520px, calc(100vw - 40px));
+  box-sizing: border-box;
+  width: min(960px, calc(100vw - 40px));
   max-height: calc(100vh - 80px);
   padding: var(--space-5);
   border: var(--hairline) solid var(--border);
@@ -1712,7 +1714,34 @@
 .hud-template::backdrop { background: var(--scrim); }
 .hud-template__header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
 .hud-template__header h2 { margin: 0; font-size: var(--text-size-value); }
-.hud-template__choices { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.hud-template__choices { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2); }
+.hud-template__card { display: grid; grid-template-columns: 4rem minmax(0, 1fr); align-items: center; gap: var(--space-2); text-align: left; }
+.hud-template__card-details { display: grid; gap: 2px; min-width: 0; }
+.hud-template__card-details strong { overflow-wrap: anywhere; }
+.hud-template__miniature { display: grid; justify-self: center; gap: 0; width: max-content; pointer-events: none; }
+.hud-template__miniature .hud-template__tile { border: 0; }
+.hud-template__miniature .hud-template__tile--floor,
+.hud-template__miniature .hud-template__tile--object { background: var(--surface-raised); border-radius: 0; }
+/* Door bars leave floor-colored clearance on both sides, so distinguishing
+   an entrance from a solid wall does not rely on teal-versus-muted hue. */
+.hud-template__diagram .hud-template__tile--object { background: var(--surface-sunken); border-radius: 0; }
+.hud-template__diagram .hud-template__tile--door,
+.hud-template__miniature .hud-template__tile--door,
+.hud-template__legend .hud-template__tile--door {
+  background: var(--surface-raised);
+  display: flex;
+  align-items: center;
+}
+.hud-template__diagram .hud-template__tile--door { background: var(--surface-sunken); }
+.hud-template__diagram .hud-template__tile--door::after,
+.hud-template__miniature .hud-template__tile--door::after,
+.hud-template__legend .hud-template__tile--door::after {
+  content: "";
+  width: 100%;
+  height: 60%;
+  background: var(--accent);
+}
+.hud-template__fixture { background: var(--text-body); margin: 0.5px; border-radius: 1px; pointer-events: none; }
 .hud-template button {
   min-height: var(--tap-target);
   padding: 0 var(--space-3);
@@ -1725,13 +1754,14 @@
 }
 .hud-template button[aria-pressed='true'] { border-color: var(--accent); color: var(--accent); }
 .hud-template__diagram { display: grid; gap: 2px; width: max-content; margin: var(--space-3) auto 0; }
-.hud-template__tile { width: 1.5rem; aspect-ratio: 1; background: var(--surface-sunken); border: var(--hairline) solid var(--border); }
+.hud-template__tile { box-sizing: border-box; width: 1.5rem; aspect-ratio: 1; background: var(--surface-sunken); border: var(--hairline) solid var(--border); }
 .hud-template__tile--wall { background: var(--text-muted); }
 .hud-template__tile--door { background: var(--accent); }
 .hud-template__tile--object { background: var(--text-body); border-radius: 50%; }
 .hud-template__legend { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); margin-top: var(--space-3); }
 .hud-template__legend > span { display: inline-flex; align-items: center; gap: var(--space-1); }
-.hud-template__legend .hud-template__tile { width: 0.9rem; }
+.hud-template__legend .hud-template__tile { box-sizing: border-box; width: 0.9rem; }
+.hud-template__legend .hud-template__fixture { aspect-ratio: 2; background: var(--text-body); }
 .hud-template__contents { text-align: center; }
 .hud-template__placement { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); margin-top: var(--space-4); }
 .hud-template__placement input[type='number'] { width: 100%; min-height: var(--tap-target); box-sizing: border-box; }
@@ -2773,6 +2803,23 @@
 
 .hud-build__target-value { color: var(--text-subtle); }
 .hud-build__target[data-target] .hud-build__target-value { color: var(--text-heading); }
+
+/* Full-square counts and their catalogue value form a sentence, not a strip
+   counter. Reserve its three-line slot before aiming so a drag cannot move
+   the controls below it, and let the flex item shrink within the rail.
+   The body floor above must count this same three-line reservation; its old
+   one-line term left the coordinate disclosure outside the panel at 900x600. */
+.hud-build__target {
+  align-items: flex-start;
+  min-height: calc(var(--space-5) * 3);
+}
+.hud-build__target-value {
+  flex: 1;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
 
 .hud-build__coords + .ui-choice { margin-bottom: var(--space-2); }
 .hud-build .ui-section__body > .ui-action { width: 100%; }
@@ -4141,6 +4188,9 @@
  * otherwise take it away.
  */
 @media (max-height: 700px) {
+  /* The catalogue and map retain their own gutters. The three-line target
+     needs its full floor; trim the body's redundant outer vertical padding. */
+  .hud-build > .ui-panel__body { padding-block: 0 var(--hairline); }
   :root {
     --hud-build-map-gutter: var(--space-1);
     --hud-build-catalogue-gutter: var(--space-1);
@@ -7354,12 +7404,42 @@
   }
 }
 
-/* Labelled pose controls accompany zoom only in the adjustable renderer. */
-.hud-camera-pose {
+/* Existing localized labels accompany compact glyphs in the adjustable renderer. */
+.hud-camera-pose, .hud-camera-pan {
   pointer-events: auto;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  width: max-content;
   gap: var(--space-2);
   margin-bottom: var(--space-2);
 }
-.hud-camera-pose .ui-action-button { min-width: 0; white-space: normal; }
+.hud-camera-pose[hidden] { display: none; }
+.hud-camera-pan [data-camera-pan-direction='left'] .ui-icon { transform: rotate(90deg); }
+.hud-camera-pan [data-camera-pan-direction='up'] .ui-icon { transform: rotate(180deg); }
+.hud-camera-pan [data-camera-pan-direction='right'] .ui-icon { transform: rotate(-90deg); }
+.hud-camera-pose [data-camera-pose-axis='elevation'][data-camera-pose-direction='1'] .ui-icon { transform: rotate(180deg); }
+
+.room-template-world-ghost { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.room-template-world-ghost[hidden] { display: none; }
+.room-template-world-ghost svg { width: 100%; height: 100%; }
+.room-template-world-ghost__label { position: absolute; max-width: 340px; padding: 8px 12px; color: var(--text-body); background: var(--surface-raised); border: 1px solid var(--accent); border-radius: var(--radius-md); }
+
+.hud-template__quote { color: var(--text-body); font-weight: 600; }
+.hud-template__coordinates { margin-top: var(--space-3); }
+.hud-template__orientation { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-3); }
+.hud-template__orientation label { display: flex; align-items: center; gap: var(--space-2); }
+.hud-template__rotation { min-height: var(--tap-target); min-width: 6rem; color: var(--text-body); background: var(--surface-sunken); border: var(--hairline) solid var(--border); border-radius: var(--radius-sm); padding: var(--space-2); font: inherit; }
+.hud-template__rotation:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Keep the orientation row and map action inside the Full HD catalogue by
+   trimming paragraph spacing; the plan and fixture sizes remain unchanged. */
+.hud-template > p { margin-block: var(--space-2); }
+.hud-template__coordinates summary { cursor: pointer; min-height: var(--tap-target); display: list-item; }
+.hud-template__placement label:has(input[type='number']) { display: grid; gap: var(--space-1); }
+
+/* Reuse the existing row/tap geometry; authored object images replace the hammer without spending a new row. */
+.hud-build__object-thumbnail {
+  width: calc(var(--tap-target) - 2 * var(--space-2));
+  height: calc(var(--tap-target) - 2 * var(--space-2));
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+.hud-build__object-thumbnail[hidden], .hud-build__list > .ui-row > svg[hidden] { display: none; }

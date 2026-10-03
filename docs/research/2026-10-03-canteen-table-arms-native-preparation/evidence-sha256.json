@@ -1,0 +1,59 @@
+{
+    "preparedTests":  [
+                          {
+                              "file":  "tests/browser/canteen-dining-table-player-build.spec.ts",
+                              "sha256":  "54784ab202a768d07b8bd9abe3703e2530e90cc22dc35f294574af75e50bcfcd"
+                          },
+                          {
+                              "file":  "tests/browser/canteen-dining-table-evidence.ts",
+                              "sha256":  "975367c03d33c10061756533145accad31815b4ca304c3eb59cf94adfdcd6c26"
+                          }
+                      ],
+    "files":  [
+                  {
+                      "file":  "build.txt",
+                      "sha256":  "70772dbb1a26a147bba6e6d70c044033968730e3cc49d522a3bca51fcdf9ddc0"
+                  },
+                  {
+                      "file":  "collection.txt",
+                      "sha256":  "44e4be68faf1e5899caeb29bb7f995e823a8f731a7070c27c9e36362b8060235"
+                  },
+                  {
+                      "file":  "collection-before-build.txt",
+                      "sha256":  "c60a53d42a16778358b90acee8f3c94ca7e2b7d24515afe24c3979ce25155f67"
+                  },
+                  {
+                      "file":  "docs.txt",
+                      "sha256":  "290df3a73127e3957dfb6ae01b798ece9595ca49b84e0f5104eeb193fefd40fe"
+                  },
+                  {
+                      "file":  "docs-after-owned-canteen-row.txt",
+                      "sha256":  "7e2e32541aaf094387db6726d9c4061d54ffb1fde01d099afc257a97087faf4b"
+                  },
+                  {
+                      "file":  "docs-after-owned-row.cjs.txt",
+                      "sha256":  "88c1b64955b9cecb0bf97edf963057bdf9b06d633dd9418220501b03d033d31e"
+                  },
+                  {
+                      "file":  "preparation-before-build-run.cjs.txt",
+                      "sha256":  "fc82d1a26458637c29f06501a70c2b0868748c8e3887f7f19402e62130808d10"
+                  },
+                  {
+                      "file":  "preparation-run.cjs.txt",
+                      "sha256":  "ab61f719042a4cd9debcbbfe47b82eb8b49212a7d3b49e4f008357a0e6e4ccb4"
+                  },
+                  {
+                      "file":  "README.md",
+                      "sha256":  "b173a123d4f5a0106dd797617d882757d68ea6644b8ef979a7a355046c378181"
+                  },
+                  {
+                      "file":  "receipt.json",
+                      "sha256":  "bc0276dbe7568a61193b9fa603b1d0fa4afa91c6a7d7c0cfb1fb03457d472875"
+                  },
+                  {
+                      "file":  "types.txt",
+                      "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                  }
+              ],
+    "nativeExecuted":  false
+}

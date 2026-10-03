@@ -1,0 +1,10 @@
+{
+  "statuses": {
+    "preflight": 1,
+    "success": 1,
+    "restored": 0
+  },
+  "file": "src/simulation/runtime/session-commands.ts",
+  "byteExact": true,
+  "sha256": "93d6b562b5e09639c870c74386e122fbf5b58d224a88d1a23388c0d9ad6da32d"
+}

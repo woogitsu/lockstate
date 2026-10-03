@@ -1,0 +1,7 @@
+00:01.125  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-reception-context-blender-guards-20261003\assets\source\blender\furniture.reception.waiting-armchair.blend"
+RECEPTION_ARMCHAIR_SOURCE_GREEN 60 meshes/16 actual contacts/all original materials/four occupied turns
+KITCHEN_BOUNDS furniture.reception.waiting-armchair [0.11400030553340912, 0.014750592410564423, 0.0] [0.8859996795654297, 0.9852507710456848, 1.3200000524520874]
+RECEPTION_ARMCHAIR_VERIFY_GREEN source/semantic contacts/72 cameras/four occupied turns
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit

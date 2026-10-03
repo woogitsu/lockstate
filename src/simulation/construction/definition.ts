@@ -477,6 +477,13 @@ export const BUILDABLE_REGISTRY = new Map<string, BuildableDefinition>([
    * and the one that finishes `action.common-room-recreation` by supplying the
    * `'recreation'` the #326 amendment gave that action to ask for.
    */
+  // Anchored equipment uses the existing brick procurement route. Quantities
+  // and work follow the same width-derived object rule as the other fixtures.
+  ['exercise-station', {
+    id: 'exercise-station', category: 'object', name: 'Exercise station',
+    workRequired: 60, materialsRequired: [{ itemId: 'item.brick', quantity: 2 }],
+    placesObjectId: 'object.exercise-station',
+  }],
   ['bench-wooden', {
     id: 'bench-wooden',
     category: 'object',

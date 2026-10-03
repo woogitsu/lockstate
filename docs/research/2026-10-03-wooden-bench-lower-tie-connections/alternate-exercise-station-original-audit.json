@@ -1,0 +1,5155 @@
+{
+  "sourceSha256": "b1b8c2b648f3e34bff4b03755e57ece30b37b557ffcbb1bb805de4c3de3e36b7",
+  "allRawMeshes": [
+    {
+      "name": "anchored rubber foot",
+      "rawVertexBytesSha256": "9dd2a273fe5937e7181fef7a4dc084635bb4d53be3618a758842eb125aae1e5a",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "weatherproof charcoal rubber"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "rounded forged edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded forged edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.02500000037252903,
+            "width_pct": 0.02500000037252903,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "anchored rubber foot.001",
+      "rawVertexBytesSha256": "9dd2a273fe5937e7181fef7a4dc084635bb4d53be3618a758842eb125aae1e5a",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "weatherproof charcoal rubber"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "rounded forged edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded forged edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.02500000037252903,
+            "width_pct": 0.02500000037252903,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "anchored rubber foot.002",
+      "rawVertexBytesSha256": "9dd2a273fe5937e7181fef7a4dc084635bb4d53be3618a758842eb125aae1e5a",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "weatherproof charcoal rubber"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "rounded forged edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded forged edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.02500000037252903,
+            "width_pct": 0.02500000037252903,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "anchored rubber foot.003",
+      "rawVertexBytesSha256": "9dd2a273fe5937e7181fef7a4dc084635bb4d53be3618a758842eb125aae1e5a",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "weatherproof charcoal rubber"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "rounded forged edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded forged edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.02500000037252903,
+            "width_pct": 0.02500000037252903,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "anti-slip inset",
+      "rawVertexBytesSha256": "bd9a82f070a5ee5c17425a25950f4d46409dcf87d9c15f1b8bab519ede171fc5",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "anti-slip inset"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "rounded forged edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded forged edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "anti-slip inset.001",
+      "rawVertexBytesSha256": "bd9a82f070a5ee5c17425a25950f4d46409dcf87d9c15f1b8bab519ede171fc5",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "anti-slip inset"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "rounded forged edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded forged edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "anti-slip inset.002",
+      "rawVertexBytesSha256": "bd9a82f070a5ee5c17425a25950f4d46409dcf87d9c15f1b8bab519ede171fc5",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "anti-slip inset"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "rounded forged edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded forged edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "anti-slip inset.003",
+      "rawVertexBytesSha256": "bd9a82f070a5ee5c17425a25950f4d46409dcf87d9c15f1b8bab519ede171fc5",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "anti-slip inset"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "rounded forged edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded forged edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "captive foot bolt",
+      "rawVertexBytesSha256": "171c9593abd1219d81793a589838a1bc0941fd9f4a018bddef0779e9a749ffdb",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "brushed stainless grip"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0037400000728666782,
+            "width_pct": 0.0037400000728666782,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "captive foot bolt.001",
+      "rawVertexBytesSha256": "171c9593abd1219d81793a589838a1bc0941fd9f4a018bddef0779e9a749ffdb",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "brushed stainless grip"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0037400000728666782,
+            "width_pct": 0.0037400000728666782,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "captive foot bolt.002",
+      "rawVertexBytesSha256": "171c9593abd1219d81793a589838a1bc0941fd9f4a018bddef0779e9a749ffdb",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "brushed stainless grip"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0037400000728666782,
+            "width_pct": 0.0037400000728666782,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "captive foot bolt.003",
+      "rawVertexBytesSha256": "171c9593abd1219d81793a589838a1bc0941fd9f4a018bddef0779e9a749ffdb",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "brushed stainless grip"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0037400000728666782,
+            "width_pct": 0.0037400000728666782,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "captive foot bolt.004",
+      "rawVertexBytesSha256": "171c9593abd1219d81793a589838a1bc0941fd9f4a018bddef0779e9a749ffdb",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "brushed stainless grip"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0037400000728666782,
+            "width_pct": 0.0037400000728666782,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "captive foot bolt.005",
+      "rawVertexBytesSha256": "171c9593abd1219d81793a589838a1bc0941fd9f4a018bddef0779e9a749ffdb",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "brushed stainless grip"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0037400000728666782,
+            "width_pct": 0.0037400000728666782,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "captive foot bolt.006",
+      "rawVertexBytesSha256": "171c9593abd1219d81793a589838a1bc0941fd9f4a018bddef0779e9a749ffdb",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "brushed stainless grip"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0037400000728666782,
+            "width_pct": 0.0037400000728666782,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "captive foot bolt.007",
+      "rawVertexBytesSha256": "171c9593abd1219d81793a589838a1bc0941fd9f4a018bddef0779e9a749ffdb",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "brushed stainless grip"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0037400000728666782,
+            "width_pct": 0.0037400000728666782,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed post cap",
+      "rawVertexBytesSha256": "f363b9bc636d7241224ee728056f79adaaacf96c69f1db2f805ca49bc559d59f",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "warm safety sleeve"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.014960000291466713,
+            "width_pct": 0.014960000291466713,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed post cap.001",
+      "rawVertexBytesSha256": "f363b9bc636d7241224ee728056f79adaaacf96c69f1db2f805ca49bc559d59f",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "warm safety sleeve"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.014960000291466713,
+            "width_pct": 0.014960000291466713,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "grip sleeve",
+      "rawVertexBytesSha256": "e181a781c059ce173474e076b0911bb0b205f95f3a0c37af82f178aa8229f97e",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "warm safety sleeve"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.01143999956548214,
+            "width_pct": 0.01143999956548214,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "grip sleeve.001",
+      "rawVertexBytesSha256": "e181a781c059ce173474e076b0911bb0b205f95f3a0c37af82f178aa8229f97e",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "warm safety sleeve"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.01143999956548214,
+            "width_pct": 0.01143999956548214,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "low joint",
+      "rawVertexBytesSha256": "54fae66d9f7376a92af23f6f13bf2335a3e5e09dd62fb4834794aee1507376e1",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "warm safety sleeve"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.01363999955356121,
+            "width_pct": 0.01363999955356121,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "low joint.001",
+      "rawVertexBytesSha256": "54fae66d9f7376a92af23f6f13bf2335a3e5e09dd62fb4834794aee1507376e1",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "warm safety sleeve"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.01363999955356121,
+            "width_pct": 0.01363999955356121,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "low support",
+      "rawVertexBytesSha256": "c72947db1b699dae2129a053b2a3079aa71f043a8b4e22474d0f3b0c46a8a2b9",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "powder-coated petrol steel"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.010339999571442604,
+            "width_pct": 0.010339999571442604,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "low support.001",
+      "rawVertexBytesSha256": "c72947db1b699dae2129a053b2a3079aa71f043a8b4e22474d0f3b0c46a8a2b9",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "powder-coated petrol steel"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.010339999571442604,
+            "width_pct": 0.010339999571442604,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "parallel grip",
+      "rawVertexBytesSha256": "5fcfb1ce4aa8450256e4085427dcc0f4af5a140ec49e452f5e1b587307903b25",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "brushed stainless grip"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009019999764859676,
+            "width_pct": 0.009019999764859676,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "parallel sleeve",
+      "rawVertexBytesSha256": "4635cc39ca4c23537e960af11e2d95a8a27d7a96d9409807914001a871edef8a",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "warm safety sleeve"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.011219999752938747,
+            "width_pct": 0.011219999752938747,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "parallel sleeve.001",
+      "rawVertexBytesSha256": "4635cc39ca4c23537e960af11e2d95a8a27d7a96d9409807914001a871edef8a",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "warm safety sleeve"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.011219999752938747,
+            "width_pct": 0.011219999752938747,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "pull-up bridge",
+      "rawVertexBytesSha256": "35e2fd6e56d123b2cb66a3ae8c57f16a14185935972f9c7fc04d7b5300e332b0",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "brushed stainless grip"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009239999577403069,
+            "width_pct": 0.009239999577403069,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "side stabilizer",
+      "rawVertexBytesSha256": "cb3bc2c29dde5e3352211f05f3466e4afbdfe9de439fad2890788f8eb84cce02",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "powder-coated petrol steel"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.006819999776780605,
+            "width_pct": 0.006819999776780605,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "side stabilizer.001",
+      "rawVertexBytesSha256": "cb3bc2c29dde5e3352211f05f3466e4afbdfe9de439fad2890788f8eb84cce02",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "powder-coated petrol steel"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.006819999776780605,
+            "width_pct": 0.006819999776780605,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "tall uprights",
+      "rawVertexBytesSha256": "71b01ea74a71cd901648ea216d80b9fd09330d97c3247bd146fb20c4b6537130",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "powder-coated petrol steel"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.01209999993443489,
+            "width_pct": 0.01209999993443489,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "tall uprights.001",
+      "rawVertexBytesSha256": "71b01ea74a71cd901648ea216d80b9fd09330d97c3247bd146fb20c4b6537130",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "powder-coated petrol steel"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": [
+        {
+          "name": "machined rim",
+          "type": "BEVEL",
+          "values": {
+            "name": "machined rim",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.01209999993443489,
+            "width_pct": 0.01209999993443489,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    }
+  ],
+  "allStoredGraphs": [
+    {
+      "name": "Material",
+      "diffuse": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.5,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "a83730e71d8885737a7513eca32fdfc9350bca452775153ff5fe6543ce82281d"
+    },
+    {
+      "name": "anti-slip inset",
+      "diffuse": [
+        0.20000000298023224,
+        0.27000001072883606,
+        0.25999999046325684,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.20000000298023224,
+                0.27000001072883606,
+                0.25999999046325684,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.49000000953674316
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "d339e7537920418e21abba60cf958629ce27c0df41c3feb19fd1266a681fdf7e"
+    },
+    {
+      "name": "brushed stainless grip",
+      "diffuse": [
+        0.5400000214576721,
+        0.6200000047683716,
+        0.6100000143051147,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.5400000214576721,
+                0.6200000047683716,
+                0.6100000143051147,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.6800000071525574
+            },
+            {
+              "name": "Roughness",
+              "value": 0.49000000953674316
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "8c60954d5d9a34c724d7957fb4eb3935b920db3718ec584734a98bedd5ddb6d8"
+    },
+    {
+      "name": "powder-coated petrol steel",
+      "diffuse": [
+        0.10999999940395355,
+        0.27000001072883606,
+        0.3199999928474426,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.10999999940395355,
+                0.27000001072883606,
+                0.3199999928474426,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.3400000035762787
+            },
+            {
+              "name": "Roughness",
+              "value": 0.49000000953674316
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "1479123e1f2277c9b07fcd07655d35ab22c24635c8542efd05a74f7fa394257e"
+    },
+    {
+      "name": "warm safety sleeve",
+      "diffuse": [
+        0.8600000143051147,
+        0.5899999737739563,
+        0.18000000715255737,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.8600000143051147,
+                0.5899999737739563,
+                0.18000000715255737,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.07999999821186066
+            },
+            {
+              "name": "Roughness",
+              "value": 0.49000000953674316
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "efd48ddb7d0f916f5862061588bd962bc8dafcd5bd1def0127b559429692c07b"
+    },
+    {
+      "name": "weatherproof charcoal rubber",
+      "diffuse": [
+        0.11999999731779099,
+        0.17000000178813934,
+        0.17000000178813934,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.11999999731779099,
+                0.17000000178813934,
+                0.17000000178813934,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.49000000953674316
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "e1708327ece3b50c0cf6558891bfc1618eb97145a6a84321bfb622d82b70dba0"
+    }
+  ],
+  "allEvaluatedNormals": [
+    {
+      "name": "anchored rubber foot",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.04500000178813934,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "anchored rubber foot.001",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.04500000178813934,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "anchored rubber foot.002",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.04500000178813934,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "anchored rubber foot.003",
+      "polygons": 54,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.04500000178813934,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "anti-slip inset",
+      "polygons": 54,
+      "degenerateIndices": [
+        26,
+        27,
+        30,
+        31,
+        36,
+        37,
+        42,
+        43,
+        49,
+        50,
+        52,
+        53
+      ],
+      "minimumOutwardDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "anti-slip inset.001",
+      "polygons": 54,
+      "degenerateIndices": [
+        26,
+        27,
+        30,
+        31,
+        36,
+        37,
+        42,
+        43,
+        49,
+        50,
+        52,
+        53
+      ],
+      "minimumOutwardDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "anti-slip inset.002",
+      "polygons": 54,
+      "degenerateIndices": [
+        26,
+        27,
+        30,
+        31,
+        36,
+        37,
+        42,
+        43,
+        49,
+        50,
+        52,
+        53
+      ],
+      "minimumOutwardDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "anti-slip inset.003",
+      "polygons": 54,
+      "degenerateIndices": [
+        26,
+        27,
+        30,
+        31,
+        36,
+        37,
+        42,
+        43,
+        49,
+        50,
+        52,
+        53
+      ],
+      "minimumOutwardDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "captive foot bolt",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.005999967455863953,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "captive foot bolt.001",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.005999967455863953,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "captive foot bolt.002",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.005999967455863953,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "captive foot bolt.003",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.005999967455863953,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "captive foot bolt.004",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.005999967455863953,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "captive foot bolt.005",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.005999967455863953,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "captive foot bolt.006",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.005999967455863953,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "captive foot bolt.007",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.005999967455863953,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "closed post cap",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.017499804496765137,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "closed post cap.001",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.017499804496765137,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "grip sleeve",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.05135918129235506,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "grip sleeve.001",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.051359182223677635,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "low joint",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.019999384880065918,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "low joint.001",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.019999384880065918,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "low support",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.04642126080580056,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "low support.001",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.046420495957136154,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "parallel grip",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.04049502103589475,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "parallel sleeve",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.050371915102005005,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "parallel sleeve.001",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.05037190765142441,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "pull-up bridge",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.04148278385400459,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "side stabilizer",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.030618238786701113,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "side stabilizer.001",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.03061818704009056,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "tall uprights",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.05432268604636192,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "tall uprights.001",
+      "polygons": 102,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.05432231351733208,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    }
+  ],
+  "allPartBounds": {
+    "anchored rubber foot": {
+      "min": [
+        0.05000002682209015,
+        0.0599999874830246,
+        0.0
+      ],
+      "max": [
+        0.39000004529953003,
+        0.3999999761581421,
+        0.09000000357627869
+      ]
+    },
+    "anchored rubber foot.001": {
+      "min": [
+        0.05000002682209015,
+        0.5999999642372131,
+        0.0
+      ],
+      "max": [
+        0.39000004529953003,
+        0.9399999976158142,
+        0.09000000357627869
+      ]
+    },
+    "anchored rubber foot.002": {
+      "min": [
+        1.6100000143051147,
+        0.0599999874830246,
+        0.0
+      ],
+      "max": [
+        1.9499999284744263,
+        0.3999999761581421,
+        0.09000000357627869
+      ]
+    },
+    "anchored rubber foot.003": {
+      "min": [
+        1.6100000143051147,
+        0.5999999642372131,
+        0.0
+      ],
+      "max": [
+        1.9499999284744263,
+        0.9399999976158142,
+        0.09000000357627869
+      ]
+    },
+    "anti-slip inset": {
+      "min": [
+        0.10000003129243851,
+        0.10999999195337296,
+        0.08500000089406967
+      ],
+      "max": [
+        0.3400000333786011,
+        0.3499999940395355,
+        0.09699999541044235
+      ]
+    },
+    "anti-slip inset.001": {
+      "min": [
+        0.10000003129243851,
+        0.6499999761581421,
+        0.08500000089406967
+      ],
+      "max": [
+        0.3400000333786011,
+        0.8899999856948853,
+        0.09699999541044235
+      ]
+    },
+    "anti-slip inset.002": {
+      "min": [
+        1.659999966621399,
+        0.10999999195337296,
+        0.08500000089406967
+      ],
+      "max": [
+        1.899999976158142,
+        0.3499999940395355,
+        0.09699999541044235
+      ]
+    },
+    "anti-slip inset.003": {
+      "min": [
+        1.659999966621399,
+        0.6499999761581421,
+        0.08500000089406967
+      ],
+      "max": [
+        1.899999976158142,
+        0.8899999856948853,
+        0.09699999541044235
+      ]
+    },
+    "captive foot bolt": {
+      "min": [
+        0.10300000011920929,
+        0.21299998462200165,
+        0.09300000220537186
+      ],
+      "max": [
+        0.13700000941753387,
+        0.24699999392032623,
+        0.10499999672174454
+      ]
+    },
+    "captive foot bolt.001": {
+      "min": [
+        0.30300000309944153,
+        0.21299998462200165,
+        0.09300000220537186
+      ],
+      "max": [
+        0.3369999825954437,
+        0.24699999392032623,
+        0.10499999672174454
+      ]
+    },
+    "captive foot bolt.002": {
+      "min": [
+        0.10300000011920929,
+        0.7529999613761902,
+        0.09300000220537186
+      ],
+      "max": [
+        0.13700000941753387,
+        0.7870000004768372,
+        0.10499999672174454
+      ]
+    },
+    "captive foot bolt.003": {
+      "min": [
+        0.30300000309944153,
+        0.7529999613761902,
+        0.09300000220537186
+      ],
+      "max": [
+        0.3369999825954437,
+        0.7870000004768372,
+        0.10499999672174454
+      ]
+    },
+    "captive foot bolt.004": {
+      "min": [
+        1.6630001068115234,
+        0.21299998462200165,
+        0.09300000220537186
+      ],
+      "max": [
+        1.6970000267028809,
+        0.24699999392032623,
+        0.10499999672174454
+      ]
+    },
+    "captive foot bolt.005": {
+      "min": [
+        1.8630000352859497,
+        0.21299998462200165,
+        0.09300000220537186
+      ],
+      "max": [
+        1.8969999551773071,
+        0.24699999392032623,
+        0.10499999672174454
+      ]
+    },
+    "captive foot bolt.006": {
+      "min": [
+        1.6630001068115234,
+        0.7529999613761902,
+        0.09300000220537186
+      ],
+      "max": [
+        1.6970000267028809,
+        0.7870000004768372,
+        0.10499999672174454
+      ]
+    },
+    "captive foot bolt.007": {
+      "min": [
+        1.8630000352859497,
+        0.7529999613761902,
+        0.09300000220537186
+      ],
+      "max": [
+        1.8969999551773071,
+        0.7870000004768372,
+        0.10499999672174454
+      ]
+    },
+    "closed post cap": {
+      "min": [
+        0.15200002491474152,
+        0.7019999623298645,
+        1.6624999046325684
+      ],
+      "max": [
+        0.28800004720687866,
+        0.8379999995231628,
+        1.6974999904632568
+      ]
+    },
+    "closed post cap.001": {
+      "min": [
+        1.7120000123977661,
+        0.7019999623298645,
+        1.6624999046325684
+      ],
+      "max": [
+        1.847999930381775,
+        0.8379999995231628,
+        1.6974999904632568
+      ]
+    },
+    "grip sleeve": {
+      "min": [
+        0.32999998331069946,
+        0.7179999947547913,
+        1.5079998970031738
+      ],
+      "max": [
+        0.550000011920929,
+        0.8219999670982361,
+        1.6119999885559082
+      ]
+    },
+    "grip sleeve.001": {
+      "min": [
+        1.4499999284744263,
+        0.7179999947547913,
+        1.5079998970031738
+      ],
+      "max": [
+        1.6699999570846558,
+        0.8219999670982361,
+        1.6119999885559082
+      ]
+    },
+    "low joint": {
+      "min": [
+        0.15800002217292786,
+        0.1679999828338623,
+        0.8600000143051147
+      ],
+      "max": [
+        0.28200003504753113,
+        0.2919999957084656,
+        0.8999999761581421
+      ]
+    },
+    "low joint.001": {
+      "min": [
+        1.7179999351501465,
+        0.1679999828338623,
+        0.8600000143051147
+      ],
+      "max": [
+        1.8420000076293945,
+        0.2919999957084656,
+        0.8999999761581421
+      ]
+    },
+    "low support": {
+      "min": [
+        0.1730000376701355,
+        0.18299999833106995,
+        0.034999996423721313
+      ],
+      "max": [
+        0.2670000195503235,
+        0.27699998021125793,
+        0.8650000095367432
+      ]
+    },
+    "low support.001": {
+      "min": [
+        1.7329999208450317,
+        0.18299999833106995,
+        0.034999996423721313
+      ],
+      "max": [
+        1.8270000219345093,
+        0.27699998021125793,
+        0.8650000095367432
+      ]
+    },
+    "parallel grip": {
+      "min": [
+        0.1899999976158142,
+        0.1889999806880951,
+        0.8289999961853027
+      ],
+      "max": [
+        1.8100000619888306,
+        0.2709999978542328,
+        0.9110000133514404
+      ]
+    },
+    "parallel sleeve": {
+      "min": [
+        0.3850000202655792,
+        0.17899999022483826,
+        0.8190000057220459
+      ],
+      "max": [
+        0.5750000476837158,
+        0.2809999883174896,
+        0.9210000038146973
+      ]
+    },
+    "parallel sleeve.001": {
+      "min": [
+        1.4249999523162842,
+        0.17899999022483826,
+        0.8190000057220459
+      ],
+      "max": [
+        1.6150000095367432,
+        0.2809999883174896,
+        0.9210000038146973
+      ]
+    },
+    "pull-up bridge": {
+      "min": [
+        0.1899999976158142,
+        0.7279999852180481,
+        1.5179998874664307
+      ],
+      "max": [
+        1.8100000619888306,
+        0.8119999766349792,
+        1.6019999980926514
+      ]
+    },
+    "side stabilizer": {
+      "min": [
+        0.18900002539157867,
+        0.22999998927116394,
+        0.23899999260902405
+      ],
+      "max": [
+        0.2510000169277191,
+        0.7700000405311584,
+        0.30100002884864807
+      ]
+    },
+    "side stabilizer.001": {
+      "min": [
+        1.7489999532699585,
+        0.22999998927116394,
+        0.23899999260902405
+      ],
+      "max": [
+        1.8109999895095825,
+        0.7700000405311584,
+        0.30100002884864807
+      ]
+    },
+    "tall uprights": {
+      "min": [
+        0.16500002145767212,
+        0.7149999737739563,
+        0.050000011920928955
+      ],
+      "max": [
+        0.27500003576278687,
+        0.824999988079071,
+        1.6700000762939453
+      ]
+    },
+    "tall uprights.001": {
+      "min": [
+        1.725000023841858,
+        0.7149999737739563,
+        0.050000011920928955
+      ],
+      "max": [
+        1.834999918937683,
+        0.824999988079071,
+        1.6700000762939453
+      ]
+    }
+  },
+  "sourceBounds": {
+    "min": [
+      0.05000002682209015,
+      0.0599999874830246,
+      0.0
+    ],
+    "max": [
+      1.9499999284744263,
+      0.9399999976158142,
+      1.6974999904632568
+    ]
+  },
+  "acceptedCamera": {
+    "resolution": 256,
+    "ortho": 4.0,
+    "target": [
+      1.0,
+      0.5,
+      0.8199999928474426
+    ],
+    "engine": "BLENDER_WORKBENCH"
+  },
+  "canonicalReplays": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "sha256": "ede33077c7885e887696899fa9785d6116dcce51d66272698580d1016f459fd3"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30,
+      "sha256": "da4454cfd50e9c0b32dbcc39b361216f82786e63161add43507111143289e5a6"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "sha256": "1e08221d9ca735f10380a815a85868a3c8e32157e43f58a0ef591cd92f480e12"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50,
+      "sha256": "4c5c23e1c460d01f12f28ece8a5eac4ac46c8e46fc7fdeefafa8e5da25b81619"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "sha256": "d22c002fda3b14e5bb611521bd74bc5fa2f4cba9e37aec49e25e244694b711c4"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "sha256": "d3145908ee423af59111efeaced89b2a895da70928e6843a321ce36793bea303"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20,
+      "sha256": "a442b7cfe4abe1d5779f8990b2bbdceafe2e85a16dace5aeb930a3d12e9ee738"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30,
+      "sha256": "05f3008a4530f7e9d32e8066d91a9227a240ca97e3772d52cb588844b2284085"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "sha256": "0223005b8d32099d377ef2b50addcc34f1bfa91f014a8426a49e50ecfa844611"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "sha256": "b3638e93e11e6c92d36e35837234562ef0d671c8b57805f415941181f56c9c4c"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "sha256": "a4404a2fbfa8c3a6716aa5e5fee4daf98e44b860ef9dab0bef017c2bbcddf7e6"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "sha256": "c3c6935096790a9ed50e7a0e9c626b756be18d1ce25fb39072921b8e7de8fe93"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20,
+      "sha256": "6da59953fd63e5444562c533322ab7b252075ec6693ee75a6fa58151f0fe25cc"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30,
+      "sha256": "0d9c9a2fef9ba2f6049428945cc52e71c962ecd409fc52117d3a7559a0400277"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "sha256": "47ea5a0230ab5864a88e073151aeb3cf375578409117f0a09bde6060867926ae"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "sha256": "b7fb28df0f0a3573bc23a57ce70edcee639c641881a46b43b17c54f21ee74841"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "sha256": "2d38a7bd0e4fa6c0ca0cf9a13e7ef5bf2a5c60409577f3de7e81eadf52b14cbc"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "sha256": "d230ffbc9e0ec3f2a3538c8ac321a239e72aadfac990745fa5542fd560e05824"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20,
+      "sha256": "08ef50e31877129fd584bd66772fc480d4fe815c6d94c7a87c6fe971f9d65dc5"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "sha256": "e07b210d0b1707b09bf1e2c35498560089c6cd592c71ef400faf1870bc6cc250"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "sha256": "1a73c6412c21dd662d25377685f55c7520d32c735921f927a30f897e5033daeb"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "sha256": "4a517d4e80872f9fdf6d65092f8efe26240ec770a7e04c3b2c4c274e7c7ebe58"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "sha256": "5315817b6faab83ab1258f8ea4f089d5ddd6cc001826c6ba49bf1470becbbcfc"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "sha256": "d9540897b9fef8b07b9073fbe5277e06dd82351bacf4ffcf358ef1fcdcbf6e2d"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20,
+      "sha256": "f85e0b3e87cd85c6ecfe3042ba7efcb1f50577dd6eac4be378f7458d4923cd27"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30,
+      "sha256": "9e744ab69ff4be60dbc73d0d5752788e290750e5e80f7a9a0265eb757f7dbd57"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "sha256": "3e674b3d78df01bc3b698bf8c212f492fb0fe1c5c01ce5d3b8f08e895effa730"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "sha256": "f751bae20f0cef70863e973498ae40fc74e602c0e654751317d238232f85238d"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "sha256": "d475f7807ae35cb4c376de400b6271e877adde74a5b6deb1fabb5842383e3e9d"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "sha256": "af45c15d7ec989a990172e106f6d0ea473c7c05d6355ac4f478db08d9dce77af"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20,
+      "sha256": "3f09ab823c532bf97c0cad0d49073d94fd81268e876e0031a93631e1ca19beed"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30,
+      "sha256": "85582678155fc7ae74538e0b5bb1e19d1373fa6d92d9d4a07ea69e015d4edf3c"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "sha256": "64b97e9959a8804ba98c21b6e62ae5a4a92645380e2d4e4fefe5256b9fb25806"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "sha256": "e7663c22fadacb5c20fd4c5b4bffac1488a038709566058671d8bcf0cf94b773"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "sha256": "dbe8ae476218528e5661ca507966fdeb39ce2d94b8c8ed8493f1185a475df73b"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "sha256": "59ac73e9ab9a85d603ebc06092f67efeac680c229f216e638c608c8c081ca6c3"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "sha256": "320bca192ad90571d5827f3111a12c78cfc7a6cb2374b8550290edfdfbd900c2"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "sha256": "592349e94047f3739ffa6e5b53aba9e30358bb5ef1d1dc1864a8be69816cb197"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "sha256": "b949493a623d5b4d79c9f7dddfc36f375d1c2690c9ad5db7e46757235653dda5"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "sha256": "3f754c106bffb341e2b84883f21a318d6ef442dce861dc9c3d02e39547dc1f00"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "sha256": "a5fce8ecc73eb1e3beb9d054256380d391fd3273eef07c75c067cebbf669cac9"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "sha256": "97b1889fcbbe700c045973962907dfc915c9c8cd0ceb7eb94247633c3347d656"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "sha256": "1f587f93aff9fbb08824442d2e92392cb7a07877d98c3908f7cfab46f635739a"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "sha256": "54e837a9c754f7bb5f67ead63aa2b469e7a6cedda899f273cd70419c5392c99c"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "sha256": "768dad1a380424b998a6e134e593c699bd424c8d451d2fea95c34726df88cba7"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "sha256": "b813e25d16c3d9cf7139ecd7d4a0c6e792f157befaa816841f12a8a496b8335e"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "sha256": "e1900eb5e410aa5e19963aa28a90f7dfe36a35671f3b8056d5fdd3bfe5b60cd1"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "sha256": "cd927654f7b91d0b08c3c26b6c6986c7582a7aab2faf39980774789d312b62dd"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "sha256": "afb5184090aaaad86730315f583ad977c3cbc90111c964387aedb25af8e79247"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "sha256": "123fa36091d530e61c880c9bdde90df866e1199457250c356879533ec78816fd"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "sha256": "d2bfc094ff80b0875d07f03ba85ef7fddb4e73f1d67cbd7ea574674fc042db77"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "sha256": "f3d07a284f220f82c8cc9a7775dd3c278aeb7e35ac3677c3e69e949e33e705ac"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "sha256": "8c08310bacf2916d608eae6f60f2666e4f4467c65d72466849b624b027a8caa2"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "sha256": "cba39d151bcd81cd1aab03746cd7461dd5f1016e4544ab04684a71885f86e11a"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "sha256": "40142e9a2cc772147cbd141daa9ce4e44368cdb35505477b4c1b6b123f3a29f0"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "sha256": "b4b03685c0f980c2b854660f3de78c93df6c85f035e3bedd8b91d9aa84e4ff6e"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "sha256": "18070a1cf7643005e08c577ab8a945051e4a59e1a765de1a897568ee851b01b5"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "sha256": "553d6eeb0dd1235e1e1552c7a09478e28bc7cbbc054d60999a02d5266516b553"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "sha256": "a36a0ff71a53bb1b887da9d71663360f791f6bc81bb8b7f6016d3f6bc0cd5cf9"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "sha256": "9ddda61cc0d87b866bff51c8210707b19d9aee0c69afa805e54f94dcb88b8865"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "sha256": "ff8ac0fdb07ca9913d193c47ceb217b99483fefb56c35a1abeb42be73809c237"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "sha256": "274a4878d63a83108b68e028b32d15775a5d8d9b67d4e4a50ce24f7ac536f443"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "sha256": "96bf089124afaa1fb73f14c939452bfa070d5cd88fa5a3fc920c57975f71bd96"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "sha256": "c62318e98f1b9c3d03d2dc0789f8670398702e7773125eddc11e184a16c2cfce"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "sha256": "3630eeb06d14b01580485432ac1f6aae680b938e7c6a67f8b50acb7cce3fe7e5"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "sha256": "b98dd1cc077cf785a86d79a0f033289faf00e9d32b9fbf0698f36f3aacec8178"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "sha256": "caba519b182231ca108f5f24314e82c018f8522331da02bb92fface5afeab075"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "sha256": "479feddf6999c4ee27596bacfcf92857a1c1c54b00f7bd59d28ce061927e27d6"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "sha256": "4f259a25a03ba250ddbab8bc6e956e139067440dd6ffc9a61c978316a0fadb16"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "sha256": "fc8f37b2c7e2ae5e568dda61e97dcb5376dfcd61bcc0c8e7aa2eaaa840a19df4"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "sha256": "d202d8cf40e01c149998e3f63bd92ffedc338894486d514cb10b9213e87beb03"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "sha256": "dee3729406af5d3065784f532e1236b732d71962f2042b5458ef7b4875852d58"
+    }
+  ]
+}

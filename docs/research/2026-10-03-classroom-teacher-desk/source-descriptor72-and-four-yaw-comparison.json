@@ -1,0 +1,465 @@
+{
+  "sourceSHA256": "c1dd80d253667f8e1bca5b17371b183ec18b5a292bebdf9fd2062e85b01d55ff",
+  "descriptorSHA256": "21081cbe54947671e3eadbc0cd4b08be3c23d16e6d54cc8549fc85dcb722ccb7",
+  "all72PublishedFrameHashes": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+00-elev20.34e3f37398ac.png",
+      "sha256": "34e3f37398ace8d63bcd4268fa6e7b3ee0af8d257ac0509841444354a0d97f37"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+00-elev30.415f0e4720d7.png",
+      "sha256": "415f0e4720d71750fad7ac606c55d8e1c758659e2ad3954d0cb4bd168d887909"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+00-elev40.bb94fc55cad0.png",
+      "sha256": "bb94fc55cad0f375633797993cc0d87c399dbe5cb9ebc1158dd2976e0e1f0de8"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+00-elev50.75f636fde67b.png",
+      "sha256": "75f636fde67b16e19ab061ed3f0663ae6e96dc3ec85797fcacfc6712feeed71f"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+00-elev60.4323714d582b.png",
+      "sha256": "4323714d582bd6439c905fb57c593773abba24cfd4a80e3797abaf75ffb87f9e"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+00-elev70.fffd896f85ea.png",
+      "sha256": "fffd896f85eae59e9d3490a9962efb78bd6f8483c6f2ac79ef269b9a272b3c45"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev20.1b01a19505ab.png",
+      "sha256": "1b01a19505ab5dda986b70a8b2ff3816cb72552321eafb9f2849b53d0f211eda"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev30.795c75fc9f25.png",
+      "sha256": "795c75fc9f252a2a486ff4fc90f8c9dc83726e702bffe12a4b59cad266e0c9ce"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev40.d25e7cf7d25f.png",
+      "sha256": "d25e7cf7d25faadf2ca1f413f1d117e03e5de6726cd52501c9f2d738e6580783"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev50.91326f867346.png",
+      "sha256": "91326f867346e104d72f1acaa4535b072f921db7f259b14de6da349814c375e6"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev60.36f2b87940cf.png",
+      "sha256": "36f2b87940cfa9349d3fcbd3327886e7b473211696f00077ce2ca101179025be"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev70.c48af6a176a6.png",
+      "sha256": "c48af6a176a6e73fb7abffc78793f1a6e15add596ac903792f1d1b6c07e87614"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev20.f34ba387c104.png",
+      "sha256": "f34ba387c104d70e5e314946daa511eda49d6c0d66ba36f179e47dbb29f21c12"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev30.f76ee324e693.png",
+      "sha256": "f76ee324e693c9c844e0353b789dd6a1a57abd3f9b6741411128775469816aca"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev40.721cae760da7.png",
+      "sha256": "721cae760da76bdb6830e99255ee7e9c01c0d1733735621b419a62997094a561"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev50.a2b37b735034.png",
+      "sha256": "a2b37b735034a0a05d74a4dc91dd148f66deb4aa0772af867a1b78085a6ddd83"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev60.b95ae567c183.png",
+      "sha256": "b95ae567c18372e45d03eec30c953c5cfbd445e41844a4836e9682616fbce066"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev70.b94c677e01b4.png",
+      "sha256": "b94c677e01b4181a5cf998cbe2d62b305a80fa7a38cbc08ecac9428ccca67102"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+90-elev20.7fdeff551fe8.png",
+      "sha256": "7fdeff551fe859eac793117f02e9a06be3ac7d08c5f2717820f7008401850afb"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+90-elev30.26f07abba951.png",
+      "sha256": "26f07abba951d03ba414b20dfb491083f896d2787e217f35de1cd6a8edf1a82a"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+90-elev40.854fadcdfa8d.png",
+      "sha256": "854fadcdfa8d1c1e5282e4c6c107ba5908263cd7379f5a3158cb216d51d1676d"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+90-elev50.6bb69581e390.png",
+      "sha256": "6bb69581e3900be8327b8fd6d3a696240040c5f8c113171999e653b436ecf889"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+90-elev60.0c442d07828d.png",
+      "sha256": "0c442d07828dfcca6e7bd07b142283bebfe00a47afc14d046ffba96d87f1d5f5"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+90-elev70.7194035b47e1.png",
+      "sha256": "7194035b47e12f6c231e3865d48ba84ae20c6d7fb3543fa62da17114aec4c77d"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+120-elev20.63dffecebef7.png",
+      "sha256": "63dffecebef7c7852070765296491c64c17380a6c898fcea268b038eccef47e6"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+120-elev30.cb6d43e6bf49.png",
+      "sha256": "cb6d43e6bf4988db8e1bfcb937b910f92a28b6bbd3ab3de8036ca63b34e648c2"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+120-elev40.5fbc1c502dd8.png",
+      "sha256": "5fbc1c502dd80fd99c5ab8791cba5769b696a7a3f912fe045f65d843d4795085"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+120-elev50.5965eb266782.png",
+      "sha256": "5965eb2667827bba0eeeb5c9286481445acdd85377a1215f4602d75e750b2acf"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+120-elev60.733c6aeed2c5.png",
+      "sha256": "733c6aeed2c5bc11e79a0c8c79a4d1821d0f423fe487fa3365cea53df53e0275"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+120-elev70.f7fd4c87b38d.png",
+      "sha256": "f7fd4c87b38de2ea9f30a3c8e64ab044eacbd4356c12a331f93dccf59b1a0389"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+150-elev20.1346a66da1e1.png",
+      "sha256": "1346a66da1e15c96c53013427a4a0ec9f94a0843ecb896e25f5edd41884bbb09"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+150-elev30.dbbc653e20f7.png",
+      "sha256": "dbbc653e20f7df2dd023e59812ce6a084b0f33e56c58a5a778839c5e2230b9a9"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+150-elev40.cdfd2ed62322.png",
+      "sha256": "cdfd2ed62322bd8128efc762591bbff018ac8b80a4265751ee088eab055fb24f"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+150-elev50.23f103154d3f.png",
+      "sha256": "23f103154d3f34798b760c98bffbc76b8021025ac8864a8e0b98f51dc8d36eef"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+150-elev60.09f6eb4b8e53.png",
+      "sha256": "09f6eb4b8e537ae802330476e972cfdb4af81aa850e9682f62e92837e92f8ad6"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+150-elev70.21f0a39147a8.png",
+      "sha256": "21f0a39147a8d84c28e467ffff20e0ee820057d2f362fc039f2eca1fceb1c1dc"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+180-elev20.cbcf4ad2c968.png",
+      "sha256": "cbcf4ad2c968f7f5e407bd30dd084d66b3927f63b5b88e2c91a0ba6c11cf90a0"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+180-elev30.7f7946136e08.png",
+      "sha256": "7f7946136e0873654cd08d44575193c72a3f9395c0972a70a6c31e4d693893f6"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+180-elev40.03f3ee6b93e5.png",
+      "sha256": "03f3ee6b93e5a80075a68a5b9f840a5e685561cb211a76a86d8bd7c6f6ebbf6e"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+180-elev50.978495d01686.png",
+      "sha256": "978495d01686fb73fc88b7fb7afac22d43e25409c5dce35bfafbe9abd0ac9c90"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+180-elev60.3d84206b81b6.png",
+      "sha256": "3d84206b81b625954d0d16f14dfebab07b1e7f81a0ce89e4ecab527716b5326d"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+180-elev70.76b2d102e435.png",
+      "sha256": "76b2d102e435304d17310b7343e64ab92d1ab454c70f575f48abd5d04b23cf09"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+210-elev20.e21960d96bb1.png",
+      "sha256": "e21960d96bb16676e9e1b86bcf80640c4ea7ed4030924616d44c5d21d585bc5c"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+210-elev30.e144733e0283.png",
+      "sha256": "e144733e02832bff9189db73e956f191b58a5292b3febab8791e4ac3d9110f71"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+210-elev40.419331a357a7.png",
+      "sha256": "419331a357a7a2aaca06f7bdb6b7fe1197b32ba9aaaa730c897caef9f0334683"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+210-elev50.c780a36bf2de.png",
+      "sha256": "c780a36bf2deea08b0fd877fd0245d7f022a44c0540eacd5da4c570d6aba8f02"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+210-elev60.5170bbb61db4.png",
+      "sha256": "5170bbb61db43e9f8497dd5f29fd424cea1b8f68d8c4e32797f3b94b3aecc76b"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+210-elev70.968ad57fdca4.png",
+      "sha256": "968ad57fdca452962ddbdcdb980043144d284f06ca2ada13899c9f1ef5ec4265"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+240-elev20.31e34d0bd13d.png",
+      "sha256": "31e34d0bd13d662df05183a453ec98efede1998d5041e534f24ebc5faa831fcd"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+240-elev30.d74be58addd0.png",
+      "sha256": "d74be58addd0ead28c0f65fd924b22fa457db5c6cc9b358869be363a40e6abff"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+240-elev40.0389c4d4fb5b.png",
+      "sha256": "0389c4d4fb5b5f2c31b93b399cde4e2b903a493e15fa1f962f3d569d1452598e"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+240-elev50.39532c42b6cf.png",
+      "sha256": "39532c42b6cff0a8b9f5816e0ec358516de816b0dd6f6bf2020b01082b59086c"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+240-elev60.0cf88dc29d82.png",
+      "sha256": "0cf88dc29d8215e93895ec33ea01b33832951e6fed6a6522f6b1b638df56013f"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+240-elev70.33dc625d5619.png",
+      "sha256": "33dc625d56190c121a3a20f9be61617ec7ede5b213f248bd57f7743e282dc81f"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+270-elev20.85b83ba1cc76.png",
+      "sha256": "85b83ba1cc765135d91982c57ba10bbffe2585b8aa6bb750ace995a3ce962649"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+270-elev30.1c71fb090757.png",
+      "sha256": "1c71fb090757f379719d78a0fbea3a78c574648e30afce26a0aea876d30b3c99"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+270-elev40.9c37c1852f0c.png",
+      "sha256": "9c37c1852f0cb6ddb8fac917ef4c7d6bbbcc4396e12b6788f90bffb6605b12bd"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+270-elev50.01dccfe15c68.png",
+      "sha256": "01dccfe15c681522a971f60cba60e1d0a993f819ec19a47cae39abd238cd18d9"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+270-elev60.dbdc97175625.png",
+      "sha256": "dbdc97175625295e49f68ad499fc03042375d45d39b388a124eaa138f7ddde17"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+270-elev70.af64d9de5ef8.png",
+      "sha256": "af64d9de5ef8f369e415bbbac7589dbeba33a80c4fd36cc0b3e450b8c46a8a9d"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+300-elev20.e5f73106ed42.png",
+      "sha256": "e5f73106ed42fde24f895ce841536a081a3b53d44565fce04b9d925ff85e7868"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+300-elev30.074bb47944e7.png",
+      "sha256": "074bb47944e7f7f6a4693bc409b3237d96d8afdc9798a88524f8241aff9a2653"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+300-elev40.63ce4baba5e5.png",
+      "sha256": "63ce4baba5e51423a4b320b914454bfeeaf0e7c392e42b18c6fad6524e71959b"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+300-elev50.e0b867a14d97.png",
+      "sha256": "e0b867a14d978f4a7e5ee2c4b89ac5764d139414c5412ff70ea1901dfdaa2200"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+300-elev60.ab209b12bc54.png",
+      "sha256": "ab209b12bc54692eb74f08ff8d158eb6aea09b166c1a364ec2d899ab474be50b"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+300-elev70.5ca7f8b5f295.png",
+      "sha256": "5ca7f8b5f29552e350c1db4760930a1726f196b65069d3aefa99105be04aef47"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev20.791c4a26444d.png",
+      "sha256": "791c4a26444d79ea273e6b1bf6368f07c97b0008597ff3f40618442395cca291"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev30.f24e4bf9af90.png",
+      "sha256": "f24e4bf9af90976280c1363b96872c1e1f18a3fcf4878f4352e88a53d2d36d26"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev40.ba2ac295ff47.png",
+      "sha256": "ba2ac295ff4768d9762e183e909c773ca5e3b64ef2004a7f5382631c4ae1f565"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev50.5ff07bdfd067.png",
+      "sha256": "5ff07bdfd067ff6957a5146a6e74645feaa7bc5be0d8c25e50d2c0eb34849511"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev60.5538315b546a.png",
+      "sha256": "5538315b546a79c7d8c59f161c6600aef8953da6d2f9e519c1d2525efd0a1d02"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev70.f1b19c34f602.png",
+      "sha256": "f1b19c34f6025b0c36d85d71df198705e02f47a904eab39fdc3d96b0554b5cdd"
+    }
+  ],
+  "fourRealDirections": [
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "changedRGBAPixels": 2383,
+      "comparisonScope": "actual full canvas; identical retained geometry and camera target height"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "changedRGBAPixels": 1519,
+      "comparisonScope": "actual full canvas; identical retained geometry and camera target height"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "changedRGBAPixels": 2076,
+      "comparisonScope": "actual full canvas; identical retained geometry and camera target height"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "changedRGBAPixels": 2048,
+      "comparisonScope": "actual full canvas; identical retained geometry and camera target height"
+    }
+  ],
+  "visualization": "actual RGBA crops at nearest-neighbor x3, labels only; no generated concept"
+}

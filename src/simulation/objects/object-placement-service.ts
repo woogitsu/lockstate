@@ -2,6 +2,7 @@ import { defaultRoomContentRegistry, type RoomCatalogDefinition } from '../../co
 import type { ContentRegistry } from '../../content/registry';
 import { createBuildOrder, type BuildOrder, type BuildOrderLifecycleState } from '../construction/build-order';
 import { getBuildableDefinition, BUILDABLE_REGISTRY } from '../construction/definition';
+import { placementCostMinorUnits } from '../economy/placement-cost';
 import type { RoomInstanceRegistry } from '../prisoners/room-instance-registry';
 import { canBuildAt, type BuildabilityRequirement } from '../world/buildability';
 import { tileCoordinate, tileToChunk, type TilePosition } from '../world/coordinates';
@@ -28,8 +29,9 @@ import { roomInstanceContaining, type RoomCapacityResolver } from './room-capaci
  * the container.
  *
  * This service is therefore not a placement *system*: it has no `update`, it
- * holds no state a snapshot has to carry, and it runs only inside a command
- * dispatch. What it does is decide whether the placement is legal and mint the
+ * holds no state a snapshot has to carry. Its mutation runs only inside a command
+ * dispatch; the same pure admission check also serves read-only preflight queries.
+ * What it does is decide whether the placement is legal and mint the
  * order; the object appears when the order finishes, through
  * `onOrderCompleted` below.
  *
@@ -116,7 +118,27 @@ export interface PlaceObjectRequest {
   /** Anchor tile: the footprint's top-left corner. */
   readonly x: number;
   readonly y: number;
+  /** Internal authored-plan grouping; ordinary placements retain their own order ID. */
+  readonly transactionId?: string;
+  /** Internal deferred-plan history membership; absent on player commands and saves. */
+  readonly historyContinuationOrderIds?: readonly string[];
+  /** Authored template or approved individual-command facing; absent retains 0. */
+  readonly objectOrientation?: ObjectOrientation;
 }
+
+export type ObjectPlacementPreviewRequest = Pick<PlaceObjectRequest, 'definitionId' | 'x' | 'y' | 'objectOrientation'> & {
+  readonly orderId?: string;
+};
+
+interface ObjectPlacementQuote {
+  readonly footprint: readonly TilePosition[];
+  /** Catalogue value, not a promise of a treasury debit when stock already exists. */
+  readonly catalogueCostMinorUnits?: number;
+}
+
+export type ObjectPlacementPreflight =
+  | ({ readonly ok: true; readonly roomInstanceId: string } & ObjectPlacementQuote)
+  | ({ readonly ok: false; readonly reason: PlaceObjectRefusalReason; readonly tile?: TilePosition } & Partial<ObjectPlacementQuote>);
 
 /**
  * Why a placement was refused.
@@ -315,7 +337,7 @@ export interface ObjectOrderSink {
   getOrder(id: string): BuildOrder | undefined;
   allOrders(): readonly BuildOrder[];
   submitOrder(order: BuildOrder): void;
-  registerTransactionOrder(orderId: string, transactionId?: string): void;
+  registerTransactionOrder(orderId: string, transactionId?: string, historyContinuationOrderIds?: readonly string[]): void;
   /**
    * Cancels an order and gives back what ruling 20 says that order is owed --
    * **money** while the crew has not started it, and nothing once it has
@@ -457,6 +479,11 @@ export class ObjectPlacementService {
   private readonly refusals: PlaceObjectRefusal[] = [];
   /** The same window for the other gesture; see `recentRemovalRefusals`. */
   private readonly removalRefusals: RemoveObjectRefusal[] = [];
+  private pendingRoomDoorApproachClaim?: (tile: TilePosition) => boolean;
+
+  public setPendingRoomDoorApproachClaim(reader: (tile: TilePosition) => boolean): void {
+    this.pendingRoomDoorApproachClaim = reader;
+  }
 
   public constructor(
     private readonly world: SparseWorld,
@@ -494,12 +521,16 @@ export class ObjectPlacementService {
    * order with no ordinal sorts exactly where it sorted before the field
    * existed -- see `compareBuildOrderExecution`.
    */
-  public place(request: PlaceObjectRequest, tick: number, placementSequence?: number): PlaceObjectOutcome {
+  public preflight(request: ObjectPlacementPreviewRequest): ObjectPlacementPreflight {
+    let quote: ObjectPlacementQuote | undefined;
+    const refuse = (reason: PlaceObjectRefusalReason, tile?: TilePosition): ObjectPlacementPreflight => ({
+      ok: false, reason, ...(tile === undefined ? {} : { tile }), ...quote,
+    });
     const definition = BUILDABLE_REGISTRY.get(request.definitionId);
-    if (definition === undefined) return this.refuse('unknown-buildable', request, tick);
+    if (definition === undefined) return refuse('unknown-buildable');
 
     const objectId = definition.placesObjectId;
-    if (objectId === undefined) return this.refuse('not-a-placeable-object', request, tick);
+    if (objectId === undefined) return refuse('not-a-placeable-object');
 
     const objectDefinition = this.placedObjects.definitionOf(objectId);
     // Unreachable while `validateBuildableObjectReferences` throws at import
@@ -507,27 +538,30 @@ export class ObjectPlacementService {
     // because a `RangeError` out of a kernel command dispatch faults the
     // worker. `not-a-placeable-object` is the truthful answer: the row cannot
     // place anything.
-    if (objectDefinition === undefined) return this.refuse('not-a-placeable-object', request, tick);
+    if (objectDefinition === undefined) return refuse('not-a-placeable-object');
 
     // A queued command restored from a save can carry an order id the session
     // already holds, and `submitOrder` throws on a duplicate. Refusing keeps
     // that throw inside the guard it was written as.
-    if (this.orders.getOrder(request.orderId) !== undefined) {
-      return this.refuse('duplicate-order', request, tick);
+    if (request.orderId !== undefined && this.orders.getOrder(request.orderId) !== undefined) {
+      return refuse('duplicate-order');
     }
 
     const anchor: TilePosition = { x: tileCoordinate(request.x), y: tileCoordinate(request.y) };
-    const footprint = objectFootprintTiles(objectDefinition, anchor, DEFAULT_PLACEMENT_ORIENTATION);
+    const footprint = objectFootprintTiles(objectDefinition, anchor, request.objectOrientation ?? DEFAULT_PLACEMENT_ORIENTATION);
+    const cost = placementCostMinorUnits(definition.materialsRequired);
+    quote = { footprint, ...(cost === undefined ? {} : { catalogueCostMinorUnits: cost }) };
     const claimed = this.tilesClaimedByOrdersInFlight();
 
     for (const tile of footprint) {
       const { chunk } = tileToChunk(tile, this.world.tileChunkSize);
-      if (this.world.getChunk(chunk) === undefined) return this.refuse('out-of-bounds', request, tick, tile);
+      if (this.world.getChunk(chunk) === undefined) return refuse('out-of-bounds', tile);
       if (!canBuildAt(this.world, tile, PLACEMENT_REQUIREMENT).buildable) {
-        return this.refuse('unowned-land', request, tick, tile);
+        return refuse('unowned-land', tile);
       }
-      if (this.placedObjects.isTileOccupied(tile) || claimed.has(tileKey(tile))) {
-        return this.refuse('tile-occupied', request, tick, tile);
+      if (this.world.getSquareStructure(tile) !== 0 || this.placedObjects.isTileOccupied(tile) ||
+          claimed.has(tileKey(tile)) || this.pendingRoomDoorApproachClaim?.(tile) === true) {
+        return refuse('tile-occupied', tile);
       }
     }
 
@@ -537,14 +571,26 @@ export class ObjectPlacementService {
     // once. Asking of every tile would refuse a legal placement against a rule
     // nobody wrote.
     const room = roomInstanceContaining(this.world, this.roomInstances, anchor, this.rooms);
-    if (room === undefined) return this.refuse('outside-room', request, tick, anchor);
+    if (room === undefined) return refuse('outside-room', anchor);
+
+    return { ok: true, ...quote, roomInstanceId: room.instanceId };
+  }
+
+  public place(request: PlaceObjectRequest, tick: number, placementSequence?: number): PlaceObjectOutcome {
+    const preview = this.preflight(request);
+    if (!preview.ok) return this.refuse(preview.reason, request, tick, preview.tile);
+    // The shared validation above establishes both catalogue references.
+    const definition = BUILDABLE_REGISTRY.get(request.definitionId)!;
+    const objectId = definition.placesObjectId!;
+    const anchor: TilePosition = { x: tileCoordinate(request.x), y: tileCoordinate(request.y) };
 
     // `undefined` for `edge`: an object is addressed by a tile and occupies no
     // edge. The ordinal after it is the placement order this object takes in
     // the build queue (ADR 0082, #722) -- a bed placed after three hundred
     // walls waits for the three hundred, which is decision 1 read literally
     // over *every* build order rather than over walls alone.
-    this.orders.submitOrder(createBuildOrder(request.orderId, definition.id, anchor, undefined, placementSequence));
+    this.orders.submitOrder(createBuildOrder(request.orderId, definition.id, anchor, undefined, placementSequence,
+      undefined, request.objectOrientation));
     /*
      * One press, one undo step -- and the transaction id has to be *given* for
      * that to be true.
@@ -563,9 +609,20 @@ export class ObjectPlacementService {
      * be a field with no reader. A gesture that placed several objects at once
      * would need one, and decision 5 refuses that gesture.
      */
-    this.orders.registerTransactionOrder(request.orderId, request.orderId);
+    if (request.historyContinuationOrderIds === undefined) {
+      this.orders.registerTransactionOrder(request.orderId, request.transactionId ?? request.orderId);
+    } else {
+      this.orders.registerTransactionOrder(request.orderId, request.transactionId ?? request.orderId, request.historyContinuationOrderIds);
+    }
 
-    return { kind: 'ordered', orderId: request.orderId, objectId, anchorTile: anchor, roomInstanceId: room.instanceId };
+    return { kind: 'ordered', orderId: request.orderId, objectId, anchorTile: anchor, roomInstanceId: preview.roomInstanceId };
+  }
+
+  /** The pending removal target, with the same standing-object priority and footprint lookup as remove. */
+  public pendingRemovalOrderId(request: RemoveObjectRequest): string | undefined {
+    const tile: TilePosition = { x: tileCoordinate(request.x), y: tileCoordinate(request.y) };
+    if (this.placedObjects.objectAt(tile) !== undefined) return undefined;
+    return this.orderBuildingObjectAt(tile)?.order.id;
   }
 
   /**
@@ -795,8 +852,8 @@ export class ObjectPlacementService {
    * room resolves nothing, which is the same statement `place` refuses to let a
    * player make.
    */
-  public onOrderCompleted(objectId: string, anchor: TilePosition): boolean {
-    if (!this.placedObjects.place(placedObjectAt(objectId, anchor, DEFAULT_PLACEMENT_ORIENTATION))) return false;
+  public onOrderCompleted(objectId: string, anchor: TilePosition, orientation: ObjectOrientation = DEFAULT_PLACEMENT_ORIENTATION, sourceOrderId?: string): boolean {
+    if (!this.placedObjects.place(placedObjectAt(objectId, anchor, orientation, sourceOrderId))) return false;
     this.resolver.resolveContaining(anchor);
     return true;
   }
@@ -836,7 +893,7 @@ export class ObjectPlacementService {
    * id carried on the order, because the id *is* a function of that tile
    * (`placedObjectIdFor`). Nothing has to be stored to find it again.
    */
-  public onOrderReverted(objectId: string, anchor: TilePosition): boolean {
+  public onOrderReverted(objectId: string, anchor: TilePosition, sourceOrderId?: string): boolean {
     const object = this.placedObjects.objectAt(anchor);
     // Guarded on the object id as well as the tile, so an order reverted after
     // its tile was taken by a *different* object cannot delete that one. Both
@@ -844,6 +901,10 @@ export class ObjectPlacementService {
     if (object === undefined || object.objectId !== objectId || object.anchorTile.x !== anchor.x || object.anchorTile.y !== anchor.y) {
       return false;
     }
+    // Known exact provenance protects an independently rebuilt same-type object.
+    // Coupled template preparation refuses absent/invalid legacy provenance before
+    // any mutation. Ordinary legacy single-order reversal retains its old rule.
+    if (object.sourceOrderId !== undefined && object.sourceOrderId !== sourceOrderId) return false;
     this.placedObjects.remove(object.placedObjectId);
     this.relocateResidentsLeftWithoutAPlace(this.resolver.resolveContaining(anchor));
     return true;
@@ -882,6 +943,15 @@ export class ObjectPlacementService {
     this.relocationNotice?.announceRelocations(outcome.relocated);
   }
 
+  /** Shared physical occupancy for later whole-square wall orders (#1705). */
+  public claimsObjectFootprint(tile: TilePosition): boolean {
+    if (this.placedObjects.isTileOccupied(tile)) return true;
+    for (const entry of this.ordersBuildingObjects()) {
+      if (entry.tiles.some(claim => claim.x === tile.x && claim.y === tile.y)) return true;
+    }
+    return false;
+  }
+
   /**
    * Every tile claimed by an object order that has not finished and has not
    * been given up on.
@@ -900,6 +970,10 @@ export class ObjectPlacementService {
    */
   private tilesClaimedByOrdersInFlight(): ReadonlySet<string> {
     const claimed = new Set<string>();
+    for (const order of this.orders.allOrders()) {
+      if (order.footprint === 'square' && order.state !== 'completed' &&
+          order.state !== 'cancelled' && order.state !== 'failed') claimed.add(tileKey(order.location));
+    }
     for (const entry of this.ordersBuildingObjects()) {
       for (const tile of entry.tiles) claimed.add(tileKey(tile));
     }
@@ -929,7 +1003,7 @@ export class ObjectPlacementService {
       if (objectId === undefined) continue;
       const objectDefinition = this.placedObjects.definitionOf(objectId);
       if (objectDefinition === undefined) continue;
-      yield { order, objectId, tiles: objectFootprintTiles(objectDefinition, order.location, DEFAULT_PLACEMENT_ORIENTATION) };
+      yield { order, objectId, tiles: objectFootprintTiles(objectDefinition, order.location, order.objectOrientation ?? DEFAULT_PLACEMENT_ORIENTATION) };
     }
   }
 

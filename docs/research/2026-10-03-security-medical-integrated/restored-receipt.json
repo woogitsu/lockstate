@@ -1,0 +1,26 @@
+{
+  "sourceRestoration": {
+    "path": "src/rendering/assets/oblique-object-mapping.ts",
+    "originalSha256": "A9EADA806FF523BC9933DA9B7A2E8A731C5A896286E33B0551119D8E389DD2D4",
+    "negativeSha256": "9E28945753DF5FCD1B77540F460525892F6F1500019FCCBA3B014026FFEFB039",
+    "restoredSha256": "A9EADA806FF523BC9933DA9B7A2E8A731C5A896286E33B0551119D8E389DD2D4",
+    "negativeExit": 1
+  },
+  "restoredWorkerSha256": "049f18670e47d54fccc8339f2a158e1ff5b927a0c2fae628eb2e36648811d751",
+  "negativeStats": {
+    "startTime": "2026-10-03T01:38:44.790Z",
+    "duration": 172429.683,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  },
+  "restoredStats": {
+    "startTime": "2026-10-03T01:41:47.548Z",
+    "duration": 169814.821,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

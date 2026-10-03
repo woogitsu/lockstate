@@ -1,6 +1,34 @@
 import { describe, expect, it, vi } from 'vitest';
 import { RoomTemplateTool, type RoomTemplatePlacementPort } from '../../src/ui/room-template-tool';
 
+it('uses the selected clockwise rotation for the preview and both worker requests', async () => {
+  const preflight = vi.fn(async () => ({ ok: true as const }));
+  const place = vi.fn(async () => {});
+  const tool = new RoomTemplateTool({ preflight, place, objectFootprint: id => id === 'bed-wooden' ? { width: 1, height: 2 } : { width: 1, height: 1 } });
+  tool.select('cell-basic', false, 1);
+  const plan = tool.planAt({ x: 10, y: 20 });
+  expect({ width: plan.width, height: plan.height }).toEqual({ width: 7, height: 4 });
+  expect(plan.objects[0]).toMatchObject({ x: 14, y: 21, width: 2, height: 1, quarterTurns: 1 });
+  await tool.placeAt({ x: 10, y: 20 });
+  const request = { templateId: 'cell-basic', origin: { x: 10, y: 20 }, quarterTurns: 1 };
+  expect(preflight).toHaveBeenCalledWith(request);
+  expect(place).toHaveBeenCalledWith(request);
+});
+
+it('drops a placement preflight when the player rotates the same armed plan', async () => {
+  let resolve!: (value: { readonly ok: true }) => void;
+  const place = vi.fn(async () => {});
+  const tool = new RoomTemplateTool({ preflight: () => new Promise(done => { resolve = done; }), place });
+  tool.arm();
+  const revision = tool.revision;
+  const pending = tool.placeAt({ x: 3, y: 4 });
+  tool.select('cell-basic', false, 1);
+  expect(tool.revision).toBeGreaterThan(revision);
+  resolve({ ok: true });
+  await pending;
+  expect(place).not.toHaveBeenCalled();
+});
+
 describe('room-template HUD tool contract', () => {
   it('previews the complete selected square plan, including mirror direction', async () => {
     const preflight = vi.fn(async () => ({ ok: true as const }));
@@ -36,3 +64,31 @@ describe('room-template HUD tool contract', () => {
 });
 
 
+
+describe('room-template mouse arming', () => {
+  it('stays inactive while browsing, and changes revision when replacing an armed plan', () => {
+    const tool = new RoomTemplateTool({ preflight: async () => ({ ok: true }), place: async () => {} });
+    expect(tool.isArmed()).toBe(false);
+    tool.select('cell-basic');
+    expect(tool.isArmed()).toBe(false);
+    tool.arm();
+    expect(tool.isArmed()).toBe(true);
+    const first = tool.revision;
+    tool.select('cell-large');
+    expect(tool.revision).toBeGreaterThan(first);
+    tool.standDown();
+    expect(tool.isArmed()).toBe(false);
+  });
+});
+
+it('drops a pending preflight when its chosen plan was replaced', async () => {
+  let resolve!: (value: { readonly ok: true }) => void;
+  const place = vi.fn(async () => {});
+  const tool = new RoomTemplateTool({ preflight: () => new Promise(done => { resolve = done; }), place });
+  tool.arm();
+  const pending = tool.placeAt({ x: 3, y: 4 });
+  tool.select('yard-basic');
+  resolve({ ok: true });
+  await pending;
+  expect(place).not.toHaveBeenCalled();
+});

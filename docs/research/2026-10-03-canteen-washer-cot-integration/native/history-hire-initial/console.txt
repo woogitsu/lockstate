@@ -1,0 +1,63 @@
+node : [2m[WebServer] [22m(node:52300) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:6 char:1
++ node --experimental-transform-types --disable-warning=ExperimentalWar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 4 tests using 1 worker
+
+(node:51620) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:51620) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\hired-guard-player-build.spec.ts:15:1 › a publicly hired Guard keeps actual identity and visible authored body through paused Save/Load (17.6s)
+  x  2 tests\browser\room-template-history-verdict-player.spec.ts:332:1 › player completes and saves actual Storage/Delivery capacity before stationary Cell history cases (40.3s)
+  -  3 tests\browser\room-template-history-verdict-player.spec.ts:430:42 › world FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo
+  -  4 tests\browser\room-template-history-verdict-player.spec.ts:430:42 › oblique FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo
+
+
+  1) tests\browser\room-template-history-verdict-player.spec.ts:332:1 › player completes and saves actual Storage/Delivery capacity before stationary Cell history cases 
+
+    Error: Actual queued counter absent or malformed
+
+      115 | async function finish(page: Page): Promise<void> {
+      116 |   const panel = page.locator('.hud-build');
+    > 117 |   const queued = async () => { const value=await panel.getAttribute('data-queued'); if(value===null||!/^\d+$/u.test(value)) throw Error('Actual queued counter absent or malformed'); return Number(value); };
+          |                                                                                                                                   ^
+      118 |   let count = await queued();
+      119 |   while (count > 0) {
+      120 |     await expect.poll(queued, { message: `actual construction advances from ${count} queued orders` }).toBeLessThan(count);
+        at Object.queued (C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\room-template-history-verdict-player.spec.ts:117:131)
+        at finish (C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\room-template-history-verdict-player.spec.ts:120:5)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-washer-cot-integration-20261003\tests\browser\room-template-history-verdict-player.spec.ts:177:161
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-history-hire-initial-20261003\room-template-history-verd-aa149-ationary-Cell-history-cases\error-context.md
+
+  1 failed
+    tests\browser\room-template-history-verdict-player.spec.ts:332:1 › player completes and saves actual Storage/Delivery capacity before stationary Cell history cases 
+  2 did not run
+  1 passed (1.0m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+

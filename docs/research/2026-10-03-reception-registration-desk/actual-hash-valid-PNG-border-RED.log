@@ -1,0 +1,34 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-reception-registration-desk-model-20261003
+
+ ❯ tests/unit/oblique-reception-registration-desk-art.test.ts (2 tests | 1 failed) 29ms
+   × loads the dedicated descriptor and decodes 72 complete unclipped canonical PNG poses 12ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  15:47:35
+   Duration  301ms (transform 56ms, setup 0ms, import 155ms, tests 29ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+$ vitest run "tests/unit/oblique-reception-registration-desk-art.test.ts"
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-reception-registration-desk-art.test.ts > loads the dedicated descriptor and decodes 72 complete unclipped canonical PNG poses
+AssertionError: Reception registration desk PNG transparent border: /assets/environment/oblique/furniture.reception.registration-desk-yaw+00-elev20.e0d53de10c13.png: expected 255 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 255
+
+ ❯ tests/unit/oblique-reception-registration-desk-art.test.ts:92:143
+     90|         const alpha = rows[y * stride + 1 + x * 4 + 3]!;
+     91|         if (alpha > 0) occupied++;
+     92|         if (x === 0 || x === 255 || y === 0 || y === 255) expect(alpha…
+       |                                                                                                                                               ^
+     93|       }
+     94|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

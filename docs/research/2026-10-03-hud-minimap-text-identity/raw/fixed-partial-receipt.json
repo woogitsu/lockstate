@@ -1,0 +1,42 @@
+{
+  "productionSha": "529ec9fd023a8f1140722f032f511e981cef69e5",
+  "buildRoot": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-oblique-steady-projection-audit-20261003\\dist\\client",
+  "observations": {
+    "inactive": {
+      "text": "Create or load a prison to see the map",
+      "sameChild": true,
+      "replacements": 0,
+      "viewport": null,
+      "canvas": [
+        300,
+        150
+      ]
+    },
+    "paused-active": {
+      "text": "Prison map — press to move the camera",
+      "sameChild": true,
+      "replacements": 0,
+      "viewport": "left: 2.38975%; top: 2.38975%; width: 95.2205%; height: 95.2205%;",
+      "canvas": [
+        32,
+        32
+      ]
+    },
+    "changed-viewport": {
+      "text": "Prison map — press to move the camera",
+      "sameChild": true,
+      "replacements": 0,
+      "viewport": "left: 2.60851%; top: 5.41554%; width: 94.783%; height: 89.1689%;",
+      "canvas": [
+        32,
+        32
+      ]
+    }
+  },
+  "complete": false,
+  "boundary": "Actual DOM identity; no CPU/latency conclusion, no injected game state or renderer hooks.",
+  "assets": {
+    "captureError": "Error: page.evaluate: Target page, context or browser has been closed"
+  },
+  "screenshotError": "Error: page.screenshot: Target page, context or browser has been closed"
+}

@@ -1,0 +1,59 @@
+node : [2m[WebServer] [22m(node:54996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:2 char:414
++ ... EXITCODE }; node node_modules/@playwright/test/cli.js test --config a ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 3 tests using 1 worker
+
+(node:17432) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:17432) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\native-garbage-room.recipe.ts:119:1 › 01 public Storage Room and Delivery Bay bootstrap for refuse handling (44.6s)
+  x  2 tests\browser\native-garbage-room.recipe.ts:162:29 › Garbage Room q0: literal two-bin owners, square shell and whole paused Save/Load (12.2s)
+  -  3 tests\browser\native-garbage-room.recipe.ts:162:29 › Garbage Room q1: literal two-bin owners, square shell and whole paused Save/Load
+
+
+  1) tests\browser\native-garbage-room.recipe.ts:162:29 › Garbage Room q0: literal two-bin owners, square shell and whole paused Save/Load 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    Expected: [32m{"mode": "paused"}[39m
+    Received: [31mnull[39m
+
+    Call Log:
+    - Timeout 10000ms exceeded while waiting on the predicate
+
+      90 |   await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
+      91 |   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+    > 92 |   await expect.poll(() => currentClock(page)).toEqual({ mode: 'paused' });
+         |   ^
+      93 |   const capacity = await showcaseSnapshot(page);
+      94 |   expect(capacity).toEqual(wholeCapacity); assertGarbageCapacity(capacity);
+      95 |   await placePublicPlan(page, GARBAGE_PLAN.name, GARBAGE_ORIGIN, turns);
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-connectivity-integration-20261003\tests\browser\native-garbage-room.recipe.ts:92:3
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-garbage-actual-native-20261003\native-garbage-room.recipe-1a26e--and-whole-paused-Save-Load\error-context.md
+
+  1 failed
+    tests\browser\native-garbage-room.recipe.ts:162:29 › Garbage Room q0: literal two-bin owners, square shell and whole paused Save/Load 
+  1 did not run
+  1 passed (1.0m)

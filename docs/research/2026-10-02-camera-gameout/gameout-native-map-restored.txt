@@ -1,0 +1,46 @@
+pnpm : $ node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite a
+rtifact "--config" "tests/browser/.local-integrated-layout.config.ts" "--workers=1" "--output" "../hud-angle-panel-revi
+ew-runtime/gameout-native-map-restored"
+At line:2 char:1164
++ ... ORT='5404'; pnpm test:artifact --config tests/browser/.local-integrat ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ node --experi...e-map-restored":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(node:22184) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 8 tests using 1 worker
+
+(node:51808) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:51808) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\oblique-build-drag-under-hud.spec.ts:41:3 › Full HD 100% angled canvas-origin Build drag retains its whole run beneath a native HUD control (8.0s)
+  ok 2 tests\browser\oblique-build-drag-under-hud.spec.ts:41:3 › Full HD 200% angled canvas-origin Build drag retains its whole run beneath a native HUD control (7.0s)
+  ok 3 tests\browser\oblique-camera-gameout-native.spec.ts:5:3 › native middle camera drag ends at HUD exit and cannot resume on reentry (8.9s)
+  ok 4 tests\browser\oblique-camera-gameout-native.spec.ts:5:3 › native right camera drag ends at HUD exit and cannot resume on reentry (9.1s)
+RETAINED_HOVER_FIT {"scale":1,"quarterTurns":0,"chosen":{"kind":"room-template","templateId":"cell-row-four","origin":{"x":15,"y":12},"mirrorX":true},"afterDown":{"kind":"room-template","templateId":"cell-row-four","origin":{"x":15,"y":12},"mirrorX":true}}
+  ok 5 tests\browser\room-preview-retained-hover-fit.spec.ts:16:3 › Full HD 100% keyboard-armed 0 degree row retains its fitted hover on stationary click (6.6s)
+RETAINED_HOVER_FIT {"scale":1,"quarterTurns":1,"chosen":{"kind":"room-template","templateId":"cell-row-four","origin":{"x":15,"y":12},"mirrorX":true,"quarterTurns":1},"afterDown":{"kind":"room-template","templateId":"cell-row-four","origin":{"x":15,"y":12},"mirrorX":true,"quarterTurns":1}}
+  ok 6 tests\browser\room-preview-retained-hover-fit.spec.ts:16:3 › Full HD 100% keyboard-armed 90 degree row retains its fitted hover on stationary click (6.5s)
+RETAINED_HOVER_FIT {"scale":2,"quarterTurns":0,"chosen":{"kind":"room-template","templateId":"cell-row-four","origin":{"x":15,"y":12},"mirrorX":true},"afterDown":{"kind":"room-template","templateId":"cell-row-four","origin":{"x":15,"y":12},"mirrorX":true}}
+  ok 7 tests\browser\room-preview-retained-hover-fit.spec.ts:16:3 › Full HD 200% keyboard-armed 0 degree row retains its fitted hover on stationary click (5.8s)
+RETAINED_HOVER_FIT {"scale":2,"quarterTurns":1,"chosen":{"kind":"room-template","templateId":"cell-row-four","origin":{"x":15,"y":12},"mirrorX":true,"quarterTurns":1},"afterDown":{"kind":"room-template","templateId":"cell-row-four","origin":{"x":15,"y":12},"mirrorX":true,"quarterTurns":1}}
+  ok 8 tests\browser\room-preview-retained-hover-fit.spec.ts:16:3 › Full HD 200% keyboard-armed 90 degree row retains its fitted hover on stationary click (5.7s)
+
+  8 passed (1.0m)

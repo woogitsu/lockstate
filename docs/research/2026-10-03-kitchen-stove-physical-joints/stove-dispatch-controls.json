@@ -1,0 +1,21 @@
+{
+  "controls": [
+    {
+      "control": "original-stove-source-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Kitchen stove retained/authored mesh set changed"
+    },
+    {
+      "control": "wrong-stove-Y-fit-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Kitchen stove declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-stove-target-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Kitchen stove declared occupied rectangle/source fit/accepted target changed"
+    }
+  ],
+  "wrapperBytesExactlyRestored": true,
+  "exactRestoredNativeVerifyExitCode": 0
+}

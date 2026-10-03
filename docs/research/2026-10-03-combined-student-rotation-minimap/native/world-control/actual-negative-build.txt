@@ -1,0 +1,42 @@
+vite v8.2.2 building lockstate_development environment for production...
+transforming...
+✓ 92 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/lockstate_development/.vite/manifest.json    0.15 kB │ gzip:  0.11 kB
+dist/lockstate_development/wrangler.json          1.63 kB │ gzip:  0.80 kB
+dist/lockstate_development/index.js             288.83 kB │ gzip: 76.61 kB
+
+✓ built in 38ms
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 496 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/.assetsignore                      0.02 kB
+dist/client/index.html                         1.71 kB │ gzip:   0.87 kB
+dist/client/assets/worker-B7O437Ej.js        442.88 kB
+dist/client/assets/index-5ZA72Oh0.css         83.36 kB │ gzip:  12.75 kB
+dist/client/assets/pl-catalog-CiWtCsu8.js     51.26 kB │ gzip:  14.82 kB
+dist/client/assets/catalog-DwDh8vBS.js        86.21 kB │ gzip:  23.68 kB
+dist/client/assets/index-wdj0a-gm.js       1,933.79 kB │ gzip: 512.05 kB
+
+✓ built in 4.37s
+node : [plugin builtin:vite-reporter] 
+At C:\Users\matma\AppData\Local\Temp\lockstate-world-control-driver-20261003.ps1:17 char:2
++  node scripts/cloudflare-task.mjs build production *> (Join-Path $env ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([plugin builtin:vite-reporter] :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeS
+plitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[33m[PLUGIN_TIMINGS] [0mYour build spent 92% of 4.4s inside plugin hooks (4.0s).
+Measured inside the callback, so queue time is excluded and time the callback itself awaited is not:
+  - vite:prepare-out-dir renderStart (88%, 3.8s, 1 call)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+Verified Cloudflare production output: dist\lockstate_development\wrangler.json -> dist\client

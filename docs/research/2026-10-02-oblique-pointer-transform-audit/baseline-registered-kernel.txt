@@ -1,0 +1,471 @@
+pnpm : $ vitest run "tests/unit/oblique-pointer-picking-transform.test.ts"
+At line:2 char:174
++ ... +$env:PATH; pnpm test tests/unit/oblique-pointer-picking-transform.te ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...nsform.test.ts":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-oblique-ground-transform-audit-20261003
+
+ ❯ tests/unit/oblique-pointer-picking-transform.test.ts (144 tests | 144 failed) 653ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=+0 elevation=20 28ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=+0 elevation=25 8ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=+0 elevation=30 7ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=+0 elevation=40 7ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=+0 elevation=45 8ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=+0 elevation=50 6ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=+0 elevation=53 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=+0 elevation=65 7ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=+0 elevation=80 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=30 elevation=20 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=30 elevation=25 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=30 elevation=30 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=30 elevation=40 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=30 elevation=45 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=30 elevation=50 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=30 elevation=53 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=30 elevation=65 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=30 elevation=80 6ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=60 elevation=20 3ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=60 elevation=25 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=60 elevation=30 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=60 elevation=40 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=60 elevation=45 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=60 elevation=50 3ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=60 elevation=53 3ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=60 elevation=65 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=60 elevation=80 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=90 elevation=20 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=90 elevation=25 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=90 elevation=30 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=90 elevation=40 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=90 elevation=45 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=90 elevation=50 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=90 elevation=53 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=90 elevation=65 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=90 elevation=80 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=120 elevation=20 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=120 elevation=25 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=120 elevation=30 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=120 elevation=40 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=120 elevation=45 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=120 elevation=50 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=120 elevation=53 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=120 elevation=65 3ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=120 elevation=80 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=150 elevation=20 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=150 elevation=25 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=150 elevation=30 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=150 elevation=40 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=150 elevation=45 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=150 elevation=50 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=150 elevation=53 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=150 elevation=65 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=150 elevation=80 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=180 elevation=20 3ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=180 elevation=25 3ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=180 elevation=30 3ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=180 elevation=40 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=180 elevation=45 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=180 elevation=50 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=180 elevation=53 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=180 elevation=65 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=180 elevation=80 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=210 elevation=20 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=210 elevation=25 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=210 elevation=30 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=210 elevation=40 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=210 elevation=45 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=210 elevation=50 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=210 elevation=53 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=210 elevation=65 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=210 elevation=80 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=240 elevation=20 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=240 elevation=25 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=240 elevation=30 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=240 elevation=40 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=240 elevation=45 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=240 elevation=50 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=240 elevation=53 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=240 elevation=65 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=240 elevation=80 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=270 elevation=20 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=270 elevation=25 3ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=270 elevation=30 3ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=270 elevation=40 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=270 elevation=45 6ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=270 elevation=50 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=270 elevation=53 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=270 elevation=65 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=270 elevation=80 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=300 elevation=20 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=300 elevation=25 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=300 elevation=30 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=300 elevation=40 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=300 elevation=45 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=300 elevation=50 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=300 elevation=53 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=300 elevation=65 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=300 elevation=80 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=330 elevation=20 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=330 elevation=25 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=330 elevation=30 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=330 elevation=40 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=330 elevation=45 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=330 elevation=50 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=330 elevation=53 3ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=330 elevation=65 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=330 elevation=80 3ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=37 elevation=20 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=37 elevation=25 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=37 elevation=30 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=37 elevation=40 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=37 elevation=45 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=37 elevation=50 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=37 elevation=53 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=37 elevation=65 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=37 elevation=80 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=143 elevation=20 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=143 elevation=25 3ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=143 elevation=30 3ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=143 elevation=40 3ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=143 elevation=45 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=143 elevation=50 3ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=143 elevation=53 3ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=143 elevation=65 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=143 elevation=80 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=217 elevation=20 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=217 elevation=25 7ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=217 elevation=30 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=217 elevation=40 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=217 elevation=45 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=217 elevation=50 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=217 elevation=53 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=217 elevation=65 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=217 elevation=80 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=323 elevation=20 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=323 elevation=25 5ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=323 elevation=30 6ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=323 elevation=40 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=323 elevation=45 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=323 elevation=50 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=323 elevation=53 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=323 elevation=65 4ms
+   × actual pointer ports preserve ground coordinates after fit and resize at yaw=323 elevation=80 5ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 144 ⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=+0 elevation=20
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=+0 elevation=25
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=+0 elevation=30
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=+0 elevation=40
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=+0 elevation=45
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=+0 elevation=50
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=+0 elevation=53
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=+0 elevation=65
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=+0 elevation=80
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=30 elevation=20
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=30 elevation=25
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=30 elevation=30
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=30 elevation=40
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=30 elevation=45
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=30 elevation=50
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=30 elevation=53
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=30 elevation=65
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=30 elevation=80
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=60 elevation=20
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=60 elevation=25
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=60 elevation=30
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=60 elevation=40
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=60 elevation=45
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=60 elevation=50
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=60 elevation=53
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=60 elevation=65
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=60 elevation=80
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=90 elevation=20
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=90 elevation=25
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=90 elevation=30
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=90 elevation=40
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=90 elevation=45
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=90 elevation=50
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=90 elevation=53
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=90 elevation=65
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=90 elevation=80
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=120 elevation=20
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=120 elevation=25
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=120 elevation=30
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=120 elevation=40
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=120 elevation=45
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=120 elevation=50
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=120 elevation=53
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=120 elevation=65
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=120 elevation=80
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=150 elevation=20
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=150 elevation=25
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=150 elevation=30
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=150 elevation=40
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=150 elevation=45
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=150 elevation=50
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=150 elevation=53
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=150 elevation=65
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=150 elevation=80
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=180 elevation=20
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=180 elevation=25
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=180 elevation=30
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=180 elevation=40
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=180 elevation=45
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=180 elevation=50
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=180 elevation=53
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=180 elevation=65
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=180 elevation=80
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=210 elevation=20
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=210 elevation=25
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=210 elevation=30
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=210 elevation=40
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=210 elevation=45
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=210 elevation=50
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=210 elevation=53
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=210 elevation=65
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=210 elevation=80
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=240 elevation=20
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=240 elevation=25
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=240 elevation=30
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=240 elevation=40
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=240 elevation=45
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=240 elevation=50
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=240 elevation=53
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=240 elevation=65
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=240 elevation=80
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=270 elevation=20
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=270 elevation=25
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=270 elevation=30
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=270 elevation=40
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=270 elevation=45
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=270 elevation=50
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=270 elevation=53
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=270 elevation=65
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=270 elevation=80
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=300 elevation=20
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=300 elevation=25
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=300 elevation=30
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=300 elevation=40
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=300 elevation=45
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=300 elevation=50
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=300 elevation=53
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=300 elevation=65
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=300 elevation=80
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=330 elevation=20
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=330 elevation=25
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=330 elevation=30
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=330 elevation=40
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=330 elevation=45
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=330 elevation=50
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=330 elevation=53
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=330 elevation=65
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=330 elevation=80
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=37 elevation=20
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=37 elevation=25
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=37 elevation=30
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=37 elevation=40
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=37 elevation=45
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=37 elevation=50
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=37 elevation=53
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=37 elevation=65
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=37 elevation=80
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=143 elevation=20
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=143 elevation=25
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=143 elevation=30
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=143 elevation=40
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=143 elevation=45
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=143 elevation=50
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=143 elevation=53
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=143 elevation=65
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=143 elevation=80
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=217 elevation=20
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=217 elevation=25
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=217 elevation=30
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=217 elevation=40
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=217 elevation=45
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=217 elevation=50
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=217 elevation=53
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=217 elevation=65
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=217 elevation=80
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=323 elevation=20
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=323 elevation=25
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=323 elevation=30
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=323 elevation=40
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=323 elevation=45
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=323 elevation=50
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=323 elevation=53
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=323 elevation=65
+ FAIL  tests/unit/oblique-pointer-picking-transform.test.ts > actual pointer ports preserve ground coordinates after fi
+t and resize at yaw=323 elevation=80
+AssertionError: expected [ { id: 'picked-0', …(7) }, …(7) ] to have a length of 4 but got 8
+
+- Expected
++ Received
+
+- 4
++ 8
+
+ ❯ tests/unit/oblique-pointer-picking-transform.test.ts:113:46
+    111|       packCommand({ type: 'PlaceBuildOrder', definitionId: 'wall-brick…
+    112|     runtime.kernel.step();
+    113|     expect(runtime.construction.allOrders()).toHaveLength(4);
+       |                                              ^
+    114|   },
+    115| );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/144]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  144 failed (144)
+   Start at  23:31:26
+   Duration  4.94s (transform 2.24s, setup 0ms, import 4.14s, tests 653ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

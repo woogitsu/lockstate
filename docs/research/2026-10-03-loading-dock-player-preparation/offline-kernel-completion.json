@@ -1,0 +1,171 @@
+{
+  "kind": "real-production-kernel-offline-preparation",
+  "nativeBrowserStarted": false,
+  "seed": 73,
+  "capacitySteps": 2531,
+  "capacityObjects": [
+    {
+      "placedObjectId": "object:6:6",
+      "objectId": "object.storage-rack",
+      "anchorTile": {
+        "x": 6,
+        "y": 6
+      },
+      "orientation": 0,
+      "sourceOrderId": "room-template-000000000000-2-object-000"
+    },
+    {
+      "placedObjectId": "object:8:6",
+      "objectId": "object.storage-rack",
+      "anchorTile": {
+        "x": 8,
+        "y": 6
+      },
+      "orientation": 0,
+      "sourceOrderId": "room-template-000000000000-2-object-001"
+    },
+    {
+      "placedObjectId": "object:13:6",
+      "objectId": "object.loading-dock-door",
+      "anchorTile": {
+        "x": 13,
+        "y": 6
+      },
+      "orientation": 0,
+      "sourceOrderId": "room-template-000000000001-2-object-000"
+    }
+  ],
+  "receipts": [
+    {
+      "quarterTurns": 0,
+      "targetSteps": 1520,
+      "worldVersion": 1,
+      "objects": [
+        {
+          "placedObjectId": "object:13:6",
+          "objectId": "object.loading-dock-door",
+          "anchorTile": {
+            "x": 13,
+            "y": 6
+          },
+          "orientation": 0,
+          "sourceOrderId": "room-template-000000000001-2-object-000"
+        },
+        {
+          "placedObjectId": "object:21:6",
+          "objectId": "object.loading-dock-door",
+          "anchorTile": {
+            "x": 21,
+            "y": 6
+          },
+          "orientation": 0,
+          "sourceOrderId": "room-template-000000000002-2-object-000"
+        }
+      ],
+      "orders": [
+        {
+          "id": "room-template-000000000001-2-object-000",
+          "definitionId": "loading-dock-door-wooden",
+          "location": {
+            "x": 13,
+            "y": 6
+          },
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 90,
+          "materialsAllocated": [
+            {
+              "itemId": "item.wood-plank",
+              "quantity": 3
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-2-object-000",
+          "definitionId": "loading-dock-door-wooden",
+          "location": {
+            "x": 21,
+            "y": 6
+          },
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 90,
+          "materialsAllocated": [
+            {
+              "itemId": "item.wood-plank",
+              "quantity": 3
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        }
+      ]
+    },
+    {
+      "quarterTurns": 1,
+      "targetSteps": 1520,
+      "worldVersion": 1,
+      "objects": [
+        {
+          "placedObjectId": "object:13:6",
+          "objectId": "object.loading-dock-door",
+          "anchorTile": {
+            "x": 13,
+            "y": 6
+          },
+          "orientation": 0,
+          "sourceOrderId": "room-template-000000000001-2-object-000"
+        },
+        {
+          "placedObjectId": "object:24:6",
+          "objectId": "object.loading-dock-door",
+          "anchorTile": {
+            "x": 24,
+            "y": 6
+          },
+          "orientation": 1,
+          "sourceOrderId": "room-template-000000000002-2-object-000"
+        }
+      ],
+      "orders": [
+        {
+          "id": "room-template-000000000001-2-object-000",
+          "definitionId": "loading-dock-door-wooden",
+          "location": {
+            "x": 13,
+            "y": 6
+          },
+          "placementSequence": 1,
+          "state": "completed",
+          "progress": 90,
+          "materialsAllocated": [
+            {
+              "itemId": "item.wood-plank",
+              "quantity": 3
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        },
+        {
+          "id": "room-template-000000000002-2-object-000",
+          "definitionId": "loading-dock-door-wooden",
+          "location": {
+            "x": 24,
+            "y": 6
+          },
+          "objectOrientation": 1,
+          "placementSequence": 2,
+          "state": "completed",
+          "progress": 90,
+          "materialsAllocated": [
+            {
+              "itemId": "item.wood-plank",
+              "quantity": 3
+            }
+          ],
+          "assignedWorkerId": "mock-worker-1"
+        }
+      ]
+    }
+  ]
+}

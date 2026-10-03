@@ -1,0 +1,66 @@
+node : [2m[WebServer] [22m(node:14464) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At C:\Users\matma\AppData\Local\Temp\lockstate-common-room-context-controls-20261003.ps1:38 char:2
++  node --experimental-transform-types --disable-warning=ExperimentalWa ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 3 tests using 1 worker
+
+(node:51864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:51864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\common-room-upholstered-player-build.spec.ts:362:1 › player completes actual remote storage and delivery capacity before Common Room upholstery (43.9s)
+  x  2 tests\browser\common-room-upholstered-player-build.spec.ts:437:29 › Common Room quarterTurns0: actual upholstered benches retain owners, art source and whole paused Save/Load (36.5s)
+  -  3 tests\browser\common-room-upholstered-player-build.spec.ts:437:29 › Common Room quarterTurns1: actual upholstered benches retain owners, art source and whole paused Save/Load
+
+
+  1) tests\browser\common-room-upholstered-player-build.spec.ts:437:29 › Common Room quarterTurns0: actual upholstered benches retain owners, art source and whole paused Save/Load 
+
+    Error: each Common Room bench retains authored petrol/teal upholstery
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m1500[39m
+    Received:   [31m0[39m
+
+      205 |   const painted=await page.screenshot({ path:info.outputPath('common-room-actual-completed-fullhd.png') });
+      206 |   const beforePixels=await petrolPixels(page,painted,turns);
+    > 207 |   beforePixels.forEach(count=>expect(count,'each Common Room bench retains authored petrol/teal upholstery').toBeGreaterThan(1500));
+          |                                                                                                              ^
+      208 |   await page.getByRole('button', { name:'Overview',exact:true }).click(); await page.getByRole('button', { name:'Save now',exact:true }).click();
+      209 |   await expect(page.locator('.save-panel__status')).toContainText('Saved'); await page.locator('.save-panel__item').first().getByRole('button', { name:'Load',exact:true }).click();
+      210 |   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-connectivity-integration-20261003\tests\browser\common-room-upholstered-player-build.spec.ts:207:110)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-connectivity-integration-20261003\tests\browser\common-room-upholstered-player-build.spec.ts:207:16
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-common-room-context-negative-20261003\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\error-context.md
+
+  1 failed
+    tests\browser\common-room-upholstered-player-build.spec.ts:437:29 › Common Room quarterTurns0: actual upholstered benches retain owners, art source and whole paused Save/Load 
+  1 did not run
+  1 passed (1.4m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+

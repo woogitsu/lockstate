@@ -1,0 +1,10 @@
+Error: No production build at any of C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-arms-native-20261003\dist\client\index.html or C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-arms-native-20261003\dist\index.html. This suite runs the built client, so it has to be built first: `pnpm build` (or `node scripts/cloudflare-task.mjs build production`). It deliberately does not build one itself -- a suite that builds its own subject can pass on a tree nobody deployed.
+    at file:///C:/Users/matma/Documents/Rozw%C3%B3j%20gier/lockstate-canteen-arms-native-20261003/tests/browser/playwright.artifact.config.ts:83:9
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at node:internal/modules/esm/loader:643:26
+    at requireOrImport (C:\Users\matma\Documents\Rozwój gier\lockstate-1382-doc-anchor-2026-09-24\node_modules\.pnpm\playwright@1.56.1\node_modules\playwright\lib\transform\transform.js:214:12)
+    at loadUserConfig (C:\Users\matma\Documents\Rozwój gier\lockstate-1382-doc-anchor-2026-09-24\node_modules\.pnpm\playwright@1.56.1\node_modules\playwright\lib\common\configLoader.js:107:46)
+    at loadConfig (C:\Users\matma\Documents\Rozwój gier\lockstate-1382-doc-anchor-2026-09-24\node_modules\.pnpm\playwright@1.56.1\node_modules\playwright\lib\common\configLoader.js:119:22)
+    at loadConfigFromFile (C:\Users\matma\Documents\Rozwój gier\lockstate-1382-doc-anchor-2026-09-24\node_modules\.pnpm\playwright@1.56.1\node_modules\playwright\lib\common\configLoader.js:331:10)
+    at runTests (C:\Users\matma\Documents\Rozwój gier\lockstate-1382-doc-anchor-2026-09-24\node_modules\.pnpm\playwright@1.56.1\node_modules\playwright\lib\program.js:206:18)
+    at i.<anonymous> (C:\Users\matma\Documents\Rozwój gier\lockstate-1382-doc-anchor-2026-09-24\node_modules\.pnpm\playwright@1.56.1\node_modules\playwright\lib\program.js:71:7)

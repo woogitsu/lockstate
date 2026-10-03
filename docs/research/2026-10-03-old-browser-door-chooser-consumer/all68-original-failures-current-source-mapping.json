@@ -1,0 +1,546 @@
+[
+  {
+    "job": "source1",
+    "number": 1,
+    "logLine": 912,
+    "title": "tests/browser/app-shell.spec.ts:4770:5 › the assembled application › every control can actually be pressed, on every tab at 1280x720 (#88) ",
+    "firstError": "controls covered by something else on the overview tab at 1280x720",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source1",
+    "number": 2,
+    "logLine": 949,
+    "title": "tests/browser/app-shell.spec.ts:4770:5 › the assembled application › every control can actually be pressed, on every tab at 1440x900 (#88) ",
+    "firstError": "controls covered by something else on the overview tab at 1440x900",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source1",
+    "number": 3,
+    "logLine": 986,
+    "title": "tests/browser/app-shell.spec.ts:4770:5 › the assembled application › every control can actually be pressed, on every tab at 1024x768 (#88) ",
+    "firstError": "controls covered by something else on the overview tab at 1024x768",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source1",
+    "number": 4,
+    "logLine": 1023,
+    "title": "tests/browser/app-shell.spec.ts:4770:5 › the assembled application › every control can actually be pressed, on every tab at 900x600 (#88) ",
+    "firstError": "controls covered by something else on the overview tab at 900x600",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source1",
+    "number": 5,
+    "logLine": 1060,
+    "title": "tests/browser/app-shell.spec.ts:4770:5 › the assembled application › every control can actually be pressed, on every tab at 375x812 (#88) ",
+    "firstError": "plans controls covered while open at 375x812",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source1",
+    "number": 6,
+    "logLine": 1105,
+    "title": "tests/browser/app-shell.spec.ts:4829:3 › the assembled application › the Build panel arrives inside its own fold, with nothing queued (#174) ",
+    "firstError": "the Build panel arrives with more content than box at 900x600",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source1",
+    "number": 7,
+    "logLine": 1133,
+    "title": "tests/browser/app-shell.spec.ts:4970:3 › the assembled application › the catalogue can be filtered to one category, and the filter costs the panel nothing (#390) ",
+    "firstError": "^[[2mexpect(^[[22m^[[31mlocator^[[39m^[[2m).^[[22mtoBeVisible^[[2m(^[[22m^[[2m)^[[22m failed",
+    "currentDisposition": "Source consumer already repaired: Category uniquely labelled combobox; not rerun here."
+  },
+  {
+    "job": "source1",
+    "number": 8,
+    "logLine": 1167,
+    "title": "tests/browser/app-shell.spec.ts:5233:3 › the assembled application › the Build catalogue is one tab stop, and the filter never takes it away (#411) ",
+    "firstError": "^[[2mexpect(^[[22m^[[31mlocator^[[39m^[[2m).^[[22mtoBeVisible^[[2m(^[[22m^[[2m)^[[22m failed",
+    "currentDisposition": "Source consumer already repaired: Category uniquely labelled combobox; not rerun here."
+  },
+  {
+    "job": "source1",
+    "number": 9,
+    "logLine": 1201,
+    "title": "tests/browser/app-shell.spec.ts:5517:3 › the assembled application › a pending delivery is on the panel with the fold shut, and costs it nothing while none is (#285, #703) ",
+    "firstError": "^[[2mexpect(^[[22m^[[31mreceived^[[39m^[[2m).^[[22mtoBe^[[2m(^[[22m^[[32mexpected^[[39m^[[2m) // Object.is equality^[[22m",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source1",
+    "number": 10,
+    "logLine": 1227,
+    "title": "tests/browser/app-shell.spec.ts:6610:3 › the assembled application › the Rooms panel says what a zoned room is missing, and says nothing when nothing is (#331) ",
+    "firstError": "48 Tab presses never reached the north edge option (.hud-build__coordinates [data-choice=\"north\"]); focus ended on <button class=\"ui-tab\">Manage",
+    "currentDisposition": "Shared keyboard square-perimeter consumer already repaired; no hidden North chooser walk remains in orderWallRectangles. Current native gate still required."
+  },
+  {
+    "job": "source1",
+    "number": 11,
+    "logLine": 1253,
+    "title": "tests/browser/app-shell.spec.ts:7103:3 › the assembled application › zones a room and admits a prisoner with the keyboard alone (#411) ",
+    "firstError": "48 Tab presses never reached the north edge option (.hud-build__coordinates [data-choice=\"north\"]); focus ended on <input class=\"ui-number__input\">",
+    "currentDisposition": "Shared keyboard square-perimeter consumer already repaired; no hidden North chooser walk remains in orderWallRectangles. Current native gate still required."
+  },
+  {
+    "job": "source1",
+    "number": 12,
+    "logLine": 1278,
+    "title": "tests/browser/app-shell.spec.ts:7410:3 › the assembled application › takes a room back with the keyboard alone, through the same confirm control (#411) ",
+    "firstError": "48 Tab presses never reached the north edge option (.hud-build__coordinates [data-choice=\"north\"]); focus ended on <input class=\"ui-number__input\">",
+    "currentDisposition": "Shared keyboard square-perimeter consumer already repaired; no hidden North chooser walk remains in orderWallRectangles. Current native gate still required."
+  },
+  {
+    "job": "source1",
+    "number": 13,
+    "logLine": 1303,
+    "title": "tests/browser/app-shell.spec.ts:7579:3 › the assembled application › every command hands the keyboard back to the control that issued it ",
+    "firstError": "48 Tab presses never reached the north edge option (.hud-build__coordinates [data-choice=\"north\"]); focus ended on <input class=\"ui-number__input\">",
+    "currentDisposition": "Shared keyboard square-perimeter consumer already repaired; no hidden North chooser walk remains in orderWallRectangles. Current native gate still required."
+  },
+  {
+    "job": "source1",
+    "number": 14,
+    "logLine": 1328,
+    "title": "tests/browser/app-shell.spec.ts:10371:3 › the assembled application › the Build catalogue offers a door its edge chooser, from the real registry (#531) ",
+    "firstError": "^[[2mexpect(^[[22m^[[31mlocator^[[39m^[[2m).^[[22mtoBeVisible^[[2m(^[[22m^[[2m)^[[22m failed",
+    "currentDisposition": "Still wrong on exact66fb: canonical square wall chooser asserted visible. This checkpoint corrects actual existing test; source replay RED1 -> GREEN1, neighbor69GREEN, native pending."
+  },
+  {
+    "job": "source1",
+    "number": 15,
+    "logLine": 1363,
+    "title": "tests/browser/app-shell.spec.ts:11663:3 › the assembled application › paints the high-risk chip and orders the Regime roster by tier (#703) ",
+    "firstError": "48 Tab presses never reached the north edge option (.hud-build__coordinates [data-choice=\"north\"]); focus ended on <input class=\"ui-number__input\">",
+    "currentDisposition": "Shared keyboard square-perimeter consumer already repaired; no hidden North chooser walk remains in orderWallRectangles. Current native gate still required."
+  },
+  {
+    "job": "source1",
+    "number": 16,
+    "logLine": 1388,
+    "title": "tests/browser/classroom-chair-player-build.spec.ts:96:1 › player builds a Classroom with four existing chairs and keeps them through Save/Load at Full HD ",
+    "firstError": "Test timeout of 60000ms exceeded",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source1",
+    "number": 17,
+    "logLine": 1411,
+    "title": "tests/browser/exercise-station-player-build.spec.ts:70:1 › actual angled Build completes a two-square exercise station and preserves it through Save/Load ",
+    "firstError": "^[[2mexpect(^[[22m^[[31mlocator^[[39m^[[2m).^[[22mtoHaveText^[[2m(^[[22m^[[32mexpected^[[39m^[[2m)^[[22m failed",
+    "currentDisposition": "Old exact target text already corrected to full 2x1 footprint at7,7; no native rerun here."
+  },
+  {
+    "job": "source1",
+    "number": 18,
+    "logLine": 1447,
+    "title": "tests/browser/hud-camera-pose-controls.spec.ts:50:1 › the fixed renderer does not offer inert pose buttons ",
+    "firstError": "^[[2mexpect(^[[22m^[[31mlocator^[[39m^[[2m).^[[22mtoHaveCount^[[2m(^[[22m^[[32mexpected^[[39m^[[2m)^[[22m failed",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source1",
+    "number": 19,
+    "logLine": 1481,
+    "title": "tests/browser/kitchen-fixtures-player-build.spec.ts:152:1 › player creates storage and delivery capacity before Kitchen ",
+    "firstError": "Test timeout of 60000ms exceeded",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source1",
+    "number": 20,
+    "logLine": 1505,
+    "title": "tests/browser/loading-dock-door-player-build.spec.ts:138:1 › player creates bootstrap storage and delivery capacity ",
+    "firstError": "Test timeout of 60000ms exceeded",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source1",
+    "number": 21,
+    "logLine": 1529,
+    "title": "tests/browser/oblique-art-runtime.spec.ts:2:1 › authored furniture stays visible, turns, and scales with the angled camera at Full HD ",
+    "firstError": "^[[2mexpect(^[[22m^[[31mreceived^[[39m^[[2m).^[[22mtoBe^[[2m(^[[22m^[[32mexpected^[[39m^[[2m) // Object.is equality^[[22m",
+    "currentDisposition": "Old private image-key observer already corrected to actual assetImages[0].texture.key; expected key/count assertions retained. Not rerun here."
+  },
+  {
+    "job": "source1",
+    "number": 22,
+    "logLine": 1556,
+    "title": "tests/browser/oblique-art-runtime.spec.ts:21:1 › built storage rack consumes its Blender frame in the angled scene ",
+    "firstError": "^[[2mexpect(^[[22m^[[31mreceived^[[39m^[[2m).^[[22mtoBe^[[2m(^[[22m^[[32mexpected^[[39m^[[2m) // Object.is equality^[[22m",
+    "currentDisposition": "Old private image-key observer already corrected to actual assetImages[0].texture.key; expected key/count assertions retained. Not rerun here."
+  },
+  {
+    "job": "source1",
+    "number": 23,
+    "logLine": 1583,
+    "title": "tests/browser/oblique-art-runtime.spec.ts:35:1 › built chair consumes its Blender frame in the angled scene ",
+    "firstError": "^[[2mexpect(^[[22m^[[31mreceived^[[39m^[[2m).^[[22mtoBe^[[2m(^[[22m^[[32mexpected^[[39m^[[2m) // Object.is equality^[[22m",
+    "currentDisposition": "Old private image-key observer already corrected to actual assetImages[0].texture.key; expected key/count assertions retained. Not rerun here."
+  },
+  {
+    "job": "source1",
+    "number": 24,
+    "logLine": 1610,
+    "title": "tests/browser/oblique-camera-new-prison-frame.spec.ts:2:1 › angled camera returns to a newly created prison after panning beyond the old map ",
+    "firstError": "^[[2mexpect(^[[22m^[[31mlocator^[[39m^[[2m).^[[22mtoBeHidden^[[2m(^[[22m^[[2m)^[[22m failed",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source1",
+    "number": 25,
+    "logLine": 1645,
+    "title": "tests/browser/oblique-hud-roving-camera.spec.ts:72:1 › a held world arrow stops panning when focus moves into a Build radio group ",
+    "firstError": "the world arrow needs to move the camera before focus transfer",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source1",
+    "number": 26,
+    "logLine": 1673,
+    "title": "tests/browser/oblique-room-template-picking.spec.ts:5:1 › angled room plan ghost and mouse placement agree through four yaw directions ",
+    "firstError": "Ghost missed the floor pick at yaw 90°, elevation 65°",
+    "currentDisposition": "Picking consumer already computes independent origin before fit from actual pose and framing. Root owns current stationarity recipe; no current native claim here."
+  },
+  {
+    "job": "source1",
+    "number": 27,
+    "logLine": 1701,
+    "title": "tests/browser/room-plan-quote-visibility.spec.ts:95:3 › Full HD 100% complete room-plan quote stays visible beside the entire fitted footprint ",
+    "firstError": "^[[2mexpect(^[[22m^[[31mlocator^[[39m^[[2m).^[[22mtoHaveAttribute^[[2m(^[[22m^[[32mexpected^[[39m^[[2m)^[[22m failed",
+    "currentDisposition": "Full fitted footprint/readout geometry needs current acceptance and owner-reserved layout boundary; do not change CSS/budget here."
+  },
+  {
+    "job": "source1",
+    "number": 28,
+    "logLine": 1735,
+    "title": "tests/browser/staff-room-desk-player-build.spec.ts:140:1 › player furnishes delivery and storage plans before the Staff Room desk test ",
+    "firstError": "Test timeout of 60000ms exceeded",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source1",
+    "number": 29,
+    "logLine": 1759,
+    "title": "tests/browser/template-keyboard-rearm.spec.ts:3:28 › keyboard selection, mirror, quote and rearming keeps the map hover for plan half 0 ",
+    "firstError": "locator.focus: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source1",
+    "number": 30,
+    "logLine": 1787,
+    "title": "tests/browser/template-keyboard-rearm.spec.ts:3:28 › keyboard selection, mirror, quote and rearming keeps the map hover for plan half 1 ",
+    "firstError": "locator.isChecked: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source1",
+    "number": 31,
+    "logLine": 1815,
+    "title": "tests/browser/ui-build-order-note.spec.ts:203:3 › the Build panel says what a queued order is waiting for › the sentence has no box until something is queued, and the arrival panel keeps its budget (#920) ",
+    "firstError": "the Build panel arrives with more content than box at 900x600",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source1",
+    "number": 32,
+    "logLine": 1843,
+    "title": "tests/browser/ui-build-where-readout.spec.ts:123:3 › the Build panel says where the player is aiming (#550) › the \"Where\" readout names the tile a removal is aimed at, not the wall tool's last edge ",
+    "firstError": "^[[2mexpect(^[[22m^[[31mlocator^[[39m^[[2m).^[[22mtoHaveAttribute^[[2m(^[[22m^[[32mexpected^[[39m^[[2m)^[[22m failed",
+    "currentDisposition": "Already repaired: whole-square wall and removal both assert tile aim and actual coordinates, not obsolete wall edge."
+  },
+  {
+    "job": "source1",
+    "number": 33,
+    "logLine": 1878,
+    "title": "tests/browser/ui-hud-fullhd-build-catalogue.spec.ts:2:1 › Full HD Build catalogue names its category control without clipping ",
+    "firstError": "{\"heading\":\"What to build\",\"headingFits\":true,\"headingInsideControlRow\":false,\"controlVisible\":true}",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source1",
+    "number": 34,
+    "logLine": 1906,
+    "title": "tests/browser/yard-bench-player-build.spec.ts:74:1 › player completes an existing bench in Yard and keeps it through Save/Load at Full HD ",
+    "firstError": "^[[2mexpect(^[[22m^[[31mlocator^[[39m^[[2m).^[[22mtoHaveText^[[2m(^[[22m^[[32mexpected^[[39m^[[2m)^[[22m failed",
+    "currentDisposition": "Old exact target text already corrected to full 2x1 footprint at7,7; no native rerun here."
+  },
+  {
+    "job": "source1",
+    "number": 35,
+    "logLine": 1942,
+    "title": "tests/browser/yard-waste-bin-player-build.spec.ts:76:1 › player completes an existing waste bin in Yard and keeps it through Save/Load at Full HD ",
+    "firstError": "Test timeout of 60000ms exceeded",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source2",
+    "number": 1,
+    "logLine": 1288,
+    "title": "tests/browser/cell-cot-player-build.spec.ts:141:1 › player furnishes delivery and storage plans before the cot test ",
+    "firstError": "locator.getAttribute: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source2",
+    "number": 2,
+    "logLine": 1317,
+    "title": "tests/browser/compact-camera-pose-controls.spec.ts:2:1 › Full HD camera icon group keeps four labelled keyboard actions above the minimap ",
+    "firstError": "locator.screenshot: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source2",
+    "number": 3,
+    "logLine": 1349,
+    "title": "tests/browser/first-square-clock-hint.spec.ts:2:1 › Full HD first paused square order explains clock dependency and keyboard Play completes it ",
+    "firstError": "keyboard.press: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source2",
+    "number": 4,
+    "logLine": 1374,
+    "title": "tests/browser/hud-layout-shell.spec.ts:697:3 › the HUD layout shell › records the middle row’s budget with six sections in the rail, at 1280x800 (#1292) ",
+    "firstError": "the bottom-left corner is not the 398px the budget was recorded against",
+    "currentDisposition": "Known #1292 owner-reserved layout decision: old398px/+10.19/+9.19 vs442/-33.8125/-34.8125. Not fixed or weakened here."
+  },
+  {
+    "job": "source2",
+    "number": 5,
+    "logLine": 1406,
+    "title": "tests/browser/hud-layout-shell.spec.ts:720:3 › the HUD layout shell › spends that budget down to ten pixels at the 781px threshold the stylesheet names (#1292) ",
+    "firstError": "the clearance at the stylesheet’s own threshold has moved",
+    "currentDisposition": "Known #1292 owner-reserved layout decision: old398px/+10.19/+9.19 vs442/-33.8125/-34.8125. Not fixed or weakened here."
+  },
+  {
+    "job": "source2",
+    "number": 6,
+    "logLine": 1438,
+    "title": "tests/browser/hud-layout-shell.spec.ts:744:3 › the HUD layout shell › moves the corner out from under the column one pixel below that threshold (#1292) ",
+    "firstError": "the clearance one pixel below the threshold has moved",
+    "currentDisposition": "Known #1292 owner-reserved layout decision: old398px/+10.19/+9.19 vs442/-33.8125/-34.8125. Not fixed or weakened here."
+  },
+  {
+    "job": "source2",
+    "number": 7,
+    "logLine": 1470,
+    "title": "tests/browser/integrated-square-walls.spec.ts:63:3 › completed square walls remain painted after production Save/Load: oblique ",
+    "firstError": "page.evaluate: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source2",
+    "number": 8,
+    "logLine": 1496,
+    "title": "tests/browser/integrated-square-walls.spec.ts:236:1 › authored cell floor keeps its exact tile after production Save/Load in angled view ",
+    "firstError": "Timeout 10000ms exceeded while waiting on the predicate",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source2",
+    "number": 9,
+    "logLine": 1519,
+    "title": "tests/browser/laundry-fixtures-player-build.spec.ts:136:1 › player creates storage and delivery capacity before Laundry ",
+    "firstError": "Test timeout of 60000ms exceeded",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source2",
+    "number": 10,
+    "logLine": 1543,
+    "title": "tests/browser/oblique-authored-actors.spec.ts:183:1 › moving actors keep authored solid images while their depth order changes ",
+    "firstError": "page.evaluate: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source2",
+    "number": 11,
+    "logLine": 1566,
+    "title": "tests/browser/oblique-room-preview-session-boundary.spec.ts:3:1 › Save/Load and a new prison release a fitted room-plan origin from the prior session ",
+    "firstError": "page.evaluate: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source2",
+    "number": 12,
+    "logLine": 1594,
+    "title": "tests/browser/room-template-cards.spec.ts:3:1 › Full HD catalogue compares all room footprints before selection and keeps row controls in view ",
+    "firstError": "locator.boundingBox: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source2",
+    "number": 13,
+    "logLine": 1622,
+    "title": "tests/browser/room-template-pending-reopen.spec.ts:3:1 › reopening an active large plan withdraws obsolete readiness and blocked squares until the real worker replies ",
+    "firstError": "page.evaluate: Target page, context or browser has been closed",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source2",
+    "number": 14,
+    "logLine": 1647,
+    "title": "tests/browser/room-template-polish-focus.spec.ts:3:1 › Polish Full HD room catalogue exposes all names and supports one roving keyboard stop ",
+    "firstError": "page.screenshot: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source2",
+    "number": 15,
+    "logLine": 1677,
+    "title": "tests/browser/room-template-world-mouse.spec.ts:89:1 › Full HD angled catalogue exposes all twenty plans, full fixture footprints and open yard ",
+    "firstError": "locator.click: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source2",
+    "number": 16,
+    "logLine": 1706,
+    "title": "tests/browser/security-console-player-build.spec.ts:136:1 › player creates storage and delivery capacity before Security Office ",
+    "firstError": "locator.getAttribute: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source2",
+    "number": 17,
+    "logLine": 1735,
+    "title": "tests/browser/storage-room-rack-player-build.spec.ts:95:1 › player builds a Storage Room with two existing racks and keeps them through Save/Load at Full HD ",
+    "firstError": "locator.click: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source2",
+    "number": 18,
+    "logLine": 1769,
+    "title": "tests/browser/template-delivery-bootstrap-player.spec.ts:66:1 › player furnishes delivery and storage plans and saves with zero prisoners at Full HD ",
+    "firstError": "Test timeout of 60000ms exceeded",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source2",
+    "number": 19,
+    "logLine": 1793,
+    "title": "tests/browser/toilet-dense-player-build.spec.ts:139:1 › player furnishes delivery and storage plans before the toilet test ",
+    "firstError": "locator.getAttribute: Target page, context or browser has been closed",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "source2",
+    "number": 20,
+    "logLine": 1818,
+    "title": "tests/browser/ui-held-guard-release-reachable.spec.ts:314:5 › ReleaseGuardAssignment is pressable in a real session (#1357) › a guard the simulation holds is released from its own row, loaded at desktop (1280x720) ",
+    "firstError": "locator.click: Test timeout of 180000ms exceeded.",
+    "currentDisposition": "STILL CURRENT stale helper: unlike app-shell, ui-held-guard-release-reachable still constructs legacy edge perimeter and clicks hidden North/West after choosing full-square wall. Needs real square perimeter outside CELL, proper material/order count and retained actual ReleaseGuardAssignment assertions; not edited here."
+  },
+  {
+    "job": "source2",
+    "number": 21,
+    "logLine": 1861,
+    "title": "tests/browser/ui-held-guard-release-reachable.spec.ts:314:5 › ReleaseGuardAssignment is pressable in a real session (#1357) › a guard the simulation holds is released from its own row, loaded at phone (375x812) ",
+    "firstError": "locator.click: Test timeout of 180000ms exceeded.",
+    "currentDisposition": "STILL CURRENT stale helper: unlike app-shell, ui-held-guard-release-reachable still constructs legacy edge perimeter and clicks hidden North/West after choosing full-square wall. Needs real square perimeter outside CELL, proper material/order count and retained actual ReleaseGuardAssignment assertions; not edited here."
+  },
+  {
+    "job": "source2",
+    "number": 22,
+    "logLine": 1904,
+    "title": "tests/browser/yard-mouse-history.spec.ts:3:1 › Full HD angled mouse Yard is a real reversible zone through Save/Load with no wall order ",
+    "firstError": "locator.click: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "artifact",
+    "number": 1,
+    "logLine": 645,
+    "title": "tests/browser/bookshelf-player-build.spec.ts:134:1 › player creates storage and delivery capacity before Classroom ",
+    "firstError": "locator.click: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "artifact",
+    "number": 2,
+    "logLine": 672,
+    "title": "tests/browser/build-category-native-popup-held-key.spec.ts:14:3 › Full HD 100% Build Category native popup relinquishes world-held KeyE even when its release never reaches the page ",
+    "firstError": "a fresh world key still rotates the map",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "artifact",
+    "number": 3,
+    "logLine": 692,
+    "title": "tests/browser/canteen-dining-table-player-build.spec.ts:162:1 › player creates storage and delivery capacity before Canteen ",
+    "firstError": "locator.click: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "artifact",
+    "number": 4,
+    "logLine": 719,
+    "title": "tests/browser/generic-office-desk-player-build.spec.ts:167:1 › player creates storage and delivery capacity before Reception ",
+    "firstError": "locator.click: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "artifact",
+    "number": 5,
+    "logLine": 746,
+    "title": "tests/browser/generic-wooden-rack-player-build.spec.ts:213:1 › player creates storage and delivery capacity before generic rack ",
+    "firstError": "locator.click: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "artifact",
+    "number": 6,
+    "logLine": 773,
+    "title": "tests/browser/infirmary-player-build.spec.ts:148:1 › player creates storage and delivery capacity before Infirmary ",
+    "firstError": "locator.click: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "artifact",
+    "number": 7,
+    "logLine": 793,
+    "title": "tests/browser/rotated-security-console-player-build.spec.ts:141:1 › player creates storage and delivery capacity before Security Office ",
+    "firstError": "locator.click: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "artifact",
+    "number": 8,
+    "logLine": 813,
+    "title": "tests/browser/shower-head-player-build.spec.ts:162:1 › player creates storage and delivery capacity before Shower Room ",
+    "firstError": "expect.toContainText: Target page, context or browser has been closed",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "artifact",
+    "number": 9,
+    "logLine": 830,
+    "title": "tests/browser/utility-panel-player-build.spec.ts:136:1 › player creates storage and delivery capacity before Utility Room ",
+    "firstError": "locator.click: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "artifact",
+    "number": 10,
+    "logLine": 853,
+    "title": "tests/browser/wooden-bench-player-build.spec.ts:164:1 › player creates storage and delivery capacity before Holding Cell ",
+    "firstError": "expect.toContainText: Target page, context or browser has been closed",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  },
+  {
+    "job": "artifact",
+    "number": 11,
+    "logLine": 870,
+    "title": "tests/browser/wooden-chair-player-build.spec.ts:165:1 › player creates storage and delivery capacity before Staff Room ",
+    "firstError": "locator.click: Test timeout of 60000ms exceeded.",
+    "currentDisposition": "No current native reproduction: preserve timeout/geometry/observer failure; not claimed fixed."
+  }
+]

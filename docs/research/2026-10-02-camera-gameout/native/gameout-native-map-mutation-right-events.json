@@ -1,0 +1,241 @@
+{
+  "start": {
+    "x": 1351.078125,
+    "y": 237
+  },
+  "moved": {
+    "x": 1411.078125,
+    "y": 237
+  },
+  "hud": {
+    "x": 1785.078125,
+    "y": 237
+  },
+  "returned": {
+    "x": 1451.078125,
+    "y": 237
+  },
+  "mapClip": {
+    "x": 400,
+    "y": 300,
+    "width": 1000,
+    "height": 400
+  },
+  "samples": [
+    {
+      "type": "mouseover",
+      "buttons": 0,
+      "target": "BUTTON",
+      "related": null
+    },
+    {
+      "type": "mousemove",
+      "buttons": 0,
+      "target": "BUTTON",
+      "related": null
+    },
+    {
+      "type": "mousedown",
+      "buttons": 1,
+      "target": "BUTTON",
+      "related": null
+    },
+    {
+      "type": "mouseup",
+      "buttons": 0,
+      "target": "BUTTON",
+      "related": null
+    },
+    {
+      "type": "mouseout",
+      "buttons": 0,
+      "target": "BUTTON",
+      "related": "svg"
+    },
+    {
+      "type": "mouseover",
+      "buttons": 0,
+      "target": "svg",
+      "related": "BUTTON"
+    },
+    {
+      "type": "mousemove",
+      "buttons": 0,
+      "target": "svg",
+      "related": null
+    },
+    {
+      "type": "mousedown",
+      "buttons": 1,
+      "target": "svg",
+      "related": null
+    },
+    {
+      "type": "mouseup",
+      "buttons": 0,
+      "target": "svg",
+      "related": null
+    },
+    {
+      "type": "mouseout",
+      "buttons": 0,
+      "target": "svg",
+      "related": "SPAN"
+    },
+    {
+      "type": "mouseover",
+      "buttons": 0,
+      "target": "SPAN",
+      "related": "svg"
+    },
+    {
+      "type": "mousemove",
+      "buttons": 0,
+      "target": "SPAN",
+      "related": null
+    },
+    {
+      "type": "mousedown",
+      "buttons": 1,
+      "target": "SPAN",
+      "related": null
+    },
+    {
+      "type": "mouseup",
+      "buttons": 0,
+      "target": "SPAN",
+      "related": null
+    },
+    {
+      "type": "mouseout",
+      "buttons": 0,
+      "target": "SPAN",
+      "related": "CANVAS"
+    },
+    {
+      "type": "mouseover",
+      "buttons": 0,
+      "target": "CANVAS",
+      "related": "SPAN"
+    },
+    {
+      "type": "mousemove",
+      "buttons": 0,
+      "target": "CANVAS",
+      "related": null
+    },
+    {
+      "type": "mousedown",
+      "buttons": 2,
+      "target": "CANVAS",
+      "related": null
+    },
+    {
+      "type": "mousemove",
+      "buttons": 2,
+      "target": "CANVAS",
+      "related": null
+    },
+    {
+      "type": "mousemove",
+      "buttons": 2,
+      "target": "CANVAS",
+      "related": null
+    },
+    {
+      "type": "mousemove",
+      "buttons": 2,
+      "target": "CANVAS",
+      "related": null
+    },
+    {
+      "type": "mousemove",
+      "buttons": 2,
+      "target": "CANVAS",
+      "related": null
+    },
+    {
+      "type": "mousemove",
+      "buttons": 2,
+      "target": "CANVAS",
+      "related": null
+    },
+    {
+      "type": "mousemove",
+      "buttons": 2,
+      "target": "CANVAS",
+      "related": null
+    },
+    {
+      "type": "mouseout",
+      "buttons": 2,
+      "target": "CANVAS",
+      "related": "BUTTON"
+    },
+    {
+      "type": "mouseover",
+      "buttons": 2,
+      "target": "BUTTON",
+      "related": "CANVAS"
+    },
+    {
+      "type": "mousemove",
+      "buttons": 2,
+      "target": "BUTTON",
+      "related": null
+    },
+    {
+      "type": "mousemove",
+      "buttons": 2,
+      "target": "BUTTON",
+      "related": null
+    },
+    {
+      "type": "mousemove",
+      "buttons": 2,
+      "target": "BUTTON",
+      "related": null
+    },
+    {
+      "type": "mouseout",
+      "buttons": 2,
+      "target": "BUTTON",
+      "related": "SELECT"
+    },
+    {
+      "type": "mouseover",
+      "buttons": 2,
+      "target": "SELECT",
+      "related": "BUTTON"
+    },
+    {
+      "type": "mousemove",
+      "buttons": 2,
+      "target": "SELECT",
+      "related": null
+    },
+    {
+      "type": "mouseout",
+      "buttons": 2,
+      "target": "SELECT",
+      "related": "CANVAS"
+    },
+    {
+      "type": "mouseover",
+      "buttons": 2,
+      "target": "CANVAS",
+      "related": "SELECT"
+    },
+    {
+      "type": "mousemove",
+      "buttons": 2,
+      "target": "CANVAS",
+      "related": null
+    }
+  ],
+  "commands": [],
+  "viewport": "left: 17.8136%; top: 36.9799%; width: 82.1864%; height: 63.0201%;",
+  "viewportAfter": "left: 8.23942%; top: 23.892%; width: 88.7635%; height: 76.108%;",
+  "mapUnchanged": false,
+  "commandsAfter": []
+}

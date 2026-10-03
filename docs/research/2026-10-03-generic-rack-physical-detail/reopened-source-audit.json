@@ -1,0 +1,1006 @@
+{
+  "kind": "independent-fresh-reopened-scenes",
+  "original": {
+    "file": "assets/source/blender/furniture.storage.rack.wooden.blend",
+    "sha256": "3806d996ce473e166aaa00bef379655aac2c41ef4d45f7f32b48a893ff4b4eed",
+    "meshCount": 48,
+    "minimum": [
+      -0.49500030279159546,
+      -0.4549993872642517,
+      0.0
+    ],
+    "maximum": [
+      0.49500030279159546,
+      0.4549993872642517,
+      1.4079999923706055
+    ]
+  },
+  "refined": {
+    "file": "assets/source/blender/furniture.storage.rack.wooden.angled-detail.blend",
+    "sha256": "600d62b3b5708081445b6ba84b5f38fc8534922f6a128b448e1585c97e95c212",
+    "meshCount": 104,
+    "minimum": [
+      -0.49500030279159546,
+      -0.4549993872642517,
+      0.0
+    ],
+    "maximum": [
+      0.49500030279159546,
+      0.4549993872642517,
+      1.4079999923706055
+    ]
+  },
+  "retainedComparisons": [
+    {
+      "name": "Corner bolt.-0.43.-0.39",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Corner bolt.-0.43.0.39",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Corner bolt.0.43.-0.39",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Corner bolt.0.43.0.39",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Corner post.-0.43.-0.39",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Corner post.-0.43.0.39",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Corner post.0.43.-0.39",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Corner post.0.43.0.39",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Middle steel toolbox",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "North bundle strap",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "North crate handle",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "North folded blanket.0",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "North folded blanket.1",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "North wooden crate",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.canvas hem 0.267",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.canvas hem 0.315",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.canvas packet 0.267",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.canvas packet 0.315",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.canvas tie",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.middle carton",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.middle carton central seam",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.middle carton label",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.middle carton mark",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.north crate lid inset",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.north crate lid slat -0.105",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.north crate lid slat -0.275",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.recess 0",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.recess 1",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.recess 2",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.south crate edge -0.066",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.south crate edge -0.294",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.south crate printed band",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.south supply crate",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.steel rail 0",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.steel rail 1",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rack refinement.steel rail 2",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Rear brace",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Shelf lip.0",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Shelf lip.1",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Shelf lip.2",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Steel corner cap.-0.43.-0.39",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Steel corner cap.-0.43.0.39",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Steel corner cap.0.43.-0.39",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Steel corner cap.0.43.0.39",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Toolbox clasp",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Worn shelf.0",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Worn shelf.1",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Worn shelf.2",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    }
+  ],
+  "geometricNormals": [
+    {
+      "name": "Corner bolt.-0.43.-0.39",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.1664089690555103e-05
+    },
+    {
+      "name": "Corner bolt.-0.43.0.39",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.166408956502592e-05
+    },
+    {
+      "name": "Corner bolt.0.43.-0.39",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.1664089576868227e-05
+    },
+    {
+      "name": "Corner bolt.0.43.0.39",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.166408983266365e-05
+    },
+    {
+      "name": "Corner post.-0.43.-0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.008451530086896735
+    },
+    {
+      "name": "Corner post.-0.43.0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.008451529980751124
+    },
+    {
+      "name": "Corner post.0.43.-0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.008451530136653673
+    },
+    {
+      "name": "Corner post.0.43.0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.008451530398967105
+    },
+    {
+      "name": "Middle steel toolbox",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.006342170619973331
+    },
+    {
+      "name": "North bundle strap",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.245380270310005e-05
+    },
+    {
+      "name": "North crate handle",
+      "faces": 6,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.5000090039999728e-05
+    },
+    {
+      "name": "North folded blanket.0",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0009798040973881446
+    },
+    {
+      "name": "North folded blanket.1",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0009798040805814405
+    },
+    {
+      "name": "North wooden crate",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00513348229969779
+    },
+    {
+      "name": "Rack refinement.canvas hem 0.267",
+      "faces": 6,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 7.391920159231328e-06
+    },
+    {
+      "name": "Rack refinement.canvas hem 0.315",
+      "faces": 6,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.847925684875613e-06
+    },
+    {
+      "name": "Rack refinement.canvas packet 0.267",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0008088385725007659
+    },
+    {
+      "name": "Rack refinement.canvas packet 0.315",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0007535142502206326
+    },
+    {
+      "name": "Rack refinement.canvas tie",
+      "faces": 6,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 3.432007239704641e-05
+    },
+    {
+      "name": "Rack refinement.middle carton",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.005002117541607731
+    },
+    {
+      "name": "Rack refinement.middle carton central seam",
+      "faces": 6,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 3.780024580161504e-06
+    },
+    {
+      "name": "Rack refinement.middle carton label",
+      "faces": 6,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.176427586983968e-06
+    },
+    {
+      "name": "Rack refinement.middle carton mark",
+      "faces": 6,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.660311176650189e-07
+    },
+    {
+      "name": "Rack refinement.north crate lid inset",
+      "faces": 6,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 8.045495330103829e-05
+    },
+    {
+      "name": "Rack refinement.north crate lid slat -0.105",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 2.3650449398597093e-05
+    },
+    {
+      "name": "Rack refinement.north crate lid slat -0.275",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 2.365044945307204e-05
+    },
+    {
+      "name": "Rack refinement.recess 0",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0009537766794878166
+    },
+    {
+      "name": "Rack refinement.recess 1",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.000953776520243347
+    },
+    {
+      "name": "Rack refinement.recess 2",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0009537766420161611
+    },
+    {
+      "name": "Rack refinement.south crate edge -0.066",
+      "faces": 6,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.0530069630476648e-05
+    },
+    {
+      "name": "Rack refinement.south crate edge -0.294",
+      "faces": 6,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.053008175707267e-05
+    },
+    {
+      "name": "Rack refinement.south crate printed band",
+      "faces": 6,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.0920085666536275e-05
+    },
+    {
+      "name": "Rack refinement.south supply crate",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.006447489844655744
+    },
+    {
+      "name": "Rack refinement.steel rail 0",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0004640962273579815
+    },
+    {
+      "name": "Rack refinement.steel rail 1",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00046409470349174914
+    },
+    {
+      "name": "Rack refinement.steel rail 2",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0004640954262053279
+    },
+    {
+      "name": "Rear brace",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.005899571265368211
+    },
+    {
+      "name": "Shelf lip.0",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.000975668698975011
+    },
+    {
+      "name": "Shelf lip.1",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0009756691476050333
+    },
+    {
+      "name": "Shelf lip.2",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0009756689504919571
+    },
+    {
+      "name": "Steel corner cap.-0.43.-0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0011312927144899734
+    },
+    {
+      "name": "Steel corner cap.-0.43.0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0011312927223722604
+    },
+    {
+      "name": "Steel corner cap.0.43.-0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0011312927100940824
+    },
+    {
+      "name": "Steel corner cap.0.43.0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0011312927219933047
+    },
+    {
+      "name": "Toolbox clasp",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.4112980029285902e-05
+    },
+    {
+      "name": "Worn shelf.0",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.016336491643045178
+    },
+    {
+      "name": "Worn shelf.1",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.01633649152996402
+    },
+    {
+      "name": "Worn shelf.2",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.016336486512616415
+    },
+    {
+      "name": "angled-generic-rack.base post retaining bolt -0.43 -0.39",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.265110534989134e-06
+    },
+    {
+      "name": "angled-generic-rack.base post retaining bolt -0.43 0.39",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.265110510981475e-06
+    },
+    {
+      "name": "angled-generic-rack.base post retaining bolt 0.43 -0.39",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.265110546833107e-06
+    },
+    {
+      "name": "angled-generic-rack.base post retaining bolt 0.43 0.39",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.265110479342131e-06
+    },
+    {
+      "name": "angled-generic-rack.base post shoe -0.43 -0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0006642298005867057
+    },
+    {
+      "name": "angled-generic-rack.base post shoe -0.43 0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0006642298089995318
+    },
+    {
+      "name": "angled-generic-rack.base post shoe 0.43 -0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0006642297970339919
+    },
+    {
+      "name": "angled-generic-rack.base post shoe 0.43 0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0006642298103164043
+    },
+    {
+      "name": "angled-generic-rack.rear ascending brace",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.000682399551289829
+    },
+    {
+      "name": "angled-generic-rack.rear brace intersection bolt",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 3.6383841443378673e-06
+    },
+    {
+      "name": "angled-generic-rack.rear brace intersection plate",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00014493079956305144
+    },
+    {
+      "name": "angled-generic-rack.rear descending brace",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0006823976047537853
+    },
+    {
+      "name": "angled-generic-rack.rear strap anchor bolt -0.43 0.2",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 5.245163054930709e-06
+    },
+    {
+      "name": "angled-generic-rack.rear strap anchor bolt -0.43 1.25",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 5.245157382740995e-06
+    },
+    {
+      "name": "angled-generic-rack.rear strap anchor bolt 0.43 0.2",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 5.245163122765085e-06
+    },
+    {
+      "name": "angled-generic-rack.rear strap anchor bolt 0.43 1.25",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 5.245157382824514e-06
+    },
+    {
+      "name": "angled-generic-rack.rear strap anchor plate -0.43 0.2",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00019974438763388963
+    },
+    {
+      "name": "angled-generic-rack.rear strap anchor plate -0.43 1.25",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0001997442159951864
+    },
+    {
+      "name": "angled-generic-rack.rear strap anchor plate 0.43 0.2",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00019974439332770544
+    },
+    {
+      "name": "angled-generic-rack.rear strap anchor plate 0.43 1.25",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00019974422125083416
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end bolt 0 -0.43 -0.39",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 5.24515737750115e-06
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end bolt 0 -0.43 0.39",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 5.245157451942432e-06
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end bolt 0 0.43 -0.39",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 5.245157395638515e-06
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end bolt 0 0.43 0.39",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 5.245157455239777e-06
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end bolt 1 -0.43 -0.39",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 5.245167264633644e-06
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end bolt 1 -0.43 0.39",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 5.24516731792435e-06
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end bolt 1 0.43 -0.39",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 5.245167274292584e-06
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end bolt 1 0.43 0.39",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 5.245167311151988e-06
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end bolt 2 -0.43 -0.39",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 5.2451595271185325e-06
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end bolt 2 -0.43 0.39",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 5.2451596494288975e-06
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end bolt 2 0.43 -0.39",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 5.24515952786027e-06
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end bolt 2 0.43 0.39",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 5.24515964706024e-06
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end plate 0 -0.43 -0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00015094227079141356
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end plate 0 -0.43 0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00015094227201354707
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end plate 0 0.43 -0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00015094226810674627
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end plate 0 0.43 0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0001509422681162202
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end plate 1 -0.43 -0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00015094228031268625
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end plate 1 -0.43 0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00015094228034110796
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end plate 1 0.43 -0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00015094228057440281
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end plate 1 0.43 0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.000150942281167706
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end plate 2 -0.43 -0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0001509422044444856
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end plate 2 -0.43 0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00015094220301747893
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end plate 2 0.43 -0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0001509422060254432
+    },
+    {
+      "name": "angled-generic-rack.shelf bearer end plate 2 0.43 0.39",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0001509422063570298
+    },
+    {
+      "name": "angled-generic-rack.shelf side bearer 0 -0.405",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0018959777521516026
+    },
+    {
+      "name": "angled-generic-rack.shelf side bearer 0 0.405",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.001895977757741219
+    },
+    {
+      "name": "angled-generic-rack.shelf side bearer 1 -0.405",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0018959777237821107
+    },
+    {
+      "name": "angled-generic-rack.shelf side bearer 1 0.405",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0018959777021721517
+    },
+    {
+      "name": "angled-generic-rack.shelf side bearer 2 -0.405",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0018959750438199885
+    },
+    {
+      "name": "angled-generic-rack.shelf side bearer 2 0.405",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0018959750918621512
+    },
+    {
+      "name": "angled-generic-rack.shelf triangular support 0 -0.399",
+      "faces": 5,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0006582399582839571
+    },
+    {
+      "name": "angled-generic-rack.shelf triangular support 0 0.399",
+      "faces": 5,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0006582399582839571
+    },
+    {
+      "name": "angled-generic-rack.shelf triangular support 1 -0.399",
+      "faces": 5,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00149599992922352
+    },
+    {
+      "name": "angled-generic-rack.shelf triangular support 1 0.399",
+      "faces": 5,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00149599992922352
+    },
+    {
+      "name": "angled-generic-rack.shelf triangular support 2 -0.399",
+      "faces": 5,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0006582400795499174
+    },
+    {
+      "name": "angled-generic-rack.shelf triangular support 2 0.399",
+      "faces": 5,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0006582400795499174
+    }
+  ],
+  "normalMethod": "Independent polygon edge-vector area and signed-volume triangulation on actual evaluated world-space surfaces; shading normals ignored."
+}

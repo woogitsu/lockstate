@@ -1,0 +1,8 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-accepted-command-marker-class-audit-20261003
+
+
+ Test Files  12 passed (12)
+      Tests  120 passed (120)
+   Start at  05:15:13
+   Duration  13.21s (transform 6.14s, setup 0ms, import 12.48s, tests 10.02s, environment 1ms)

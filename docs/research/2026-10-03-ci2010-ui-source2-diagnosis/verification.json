@@ -1,0 +1,20 @@
+{
+  "head": "345a7d83de4909cd59d9cfb988f71baf471e5325",
+  "appTypesExit": 0,
+  "auditTypesExit": 0,
+  "toolsTypesExit": 0,
+  "boundedNeighbors": 26,
+  "quoteDOM": {
+    "before": "1RED outer366>338",
+    "after": "1GREEN outer338"
+  },
+  "nativeRun": false,
+  "temporaryProducerMutation": false,
+  "sourceHash": "1221d9af2abc4b6f316944ddc3f338961eab393a7bb4aa64a046b5af5cad0021",
+  "pending": [
+    "root focused native quote/cards/focus",
+    "root temporary producer negative and byte restoration",
+    "1292 owner-protected layout proposal",
+    "minimap200 zero geometry native diagnosis"
+  ]
+}

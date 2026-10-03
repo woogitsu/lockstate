@@ -290,6 +290,12 @@ export interface QueuedOrderDemand {
  *   `'materials-pending'` whatever it says, and allocates when a delivery
  *   lands. Only the command handler reads it, and only to tell the player.
  */
+/** One successive cancellation's allocation refund and post-removal demand. */
+export interface CancellationRefundPreviewStep {
+  readonly allocations: readonly MaterialRequirement[];
+  readonly surplus: readonly { readonly itemId: string; readonly demandedQuantity: number; readonly limit: number }[];
+}
+
 export interface ConstructionProcurementSink {
   procureForPendingOrders(demand: readonly QueuedOrderDemand[], tick: number): MaterialsProcurementReport;
   /**
@@ -572,5 +578,8 @@ export interface ConstructionProcurementSink {
    *
    * It must not throw.
    */
+  /** Replay successive refunds over private supply, never summing independent previews. */
+  previewCancellationSequenceRefundMinorUnits?(steps: readonly CancellationRefundPreviewStep[]): number;
+
   previewAllocatedRefundMinorUnits(allocations: readonly MaterialRequirement[]): number;
 }

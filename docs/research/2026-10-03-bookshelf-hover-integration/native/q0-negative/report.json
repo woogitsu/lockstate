@@ -1,0 +1,709 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-bookshelf-hover-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-bookshelf-hover-verified-control-q0-negative-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-bookshelf-hover-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build|dedicated-security-console-player-build|dedicated-medical-bed-player-build|dedicated-loading-dock-door-player-build|dedicated-camera-pan-player|oblique-pending-wall-player|room-template-renderer-stationary-hover)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5184 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5184/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "bookshelf-player-build.spec.ts",
+      "file": "bookshelf-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Classroom",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43369,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:13:53.341Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "cc4b308bbdc33c47e837-e2052e940ed785947b1f",
+          "file": "bookshelf-player-build.spec.ts",
+          "line": 159,
+          "column": 1
+        },
+        {
+          "title": "player builds the bookshelf in Classroom at quarterTurns0 and keeps it after Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 46128,
+                  "error": {
+                    "message": "Error: authored book spines after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: authored book spines after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\bookshelf-player-build.spec.ts:172:72",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\bookshelf-player-build.spec.ts",
+                      "column": 72,
+                      "line": 172
+                    },
+                    "snippet": "  170 |   assertOwnedObjectOrders(completedData, 'object.bookshelf', 'bookshelf-wooden', owned);\n  171 |   const beforePixels = await authoredBookPixels(page, completed, quarterTurns);\n> 172 |   expect.soft(beforePixels, 'authored book spines after construction').toBeGreaterThan(100);\n      |                                                                        ^\n  173 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  174 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  175 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\bookshelf-player-build.spec.ts",
+                        "column": 72,
+                        "line": 172
+                      },
+                      "message": "Error: authored book spines after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  170 |   assertOwnedObjectOrders(completedData, 'object.bookshelf', 'bookshelf-wooden', owned);\n  171 |   const beforePixels = await authoredBookPixels(page, completed, quarterTurns);\n> 172 |   expect.soft(beforePixels, 'authored book spines after construction').toBeGreaterThan(100);\n      |                                                                        ^\n  173 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  174 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  175 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\bookshelf-player-build.spec.ts:172:72"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\bookshelf-player-build.spec.ts",
+                        "column": 63,
+                        "line": 186
+                      },
+                      "message": "Error: authored book spines after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m100\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  184 |   expect(loadedData).toEqual(completedData);\n  185 |   const afterPixels = await authoredBookPixels(page, loaded, quarterTurns);\n> 186 |   expect.soft(afterPixels, 'authored book spines after Load').toBeGreaterThan(100);\n      |                                                               ^\n  187 |   expect(afterPixels).toBe(beforePixels);\n  188 |   await writeFile(info.outputPath('bookshelf-worker-and-save-evidence.json'), JSON.stringify({ quarterTurns, owned, beforePixels, afterPixels,\n  189 |     commands: (await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate') }, null, 2));\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\bookshelf-player-build.spec.ts:186:63"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:14:36.775Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\bookshelf-player-build-pla-f0356-nd-keeps-it-after-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\bookshelf-player-build.spec.ts",
+                    "column": 72,
+                    "line": 172
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "cc4b308bbdc33c47e837-8370302ff755593618ef",
+          "file": "bookshelf-player-build.spec.ts",
+          "line": 222,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "room-template-renderer-stationary-hover.spec.ts",
+      "file": "room-template-renderer-stationary-hover.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "FullHD UI100% world replacement keeps stationary rotated plan after old worker reply",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 15959,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts:102:25",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                      "column": 25,
+                      "line": 102
+                    },
+                    "snippet": "  100 |     // The app must independently pick and inspect this still-armed plan in the\n  101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.\n> 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');\n      |                         ^\n  103 |     await expect(ghost.locator('polygon')).toHaveCount(28);\n  104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');\n  105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                        "column": 25,
+                        "line": 102
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n\n  100 |     // The app must independently pick and inspect this still-armed plan in the\n  101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.\n> 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');\n      |                         ^\n  103 |     await expect(ghost.locator('polygon')).toHaveCount(28);\n  104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');\n  105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts:102:25"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:15:23.477Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\room-template-renderer-sta-77a54-plan-after-old-worker-reply\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                    "column": 25,
+                    "line": 102
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "432eb791c473cd413d6e-d401e1bfa4a6a71974cf",
+          "file": "room-template-renderer-stationary-hover.spec.ts",
+          "line": 77,
+          "column": 3
+        },
+        {
+          "title": "FullHD UI100% world replacement keeps stationary rotated/mirrored plan after old worker reply",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 16209,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts:102:25",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                      "column": 25,
+                      "line": 102
+                    },
+                    "snippet": "  100 |     // The app must independently pick and inspect this still-armed plan in the\n  101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.\n> 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');\n      |                         ^\n  103 |     await expect(ghost.locator('polygon')).toHaveCount(28);\n  104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');\n  105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                        "column": 25,
+                        "line": 102
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n\n  100 |     // The app must independently pick and inspect this still-armed plan in the\n  101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.\n> 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');\n      |                         ^\n  103 |     await expect(ghost.locator('polygon')).toHaveCount(28);\n  104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');\n  105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts:102:25"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:15:40.043Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\room-template-renderer-sta-6d37d-plan-after-old-worker-reply\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                    "column": 25,
+                    "line": 102
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "432eb791c473cd413d6e-236f03f98242f01e618b",
+          "file": "room-template-renderer-stationary-hover.spec.ts",
+          "line": 77,
+          "column": 3
+        },
+        {
+          "title": "FullHD UI100% oblique replacement keeps stationary rotated plan after old worker reply",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 15318,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts:102:25",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                      "column": 25,
+                      "line": 102
+                    },
+                    "snippet": "  100 |     // The app must independently pick and inspect this still-armed plan in the\n  101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.\n> 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');\n      |                         ^\n  103 |     await expect(ghost.locator('polygon')).toHaveCount(28);\n  104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');\n  105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                        "column": 25,
+                        "line": 102
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n\n  100 |     // The app must independently pick and inspect this still-armed plan in the\n  101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.\n> 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');\n      |                         ^\n  103 |     await expect(ghost.locator('polygon')).toHaveCount(28);\n  104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');\n  105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts:102:25"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:15:56.863Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\room-template-renderer-sta-67f41-plan-after-old-worker-reply\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                    "column": 25,
+                    "line": 102
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "432eb791c473cd413d6e-e8b15c3b18bb9c5da3fb",
+          "file": "room-template-renderer-stationary-hover.spec.ts",
+          "line": 77,
+          "column": 3
+        },
+        {
+          "title": "FullHD UI100% oblique replacement keeps stationary rotated/mirrored plan after old worker reply",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 15480,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts:102:25",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                      "column": 25,
+                      "line": 102
+                    },
+                    "snippet": "  100 |     // The app must independently pick and inspect this still-armed plan in the\n  101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.\n> 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');\n      |                         ^\n  103 |     await expect(ghost.locator('polygon')).toHaveCount(28);\n  104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');\n  105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                        "column": 25,
+                        "line": 102
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n\n  100 |     // The app must independently pick and inspect this still-armed plan in the\n  101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.\n> 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');\n      |                         ^\n  103 |     await expect(ghost.locator('polygon')).toHaveCount(28);\n  104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');\n  105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts:102:25"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:16:12.775Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\room-template-renderer-sta-04dc9-plan-after-old-worker-reply\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                    "column": 25,
+                    "line": 102
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "432eb791c473cd413d6e-07324c8ccfa9965d1a9a",
+          "file": "room-template-renderer-stationary-hover.spec.ts",
+          "line": 77,
+          "column": 3
+        },
+        {
+          "title": "FullHD UI200% world replacement keeps stationary rotated plan after old worker reply",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 15891,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts:102:25",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                      "column": 25,
+                      "line": 102
+                    },
+                    "snippet": "  100 |     // The app must independently pick and inspect this still-armed plan in the\n  101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.\n> 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');\n      |                         ^\n  103 |     await expect(ghost.locator('polygon')).toHaveCount(28);\n  104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');\n  105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                        "column": 25,
+                        "line": 102
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n\n  100 |     // The app must independently pick and inspect this still-armed plan in the\n  101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.\n> 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');\n      |                         ^\n  103 |     await expect(ghost.locator('polygon')).toHaveCount(28);\n  104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');\n  105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts:102:25"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:16:28.885Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\room-template-renderer-sta-b779b-plan-after-old-worker-reply\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                    "column": 25,
+                    "line": 102
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "432eb791c473cd413d6e-cc0186bceb4ca4cf0b8c",
+          "file": "room-template-renderer-stationary-hover.spec.ts",
+          "line": 77,
+          "column": 3
+        },
+        {
+          "title": "FullHD UI200% world replacement keeps stationary rotated/mirrored plan after old worker reply",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 16165,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts:102:25",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                      "column": 25,
+                      "line": 102
+                    },
+                    "snippet": "  100 |     // The app must independently pick and inspect this still-armed plan in the\n  101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.\n> 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');\n      |                         ^\n  103 |     await expect(ghost.locator('polygon')).toHaveCount(28);\n  104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');\n  105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                        "column": 25,
+                        "line": 102
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n\n  100 |     // The app must independently pick and inspect this still-armed plan in the\n  101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.\n> 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');\n      |                         ^\n  103 |     await expect(ghost.locator('polygon')).toHaveCount(28);\n  104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');\n  105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts:102:25"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:16:45.380Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\room-template-renderer-sta-53bea-plan-after-old-worker-reply\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                    "column": 25,
+                    "line": 102
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "432eb791c473cd413d6e-2d4fe05b489cc5997834",
+          "file": "room-template-renderer-stationary-hover.spec.ts",
+          "line": 77,
+          "column": 3
+        },
+        {
+          "title": "FullHD UI200% oblique replacement keeps stationary rotated plan after old worker reply",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 14661,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts:102:25",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                      "column": 25,
+                      "line": 102
+                    },
+                    "snippet": "  100 |     // The app must independently pick and inspect this still-armed plan in the\n  101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.\n> 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');\n      |                         ^\n  103 |     await expect(ghost.locator('polygon')).toHaveCount(28);\n  104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');\n  105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                        "column": 25,
+                        "line": 102
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n\n  100 |     // The app must independently pick and inspect this still-armed plan in the\n  101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.\n> 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');\n      |                         ^\n  103 |     await expect(ghost.locator('polygon')).toHaveCount(28);\n  104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');\n  105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts:102:25"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:17:02.133Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\room-template-renderer-sta-db3df-plan-after-old-worker-reply\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                    "column": 25,
+                    "line": 102
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "432eb791c473cd413d6e-b5671966338827669f3b",
+          "file": "room-template-renderer-stationary-hover.spec.ts",
+          "line": 77,
+          "column": 3
+        },
+        {
+          "title": "FullHD UI200% oblique replacement keeps stationary rotated/mirrored plan after old worker reply",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 15109,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts:102:25",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                      "column": 25,
+                      "line": 102
+                    },
+                    "snippet": "  100 |     // The app must independently pick and inspect this still-armed plan in the\n  101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.\n> 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');\n      |                         ^\n  103 |     await expect(ghost.locator('polygon')).toHaveCount(28);\n  104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');\n  105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                        "column": 25,
+                        "line": 102
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.room-template-world-ghost')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.room-template-world-ghost')\u001b[22m\n\u001b[2m    13 × locator resolved to <div hidden=\"\" class=\"room-template-world-ghost\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n\n  100 |     // The app must independently pick and inspect this still-armed plan in the\n  101 |     // new renderer BEFORE the old reply is allowed through, without a mouse move.\n> 102 |     await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready', 'clear');\n      |                         ^\n  103 |     await expect(ghost.locator('polygon')).toHaveCount(28);\n  104 |     await expect(ghost.getByRole('status')).toContainText('Materials catalogue value:');\n  105 |     await expect.poll(() => page.evaluate(count => (Reflect.get(window, 'stationaryRendererProbe') as Probe).replies.length > count, before.replies)).toBe(true);\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts:102:25"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:17:17.365Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bookshelf-hover-verified-control-q0-negative-20261003\\room-template-renderer-sta-35acb-plan-after-old-worker-reply\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\room-template-renderer-stationary-hover.spec.ts",
+                    "column": 25,
+                    "line": 102
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "432eb791c473cd413d6e-a90cf1bc1d9d00533014",
+          "file": "room-template-renderer-stationary-hover.spec.ts",
+          "line": 77,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T04:13:50.899Z",
+    "duration": 222168.45500000002,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 9,
+    "flaky": 0
+  }
+}

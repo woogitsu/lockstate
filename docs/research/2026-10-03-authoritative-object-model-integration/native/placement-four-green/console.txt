@@ -1,0 +1,35 @@
+pnpm : [2m[WebServer] [22m(node:33184) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:6 char:1
++ pnpm --config.verify-deps-before-run=false exec playwright test --con ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 4 tests using 1 worker
+
+(node:47452) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:47452) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\oblique-room-object-load-gesture.spec.ts:33:1 › Load cancels an outgoing Rooms drag before release or later pointer movement (5.9s)
+  ok 2 tests\browser\oblique-room-object-load-gesture.spec.ts:72:1 › Load cancels an outgoing object placement before release or later pointer movement (5.2s)
+  ok 3 tests\browser\ui-build-where-readout.spec.ts:124:3 › the Build panel says where the player is aiming (#550) › the "Where" readout names the tile a removal is aimed at, not the wall tool's last edge (612ms)
+  ok 4 tests\browser\yard-bench-player-build.spec.ts:74:1 › player completes an existing bench in Yard and keeps it through Save/Load at Full HD (17.6s)
+
+  4 passed (32.2s)

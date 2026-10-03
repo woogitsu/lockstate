@@ -1,0 +1,4261 @@
+{
+  "originalSource": "assets/source/blender/furniture.office.desk.generic.blend",
+  "originalSourceSha256": "87ecf22ec7f4d82e5c2c47bb18870b8ef060a84759cb55d38b131fc34e72e11b",
+  "source": "assets/source/blender/furniture.office.desk.generic.angled-detail.blend",
+  "sourceSha256": "486b83b5079698faeb1cd58e989d1a1dfe524996813474b04550dd4c82a2fd46",
+  "footprintTiles": [
+    2,
+    1
+  ],
+  "retainedMeshesCount": 21,
+  "retainedMeshes": [
+    {
+      "name": "dark desktop edge",
+      "rawVertexBytesSha256": "45d164d7746d891302767a5cf30eb0f321f41dcaf7b38515f126a6205574d5ee",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "worktop edging"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "document stack",
+      "rawVertexBytesSha256": "4071e7e1c03dac290c83d083d9142ce8096135f605f2eec97d9252a7dfa6920e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "paper"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.004999999888241291,
+            "width_pct": 0.004999999888241291,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "document top",
+      "rawVertexBytesSha256": "130a5073b0144d3891d74fd13ac175d2ee7724b92ba5dc9a78b5ba73a0980a6f",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "teal drawer label"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0010000000474974513,
+            "width_pct": 0.0010000000474974513,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "drawer face 0.16",
+      "rawVertexBytesSha256": "fb59b97c7fd303f597869b3050097e378c43fa432ea0b756cae96ceb5370a0d6",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm oak laminate"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "drawer face 0.34",
+      "rawVertexBytesSha256": "fb59b97c7fd303f597869b3050097e378c43fa432ea0b756cae96ceb5370a0d6",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm oak laminate"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "drawer face 0.52",
+      "rawVertexBytesSha256": "fb59b97c7fd303f597869b3050097e378c43fa432ea0b756cae96ceb5370a0d6",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm oak laminate"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "drawer pull 0.16",
+      "rawVertexBytesSha256": "b30acea4a4244aeff911507e8baa827dd98d1ca72465822ef80f68a43c44ee15",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "teal drawer label"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.004000000189989805,
+            "width_pct": 0.004000000189989805,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "drawer pull 0.34",
+      "rawVertexBytesSha256": "b30acea4a4244aeff911507e8baa827dd98d1ca72465822ef80f68a43c44ee15",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "teal drawer label"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.004000000189989805,
+            "width_pct": 0.004000000189989805,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "drawer pull 0.52",
+      "rawVertexBytesSha256": "b30acea4a4244aeff911507e8baa827dd98d1ca72465822ef80f68a43c44ee15",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "teal drawer label"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.004000000189989805,
+            "width_pct": 0.004000000189989805,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "front leg -0.78",
+      "rawVertexBytesSha256": "803af1c62477c15f5b1520e1eff4ab208c6599c9da3b4492b1ee030b55de765b",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder coated steel"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.014999999664723873,
+            "width_pct": 0.014999999664723873,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "front leg 0.78",
+      "rawVertexBytesSha256": "803af1c62477c15f5b1520e1eff4ab208c6599c9da3b4492b1ee030b55de765b",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder coated steel"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.014999999664723873,
+            "width_pct": 0.014999999664723873,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "keyboard",
+      "rawVertexBytesSha256": "8868794f089fa95302d2dd9c487fbf01d39490fc870d96e334fa767bd58ffb48",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder coated steel"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.00800000037997961,
+            "width_pct": 0.00800000037997961,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "laminate desktop",
+      "rawVertexBytesSha256": "e3ce9999ab8ab7ce013056d4c408a5e749c3213bebdaec3c2651a7200228b22b",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm oak laminate"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.03500000014901161,
+            "width_pct": 0.03500000014901161,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "monitor base",
+      "rawVertexBytesSha256": "1deb9801ff84c79727ff4d4dad84fd2ff43d89c099076a570139bb15c149bdbb",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder coated steel"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.014999999664723873,
+            "width_pct": 0.014999999664723873,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "monitor casing",
+      "rawVertexBytesSha256": "784c214443365f5281afe6d3803132c0f947ec2b2e18ee088ba2c71cbe9b2c10",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder coated steel"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "monitor neck",
+      "rawVertexBytesSha256": "42f5a796c876e0269423a1d7f1467d180e8cc6ff2aa0d6bc0aef7ca3fb8b632d",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder coated steel"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.014999999664723873,
+            "width_pct": 0.014999999664723873,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "monitor screen",
+      "rawVertexBytesSha256": "19092198dca06eb68efdf0d102e497edc98751bac45123d251663e6134a8a40d",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "monitor display"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "rear stretcher",
+      "rawVertexBytesSha256": "f7da3682ef5b6f78be1c327a20b233b32c154d5fd55bf5a7684c96f69b21258c",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder coated steel"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.014999999664723873,
+            "width_pct": 0.014999999664723873,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "steel leg -0.78",
+      "rawVertexBytesSha256": "803af1c62477c15f5b1520e1eff4ab208c6599c9da3b4492b1ee030b55de765b",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder coated steel"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.014999999664723873,
+            "width_pct": 0.014999999664723873,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "steel leg 0.78",
+      "rawVertexBytesSha256": "803af1c62477c15f5b1520e1eff4ab208c6599c9da3b4492b1ee030b55de765b",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder coated steel"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.014999999664723873,
+            "width_pct": 0.014999999664723873,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "three-drawer pedestal",
+      "rawVertexBytesSha256": "56b7be9e7b0e168e6b1dbf4d48909766d529f4adbb487424b6e6ddf6e9b27ba5",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder coated steel"
+      ],
+      "modifiers": [
+        {
+          "name": "soft corners",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft corners",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.02500000037252903,
+            "width_pct": 0.02500000037252903,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    }
+  ],
+  "retainedMaterialGraphs": [
+    {
+      "name": "monitor display",
+      "diffuse": [
+        0.05000000074505806,
+        0.12999999523162842,
+        0.17000000178813934,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.25,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ]
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ]
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "992b2d1b16731453eee3b007030eadc0f95d5be9187648e9dfc7d0231ca6d5bf"
+    },
+    {
+      "name": "paper",
+      "diffuse": [
+        0.800000011920929,
+        0.7599999904632568,
+        0.6200000047683716,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.7799999713897705,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ]
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ]
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "ca5702e2f122ed4caab584f9560689d3c2efab3699b29fc2dbefaf9c7e95f23c"
+    },
+    {
+      "name": "powder coated steel",
+      "diffuse": [
+        0.23000000417232513,
+        0.30000001192092896,
+        0.3199999928474426,
+        1.0
+      ],
+      "metallic": 0.2199999988079071,
+      "roughness": 0.47999998927116394,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ]
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ]
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "6d7561ca0808df2afdb2da84656c9f9dfec1d510410d064611d28798606a9d24"
+    },
+    {
+      "name": "teal drawer label",
+      "diffuse": [
+        0.11999999731779099,
+        0.4699999988079071,
+        0.47999998927116394,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.5699999928474426,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ]
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ]
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "71be1d6b70853a88ec08710e9a8a85be7a6287fb1e45aee5f00183dec42408b3"
+    },
+    {
+      "name": "warm oak laminate",
+      "diffuse": [
+        0.41999998688697815,
+        0.27000001072883606,
+        0.14000000059604645,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.5699999928474426,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ]
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ]
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "ad4e02f2c39dbd2d47ca568678d27aa73da7f4524ac3f8a445b311c41b53dcbf"
+    },
+    {
+      "name": "worktop edging",
+      "diffuse": [
+        0.18000000715255737,
+        0.11999999731779099,
+        0.07999999821186066,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.5699999928474426,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ]
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ]
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "48a8ca7712987cb475f2c4f048eeb9cdf82dd254e96c87d30265155e199401e1"
+    }
+  ],
+  "retainedObjectMatrices": {
+    "dark desktop edge": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.4050000011920929
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.6899999976158142
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "document stack": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.4300000071525574
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.11999999731779099
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.765999972820282
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "document top": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.4300000071525574
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.11999999731779099
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.7850000262260437
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "drawer face 0.16": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5899999737739563
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.2240000069141388
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.1599999964237213
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "drawer face 0.34": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5899999737739563
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.2240000069141388
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.3400000035762787
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "drawer face 0.52": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5899999737739563
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.2240000069141388
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.5199999809265137
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "drawer pull 0.16": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5899999737739563
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.23899999260902405
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.1599999964237213
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "drawer pull 0.34": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5899999737739563
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.23899999260902405
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.3400000035762787
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "drawer pull 0.52": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5899999737739563
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.23899999260902405
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.5199999809265137
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "front leg -0.78": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.7799999713897705
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.28999999165534973
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.3499999940395355
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "front leg 0.78": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.7799999713897705
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.28999999165534973
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.3499999940395355
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "keyboard": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.23999999463558197
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.17000000178813934
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.7649999856948853
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "laminate desktop": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.699999988079071
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "monitor base": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.30000001192092896
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.1599999964237213
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.7699999809265137
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "monitor casing": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.30000001192092896
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.20000000298023224
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.100000023841858
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "monitor neck": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.30000001192092896
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.18000000715255737
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.9100000262260437
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "monitor screen": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.30000001192092896
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.16699999570846558
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        1.100000023841858
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "rear stretcher": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.27000001072883606
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.20000000298023224
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "steel leg -0.78": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        -0.7799999713897705
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.23999999463558197
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.3499999940395355
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "steel leg 0.78": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.7799999713897705
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.23999999463558197
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.3499999940395355
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "three-drawer pedestal": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.5899999737739563
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        -0.05000000074505806
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.33000001311302185
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "originalEvaluatedOutwardNormalAudit": [
+    {
+      "name": "dark desktop edge",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.01750001311302185,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "document stack",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.012499749660491943,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "document top",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.0029999613761901855,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "drawer face 0.16",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999990463256836,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "drawer face 0.34",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999990463256836,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "drawer face 0.52",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999990463256836,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "drawer pull 0.16",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.005999937653541565,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "drawer pull 0.34",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.005999937653541565,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "drawer pull 0.52",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.005999937653541565,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "front leg -0.78",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.039999961853027344,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "front leg 0.78",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.039999961853027344,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "keyboard",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.012499749660491943,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "laminate desktop",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.050000011920928955,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "monitor base",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.01999986171722412,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "monitor casing",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.027500003576278687,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "monitor neck",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.024999946355819702,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "monitor screen",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.005999967455863953,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "rear stretcher",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.02499997615814209,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "steel leg -0.78",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.03999997675418854,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "steel leg 0.78",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.039999961853027344,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "three-drawer pedestal",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.19499993324279785,
+      "transformDeterminant": 1.0
+    }
+  ],
+  "evaluatedOutwardNormalAudit": [
+    {
+      "name": "angled-desk.drawer pull standoff 0.16 -1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.006999969482421875,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.drawer pull standoff 0.16 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.006999969482421875,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.drawer pull standoff 0.34 -1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.006999969482421875,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.drawer pull standoff 0.34 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.006999969482421875,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.drawer pull standoff 0.52 -1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.006999969482421875,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.drawer pull standoff 0.52 1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.006999969482421875,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.foot adjustment collar -0.78 -0.24",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.01099996268749277,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.foot adjustment collar -0.78 0.29",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.01099996268749277,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.foot adjustment collar 0.78 -0.24",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.010999962687492636,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.foot adjustment collar 0.78 0.29",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.010999962687492636,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keyboard spacebar",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row0 column0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row0 column1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row0 column10",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row0 column11",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row0 column2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row0 column3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row0 column4",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row0 column5",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row0 column6",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row0 column7",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row0 column8",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row0 column9",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row1 column0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row1 column1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row1 column10",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row1 column11",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row1 column2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row1 column3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row1 column4",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row1 column5",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row1 column6",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row1 column7",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row1 column8",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row1 column9",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row2 column0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row2 column1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row2 column10",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row2 column11",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row2 column2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row2 column3",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row2 column4",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row2 column5",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row2 column6",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row2 column7",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row2 column8",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row2 column9",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row3 column0",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row3 column1",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row3 column10",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row3 column11",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row3 column2",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.keycap row3 column9",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.007499814033508301,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.leg bracket horizontal -0.78 -0.24",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.004999935626983643,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.leg bracket horizontal -0.78 0.29",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.004999935626983643,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.leg bracket horizontal 0.78 -0.24",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.004999935626983643,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.leg bracket horizontal 0.78 0.29",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.004999935626983643,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.leg bracket vertical -0.78 -0.24",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.004999980330467224,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.leg bracket vertical -0.78 0.29",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.004999935626983643,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.leg bracket vertical 0.78 -0.24",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.004999980330467224,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.leg bracket vertical 0.78 0.29",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.004999935626983643,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.monitor tilt pivot bolt -1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.00850000977514666,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.monitor tilt pivot bolt 1",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.00850000977514666,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.pedestal corner seam 0.397 -0.302",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.004499971866607666,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.pedestal corner seam 0.397 0.196",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.004499971866607666,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.pedestal corner seam 0.783 -0.302",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.004499912261962891,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.pedestal corner seam 0.783 0.196",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.004499912261962891,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.raised drawer pull bridge 0.16",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.00899997353553772,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.raised drawer pull bridge 0.34",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.00899997353553772,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.raised drawer pull bridge 0.52",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.00899997353553772,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.rear cable clamp",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.012499868869781494,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.worktop cable entry housing",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.004999637603759622,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "angled-desk.worktop cable entry recessed cap",
+      "evaluatedVertices": 192,
+      "evaluatedPolygons": 162,
+      "minimumOutwardNormalDistance": 0.00149983167648321,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "dark desktop edge",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.01750001311302185,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "document stack",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.012499749660491943,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "document top",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.0029999613761901855,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "drawer face 0.16",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999990463256836,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "drawer face 0.34",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999990463256836,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "drawer face 0.52",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.009999990463256836,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "drawer pull 0.16",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.005999937653541565,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "drawer pull 0.34",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.005999937653541565,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "drawer pull 0.52",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.005999937653541565,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "front leg -0.78",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.039999961853027344,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "front leg 0.78",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.039999961853027344,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "keyboard",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.012499749660491943,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "laminate desktop",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.050000011920928955,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "monitor base",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.01999986171722412,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "monitor casing",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.027500003576278687,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "monitor neck",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.024999946355819702,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "monitor screen",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.005999967455863953,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "rear stretcher",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.02499997615814209,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "steel leg -0.78",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.03999997675418854,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "steel leg 0.78",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.039999961853027344,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "three-drawer pedestal",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "minimumOutwardNormalDistance": 0.19499993324279785,
+      "transformDeterminant": 1.0
+    }
+  ],
+  "sourceEvaluatedBounds": {
+    "min": [
+      -0.9100000262260437,
+      -0.41999998688697815,
+      0.0
+    ],
+    "max": [
+      0.9100000262260437,
+      0.42250001430511475,
+      1.2699999809265137
+    ]
+  },
+  "cameraTargetTiles": [
+    1,
+    0.5,
+    0.6349999904632568
+  ],
+  "addedMeshNames": [
+    "angled-desk.drawer pull standoff 0.16 -1",
+    "angled-desk.drawer pull standoff 0.16 1",
+    "angled-desk.drawer pull standoff 0.34 -1",
+    "angled-desk.drawer pull standoff 0.34 1",
+    "angled-desk.drawer pull standoff 0.52 -1",
+    "angled-desk.drawer pull standoff 0.52 1",
+    "angled-desk.foot adjustment collar -0.78 -0.24",
+    "angled-desk.foot adjustment collar -0.78 0.29",
+    "angled-desk.foot adjustment collar 0.78 -0.24",
+    "angled-desk.foot adjustment collar 0.78 0.29",
+    "angled-desk.keyboard spacebar",
+    "angled-desk.keycap row0 column0",
+    "angled-desk.keycap row0 column1",
+    "angled-desk.keycap row0 column10",
+    "angled-desk.keycap row0 column11",
+    "angled-desk.keycap row0 column2",
+    "angled-desk.keycap row0 column3",
+    "angled-desk.keycap row0 column4",
+    "angled-desk.keycap row0 column5",
+    "angled-desk.keycap row0 column6",
+    "angled-desk.keycap row0 column7",
+    "angled-desk.keycap row0 column8",
+    "angled-desk.keycap row0 column9",
+    "angled-desk.keycap row1 column0",
+    "angled-desk.keycap row1 column1",
+    "angled-desk.keycap row1 column10",
+    "angled-desk.keycap row1 column11",
+    "angled-desk.keycap row1 column2",
+    "angled-desk.keycap row1 column3",
+    "angled-desk.keycap row1 column4",
+    "angled-desk.keycap row1 column5",
+    "angled-desk.keycap row1 column6",
+    "angled-desk.keycap row1 column7",
+    "angled-desk.keycap row1 column8",
+    "angled-desk.keycap row1 column9",
+    "angled-desk.keycap row2 column0",
+    "angled-desk.keycap row2 column1",
+    "angled-desk.keycap row2 column10",
+    "angled-desk.keycap row2 column11",
+    "angled-desk.keycap row2 column2",
+    "angled-desk.keycap row2 column3",
+    "angled-desk.keycap row2 column4",
+    "angled-desk.keycap row2 column5",
+    "angled-desk.keycap row2 column6",
+    "angled-desk.keycap row2 column7",
+    "angled-desk.keycap row2 column8",
+    "angled-desk.keycap row2 column9",
+    "angled-desk.keycap row3 column0",
+    "angled-desk.keycap row3 column1",
+    "angled-desk.keycap row3 column10",
+    "angled-desk.keycap row3 column11",
+    "angled-desk.keycap row3 column2",
+    "angled-desk.keycap row3 column9",
+    "angled-desk.leg bracket horizontal -0.78 -0.24",
+    "angled-desk.leg bracket horizontal -0.78 0.29",
+    "angled-desk.leg bracket horizontal 0.78 -0.24",
+    "angled-desk.leg bracket horizontal 0.78 0.29",
+    "angled-desk.leg bracket vertical -0.78 -0.24",
+    "angled-desk.leg bracket vertical -0.78 0.29",
+    "angled-desk.leg bracket vertical 0.78 -0.24",
+    "angled-desk.leg bracket vertical 0.78 0.29",
+    "angled-desk.monitor tilt pivot bolt -1",
+    "angled-desk.monitor tilt pivot bolt 1",
+    "angled-desk.pedestal corner seam 0.397 -0.302",
+    "angled-desk.pedestal corner seam 0.397 0.196",
+    "angled-desk.pedestal corner seam 0.783 -0.302",
+    "angled-desk.pedestal corner seam 0.783 0.196",
+    "angled-desk.raised drawer pull bridge 0.16",
+    "angled-desk.raised drawer pull bridge 0.34",
+    "angled-desk.raised drawer pull bridge 0.52",
+    "angled-desk.rear cable clamp",
+    "angled-desk.worktop cable entry housing",
+    "angled-desk.worktop cable entry recessed cap"
+  ],
+  "meshes": [
+    {
+      "name": "angled-desk.drawer pull standoff 0.16 -1",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "ca2a1256b733c49cb5eca70abf39362498b90da6aa2c5f06f96e7eca02a4d4ea"
+    },
+    {
+      "name": "angled-desk.drawer pull standoff 0.16 1",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "c0ffb90b3cd9c25c22ef99927dd41f68bc27085d178d217163ea98af65382fab"
+    },
+    {
+      "name": "angled-desk.drawer pull standoff 0.34 -1",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "6bb7d86e468e6293a6089cc2c2b0f81b1a0cc387d16f700a5f4160fd243c91ae"
+    },
+    {
+      "name": "angled-desk.drawer pull standoff 0.34 1",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "e5f33fd612cf6a8ba5ca626dfce41d32e5a94dbb2f09c2b432bf32b36ca74884"
+    },
+    {
+      "name": "angled-desk.drawer pull standoff 0.52 -1",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "b5c65bf00d3159f8449a1c37694a8b6f2bc0b98899151601089e42f1d828c256"
+    },
+    {
+      "name": "angled-desk.drawer pull standoff 0.52 1",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "ec23b7e3919a25a768837ccd6ca3a7309dab30727778801a5b03dce03a40492c"
+    },
+    {
+      "name": "angled-desk.foot adjustment collar -0.78 -0.24",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "3bae67921bdaa496330585593887572225e64edeb550f46536f4535119efc256"
+    },
+    {
+      "name": "angled-desk.foot adjustment collar -0.78 0.29",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "e9b3c6269163e971465a429b66005838a8ae82ff9b22526e7d1e1b2e2df0faa1"
+    },
+    {
+      "name": "angled-desk.foot adjustment collar 0.78 -0.24",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "851223725b26e18bd951bce13fdc8da9921405926a8d0f3d3b0b3bc2bd37a6e4"
+    },
+    {
+      "name": "angled-desk.foot adjustment collar 0.78 0.29",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "6aa8270f6b18076572c773b1e8ab3226eb0b682943dda807d607ef8053031dcd"
+    },
+    {
+      "name": "angled-desk.keyboard spacebar",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "92679dafb5646f10890b4465f99fe9a277d8db0c887aa1241a07f27b71f69fce"
+    },
+    {
+      "name": "angled-desk.keycap row0 column0",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "e60d0eb1e7fef27ad8ce3e100333f4d3165ac32dbd97924fc5f03d186a1f13b2"
+    },
+    {
+      "name": "angled-desk.keycap row0 column1",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "652da7e061fc071d5ba2cfe3d02f32ae7f30081d2441af3c5617eda8bd48f4e1"
+    },
+    {
+      "name": "angled-desk.keycap row0 column10",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "cc4b90cb29ce706012ae5c8613cae678a013d8587c6e41b6a73d4073fed041d1"
+    },
+    {
+      "name": "angled-desk.keycap row0 column11",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "72a28e1b3551da1d4ed4a3de87b447d0f51f080732e12817778a8b1bce52bcaf"
+    },
+    {
+      "name": "angled-desk.keycap row0 column2",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "327d3428bc1be9f8842eb631310a9aa9f73db662591fc05b592ba96a03f38947"
+    },
+    {
+      "name": "angled-desk.keycap row0 column3",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "67d95e3ebbbfbcef559c1371e70c727cdfe4569b53fe1077f8e81b0526c1e754"
+    },
+    {
+      "name": "angled-desk.keycap row0 column4",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "8e5e919cc7dd38eddc745c38dbcb8aaa67b82bcf25c5a6fee72300321ab4b463"
+    },
+    {
+      "name": "angled-desk.keycap row0 column5",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "1bce2ceeacf6b9fd8459f050e37dbac9e6d25eb51ab9cad1007f70f22f9c851e"
+    },
+    {
+      "name": "angled-desk.keycap row0 column6",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "572d6b975a491e0090816d85baa15fb62a65abd1e328c0cb8df9c6138dad813b"
+    },
+    {
+      "name": "angled-desk.keycap row0 column7",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "37e234a0e6d5259095c7898d763db3a350390558f1c5f18a1e76191da37f6589"
+    },
+    {
+      "name": "angled-desk.keycap row0 column8",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "1929ff552c41fc851960b36a1c958842a899558463431d7ea0ec360fbbbf8a8b"
+    },
+    {
+      "name": "angled-desk.keycap row0 column9",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "7006054cdcb28f4109cc006f58d335e147c656362e9415b5a32880a77c0c19ea"
+    },
+    {
+      "name": "angled-desk.keycap row1 column0",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "e658be6a2192f842b54fa2943220e11427e5e64da3c018aca3a35bf73eb3451a"
+    },
+    {
+      "name": "angled-desk.keycap row1 column1",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "e84046762bb4448f6e77108dd2bf433476ccb9beb143f9642b127cc6ec68e7b6"
+    },
+    {
+      "name": "angled-desk.keycap row1 column10",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "228ebece9f84cb131eeb9c6fb39aab5388612293327da60aaa57c637fc7e68f7"
+    },
+    {
+      "name": "angled-desk.keycap row1 column11",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "0e3298685ee744ce9e5eb9edc8ec3d2830cfd1582033fd65d8910ef3a1178f16"
+    },
+    {
+      "name": "angled-desk.keycap row1 column2",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "d330ad9e2b66290f2e5634d511b23930d91e172aaf6b931969a37ca30792b6f5"
+    },
+    {
+      "name": "angled-desk.keycap row1 column3",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "73663c9b94b817793886e2f506ed243cb28be21b131a940cc288e2c5163dc22f"
+    },
+    {
+      "name": "angled-desk.keycap row1 column4",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "88b63a7981bdd07a02e68f8518571e34ee8be41f8705bdc4b4b9f04fdef4e2f4"
+    },
+    {
+      "name": "angled-desk.keycap row1 column5",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "6151aca56e195acb644d7098d17a8a1a31a2ff8a46505c0bde6a5678adf7e311"
+    },
+    {
+      "name": "angled-desk.keycap row1 column6",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "ad4a3863af1f2d7bf89a563bf453cc9fb788639f9a24f1f0afeb186c027f4687"
+    },
+    {
+      "name": "angled-desk.keycap row1 column7",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "261e141981da4ec278ca4d85097beede01702e5a76422cc54145853fb95d7ab4"
+    },
+    {
+      "name": "angled-desk.keycap row1 column8",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "cdfbbbf11021cd77f1c15dcb40cc401c9c0dc870b1e47cc5f9260489c3b0b9a0"
+    },
+    {
+      "name": "angled-desk.keycap row1 column9",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "29610e6767a14bdac1c4d9568706a5ce7939d613fa9452dde1b622dc80cacd63"
+    },
+    {
+      "name": "angled-desk.keycap row2 column0",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "d778d52a7ecbc5ac486d7f17956d21e685e789f76abaecf9d9819f9932d768ae"
+    },
+    {
+      "name": "angled-desk.keycap row2 column1",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "bfd76c7d12ace50cd5fc6c40f2972c8527fe1480e33c238ef25240815fc3ce70"
+    },
+    {
+      "name": "angled-desk.keycap row2 column10",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "f1ba97154458b64f1c679566d667c0194ccf3dab243aac4c91e5f9cdd9a3ec7e"
+    },
+    {
+      "name": "angled-desk.keycap row2 column11",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "c05cd508bab9f0edce991f69439e251f9286a233a60c1d7bd49acbb491d36c09"
+    },
+    {
+      "name": "angled-desk.keycap row2 column2",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "164abd515a5d5f7d5847489c637b95c022bc33d35d8a34edf16da93c25829617"
+    },
+    {
+      "name": "angled-desk.keycap row2 column3",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "54fb5781084963720db375d59c274180c111434fcbb228b000c67ff4879fd333"
+    },
+    {
+      "name": "angled-desk.keycap row2 column4",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "27bbc44708261c12a96da5f0000861ce6561b24ca59cb913fbe1a8edd0d2bf50"
+    },
+    {
+      "name": "angled-desk.keycap row2 column5",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "cc424ee3a7b8a276fdab155010ee262b62f44ae9245afb0e6b222df8bea9ff8a"
+    },
+    {
+      "name": "angled-desk.keycap row2 column6",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "0822588beb7527e2e67bb6bd62b293ce73b0f5877cdd0b7f66b6bf0361d9a89b"
+    },
+    {
+      "name": "angled-desk.keycap row2 column7",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "0f099daac6c00c88ae48b8f641e91cf8ce39674f3406cc63af33c9a02c3400ec"
+    },
+    {
+      "name": "angled-desk.keycap row2 column8",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "f948d18e46ac5d81a9052f67fd2cdb6a5a340d46b0a46d893c8f4ba1caa18698"
+    },
+    {
+      "name": "angled-desk.keycap row2 column9",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "60c58a982e5d63e34639a69d8f37ea7fa202b111c15a568603dd5a6eae2b635f"
+    },
+    {
+      "name": "angled-desk.keycap row3 column0",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "72894c9a4cfec2669010ae17c813a8572e9eb6cb23015e882fac2b6d52c72bc2"
+    },
+    {
+      "name": "angled-desk.keycap row3 column1",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "809e1171be1b5c0b86a39a7d5e3cb663f938f5c94e14254f2b1d75607c3ce2a2"
+    },
+    {
+      "name": "angled-desk.keycap row3 column10",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "7cb6e808e8e10676454d8989d043b4bc7828e159dc8fa2d389911586e37c0920"
+    },
+    {
+      "name": "angled-desk.keycap row3 column11",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "85e0d29eef050b00a98e1f82baba415fe1f1ea451ba1f955b1efd4a5fe1d8537"
+    },
+    {
+      "name": "angled-desk.keycap row3 column2",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "457ae4f01ea4803fe50079afe14754a6c3214a4ebac4e9919ac6246051c9eacf"
+    },
+    {
+      "name": "angled-desk.keycap row3 column9",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "b99a47bc7a0d5344ddf83694cb2812f3c739fe47b8ce24decf60ca755043a6ae"
+    },
+    {
+      "name": "angled-desk.leg bracket horizontal -0.78 -0.24",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "c1a1f67c502d2d1502e3bd7e628548b533f0038eac3f12c7cf4148c2c3add89e"
+    },
+    {
+      "name": "angled-desk.leg bracket horizontal -0.78 0.29",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "b523ed5b5c107ea4c4ab569df52f1e331cd4ff0ed0851040da1bebff3f9373ed"
+    },
+    {
+      "name": "angled-desk.leg bracket horizontal 0.78 -0.24",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "32f087914e7b06dd19ae8d5136c27abf5da1c80982b48c82d962495a2b4ac1e1"
+    },
+    {
+      "name": "angled-desk.leg bracket horizontal 0.78 0.29",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "5ba8863a93248b6dd47423fe004d6dfc01969bdf6b250abfab499c14471315a8"
+    },
+    {
+      "name": "angled-desk.leg bracket vertical -0.78 -0.24",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "de6f355845f5ea447eb16f10f0f6dc9663962f9572261dce6bd535187f0c7bb7"
+    },
+    {
+      "name": "angled-desk.leg bracket vertical -0.78 0.29",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "ced157d2762d47960ee4dcd2ba7bebd36826a8488a399e431c5be1fbaecb0fa1"
+    },
+    {
+      "name": "angled-desk.leg bracket vertical 0.78 -0.24",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "b36e3c4550f148e4dacb053661bec955927b747388f62d6f75831f1ff983356a"
+    },
+    {
+      "name": "angled-desk.leg bracket vertical 0.78 0.29",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "07fad7bc54897202828fcb0b575ea775bdc1a6db7f52aa46c0089489fecefb36"
+    },
+    {
+      "name": "angled-desk.monitor tilt pivot bolt -1",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "d5a63286622f97964481bcf272b5e8db6138f836df00b5d5ad71e2f071ff2140"
+    },
+    {
+      "name": "angled-desk.monitor tilt pivot bolt 1",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "052a1710980885076c232ac2ab825fd56fa3e515bd85d3bfc883269acfd646dd"
+    },
+    {
+      "name": "angled-desk.pedestal corner seam 0.397 -0.302",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "f899dda954277274a7587b0597235ca1685653df90ffe0ce4e20c376c853641b"
+    },
+    {
+      "name": "angled-desk.pedestal corner seam 0.397 0.196",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "647d2ee282c253eea2b1e121b7e712913ce4bbf1ec306c38392e82995c0a93d8"
+    },
+    {
+      "name": "angled-desk.pedestal corner seam 0.783 -0.302",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "6e888172c17b23376ae1c98c5a5d9b8b0602a1e8296e994baefc98e05457a8e4"
+    },
+    {
+      "name": "angled-desk.pedestal corner seam 0.783 0.196",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "1b30c247a100b10b9e5cd4743015d2d47edcf3560043253b7587fd141f7fd746"
+    },
+    {
+      "name": "angled-desk.raised drawer pull bridge 0.16",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "8cd5bea9dd492b2916fd5687ad4adca25b2c8eb385f6cd8318f7a9947f1d0c2e"
+    },
+    {
+      "name": "angled-desk.raised drawer pull bridge 0.34",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "1cc4bbb84473c1682b18c7f36c01a01dcc032034e7ad4125bbc811e0e4a79a83"
+    },
+    {
+      "name": "angled-desk.raised drawer pull bridge 0.52",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "a53e838d3eb8afbddfe32ccbf842f0aedb560526689071469fe34619d1d60278"
+    },
+    {
+      "name": "angled-desk.rear cable clamp",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "473a99047684e4543dd8ccd91ee16083de8d48d8647151168b56cfb66e30321f"
+    },
+    {
+      "name": "angled-desk.worktop cable entry housing",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "11cd1ee25a406aafd2ece0593104f0ac41c6ffdccc9c55f7ac60f022b2d0ce53"
+    },
+    {
+      "name": "angled-desk.worktop cable entry recessed cap",
+      "evaluatedVertices": 192,
+      "evaluatedPositionSha256": "eda25638cd1095289d9db2050a0f63a3967dfeb0f5ad2d8de94f20d6d20cec87"
+    },
+    {
+      "name": "dark desktop edge",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "3d63e3dea566d67e477078e6f9811f660c966a3ac47434b76772720b04b4e73b"
+    },
+    {
+      "name": "document stack",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "2e8b0d8ed1e1930f242f3ceb4954066a7948f5f88e2e5fe0c9fa019cb5b00d9f"
+    },
+    {
+      "name": "document top",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "30369045f4743e3de328245271a45b217302bf68320a33310ec944a1335a9a86"
+    },
+    {
+      "name": "drawer face 0.16",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "af2fb61a0f6199484fa30a313791e865e969b5f37f5f3bf9070cca7ad2b0ae56"
+    },
+    {
+      "name": "drawer face 0.34",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "8609f37452f76920d463cd4136387b7923440fce2c25c235d0e4e7a8a1ad8331"
+    },
+    {
+      "name": "drawer face 0.52",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "65f195b234596fc04ee012acc5e7b9ef3932c55af3eabe529e90e6e845bbc1de"
+    },
+    {
+      "name": "drawer pull 0.16",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "e452b46ac41c5f724e43f5c76105a2f38f6e706582bbb09c8748ee9bab2a332d"
+    },
+    {
+      "name": "drawer pull 0.34",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "9ded3597e45ee0b3e5f765caf94b6d4df65b8f6b75f40d0a1bdc7c0d8d8134f0"
+    },
+    {
+      "name": "drawer pull 0.52",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "e4038880e3c7c6c819da1f8149c8eebd38a59f6a65c3b762aaede95be23036b3"
+    },
+    {
+      "name": "front leg -0.78",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "2ebb545cf8640fa7adb6ebf2c8ffd659d18352e1a98ddd6a9db893c462cab5f6"
+    },
+    {
+      "name": "front leg 0.78",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "fc37b127ceb2c37016e71c42912df500f854e1795688c20d3d81e94cbdf52771"
+    },
+    {
+      "name": "keyboard",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "c4aac8ef5f51461899d97852d06fadcb5cb2e4a8c0a8d4e5ee8821ab50dfb1c6"
+    },
+    {
+      "name": "laminate desktop",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "8d704352bb5ab388b32734b5ddd23efc4730991a03e2c813f25cc7e09ff1662c"
+    },
+    {
+      "name": "monitor base",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "c440ab1945ec9b0d2ad7776e238bab9c0d5310c855cae75db1007a420d861671"
+    },
+    {
+      "name": "monitor casing",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "3fd0a55c9f685cd1c87c555acd8708383c59e155cc3d5f5bb7be1b9844096cb5"
+    },
+    {
+      "name": "monitor neck",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "38d48bc8c4f4289797bb49f9832bc160b32df44cfaf837514392303492862933"
+    },
+    {
+      "name": "monitor screen",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "fcf26b09a0c331f25affc09fa49311578a7fd01b2726a671ef4b5ce7cf8a4093"
+    },
+    {
+      "name": "rear stretcher",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "3feb44df544943075185d11c9f71258d73b59a4f2c3b83387e12ed1186c6e1cc"
+    },
+    {
+      "name": "steel leg -0.78",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "c1dfe96618e95a79d0d293a4355d09f1c5cb961a3f6ed6a7ad6244cb9a65a8b6"
+    },
+    {
+      "name": "steel leg 0.78",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "626e92516d58217ac9969e3893d7c8090a17550b0e71fcde7a7540233aec374d"
+    },
+    {
+      "name": "three-drawer pedestal",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "43ab4feaf7adcae9e55332863883117118ba01e6b84257f8b28de3fdbdee14e2"
+    }
+  ]
+}

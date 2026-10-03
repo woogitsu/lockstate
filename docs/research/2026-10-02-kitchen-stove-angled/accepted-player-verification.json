@@ -1,0 +1,113 @@
+{
+  "sourceCommit": "0e51c0830541d78c541af3bff4542272e0e2dfa4",
+  "mappingSha256": "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+  "workerBytes": 430906,
+  "workerSha256": "9a1b44f37fc50a2278905f0dfae45c1ef42b18f23a03e1d37929591952024c3f",
+  "negativeRuns": [
+    {
+      "quarterTurns": 0,
+      "actualExitCode": 1,
+      "actualBefore": [
+        "object.fridge@21,8:orientation=0",
+        "object.prep-counter@23,6:orientation=0",
+        "object.stove@21,6:orientation=0"
+      ],
+      "actualAfter": [
+        "object.fridge@21,8:orientation=0",
+        "object.prep-counter@23,6:orientation=0",
+        "object.stove@21,6:orientation=0"
+      ],
+      "beforePixels": [
+        0,
+        0
+      ],
+      "afterPixels": [
+        0,
+        0
+      ],
+      "commands": [
+        {
+          "type": "PlaceRoomTemplate",
+          "templateId": "kitchen-basic",
+          "origin": {
+            "x": 20,
+            "y": 5
+          }
+        }
+      ]
+    },
+    {
+      "quarterTurns": 1,
+      "actualExitCode": 1,
+      "actualBefore": [
+        "object.fridge@22,6:orientation=1",
+        "object.prep-counter@24,8:orientation=1",
+        "object.stove@24,6:orientation=1"
+      ],
+      "actualAfter": [
+        "object.fridge@22,6:orientation=1",
+        "object.prep-counter@24,8:orientation=1",
+        "object.stove@24,6:orientation=1"
+      ],
+      "beforePixels": [
+        0,
+        0
+      ],
+      "afterPixels": [
+        0,
+        0
+      ],
+      "commands": [
+        {
+          "type": "PlaceRoomTemplate",
+          "templateId": "kitchen-basic",
+          "origin": {
+            "x": 20,
+            "y": 5
+          },
+          "quarterTurns": 1
+        }
+      ]
+    }
+  ],
+  "mutatedWorkerBytesEqual": true,
+  "exactMappingBytesRestored": true,
+  "exactSourceBytesRestored": true,
+  "restoredWorkerBytesEqual": true,
+  "finalNativeExitCode": 0,
+  "nativeBaselineExitCode": 0,
+  "nativeBaselineCaseSeconds": [
+    43.6,
+    38.5,
+    38.6
+  ],
+  "nativeRestoredCaseSeconds": [
+    44.2,
+    40.1,
+    41.3
+  ],
+  "negativeCaseSeconds": {
+    "q0": [
+      43.9,
+      39.7
+    ],
+    "q1": [
+      43.6,
+      40.0
+    ]
+  },
+  "expectedConsumerPixelFailures": 8,
+  "sourceSha256": {
+    "furniture.kitchen.stove.variants.blend": "cbf3ed97f84e126ddb309ea55559810ac156d430371dcb9c074e7b7e1c3523d9",
+    "furniture.kitchen.stove.angled.blend": "540c8b22be73848bb1520fae9ffeabfce7711bb0c629161e529b6d6ae33ca5fc"
+  },
+  "evidenceCollectorRecovery": "Windows long-path traversal stopped postprocessing after completed q0 negative; finally restored exact mapping/source bytes. Extended paths recovered actual q0 JSON/images; q0 was not rerun. q1 and final restored group ran afterward.",
+  "actualPngSha256": {
+    "accepted-q0-loaded-fullhd.png": "64c1ed7cc5f547febd51b63aaf4649bb4424532bf98fddfc4b1b596470e20ca7",
+    "accepted-q0-worker-completed-fullhd.png": "13ddc446cf104a50e6d0a0398bfa2c1292c9fdc42fee3a09f72e2c6b78a1a36f",
+    "accepted-q1-loaded-fullhd.png": "3b2bb65d5c28e9c984ae3e8b5e0fd7dee44aee3c5e69ca7b689d8f543980b0db",
+    "accepted-q1-worker-completed-fullhd.png": "f7e44960d7da08b5739ee689fb7c26b1f7827b40443d8150b9ad06c90b13a7ae"
+  },
+  "browserLease": "all processes terminal; exclusive lease explicitly released; own5197 listener count0",
+  "hostedAcceptance": "none; own built-client native proof only"
+}

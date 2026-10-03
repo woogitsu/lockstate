@@ -1,0 +1,90 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-full-room-query-cost-fix-20261003
+
+ ❯ tests/unit/room-use-eligibility-order.test.ts (5 tests | 2 failed) 8ms
+   × zero required-capability capacity avoids eligibility and concurrent claim-map scans 5ms
+   × full earlier room is rejected before eligibility while later blocked/free candidates preserve their order 1ms
+stdout | tests/integration/room-selection-query-cost.test.ts > ordinary full Shower rooms need no physical query when no capability seat is free
+{"kind":"ordinary-saturated-rooms","roomCount":2,"seats":4,"previousFreshnessChunkReads":0,"physicalQueries":2,"freshnessChunkReads":2}
+
+ ❯ tests/integration/room-selection-query-cost.test.ts (1 test | 1 failed) 146ms
+   × ordinary full Shower rooms need no physical query when no capability seat is free 146ms
+vitest.CMD : 
+At C:\Users\matma\Documents\Rozwój gier\lockstate-full-room-query-cost-fix-20261003\docs\research\2026-10-03-full-room-
+query-cost-fix\run-reorder-control.ps1:20 char:3
++   & node_modules/.bin/vitest.cmd run tests/integration/room-selection ...
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/room-selection-query-cost.test.ts > ordinary full Shower rooms need no physical query when no 
+capability seat is free
+AssertionError: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ tests/integration/room-selection-query-cost.test.ts:39:38
+     37|   expect(chosen).toBeUndefined();
+     38|   console.log(JSON.stringify({kind:'ordinary-saturated-rooms',roomCoun…
+     39|   expect(physical.mock.calls.length).toBe(0);
+       |                                      ^
+     40|   expect(reads).toBe(0);
+     41| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/unit/room-use-eligibility-order.test.ts > zero required-capability capacity avoids eligibility and concurr
+ent claim-map scans
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/room-use-eligibility-order.test.ts:15:38
+     13|   const eligible=vi.fn(()=>true),occupancy=vi.spyOn(registry,'useOccup…
+     14|   expect(registry.findAvailableForUse('room.canteen','dining',eligible…
+     15|   expect(eligible.mock.calls.length).toBe(0);expect(occupancy.mock.cal…
+       |                                      ^
+     16| });
+     17|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/unit/room-use-eligibility-order.test.ts > full earlier room is rejected before eligibility while later blo
+cked/free candidates preserve their order
+AssertionError: expected [ 'a-full', 'b-blocked', 'c-free' ] to deeply equal [ 'b-blocked', 'c-free' ]
+
+- Expected
++ Received
+
+  [
++   "a-full",
+    "b-blocked",
+    "c-free",
+  ]
+
+ ❯ tests/unit/room-use-eligibility-order.test.ts:41:61
+     39|   const checked:string[]=[];
+     40|   const chosen=registry.findAvailableForUse('room.canteen','dining',ro…
+     41|   expect(chosen?.instanceId).toBe('c-free');expect(checked).toEqual(['…
+       |                                                             ^
+     42|   expect(registry.useOccupancyOf('a-full','dining')).toBe(1);
+     43|   expect(registry.useOccupancyOf('b-blocked','dining')).toBe(0);expect…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 3 passed (6)
+   Start at  12:08:40
+   Duration  2.71s (transform 979ms, setup 0ms, import 2.49s, tests 154ms, environment 0ms)
+

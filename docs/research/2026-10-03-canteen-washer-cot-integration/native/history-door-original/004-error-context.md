@@ -1,0 +1,299 @@
+# Page snapshot
+
+```yaml
+- main "Lockstate game application" [ref=e2]:
+  - generic:
+    - region "Prison status" [ref=e5]:
+      - generic [ref=e6]:
+        - note "Lockstate build":
+          - img
+          - generic: LockState.io
+          - generic: PRE-ALPHA
+          - generic: v0.0.838 · 34878b6
+          - generic: Lockstate, PRE-ALPHA build, version 0.0.838, commit 34878b6.
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - img [ref=e9]
+          - generic [ref=e12]:
+            - generic [ref=e13]: "0"
+            - generic [ref=e14]: Prisoners
+          - meter "Cell occupancy" [ref=e16]
+        - generic [ref=e28]:
+          - img [ref=e29]
+          - generic [ref=e31]:
+            - generic [ref=e32]: "0"
+            - generic [ref=e33]: High Risk
+        - generic [ref=e35]:
+          - img [ref=e36]
+          - generic [ref=e41]:
+            - generic [ref=e42]: "0"
+            - generic [ref=e43]: Staff
+        - generic [ref=e45]:
+          - img [ref=e46]
+          - generic [ref=e48]:
+            - generic [ref=e49]: "0"
+            - generic [ref=e50]: Coverage
+          - generic [ref=e53]: Covered
+        - generic [ref=e55]:
+          - img [ref=e56]
+          - generic [ref=e58]:
+            - generic [ref=e59]: "3"
+            - generic [ref=e60]: Rooms
+        - generic [ref=e62]:
+          - img [ref=e63]
+          - generic [ref=e65]:
+            - generic [ref=e66]: "0"
+            - generic [ref=e67]: Incidents
+          - generic [ref=e70]: Clear
+        - generic [ref=e72]:
+          - img [ref=e73]
+          - generic [ref=e76]:
+            - generic [ref=e77]: "0"
+            - generic [ref=e78]: Contraband
+        - generic [ref=e80]:
+          - img [ref=e81]
+          - generic [ref=e85]:
+            - generic [ref=e86]: 20,295
+            - generic [ref=e87]: Funds
+        - generic [ref=e89]:
+          - img [ref=e90]
+          - generic [ref=e93]:
+            - generic [ref=e94]: "0"
+            - generic [ref=e95]: Earned today
+      - generic [ref=e97]:
+        - img [ref=e98]
+        - generic [ref=e101]: Day
+        - generic [ref=e102]: "2"
+        - generic [ref=e103]: Through the day
+        - generic [ref=e104]: 68%
+      - group "Time controls" [ref=e105]:
+        - button "Pause" [active] [pressed] [ref=e106] [cursor=pointer]:
+          - img [ref=e107]
+          - generic [ref=e108]: Pause
+        - button "Play at normal speed" [ref=e109] [cursor=pointer]:
+          - img [ref=e110]
+          - generic [ref=e112]: Play at normal speed
+        - button "Fast forward" [ref=e113] [cursor=pointer]:
+          - img [ref=e114]
+          - generic [ref=e117]: Fast forward
+        - generic [ref=e118]:
+          - generic [ref=e119]: Speed 4×
+          - generic [ref=e120]: PAUSED
+      - group "Undo and redo" [ref=e121]:
+        - button "Undo the last placement" [ref=e122] [cursor=pointer]:
+          - img [ref=e123]
+          - generic [ref=e126]: Undo the last placement
+        - button "Redo the last undone placement" [disabled] [ref=e127]:
+          - img [ref=e128]
+          - generic [ref=e131]: Redo the last undone placement
+      - group "Settings" [ref=e133]:
+        - button "Open the settings menu" [ref=e134] [cursor=pointer]:
+          - img [ref=e135]
+          - generic [ref=e140]: Open the settings menu
+    - generic:
+      - combobox "View" [ref=e141] [cursor=pointer]:
+        - option "Top-down" [selected]
+        - option "Angled view"
+      - group "Zoom":
+        - generic: Zoom
+        - button "Zoom out" [ref=e142] [cursor=pointer]:
+          - img [ref=e143]
+          - generic [ref=e146]: Zoom out
+        - button "Zoom in" [ref=e147] [cursor=pointer]:
+          - img [ref=e148]
+          - generic [ref=e151]: Zoom in
+      - generic [ref=e152]:
+        - button "Pan camera left" [ref=e153] [cursor=pointer]:
+          - img [ref=e154]
+          - generic [ref=e156]: Pan camera left
+        - button "Pan camera up" [ref=e157] [cursor=pointer]:
+          - img [ref=e158]
+          - generic [ref=e160]: Pan camera up
+        - button "Pan camera down" [ref=e161] [cursor=pointer]:
+          - img [ref=e162]
+          - generic [ref=e164]: Pan camera down
+        - button "Pan camera right" [ref=e165] [cursor=pointer]:
+          - img [ref=e166]
+          - generic [ref=e168]: Pan camera right
+      - region "Minimap":
+        - generic:
+          - img
+          - heading "Minimap" [level=2]
+          - button "Expand" [ref=e169] [cursor=pointer]:
+            - img [ref=e170]
+            - generic [ref=e172]: Expand
+      - generic:
+        - button "Alerts" [expanded] [ref=e173] [cursor=pointer]:
+          - img [ref=e174]
+          - generic [ref=e176]: Alerts
+        - generic [ref=e178]:
+          - img [ref=e179]
+          - generic [ref=e181]: The order was completed. 59× Day 2
+          - generic [ref=e183]: Info
+          - button "Clear this alert" [ref=e184] [cursor=pointer]:
+            - img [ref=e185]
+            - generic [ref=e188]: Clear this alert
+    - generic:
+      - button "Hide the panels" [expanded] [ref=e189] [cursor=pointer]:
+        - img [ref=e190]
+        - generic [ref=e192]: Hide the panels
+      - generic:
+        - generic [ref=e193]:
+          - group "Interface scale" [ref=e194]:
+            - generic: Interface scale
+            - button "Change the interface scale" [ref=e195] [cursor=pointer]:
+              - status [ref=e196]: 100%
+          - group "Theme" [ref=e197]:
+            - generic: Theme
+            - button "Change the interface theme" [ref=e198] [cursor=pointer]:
+              - status [ref=e199]: System
+        - complementary "Prison saves" [ref=e200]:
+          - heading "Prisons" [level=2] [ref=e201]
+          - generic [ref=e202]:
+            - button "New prison" [ref=e203] [cursor=pointer]
+            - button "Save now" [ref=e204] [cursor=pointer]
+            - button "Export" [ref=e205] [cursor=pointer]
+            - button "Import" [ref=e206] [cursor=pointer]
+          - list [ref=e207]:
+            - listitem [ref=e208]:
+              - generic [ref=e209]: New Prison (3 gen)
+              - button "Load" [ref=e210] [cursor=pointer]
+              - button "Delete" [ref=e211] [cursor=pointer]
+          - status [ref=e212]: Loaded.
+          - paragraph [ref=e213]: "Restored: kernel tick and command queue, RNG stream states, world terrain and ownership, construction orders and undo/redo, entity id liveness, prisoners, needs, actions and cell assignments, jobs, containers and utility networks, doors, security sectors, guards and patrols, contraband, intelligence and searches, incidents, gangs and tunnels, prisoner and staff names. Not carried by this save version: room and topology caches (recomputed from the world), navigation caches and in-flight path requests (re-issued on the next tick)."
+      - region "Build" [ref=e214]:
+        - generic [ref=e215]:
+          - img [ref=e216]
+          - heading "Build" [level=2] [ref=e220]
+          - button "Collapse" [expanded] [ref=e221] [cursor=pointer]:
+            - img [ref=e222]
+            - generic [ref=e224]: Collapse
+        - generic [ref=e225]:
+          - generic [ref=e226]:
+            - generic [ref=e227]:
+              - button "What to build Brick wall" [expanded] [ref=e228] [cursor=pointer]:
+                - img [ref=e229]
+                - generic [ref=e231]: What to build
+                - generic [ref=e232]: Brick wall
+              - generic [ref=e233]:
+                - combobox "Category" [ref=e234] [cursor=pointer]:
+                  - option "Everything" [selected]
+                  - option "Walls and doors"
+                  - option "Furniture"
+                  - option "Catering"
+                  - option "Utility"
+                  - option "Medical"
+                  - option "Security"
+                  - option "Plumbing"
+                  - option "Storage"
+                - button "Room plans" [ref=e235] [cursor=pointer]: Plans
+            - radiogroup "What to build" [ref=e237]:
+              - radio "Brick wall · 80 per square Selected" [checked] [ref=e238] [cursor=pointer]:
+                - img [ref=e239]
+                - generic [ref=e243]: Brick wall · 80 per square
+                - generic [ref=e245]: Selected
+              - radio "Wooden door · 65 per segment" [ref=e246] [cursor=pointer]:
+                - img [ref=e247]
+                - generic [ref=e251]: Wooden door · 65 per segment
+              - radio "Bed · 65" [ref=e252] [cursor=pointer]:
+                - img [ref=e253]
+                - generic [ref=e257]: Bed · 65
+              - radio "Bench · 130" [ref=e258] [cursor=pointer]:
+                - img [ref=e259]
+                - generic [ref=e263]: Bench · 130
+              - radio "Bookshelf · 130" [ref=e264] [cursor=pointer]:
+                - img [ref=e265]
+                - generic [ref=e269]: Bookshelf · 130
+              - radio "Chair · 65" [ref=e270] [cursor=pointer]:
+                - img [ref=e271]
+                - generic [ref=e275]: Chair · 65
+              - radio "Desk · 130" [ref=e276] [cursor=pointer]:
+                - img [ref=e277]
+                - generic [ref=e281]: Desk · 130
+              - radio "Dining Table · 195" [ref=e282] [cursor=pointer]:
+                - img [ref=e283]
+                - generic [ref=e287]: Dining Table · 195
+              - radio "Exercise station · 80" [ref=e288] [cursor=pointer]:
+                - img [ref=e289]
+                - generic [ref=e293]: Exercise station · 80
+              - radio "Fridge · 40" [ref=e294] [cursor=pointer]:
+                - img [ref=e295]
+                - generic [ref=e299]: Fridge · 40
+              - radio "Prep Counter · 80" [ref=e300] [cursor=pointer]:
+                - img [ref=e301]
+                - generic [ref=e305]: Prep Counter · 80
+              - radio "Stove · 80" [ref=e306] [cursor=pointer]:
+                - img [ref=e307]
+                - generic [ref=e311]: Stove · 80
+              - radio "Loading Dock Door · 195" [ref=e312] [cursor=pointer]:
+                - img [ref=e313]
+                - generic [ref=e317]: Loading Dock Door · 195
+              - radio "Utility Panel · 40" [ref=e318] [cursor=pointer]:
+                - img [ref=e319]
+                - generic [ref=e323]: Utility Panel · 40
+              - radio "Washing Machine · 80" [ref=e324] [cursor=pointer]:
+                - img [ref=e325]
+                - generic [ref=e329]: Washing Machine · 80
+              - radio "Waste Bin · 40" [ref=e330] [cursor=pointer]:
+                - img [ref=e331]
+                - generic [ref=e335]: Waste Bin · 40
+              - radio "Medical Bed · 65" [ref=e336] [cursor=pointer]:
+                - img [ref=e337]
+                - generic [ref=e341]: Medical Bed · 65
+              - radio "Medicine Cabinet · 65" [ref=e342] [cursor=pointer]:
+                - img [ref=e343]
+                - generic [ref=e347]: Medicine Cabinet · 65
+              - radio "Security Console · 80" [ref=e348] [cursor=pointer]:
+                - img [ref=e349]
+                - generic [ref=e353]: Security Console · 80
+              - radio "Shower Head · 40" [ref=e354] [cursor=pointer]:
+                - img [ref=e355]
+                - generic [ref=e359]: Shower Head · 40
+              - radio "Toilet · 40" [ref=e360] [cursor=pointer]:
+                - img [ref=e361]
+                - generic [ref=e365]: Toilet · 40
+              - radio "Storage Rack · 65" [ref=e366] [cursor=pointer]:
+                - img [ref=e367]
+                - generic [ref=e371]: Storage Rack · 65
+          - generic [ref=e372]:
+            - generic [ref=e373]:
+              - button "Place on map" [ref=e374] [cursor=pointer]:
+                - img [ref=e375]
+                - generic [ref=e379]: Place on map
+              - button "Remove" [ref=e380] [cursor=pointer]:
+                - generic [ref=e381]: Remove
+              - button "Buy" [ref=e382] [cursor=pointer]:
+                - generic [ref=e383]: Buy
+            - generic [ref=e384]:
+              - generic [ref=e385]: Where
+              - generic [ref=e386]: Point at the world
+            - generic [ref=e387]: Click a whole square to place a wall. Drag across squares to lay a run. Two fingers, the middle button or the arrow keys still move the camera.
+          - button "Enter coordinates" [ref=e389] [cursor=pointer]:
+            - img [ref=e390]
+            - generic [ref=e392]: Enter coordinates
+      - separator "Resize the panels" [ref=e393]
+    - navigation "Prison sections":
+      - button "Hide the sections" [expanded] [ref=e394] [cursor=pointer]:
+        - img [ref=e395]
+        - generic [ref=e397]: Hide the sections
+      - generic [ref=e398]:
+        - button "Overview" [ref=e399] [cursor=pointer]:
+          - img [ref=e400]
+          - generic [ref=e405]: Overview
+        - button "Build" [ref=e406] [cursor=pointer]:
+          - img [ref=e407]
+          - generic [ref=e411]: Build
+        - button "Zones" [ref=e412] [cursor=pointer]:
+          - img [ref=e413]
+          - generic [ref=e415]: Zones
+        - button "Manage" [ref=e416] [cursor=pointer]:
+          - img [ref=e417]
+          - generic [ref=e419]: Manage
+        - button "Schedule" [ref=e420] [cursor=pointer]:
+          - img [ref=e421]
+          - generic [ref=e423]: Schedule
+        - button "Security" [ref=e424] [cursor=pointer]:
+          - img [ref=e425]
+          - generic [ref=e427]: Security
+      - separator "Resize the sections" [ref=e428]
+```

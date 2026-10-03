@@ -1,0 +1,2310 @@
+{
+  "schemaVersion": 1,
+  "assetId": "fixture.cell.toilet_sink",
+  "originalSource": "assets/source/blender/environment.mvp.catalog.blend",
+  "originalSourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
+  "source": "assets/source/blender/fixture.cell.toilet_sink.angled.blend",
+  "sourceSha256": "335544282e27ff01608f7f10987c054012d38ec3905340c24c142b7b794b1b2a",
+  "footprintTiles": [
+    1,
+    1
+  ],
+  "acceptedFitBaked": [
+    0.8,
+    0.8,
+    1
+  ],
+  "maximumRetainedVertexFitError": 4.470348358154297e-08,
+  "retainedMeshes": [
+    {
+      "name": "Anchored pedestal foot",
+      "rawVertices": 8,
+      "rawVertexBytesSha256": "7564d9f73905bde87cb610b013b1ad2277ac9fa7a4eb73727c72ec46c658af81",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Cell toilet warm glazed porcelain"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Bowl depth shadow",
+      "rawVertices": 128,
+      "rawVertexBytesSha256": "45bd7eb4036fdc01005bff430c242fab422a87876f7a2e8cb4a2755c2c6cdccb",
+      "rawTopologyBytesSha256": "3fc377b9d99ec155dff98164cdaa887be914645c0c02a5b5defd37e0bec0a802",
+      "materials": [
+        "shade"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Broad oval raised seat",
+      "rawVertices": 384,
+      "rawVertexBytesSha256": "e8b5d2b77c2cecb63da3fba8c0e87097e268926d0b339bf3fdc797a3720babcd",
+      "rawTopologyBytesSha256": "b6e11bbfddc4542f5f6c73da63430680ccd765184f383d9aa46dd21e45f28e52",
+      "materials": [
+        "Cell toilet warm glazed porcelain"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Cistern glazed body",
+      "rawVertices": 8,
+      "rawVertexBytesSha256": "bbb9184a4c40b49e3124e0d527722becab8eaa026bc6ac15a3c72723ff4a880b",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Cell toilet warm glazed porcelain"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Cistern lip",
+      "rawVertices": 8,
+      "rawVertexBytesSha256": "fe5f826871533c2ddeb93c06f659384fbe7bc364879cdb5d42673ea6bda1ddf9",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "light"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Cistern teal ceramic band",
+      "rawVertices": 8,
+      "rawVertexBytesSha256": "613ca80f06a68fd455d8c0219fdab86ed0ffac29ef98e37c1871507f383b24fd",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "medical_teal"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Flush button centre",
+      "rawVertices": 96,
+      "rawVertexBytesSha256": "b19ff50d6d32b1c76aa24616439abc96b315e11121a8122543ab739dcab83f4d",
+      "rawTopologyBytesSha256": "4ec426337df10bb5e05381ca5c97e7669605ff63b1d732e957cdd66d86138849",
+      "materials": [
+        "steel"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Flush button outer ring",
+      "rawVertices": 96,
+      "rawVertexBytesSha256": "ce3f9de740e78e53145f30c87fcfceb826855a945818889bd0658cd6b07afe8f",
+      "rawTopologyBytesSha256": "4ec426337df10bb5e05381ca5c97e7669605ff63b1d732e957cdd66d86138849",
+      "materials": [
+        "galvanized_edge"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Foot anchor.-0.22",
+      "rawVertices": 32,
+      "rawVertexBytesSha256": "fb142a1271e247a01b5e2ac9abc1bffea6ba84968d0335de84719835627d5442",
+      "rawTopologyBytesSha256": "050058d07159905ebe22ba29bc005602546f226726057ef471fbbccd62243196",
+      "materials": [
+        "galvanized_edge"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Foot anchor.0.22",
+      "rawVertices": 32,
+      "rawVertexBytesSha256": "fb142a1271e247a01b5e2ac9abc1bffea6ba84968d0335de84719835627d5442",
+      "rawTopologyBytesSha256": "050058d07159905ebe22ba29bc005602546f226726057ef471fbbccd62243196",
+      "materials": [
+        "galvanized_edge"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Inner glazed bowl contour",
+      "rawVertices": 384,
+      "rawVertexBytesSha256": "cafe2df9e948286403857c3a9eb0b9efdf6d5abebd52e01fc81224c79673c2cf",
+      "rawTopologyBytesSha256": "b6e11bbfddc4542f5f6c73da63430680ccd765184f383d9aa46dd21e45f28e52",
+      "materials": [
+        "porcelain"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Recessed dark drain",
+      "rawVertices": 96,
+      "rawVertexBytesSha256": "1c785a16f0aac9691a059b6c284766f046a29e7f06a87004dc4a861e2eb40149",
+      "rawTopologyBytesSha256": "4ec426337df10bb5e05381ca5c97e7669605ff63b1d732e957cdd66d86138849",
+      "materials": [
+        "shade"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Sculpted ceramic bowl",
+      "rawVertices": 128,
+      "rawVertexBytesSha256": "890b3f2fb2f5a1f75a5b1436f42a3e55565af93c0bcf03ed73ce41ccd6023cb4",
+      "rawTopologyBytesSha256": "3fc377b9d99ec155dff98164cdaa887be914645c0c02a5b5defd37e0bec0a802",
+      "materials": [
+        "Cell toilet warm glazed porcelain"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Seat rear hinge",
+      "rawVertices": 8,
+      "rawVertexBytesSha256": "5a848bf9a8aa89e59cf58b6c90f6b5101ba9307214e2e70ca1bd67e225027e32",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "galvanized_edge"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Supply floor flange",
+      "rawVertices": 64,
+      "rawVertexBytesSha256": "8dee208a33152a9ecf496bf759e3158989e1f2562291c9c7c82bcdde0bb4d872",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "steel"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Supply pipe",
+      "rawVertices": 48,
+      "rawVertexBytesSha256": "a3edc27d7d67477f2f7c6ea43188ff62d8a0f63c453e0ee83834f7c05607f78f",
+      "rawTopologyBytesSha256": "73b469c78d9188be2779564e760ab5a8c75206d940ef00787a0829e1823d8cc9",
+      "materials": [
+        "galvanized_edge"
+      ],
+      "modifiers": []
+    },
+    {
+      "name": "Tapered pedestal",
+      "rawVertices": 8,
+      "rawVertexBytesSha256": "902276ff53094912715106e94a758943b1987da5f2074fb655505557027c8dda",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "Cell toilet warm glazed porcelain"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Top-visible teal front trim",
+      "rawVertices": 8,
+      "rawVertexBytesSha256": "e873baa29a10676fb586c05ba4643f1b8fb4803ca788e682345a4fe6541fe7e1",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "medical_teal"
+      ],
+      "modifiers": [
+        "BEVEL"
+      ]
+    },
+    {
+      "name": "Water at basin bottom",
+      "rawVertices": 128,
+      "rawVertexBytesSha256": "412d800c5706dce59bcc52a43885089481f9379bac13af1b720d8f77138edeed",
+      "rawTopologyBytesSha256": "3fc377b9d99ec155dff98164cdaa887be914645c0c02a5b5defd37e0bec0a802",
+      "materials": [
+        "Cell toilet dark still water"
+      ],
+      "modifiers": []
+    }
+  ],
+  "retainedMaterialGraphs": [
+    {
+      "name": "Cell toilet dark still water",
+      "diffuseRGBA": [
+        0.07500000298023224,
+        0.18000000715255737,
+        0.23000000417232513,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ]
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.07500000298023224,
+                0.18000000715255737,
+                0.23000000417232513,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.20999999344348907
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ]
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "cbd0a6386b885500feb2e1aeafbd6a22374238bcdf79943b62b56518dc6e1bf6"
+    },
+    {
+      "name": "Cell toilet warm glazed porcelain",
+      "diffuseRGBA": [
+        0.8199999928474426,
+        0.800000011920929,
+        0.7300000190734863,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Color Ramp",
+          "type": "ShaderNodeValToRGB",
+          "inputs": [
+            {
+              "name": "Factor",
+              "value": 0.5
+            }
+          ],
+          "colourRamp": [
+            {
+              "position": 0.2199999988079071,
+              "rgba": [
+                0.699999988079071,
+                0.6800000071525574,
+                0.6200000047683716,
+                1.0
+              ]
+            },
+            {
+              "position": 0.7699999809265137,
+              "rgba": [
+                0.8899999856948853,
+                0.8700000047683716,
+                0.7900000214576721,
+                1.0
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ]
+        },
+        {
+          "name": "Noise Texture",
+          "type": "ShaderNodeTexNoise",
+          "inputs": [
+            {
+              "name": "Vector",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "W",
+              "value": 0.0
+            },
+            {
+              "name": "Scale",
+              "value": 32.0
+            },
+            {
+              "name": "Detail",
+              "value": 2.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Lacunarity",
+              "value": 2.0
+            },
+            {
+              "name": "Offset",
+              "value": 0.0
+            },
+            {
+              "name": "Gain",
+              "value": 1.0
+            },
+            {
+              "name": "Distortion",
+              "value": 0.0
+            }
+          ]
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.8199999928474426,
+                0.800000011920929,
+                0.7300000190734863,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.28999999165534973
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ]
+        }
+      ],
+      "links": [
+        [
+          "Color Ramp",
+          "Color",
+          "Principled BSDF",
+          "Base Color"
+        ],
+        [
+          "Noise Texture",
+          "Factor",
+          "Color Ramp",
+          "Factor"
+        ],
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "b9c6c3d3919ad21de1b7a76319514ef7f384010307943f5a86710fc2bbf700ee"
+    },
+    {
+      "name": "galvanized_edge",
+      "diffuseRGBA": [
+        0.7200000286102295,
+        0.7400000095367432,
+        0.7200000286102295,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ]
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.7200000286102295,
+                0.7400000095367432,
+                0.7200000286102295,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.4699999988079071
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ]
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "fe990cf96a0e621ee4234472c47725cdc0239a93cff4138da8d28251f93ebbff"
+    },
+    {
+      "name": "light",
+      "diffuseRGBA": [
+        0.8999999761581421,
+        0.9200000166893005,
+        0.8199999928474426,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ]
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.8999999761581421,
+                0.9200000166893005,
+                0.8199999928474426,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.75
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ]
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "4aa44de10728b170b4d829c491a407ad85c38b4a468bcfd7cfdefa0fd5a2fe55"
+    },
+    {
+      "name": "medical_teal",
+      "diffuseRGBA": [
+        0.03999999910593033,
+        0.3499999940395355,
+        0.3799999952316284,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ]
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.03999999910593033,
+                0.3499999940395355,
+                0.3799999952316284,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.7200000286102295
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ]
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "0464876db343877a74209021fb244933014cac8b082e4a3299fc687d967b230d"
+    },
+    {
+      "name": "porcelain",
+      "diffuseRGBA": [
+        0.7799999713897705,
+        0.800000011920929,
+        0.8100000023841858,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ]
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.7799999713897705,
+                0.800000011920929,
+                0.8100000023841858,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.25
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ]
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "33ba63b88afe12cf13681639a91d2c0793cba513f28d2693ddbb58a45ee3fb96"
+    },
+    {
+      "name": "shade",
+      "diffuseRGBA": [
+        0.03500000014901161,
+        0.03999999910593033,
+        0.04500000178813934,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ]
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.03500000014901161,
+                0.03999999910593033,
+                0.04500000178813934,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.8999999761581421
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ]
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "a196470f01374e982e021b0f41f5aee21463b3cdbac81c777053dcd885b2db6c"
+    },
+    {
+      "name": "steel",
+      "diffuseRGBA": [
+        0.09000000357627869,
+        0.11999999731779099,
+        0.15000000596046448,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ]
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.09000000357627869,
+                0.11999999731779099,
+                0.15000000596046448,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.44999998807907104
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ]
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "420d6cc2c4886ab18f49f455c5522ec3ee1c355e600993352ee7cb8f0a2a0663"
+    }
+  ],
+  "minimum": [
+    -0.3240000009536743,
+    -0.41200000047683716,
+    0.005000002682209015
+  ],
+  "maximum": [
+    0.41600024700164795,
+    0.46217596530914307,
+    1.102500081062317
+  ],
+  "cameraTargetTiles": [
+    0.5,
+    0.5,
+    0.553750041872263
+  ],
+  "meshes": [
+    {
+      "name": "Anchored pedestal foot",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "547687cf0fc0928d462f808828c98d0eb040a6834f8df9152f41de46691290a0"
+    },
+    {
+      "name": "Bowl depth shadow",
+      "evaluatedVertices": 128,
+      "evaluatedPositionSha256": "d0db251d26de3d2a6fa0c49f834e5fa932eebe6b2c19243ce2e29cea70a5a791"
+    },
+    {
+      "name": "Broad oval raised seat",
+      "evaluatedVertices": 384,
+      "evaluatedPositionSha256": "c0e86f45b16ccd7d2012c82764b4da537d622c82add74255f7b051d4660843ee"
+    },
+    {
+      "name": "Cistern glazed body",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "6ff261d42f1ae7f3b768d4d7496df53e467fe3d13d03a5f6ca9c915cdcd080fc"
+    },
+    {
+      "name": "Cistern lip",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "54b5a38ba7641ce768f4f7edf9f2b08f2066f54179719960c32a1cdd0cf21396"
+    },
+    {
+      "name": "Cistern teal ceramic band",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "67c4e6adc7d3313f535cf704678d6460d86be9e964a294e995fd58fb3774b366"
+    },
+    {
+      "name": "Flush button centre",
+      "evaluatedVertices": 96,
+      "evaluatedPositionSha256": "fd8f2c23e706f08d071f8d44641cd442c9c0cbb400f7ed8cc0607b5a893f0d93"
+    },
+    {
+      "name": "Flush button outer ring",
+      "evaluatedVertices": 96,
+      "evaluatedPositionSha256": "f0b31482ab32678e1d690e9e3e2c61cc73faae53516a471f201224c12e04d24e"
+    },
+    {
+      "name": "Foot anchor.-0.22",
+      "evaluatedVertices": 32,
+      "evaluatedPositionSha256": "4d9046aa37bed1bd30f3ac935bb04d46f166b1baf510f78329f820728ebb119a"
+    },
+    {
+      "name": "Foot anchor.0.22",
+      "evaluatedVertices": 32,
+      "evaluatedPositionSha256": "0827002cd0cfa248b9831af0b3b5e66fac3e77075f285e047bbeb4d1843faa4f"
+    },
+    {
+      "name": "Inner glazed bowl contour",
+      "evaluatedVertices": 384,
+      "evaluatedPositionSha256": "62254dd30cd762f8ea6a441960d945a1a43a9f50fb6f25f1f3ce918fc7c1377a"
+    },
+    {
+      "name": "Recessed dark drain",
+      "evaluatedVertices": 96,
+      "evaluatedPositionSha256": "f9cf6d56e63079c00365baab79ece07a9a0ee81f24ac02d02688004a95010c74"
+    },
+    {
+      "name": "Sculpted ceramic bowl",
+      "evaluatedVertices": 128,
+      "evaluatedPositionSha256": "cd17319e98d33b4c9c693ae1873913b487f110934c5de396044dd2f4381eea2b"
+    },
+    {
+      "name": "Seat rear hinge",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "f6c53f6d5e46eda46d8d5adbc02dba927f2f6e995b301788bef2d18e5fe692ab"
+    },
+    {
+      "name": "Supply floor flange",
+      "evaluatedVertices": 64,
+      "evaluatedPositionSha256": "b886cf6a3ab55b2c851ba99e3df7a208e46d74ddc86f0f2a2760352647154322"
+    },
+    {
+      "name": "Supply pipe",
+      "evaluatedVertices": 48,
+      "evaluatedPositionSha256": "2deecb3e79e4c02d80f40268a262325f71665c5c5c900be34e15cff0d8d68d40"
+    },
+    {
+      "name": "Tapered pedestal",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "2599bd73d179ba54657611e617617974bcdd5266049b14fc6db8349400221736"
+    },
+    {
+      "name": "Top-visible teal front trim",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "23531009d256672f46e952f34e441133b93763d1a2912af2f60e1e6839ad8e5c"
+    },
+    {
+      "name": "Water at basin bottom",
+      "evaluatedVertices": 128,
+      "evaluatedPositionSha256": "0b4614a74c8426ed8df45becc40c79765f568824a284424012f5632110d65b5a"
+    },
+    {
+      "name": "angled-toilet.cistern lid end joint -0.312",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "c6a2a6d66a632920dc83d58d7f51424000a44c17b4912f545d62e2b6cd5313d2"
+    },
+    {
+      "name": "angled-toilet.cistern lid end joint 0.312",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "3b68fe5b68ec67eb7ad5b0e5880addc66dbadbd3cc306aad236e80d2583837f6"
+    },
+    {
+      "name": "angled-toilet.cistern lid long joint -0.198",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "49405f42e5ef160b5879cf126d5f6cecf20f70a6d4722943d456089010d4eb59"
+    },
+    {
+      "name": "angled-toilet.cistern lid long joint -0.402",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "c29e62624983b374c8aaf0fc9d976b8197bcc21147dc5190d0c099748993ea75"
+    },
+    {
+      "name": "angled-toilet.cistern side coupling",
+      "evaluatedVertices": 64,
+      "evaluatedPositionSha256": "74a4c0d6101abfdbbde7545a076f0714ebea3a0bd25a66c8edd229722cffd5cf"
+    },
+    {
+      "name": "angled-toilet.seat hinge barrel -0.096",
+      "evaluatedVertices": 64,
+      "evaluatedPositionSha256": "771eab199f642b2518062da0156dc27b4753f7583bab75820ad9ec9cf17771d9"
+    },
+    {
+      "name": "angled-toilet.seat hinge barrel 0.096",
+      "evaluatedVertices": 64,
+      "evaluatedPositionSha256": "921f41f07c9edee917bd07874d9dfaf4f901e7ff6b68d109b56321d0a083bfff"
+    },
+    {
+      "name": "angled-toilet.seat hinge fixing bolt -0.096 -0.206",
+      "evaluatedVertices": 24,
+      "evaluatedPositionSha256": "564cdbec86c6cf6c018e562e11c5c418f36ae9dbff554bc7519448a89ad2ee66"
+    },
+    {
+      "name": "angled-toilet.seat hinge fixing bolt -0.096 -0.259",
+      "evaluatedVertices": 24,
+      "evaluatedPositionSha256": "4546271d7a6503137b246db2fb1ba8abaa27b6636d1dd7dd82a09c27da2b05b7"
+    },
+    {
+      "name": "angled-toilet.seat hinge fixing bolt 0.096 -0.206",
+      "evaluatedVertices": 24,
+      "evaluatedPositionSha256": "7c07718abe8f1b68b6780eb7ac6507cd88565bfcad7cbbc1c4fd9d2050263270"
+    },
+    {
+      "name": "angled-toilet.seat hinge fixing bolt 0.096 -0.259",
+      "evaluatedVertices": 24,
+      "evaluatedPositionSha256": "699ba02bf15760ccd1a2f2d4ce96167ea3569707369f338d873722a901ef665a"
+    },
+    {
+      "name": "angled-toilet.seat hinge mounting plate -0.096",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "b7dfac074eb521a967f9e1456db42f4b11af6426cd53f1c9052246712c220e40"
+    },
+    {
+      "name": "angled-toilet.seat hinge mounting plate 0.096",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "bfa75934d9bc78203b04a4c16f32cdd37fe9fdf727699d66485d9c6af2c16170"
+    },
+    {
+      "name": "angled-toilet.seat hinge pin -0.096",
+      "evaluatedVertices": 64,
+      "evaluatedPositionSha256": "67893137008d79195373f9134168bf06ff269a56f3bbd69cabcddbe3ad669e8d"
+    },
+    {
+      "name": "angled-toilet.seat hinge pin 0.096",
+      "evaluatedVertices": 64,
+      "evaluatedPositionSha256": "55ba003af23e742a168af7e9a6938e3e20828865aaa312c81d6cd8fb33ee256a"
+    },
+    {
+      "name": "angled-toilet.shutoff valve body",
+      "evaluatedVertices": 64,
+      "evaluatedPositionSha256": "3ee1566bae6bcb480ced33cfc2d82a7dfcdc50a4ee0512ca3f8d101aa33bab7e"
+    },
+    {
+      "name": "angled-toilet.shutoff valve wheel",
+      "evaluatedVertices": 480,
+      "evaluatedPositionSha256": "12df15284af609ed89f37988b4e7dbaf726379075c41c58b3217f5265e6ad871"
+    },
+    {
+      "name": "angled-toilet.supply compression collar lower",
+      "evaluatedVertices": 64,
+      "evaluatedPositionSha256": "901756544d3042dc8e70c4ab9ac65063f70058e3abead458f833df9c6e92aa59"
+    },
+    {
+      "name": "angled-toilet.supply compression collar upper",
+      "evaluatedVertices": 64,
+      "evaluatedPositionSha256": "457bc6e4ee27e3d309d4752a51c6585eaa2c4c778b7509c03cc5a1a4f171c2bd"
+    },
+    {
+      "name": "angled-toilet.valve hub",
+      "evaluatedVertices": 64,
+      "evaluatedPositionSha256": "f7117c29c3104861a9e3d3d851acf39de5051e84ba93324c9fc276ed3090a714"
+    },
+    {
+      "name": "angled-toilet.valve stem",
+      "evaluatedVertices": 64,
+      "evaluatedPositionSha256": "7b9e531ee0887219b167640d09a7d3f2628998daf9e626dec782b101f397dcbc"
+    },
+    {
+      "name": "angled-toilet.valve wheel spoke 0",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "2ed048a99495bbbdb68b46303cd0d7750f21d884113f5da05b048da9a5714423"
+    },
+    {
+      "name": "angled-toilet.valve wheel spoke 1",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "411afcfc038b604534b6d30e87224aaf262d01018049c0c5cd253993ed293753"
+    },
+    {
+      "name": "angled-toilet.valve wheel spoke 2",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "27ebc754540e6d8d2b09802f72ef57c0a1f9be986be43f4aab0287243c515452"
+    },
+    {
+      "name": "angled-toilet.valve wheel spoke 3",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "eab45629ca1f49a7bcafd6c580e981afafdcfe66cad1a447aff10bd29d6c9fad"
+    }
+  ],
+  "addedMeshNames": [
+    "angled-toilet.cistern lid end joint -0.312",
+    "angled-toilet.cistern lid end joint 0.312",
+    "angled-toilet.cistern lid long joint -0.198",
+    "angled-toilet.cistern lid long joint -0.402",
+    "angled-toilet.cistern side coupling",
+    "angled-toilet.seat hinge barrel -0.096",
+    "angled-toilet.seat hinge barrel 0.096",
+    "angled-toilet.seat hinge fixing bolt -0.096 -0.206",
+    "angled-toilet.seat hinge fixing bolt -0.096 -0.259",
+    "angled-toilet.seat hinge fixing bolt 0.096 -0.206",
+    "angled-toilet.seat hinge fixing bolt 0.096 -0.259",
+    "angled-toilet.seat hinge mounting plate -0.096",
+    "angled-toilet.seat hinge mounting plate 0.096",
+    "angled-toilet.seat hinge pin -0.096",
+    "angled-toilet.seat hinge pin 0.096",
+    "angled-toilet.shutoff valve body",
+    "angled-toilet.shutoff valve wheel",
+    "angled-toilet.supply compression collar lower",
+    "angled-toilet.supply compression collar upper",
+    "angled-toilet.valve hub",
+    "angled-toilet.valve stem",
+    "angled-toilet.valve wheel spoke 0",
+    "angled-toilet.valve wheel spoke 1",
+    "angled-toilet.valve wheel spoke 2",
+    "angled-toilet.valve wheel spoke 3"
+  ],
+  "retainedMeshesCount": 19,
+  "physicalValveMinimumOutwardNormalDot": 0.9998946785926819,
+  "addedMeshesCount": 25,
+  "totalMeshesCount": 44
+}

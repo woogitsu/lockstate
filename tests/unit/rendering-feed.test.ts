@@ -7,6 +7,7 @@ import {
   SESSION_SNAPSHOT_SCHEMA_ID,
   SESSION_SNAPSHOT_SCHEMA_VERSION,
   captureSessionSnapshot,
+  restoreSimulationRuntime,
   type SessionSnapshotBundle,
 } from '../../src/simulation/runtime/restore-session';
 import { GUARD_ACTOR_ASSET_ID, PRISONER_ACTOR_ASSET_ID, actorsFromSnapshot } from '../../src/rendering/feed/actors-from-snapshot';
@@ -1179,7 +1180,7 @@ describe('actors from a session snapshot', () => {
     ]);
   });
 
-  it('publishes no movement and no facing, because the snapshot carries neither', () => {
+  it('publishes no movement or invented facing when no heading has been saved', () => {
     const bundle = captureSessionSnapshot(prisonWith([[6, 6]]));
     const actor = actorsFromSnapshot(bundle.simulation, bundle.entities)[0];
 
@@ -1188,6 +1189,68 @@ describe('actors from a session snapshot', () => {
     // documented default instead of the feed claiming the simulation chose it.
     expect(actor).not.toHaveProperty('facing');
     expect(selectActorPose(actor!)).toEqual({ clipId: 'idle', direction: 'south' });
+  });
+
+  it('keeps saved prisoner and guard headings visible while a restored session is paused', () => {
+    const runtime = prisonWith([[6, 6]]);
+    const prisoner = runtime.prisoners.entityStore.getIdByIndex(0);
+    expect(runtime.prisoners.locomotion.beginWalk(0, [
+      { x: tileCoordinate(6), y: tileCoordinate(6) },
+      { x: tileCoordinate(6), y: tileCoordinate(5) },
+    ])).toBe(false);
+    const guard = runtime.securityGuards.hire('staff-role.guard', { x: tileCoordinate(2), y: tileCoordinate(2) });
+    expect(runtime.securityGuards.locomotion.beginWalk(guard, [
+      { x: tileCoordinate(2), y: tileCoordinate(2) },
+      { x: tileCoordinate(3), y: tileCoordinate(2) },
+    ])).toBe(false);
+    runtime.securityGuards.locomotion.cancelWalk(guard); // The last heading survives a stopped walk.
+    const bundle = captureSessionSnapshot(runtime);
+    expect(bundle.simulation?.inFlight?.prisoners.locomotion.headings).toContainEqual([0, 0, -1]);
+    expect(bundle.simulation?.inFlight?.guards.locomotion.headings).toContainEqual([guard, 1, 0]);
+
+    const actors = actorsFromSnapshot(bundle.simulation, bundle.entities);
+    const prisonerActor = actors.find(actor => actor.id === prisoner);
+    const guardActor = actors.find(actor => actor.assetId === GUARD_ACTOR_ASSET_ID);
+    expect(prisonerActor).toMatchObject({ facing: 'north', deltaX: 0, deltaY: 0 });
+    expect(guardActor).toMatchObject({ facing: 'east', deltaX: 0, deltaY: 0 });
+    expect(selectActorPose(prisonerActor!)).toEqual({ clipId: 'idle', direction: 'north' });
+    expect(selectActorPose(guardActor!)).toEqual({ clipId: 'idle', direction: 'east' });
+  });
+
+  it.each([
+    [0, -1, 'north'],
+    [1, 0, 'east'],
+    [0, 1, 'south'],
+    [-1, 0, 'west'],
+  ] as const)('keeps a paused restored mid-stride %s,%s walk at its saved position', (dx, dy, facing) => {
+    const runtime = prisonWith([[6, 6]]);
+    const guard = runtime.securityGuards.hire('staff-role.guard', TILE(2, 2));
+    runtime.prisoners.locomotion.beginWalk(0, [TILE(6, 6), TILE(6 + dx, 6 + dy)]);
+    runtime.securityGuards.locomotion.beginWalk(guard, [TILE(2, 2), TILE(2 + dx, 2 + dy)]);
+    // Advance the real locomotion by half a leg without running unrelated
+    // deployment/action systems, just as its kernel-owned system calls it.
+    runtime.prisoners.locomotion.advance(1, () => true, (index, tile) => {
+      runtime.prisoners.position.tileX[index] = tile.x;
+      runtime.prisoners.position.tileY[index] = tile.y;
+    });
+    runtime.securityGuards.locomotion.advance(1, () => true, (id, tile) => runtime.securityGuards.setTile(id, tile));
+    const saved = captureSessionSnapshot(runtime);
+    expect(saved.simulation?.inFlight?.prisoners.locomotion.walks[0]?.progress).toBe(SUB / 2);
+    expect(saved.simulation?.inFlight?.guards.locomotion.walks[0]?.progress).toBe(SUB / 2);
+    const restored = restoreSimulationRuntime(JSON.parse(JSON.stringify(saved)) as SessionSnapshotBundle).runtime;
+    const bundle = captureSessionSnapshot(restored);
+    const client = new FakeClient();
+    const { feed, errors } = newFeed(client);
+    client.emit(ready());
+    feed.readFrame(0);
+    client.emit(snapshotReplyFor(bundle, client.lastRequestId, 0));
+    const actors = feed.readFrame(0.1).actors;
+    expect(errors).toEqual([]);
+    expect(actors).toEqual([
+      expect.objectContaining({ assetId: PRISONER_ACTOR_ASSET_ID, tileX: 6 + dx / 2, tileY: 6 + dy / 2, facing, deltaX: 0, deltaY: 0 }),
+      expect.objectContaining({ assetId: GUARD_ACTOR_ASSET_ID, tileX: 2 + dx / 2, tileY: 2 + dy / 2, facing, deltaX: 0, deltaY: 0 }),
+    ]);
+    expect(feed.readFrame(30).actors).toEqual(actors); // Paused positions never advance with wall time.
   });
 
   it('draws nothing for a bundle that carries no prisoner sections, such as a V2 save', () => {
@@ -1246,7 +1309,7 @@ describe('guards from a session snapshot (ADR 0040 slice 2)', () => {
     const guards = actors.filter((actor) => actor.assetId === GUARD_ACTOR_ASSET_ID);
     expect(guards).toHaveLength(1);
     expect(guards[0]).toMatchObject({ tileX: postTile.x, tileY: postTile.y, deltaX: 0, deltaY: 0 });
-    expect(Object.hasOwn(guards[0]!, 'facing')).toBe(false);
+    expect(Object.hasOwn(guards[0]!, 'facing')).toBe(true);
   });
 
   it('draws a prisoner and a posted guard on the same frame, each with its own art', () => {

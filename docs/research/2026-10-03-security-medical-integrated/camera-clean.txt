@@ -1,0 +1,25 @@
+node : [2m[WebServer] [22m(node:9280) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:4 char:1
++ node --experimental-transform-types --disable-warning=ExperimentalWar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m
+[2m[WebServer] [22m  VITE v8.2.2  ready in 342 ms
+[2m[WebServer] [22m
+[2m[WebServer] [22m  ➜  Local:   http://127.0.0.1:5183/
+LOCKSTATE_BROWSER_PREWARM_READY elapsedMs=4938
+
+Running 3 tests using 1 worker
+
+(node:62324) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62324) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\oblique-camera-new-prison-frame.spec.ts:2:1 › angled camera returns to a newly created prison after panning beyond the old map (8.2s)
+  ok 2 tests\browser\oblique-hud-roving-camera.spec.ts:3:1 › Full HD oblique camera stays still while Build and Rooms radio groups consume arrows (10.7s)
+  ok 3 tests\browser\oblique-hud-roving-camera.spec.ts:73:1 › a held world arrow stops panning when focus moves into a Build radio group (7.1s)
+
+  3 passed (33.8s)

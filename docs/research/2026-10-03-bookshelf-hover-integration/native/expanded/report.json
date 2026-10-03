@@ -1,0 +1,497 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-bookshelf-hover-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-bookshelf-hover-expanded-native-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-bookshelf-hover-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build|dedicated-security-console-player-build|dedicated-medical-bed-player-build|dedicated-loading-dock-door-player-build|dedicated-camera-pan-player|oblique-pending-wall-player|room-template-renderer-stationary-hover)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5184 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-bookshelf-hover-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5184/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "bookshelf-player-build.spec.ts",
+      "file": "bookshelf-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Classroom",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43963,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T03:57:12.428Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "cc4b308bbdc33c47e837-e2052e940ed785947b1f",
+          "file": "bookshelf-player-build.spec.ts",
+          "line": 159,
+          "column": 1
+        },
+        {
+          "title": "player builds the bookshelf in Classroom at quarterTurns0 and keeps it after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 45824,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T03:57:56.463Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "cc4b308bbdc33c47e837-8370302ff755593618ef",
+          "file": "bookshelf-player-build.spec.ts",
+          "line": 222,
+          "column": 3
+        },
+        {
+          "title": "player builds the bookshelf in Classroom at quarterTurns1 and keeps it after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 47904,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T03:58:42.297Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "cc4b308bbdc33c47e837-fe1c6280b65c68fd492c",
+          "file": "bookshelf-player-build.spec.ts",
+          "line": 222,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "room-template-renderer-stationary-hover.spec.ts",
+      "file": "room-template-renderer-stationary-hover.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "FullHD UI100% world replacement keeps stationary rotated plan after old worker reply",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7797,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "RENDERER_STATIONARY_HOVER {\"initialMode\":\"world\",\"nextMode\":\"oblique\",\"mirrored\":false,\"uiScale\":1,\"cursor\":{\"x\":880,\"y\":380},\"old\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":14,\"y\":13},\"quarterTurns\":1},\"ok\":true},\"fresh\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":17,\"y\":13},\"quarterTurns\":1},\"ok\":true},\"currentQuote\":\"Click map to place; Esc cancels. | This footprint is clear. | Brick × 35 · Wood Plank × 2 · Materials catalogue value: 1,530\",\"moves\":[{\"x\":1659.25,\"y\":219,\"canvas\":false,\"trusted\":true},{\"x\":1581.260009765625,\"y\":22,\"canvas\":false,\"trusted\":true},{\"x\":65.5,\"y\":225,\"canvas\":false,\"trusted\":true},{\"x\":1867.030029296875,\"y\":237,\"canvas\":false,\"trusted\":true},{\"x\":612.75,\"y\":200.5,\"canvas\":false,\"trusted\":true},{\"x\":880,\"y\":380,\"canvas\":true,\"trusted\":true}],\"costs\":[{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T03:59:30.230Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "432eb791c473cd413d6e-d401e1bfa4a6a71974cf",
+          "file": "room-template-renderer-stationary-hover.spec.ts",
+          "line": 77,
+          "column": 3
+        },
+        {
+          "title": "FullHD UI100% world replacement keeps stationary rotated/mirrored plan after old worker reply",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7938,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "RENDERER_STATIONARY_HOVER {\"initialMode\":\"world\",\"nextMode\":\"oblique\",\"mirrored\":true,\"uiScale\":1,\"cursor\":{\"x\":880,\"y\":380},\"old\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":14,\"y\":13},\"mirrorX\":true,\"quarterTurns\":1},\"ok\":true},\"fresh\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":17,\"y\":13},\"mirrorX\":true,\"quarterTurns\":1},\"ok\":true},\"currentQuote\":\"Click map to place; Esc cancels. | This footprint is clear. | Brick × 35 · Wood Plank × 2 · Materials catalogue value: 1,530\",\"moves\":[{\"x\":1659.25,\"y\":219,\"canvas\":false,\"trusted\":true},{\"x\":1581.260009765625,\"y\":22,\"canvas\":false,\"trusted\":true},{\"x\":65.5,\"y\":225,\"canvas\":false,\"trusted\":true},{\"x\":1867.030029296875,\"y\":237,\"canvas\":false,\"trusted\":true},{\"x\":612.75,\"y\":200.5,\"canvas\":false,\"trusted\":true},{\"x\":880,\"y\":380,\"canvas\":true,\"trusted\":true}],\"costs\":[{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T03:59:38.034Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "432eb791c473cd413d6e-236f03f98242f01e618b",
+          "file": "room-template-renderer-stationary-hover.spec.ts",
+          "line": 77,
+          "column": 3
+        },
+        {
+          "title": "FullHD UI100% oblique replacement keeps stationary rotated plan after old worker reply",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6655,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "RENDERER_STATIONARY_HOVER {\"initialMode\":\"oblique\",\"nextMode\":\"world\",\"mirrored\":false,\"uiScale\":1,\"cursor\":{\"x\":880,\"y\":380},\"old\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":17,\"y\":13},\"quarterTurns\":1},\"ok\":true},\"fresh\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":14,\"y\":13},\"quarterTurns\":1},\"ok\":true},\"currentQuote\":\"Click map to place; Esc cancels. | This footprint is clear. | Brick × 35 · Wood Plank × 2 · Materials catalogue value: 1,530\",\"moves\":[{\"x\":1659.25,\"y\":219,\"canvas\":false,\"trusted\":true},{\"x\":1581.260009765625,\"y\":22,\"canvas\":false,\"trusted\":true},{\"x\":65.5,\"y\":225,\"canvas\":false,\"trusted\":true},{\"x\":1867.030029296875,\"y\":237,\"canvas\":false,\"trusted\":true},{\"x\":612.75,\"y\":200.5,\"canvas\":false,\"trusted\":true},{\"x\":880,\"y\":380,\"canvas\":true,\"trusted\":true}],\"costs\":[{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T03:59:45.979Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "432eb791c473cd413d6e-e8b15c3b18bb9c5da3fb",
+          "file": "room-template-renderer-stationary-hover.spec.ts",
+          "line": 77,
+          "column": 3
+        },
+        {
+          "title": "FullHD UI100% oblique replacement keeps stationary rotated/mirrored plan after old worker reply",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6929,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "RENDERER_STATIONARY_HOVER {\"initialMode\":\"oblique\",\"nextMode\":\"world\",\"mirrored\":true,\"uiScale\":1,\"cursor\":{\"x\":880,\"y\":380},\"old\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":17,\"y\":13},\"mirrorX\":true,\"quarterTurns\":1},\"ok\":true},\"fresh\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":14,\"y\":13},\"mirrorX\":true,\"quarterTurns\":1},\"ok\":true},\"currentQuote\":\"Click map to place; Esc cancels. | This footprint is clear. | Brick × 35 · Wood Plank × 2 · Materials catalogue value: 1,530\",\"moves\":[{\"x\":1659.25,\"y\":219,\"canvas\":false,\"trusted\":true},{\"x\":1581.260009765625,\"y\":22,\"canvas\":false,\"trusted\":true},{\"x\":65.5,\"y\":225,\"canvas\":false,\"trusted\":true},{\"x\":1867.030029296875,\"y\":237,\"canvas\":false,\"trusted\":true},{\"x\":612.75,\"y\":200.5,\"canvas\":false,\"trusted\":true},{\"x\":880,\"y\":380,\"canvas\":true,\"trusted\":true}],\"costs\":[{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T03:59:52.640Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "432eb791c473cd413d6e-07324c8ccfa9965d1a9a",
+          "file": "room-template-renderer-stationary-hover.spec.ts",
+          "line": 77,
+          "column": 3
+        },
+        {
+          "title": "FullHD UI200% world replacement keeps stationary rotated plan after old worker reply",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6951,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "RENDERER_STATIONARY_HOVER {\"initialMode\":\"world\",\"nextMode\":\"oblique\",\"mirrored\":false,\"uiScale\":2,\"cursor\":{\"x\":880,\"y\":380},\"old\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":14,\"y\":13},\"quarterTurns\":1},\"ok\":true},\"fresh\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":17,\"y\":13},\"quarterTurns\":1},\"ok\":true},\"currentQuote\":\"Click map to place; Esc cancels. | This footprint is clear. | Brick × 35 · Wood Plank × 2 · Materials catalogue value: 1,530\",\"moves\":[{\"x\":1397.25,\"y\":504,\"canvas\":false,\"trusted\":true},{\"x\":755.8699951171875,\"y\":44,\"canvas\":false,\"trusted\":true},{\"x\":131.5,\"y\":519,\"canvas\":false,\"trusted\":true},{\"x\":1816.0699462890625,\"y\":539,\"canvas\":false,\"trusted\":true},{\"x\":624.75,\"y\":361.5,\"canvas\":false,\"trusted\":true},{\"x\":880,\"y\":380,\"canvas\":true,\"trusted\":true}],\"costs\":[{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T03:59:59.577Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "432eb791c473cd413d6e-cc0186bceb4ca4cf0b8c",
+          "file": "room-template-renderer-stationary-hover.spec.ts",
+          "line": 77,
+          "column": 3
+        },
+        {
+          "title": "FullHD UI200% world replacement keeps stationary rotated/mirrored plan after old worker reply",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7449,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "RENDERER_STATIONARY_HOVER {\"initialMode\":\"world\",\"nextMode\":\"oblique\",\"mirrored\":true,\"uiScale\":2,\"cursor\":{\"x\":880,\"y\":380},\"old\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":14,\"y\":13},\"mirrorX\":true,\"quarterTurns\":1},\"ok\":true},\"fresh\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":17,\"y\":13},\"mirrorX\":true,\"quarterTurns\":1},\"ok\":true},\"currentQuote\":\"Click map to place; Esc cancels. | This footprint is clear. | Brick × 35 · Wood Plank × 2 · Materials catalogue value: 1,530\",\"moves\":[{\"x\":1397.25,\"y\":504,\"canvas\":false,\"trusted\":true},{\"x\":755.8699951171875,\"y\":44,\"canvas\":false,\"trusted\":true},{\"x\":131.5,\"y\":519,\"canvas\":false,\"trusted\":true},{\"x\":1816.0699462890625,\"y\":539,\"canvas\":false,\"trusted\":true},{\"x\":624.75,\"y\":361.5,\"canvas\":false,\"trusted\":true},{\"x\":880,\"y\":380,\"canvas\":true,\"trusted\":true}],\"costs\":[{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:00:06.534Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "432eb791c473cd413d6e-2d4fe05b489cc5997834",
+          "file": "room-template-renderer-stationary-hover.spec.ts",
+          "line": 77,
+          "column": 3
+        },
+        {
+          "title": "FullHD UI200% oblique replacement keeps stationary rotated plan after old worker reply",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6614,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "RENDERER_STATIONARY_HOVER {\"initialMode\":\"oblique\",\"nextMode\":\"world\",\"mirrored\":false,\"uiScale\":2,\"cursor\":{\"x\":880,\"y\":380},\"old\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":17,\"y\":13},\"quarterTurns\":1},\"ok\":true},\"fresh\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":14,\"y\":13},\"quarterTurns\":1},\"ok\":true},\"currentQuote\":\"Click map to place; Esc cancels. | This footprint is clear. | Brick × 35 · Wood Plank × 2 · Materials catalogue value: 1,530\",\"moves\":[{\"x\":1397.25,\"y\":504,\"canvas\":false,\"trusted\":true},{\"x\":755.8699951171875,\"y\":44,\"canvas\":false,\"trusted\":true},{\"x\":131.5,\"y\":519,\"canvas\":false,\"trusted\":true},{\"x\":1816.0699462890625,\"y\":539,\"canvas\":false,\"trusted\":true},{\"x\":624.75,\"y\":361.5,\"canvas\":false,\"trusted\":true},{\"x\":880,\"y\":380,\"canvas\":true,\"trusted\":true}],\"costs\":[{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:00:13.993Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "432eb791c473cd413d6e-b5671966338827669f3b",
+          "file": "room-template-renderer-stationary-hover.spec.ts",
+          "line": 77,
+          "column": 3
+        },
+        {
+          "title": "FullHD UI200% oblique replacement keeps stationary rotated/mirrored plan after old worker reply",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6882,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "RENDERER_STATIONARY_HOVER {\"initialMode\":\"oblique\",\"nextMode\":\"world\",\"mirrored\":true,\"uiScale\":2,\"cursor\":{\"x\":880,\"y\":380},\"old\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":17,\"y\":13},\"mirrorX\":true,\"quarterTurns\":1},\"ok\":true},\"fresh\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":14,\"y\":13},\"mirrorX\":true,\"quarterTurns\":1},\"ok\":true},\"currentQuote\":\"Click map to place; Esc cancels. | This footprint is clear. | Brick × 35 · Wood Plank × 2 · Materials catalogue value: 1,530\",\"moves\":[{\"x\":1397.25,\"y\":504,\"canvas\":false,\"trusted\":true},{\"x\":755.8699951171875,\"y\":44,\"canvas\":false,\"trusted\":true},{\"x\":131.5,\"y\":519,\"canvas\":false,\"trusted\":true},{\"x\":1816.0699462890625,\"y\":539,\"canvas\":false,\"trusted\":true},{\"x\":624.75,\"y\":361.5,\"canvas\":false,\"trusted\":true},{\"x\":880,\"y\":380,\"canvas\":true,\"trusted\":true}],\"costs\":[{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530},{\"orderCount\":20,\"materials\":[{\"itemId\":\"item.brick\",\"quantity\":35},{\"itemId\":\"item.wood-plank\",\"quantity\":2}],\"catalogueCostMinorUnits\":1530}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:00:20.614Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "432eb791c473cd413d6e-a90cf1bc1d9d00533014",
+          "file": "room-template-renderer-stationary-hover.spec.ts",
+          "line": 77,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T03:57:09.821Z",
+    "duration": 198262.754,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

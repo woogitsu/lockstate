@@ -1,0 +1,18 @@
+{
+  "frozenCommit": "a1de611e7588f0d18b6840dfc85adbbcbf5d0154",
+  "version": "0.0.838",
+  "worker": {
+    "file": "worker-BMyKMO15.js",
+    "bytes": 440649,
+    "sha256": "93be56fa46aca29aa01c49deccf82f5e454a264a62d673d20fa4b8e481054746"
+  },
+  "initial": {
+    "passed": 5,
+    "failed": 2
+  },
+  "corrected": {
+    "passed": 3,
+    "failed": 0
+  },
+  "corrections": "Native observer: real canvas cursor/retained full basic-cell footprint at World200; actual q1 glazing37,107,113. No production edits, no threshold reduction."
+}

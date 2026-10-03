@@ -1,0 +1,21 @@
+{
+  "verifiedUTC": "2026-10-03T11:55:12.786232+00:00",
+  "issue": {
+    "body": "﻿## Verified player capability gap\n\nA player can rotate/mirror complete Room plans, but cannot rotate a separately placed individual object. This is visible in the genuine Classroom teacher-desk integration route: both q0 and q1 Classroom plans have legal free 2×1 slots, but a separately bought desk can only be placed in orientation0. A vertical 1×2 slot or choosing the teacher-facing side is not publicly expressible.\n\n### Current source evidence\n\nVerified at [fa49f78412441fb50a3cce839e56f241a8b63462](https://github.com/woogitsu/lockstate/commit/fa49f78412441fb50a3cce839e56f241a8b63462):\n\n- [Strict PlaceObject protocol](https://github.com/woogitsu/lockstate/blob/fa49f78412441fb50a3cce839e56f241a8b63462/src/simulation/protocol/commands.ts#L426): explicitly documents no orientation; schema at line449 contains type/orderId/definitionId/x/y only and rejects orientation1.\n- [Public UI command producer](https://github.com/woogitsu/lockstate/blob/fa49f78412441fb50a3cce839e56f241a8b63462/src/main.ts#L3463): the real place-object UI intent submits that unrotated command.\n- [Placement service](https://github.com/woogitsu/lockstate/blob/fa49f78412441fb50a3cce839e56f241a8b63462/src/simulation/objects/object-placement-service.ts#L459): ordinary placement defaults to0, while authored room templates can supply their orientation internally.\n- [Actual typed public route](https://github.com/woogitsu/lockstate/blob/fa49f78412441fb50a3cce839e56f241a8b63462/tests/integration/native-classroom-desk-preparation.test.ts): unchanged original Classroom templates, a separate two-plank/130 purchase, exact non-template desk owners, orientation0 in both room rotations, and whole V8 roundtrip. No injected snapshots, private fixture placement or browser result claimed.\n\n### Player impact and requested behavior\n\nIndividual furniture cannot be aligned to the room, doorway, aisle or remaining vertical footprint even though rotated authored templates and retained angled art already exist. Expose a deliberate public individual-object rotation control with accessible keyboard/pointer behavior, a correctly rotated whole-footprint preview/collision check, and consistent placement, cost and owner semantics.\n\nAcceptance must use actual public built-client placement for q0/q1 individual desks (2×1 versus1×2), collision/ownership refusal, native camera inspection and whole paused Save/Load. Preserve the existing original templates and costs. Decide the input/command contract as a separate change; this issue does not authorize a protocol or save-format workaround in the Classroom art/native preparation branch.\n\n### Fresh duplicate check\n\nSearched open and closed issues for individual object rotation, rotate furniture, PlaceObject orientation, rotation/rotate in titles, orientation+object, and individual+rotat. Read #1586: it covers complete room-plan rotation, not individual-object rotation. No matching individual-object control issue was found. Camera rotation and native room-plan popup issues are separate surfaces.\r\n",
+    "number": 2019,
+    "state": "OPEN",
+    "title": "Individual furniture placement has no public rotation control",
+    "url": "https://github.com/woogitsu/lockstate/issues/2019"
+  },
+  "freshDuplicateQueries": [
+    "individual object rotation",
+    "rotate furniture",
+    "PlaceObject orientation",
+    "rotation in:title",
+    "rotate in:title",
+    "orientation object",
+    "individual rotat"
+  ],
+  "relatedIssue1586OpenedAndDistinct": "complete Room plans rotation, not individual object rotation",
+  "browserRunClaimed": false
+}

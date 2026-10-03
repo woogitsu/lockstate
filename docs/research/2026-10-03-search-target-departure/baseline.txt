@@ -1,0 +1,51 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-next-search-lifecycle-audit-20261003
+
+stdout | tests/integration/search-departure-template-probe.test.ts > standing sweep respects a genuine discharged target: saved=false surface='departed'
+{"saved":false,"surface":"departed","tick":2321,"end":1809,"target":0,"sweep":"contraband.sector-sweep.security-sector.prison.3","metrics":{"itemsDiscovered":0,"itemsMissed":0,"searchesCompleted":1,"searchesCancelled":0,"searchesQueued":0}}
+
+stdout | tests/integration/search-departure-template-probe.test.ts > standing sweep respects a genuine discharged target: saved=false surface='recycled'
+{"saved":false,"surface":"recycled","tick":2321,"end":1809,"target":0,"sweep":"contraband.sector-sweep.security-sector.prison.3","metrics":{"itemsDiscovered":0,"itemsMissed":0,"searchesCompleted":1,"searchesCancelled":0,"searchesQueued":0}}
+
+stdout | tests/integration/search-departure-template-probe.test.ts > standing sweep respects a genuine discharged target: saved=true surface='departed'
+{"saved":true,"surface":"departed","tick":2321,"end":1809,"target":0,"sweep":"contraband.sector-sweep.security-sector.prison.3","metrics":{"itemsDiscovered":0,"itemsMissed":0,"searchesCompleted":1,"searchesCancelled":0,"searchesQueued":0}}
+
+stdout | tests/integration/search-departure-template-probe.test.ts > standing sweep respects a genuine discharged target: saved=true surface='recycled'
+{"saved":true,"surface":"recycled","tick":2321,"end":1809,"target":0,"sweep":"contraband.sector-sweep.security-sector.prison.3","metrics":{"itemsDiscovered":0,"itemsMissed":0,"searchesCompleted":1,"searchesCancelled":0,"searchesQueued":0}}
+
+ ❯ tests/integration/search-departure-template-probe.test.ts (6 tests | 4 failed) 386ms
+   × standing sweep respects a genuine discharged target: saved=false surface='departed' 54ms
+   × standing sweep respects a genuine discharged target: saved=false surface='recycled' 48ms
+   × standing sweep respects a genuine discharged target: saved=true surface='departed' 59ms
+   × standing sweep respects a genuine discharged target: saved=true surface='recycled' 59ms
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 2 passed (6)
+   Start at  04:15:39
+   Duration  2.73s (transform 819ms, setup 0ms, import 2.22s, tests 386ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/search-departure-template-probe.test.ts > standing sweep respects a genuine discharged target: saved=false surface='departed'
+ FAIL  tests/integration/search-departure-template-probe.test.ts > standing sweep respects a genuine discharged target: saved=false surface='recycled'
+ FAIL  tests/integration/search-departure-template-probe.test.ts > standing sweep respects a genuine discharged target: saved=true surface='departed'
+ FAIL  tests/integration/search-departure-template-probe.test.ts > standing sweep respects a genuine discharged target: saved=true surface='recycled'
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/integration/search-departure-template-probe.test.ts:80:37
+     78|   expect(runtime.placedObjects.getSnapshot()).toEqual(owners);
+     79|   expect(runtime.construction.snapshot()).toEqual(construction);
+     80|   expect(metrics.searchesCompleted).toBe(surface === 'live-target' ? 1…
+       |                                     ^
+     81|   expect(metrics.searchesCancelled).toBe(surface === 'live-target' ? 0…
+     82|   expect(runtime.searchSystem.orderIds()).not.toContain(sweep);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+

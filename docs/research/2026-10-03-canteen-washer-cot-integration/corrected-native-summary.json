@@ -1,0 +1,29 @@
+{
+  "productionSourceFreeze": "4443da6c8888e44430e01c516fb971173270ce2c",
+  "observerCheckpoint": "c917dd326ae54c92e34f5dde59b0ab90c7dadc48",
+  "worker": {
+    "file": "worker-DvdTnMXd.js",
+    "bytes": 441796,
+    "sha256": "9f49ff87dbf34697b927aff454b871d5dd9b1f601745220984fb703a42b75cc0"
+  },
+  "stats": {
+    "startTime": "2026-10-03T05:59:44.875Z",
+    "duration": 436919.40499999997,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "initialNative": {
+    "startTime": "2026-10-03T05:48:14.505Z",
+    "duration": 310290.016,
+    "expected": 5,
+    "skipped": 3,
+    "unexpected": 3,
+    "flaky": 0
+  },
+  "producerNegatives": "pending separate detached controls",
+  "newHardwareContactPixelCalibration": "opened actual six poses; no invented tiny-contact ROI or per-object private texture claim",
+  "guard": "hold canonical fit correction and genuine hire acceptance",
+  "fullHostedRelease": "pending"
+}

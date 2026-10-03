@@ -1,0 +1,21 @@
+pnpm : $ vitest run "tests/integration/room-template-occupied-material-cancel.test.ts" "tests/foundation/research-index
+-contract.test.ts" "tests/foundation/documentation-links-contract.test.ts" "tests/foundation/typecheck-coverage-contrac
+t.test.ts" "tests/foundation/browser-suite-partition-contract.test.ts" "tests/foundation/documentation-version-claim-co
+ntract.test.ts" "tests/foundation/documentation-source-anchor-contract.test.ts" "tests/foundation/documentation-commit-
+citation-contract.test.ts" "tests/foundation/documentation-claims-contract.test.ts" "tests/foundation/documentation-anc
+hor-quotation-contract.test.ts" "--maxWorkers=2"
+At line:6 char:253
++ ... _FETCH='1'; pnpm --config.verify-deps-before-run=false test tests/int ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-safe-restore-integration-20261003
+
+
+ Test Files  10 passed (10)
+      Tests  75 passed (75)
+   Start at  04:03:51
+   Duration  6.41s (transform 941ms, setup 0ms, import 6.94s, tests 4.30s, environment 0ms)
+

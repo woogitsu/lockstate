@@ -261,16 +261,77 @@ feature with a reader and no producer.
 ### Walls, doors and the build queue
 
 - A wall is an edge value. `finalizeConstruction`
-  (`src/simulation/construction/system.ts:1965`, `finalizeConstruction`) writes it through `writeEdge`
+  (`src/simulation/construction/system.ts:2182`, `finalizeConstruction`) writes it through `writeEdge`
   (`:2031`, called at `:1934`), which calls `setTopEdge`/`setLeftEdge` and
   therefore bumps `geometryRevision`.
 - `BuildableCategory` is `'wall' | 'object' | 'utility'`
   (`src/simulation/construction/definition.ts:6`). `wall-brick` is the only
   `'wall'`; a door is an `'object'` row carrying `placesDoor`.
 - Cancelling a `completed` order reverses its geometry
-  (`src/simulation/construction/system.ts:1044`, `revertConstruction`–`:1046`, `revertConstruction` at
-  `:1966`), rewriting the edge from any other completed order that still claims
+  (`src/simulation/construction/system.ts:1209`, `revertConstruction`, defined at
+  `:2235`), rewriting the edge from any other completed order that still claims
   it rather than clearing it.
+- **Occupied template supply-cancellation amendment at checkpoint 302c3028b1.**
+  The previous `system.ts:2166` and `:2219` indications remain historical
+  before the pure withdrawal reader; the live anchors quote `finalizeConstruction`
+  and `revertConstruction`. Its call site at `:1209` did not move.
+- **Generic template-entrance footprint amendment at checkpoint 28cd9067cd.**
+  The preceding `system.ts:2160`, `:1203` and `:2213` indications remain
+  historical before the optional admission reader and its footprint predicate.
+  The live declarations/call still quote `finalizeConstruction`,
+  `revertConstruction` and `private revertConstruction`; the correction
+  changes admission only, not completion or cancellation semantics.
+- **Pending ordinary square amendment at checkpoint c1bb11b5b0.** The previous
+  `system.ts:1983`, `:1193` and `:2203` indications remain historical before
+  the ten-line pending-square claim reader. The completion anchor now names the
+  actual `private finalizeConstruction` declaration, rather than the prior
+  nearby comment; cancellation still quotes `revertConstruction` and the
+  reversal declaration `private revertConstruction`. The service buildability
+  and outside-room fragments precede its new claimed-square loop and did not move.
+- **Completed-square footprint amendment at checkpoint f8c2957af1.** The previous
+  `system.ts:1982`, `:1192`, `:2202` and `object-placement-service.ts:551`
+  indications remain historical before the one-line expanded predicates in both
+  footprint loops. The live fragments still quote `finalizeConstruction`,
+  `revertConstruction`, `private revertConstruction` and `this.refuse('outside-room'`.
+- **Deferred-history source amendment at checkpoint a8435e3b90.** The previous
+  `system.ts:1971`, `:1181` and `:2191` indications remain historical
+  before the eleven-line exact gesture-continuation reader. The live completion
+  and reversal fragments still quote `finalizeConstruction`, `revertConstruction`
+  and `private revertConstruction`. The preceding `object-placement-service.ts:535`
+  and `:549` indications remain historical before its internal request field;
+  the live fragments still quote `PLACEMENT_REQUIREMENT` and `this.refuse('outside-room'`.
+- **Pending-template footprint amendment at checkpoint ff609c7b9f.** The previous
+  `system.ts:1965`, `:1175` and `:2185` indications
+  remain historical before the incoming-object reservation check. The live
+  completion and cancellation fragments still quote `finalizeConstruction` and
+  `revertConstruction`; the reversal implementation remains `private revertConstruction`.
+- **Object footprint admission amendment at checkpoint 81dc3159f4.** The prior
+  `system.ts:1157` and `:2167` indications remain historical before extending
+  existing bounds/ownership admission to every object tile. The live call and
+  implementation still quote `revertConstruction` and `private revertConstruction`.
+- **Generic object-order source amendment at checkpoint ca785768fd.** The
+  preceding `system.ts:1141` and `:2151` indications remain historical before
+  the full-footprint submission guard. The live cancellation call still quotes
+  `revertConstruction`; its implementation is `private revertConstruction`.
+- **2026-10-02 source amendment.** The earlier `system.ts:1044` through `:1046`
+  and `:1966` coordinates are historical indications, retained here rather than
+  erased. The current cancellation call is `revertConstruction` above; its
+  implementation is `private revertConstruction` at
+  `src/simulation/construction/system.ts:2235`. The earlier numbered span had
+  already drifted into a comment, so the amended anchor names the actual call.
+  **Occupied-template source amendment at checkpoint 322cb5e5a4:** the previous
+  `system.ts:1120` and `:2092` coordinates remain historical indications before
+  the before-Undo preparation port; the current fragments above name the same
+  cancellation call and geometry reversal.
+  **Whole-square furniture source amendment at checkpoint 2e2d058870:** the
+  preceding `system.ts:1128` and `:2100` coordinates remain historical before
+  the square-only object-footprint reader. The live fragments above still name
+  `revertConstruction` and `private revertConstruction`; this changes no
+  cancellation or geometry-reversal rule.
+  **Coupled-refund checkpoint `91fd4e82b0`, 2026-10-02:** the preceding
+  `system.ts:2113`, `zoning.ts:554`, `:558` and `:555` indications remain
+  historical before the pure sequence/removal readers. The live fragments
+  retain the same reversal, bounds and ownership checks.
 - **The crew is one.** `ConstructionSystem.update` runs on
   `intervalTicks: 10` (`:347`), advances a single in-progress order by `+10` per
   scheduled update, and `crewBusy` lets exactly one order be in progress at a
@@ -285,7 +346,7 @@ feature with a reader and no producer.
   rectangle's own perimeter, with the south and east sides read off neighbouring
   tiles.
 - Objects already require a room: `PlaceObject` refuses `outside-room`
-  (`src/simulation/objects/object-placement-service.ts:540`).
+  (`src/simulation/objects/object-placement-service.ts:552`, `this.refuse('outside-room'`; previously `:544` before the pending entrance claim reader).
 
 ### Rendering
 
@@ -409,7 +470,7 @@ was the alternative and is rejected because "indoors" is the conclusion, not the
 missing thing.
 
 **Where it runs: inside the existing per-tile loop**, after bounds and ownership
-and beside the overlap check (`src/simulation/rooms/zoning.ts:554`, `out-of-bounds`–`:558`). Not
+and beside the overlap check (`src/simulation/rooms/zoning.ts:558`, `out-of-bounds`–`:562`). Not
 as a fifth pass. Three reasons, and they agree:
 
 - It is one array read per tile, on tiles the loop already visits, so it is free
@@ -859,6 +920,6 @@ not to write a third flood fill.
 defect is caused by one asymmetric predicate and fixed by widening it. I did not
 enumerate every caller that could reproduce the asymmetry elsewhere:
 `ObjectPlacementService` and `RoomZoningService` also call `canBuildAt`
-(`src/simulation/objects/object-placement-service.ts:526`,
-`src/simulation/rooms/zoning.ts:555`), and neither is an edge order, so neither
+(`src/simulation/objects/object-placement-service.ts:537`,
+`src/simulation/rooms/zoning.ts:559`), and neither is an edge order, so neither
 should change — but "should not" is an argument and not a check.

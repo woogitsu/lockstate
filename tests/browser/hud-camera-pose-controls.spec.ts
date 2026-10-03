@@ -37,5 +37,10 @@ test('the fixed renderer does not offer inert pose buttons', async ({ page }) =>
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/');
   await expect(page.locator('#game-root canvas')).toBeVisible();
-  await expect(page.locator('.hud-camera-pose')).toHaveCount(0);
+  // The live renderer switch retains the port and hides this group in WorldScene.
+  // A hidden DOM group is legal; offering an accessible inert button is not.
+  await expect(page.locator('.hud-camera-pose')).toBeHidden();
+  for (const label of ['Rotate camera left', 'Rotate camera right', 'Raise camera angle', 'Lower camera angle']) {
+    await expect(page.getByRole('button', { name: label, exact: true })).toHaveCount(0);
+  }
 });

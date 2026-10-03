@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
   "assetId": "utility.loading-dock-door.variants",
-  "source": "assets/source/blender/utility.loading-dock-door.variants.blend",
-  "sourceSha256": "9a8b5cd29ed5809ec1c3f2c6f36f3d97d3a9a7f69551c0743e096591c26908c4",
+  "source": "assets/source/blender/utility.loading-dock-door.angled-detail.blend",
+  "sourceSha256": "7eeca158b9e5f92abb139ab8164f5dd7a2aa2f2ca47936e4b08e4ea6c79a3aac",
   "resolutionPx": [
-    128,
-    128
+    256,
+    256
   ],
   "nominalPixelsPerTile": 64,
   "pivotPx": [
-    64,
-    64
+    128,
+    128
   ],
   "cameraTargetTiles": [
-    1.0,
+    1.5,
     0.5,
-    0.5
+    0.89
   ],
   "projection": "orthographic",
   "yawDegrees": [
@@ -44,434 +44,434 @@
     {
       "yawDegrees": 0,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+00-elev20.png",
-      "sha256": "98e98fd4c65d6c0934c28fd2f49ea6f0a3fe311041fb2f31b39c034139d74a23"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+00-elev20.a9dbbe22152e.png",
+      "sha256": "a9dbbe22152e20b0dad62542d97993a1b73ee54d9923acc7027d940477980560"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+00-elev30.png",
-      "sha256": "2f6093c24df7a1bbc2a382598e6b4460d24a4cf816cbe9b284e321aa333406d7"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+00-elev30.90fc58c7c52b.png",
+      "sha256": "90fc58c7c52bd200f56f35e8d026490eaab0892f32d8219da824443f2803668e"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+00-elev40.png",
-      "sha256": "f4363099ca553139b06795376bdb0677ce110376b8893081a25448ac6ee0efd3"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+00-elev40.1c49137bf58e.png",
+      "sha256": "1c49137bf58e53a0c312ea616dc83b409b8a86907efc4b954f15567f035a6893"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+00-elev50.png",
-      "sha256": "59907b315ab5f3bc803004c5d7aac25a3a6f5c9cb752aa8cbf307605fa7853b8"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+00-elev50.8ffbed3acf52.png",
+      "sha256": "8ffbed3acf52a07b364d53f8c07469d3a392980e8097a717ac4a3ee6da5292e7"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+00-elev60.png",
-      "sha256": "2e96e6b6231dd333b2d80d6ac2066fd38831b6cac759b598d65d2f40e9da5dbf"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+00-elev60.240ee7b29168.png",
+      "sha256": "240ee7b29168cf4ed4eb5d05f9d3c080e9a04f11c19e4f0d706369e65cf5a7a6"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+00-elev70.png",
-      "sha256": "77f674483014d6b94f633c074be130fc4dea00e3e90ef8c884085d2e1de5494a"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+00-elev70.be4ddd7e6a10.png",
+      "sha256": "be4ddd7e6a1083735a0e942df2ef450d1e1aaefca12d3f2f283877c8e2ae550b"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev20.png",
-      "sha256": "16a87c024c93b183b2ca08b7939e57e6b6c3b4bef514e818249eefa294e03eae"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev20.23203b50fe8e.png",
+      "sha256": "23203b50fe8e32e3c6a5b55a7c43ae9dda8858e357763adae6bb68d3fe379a39"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev30.png",
-      "sha256": "374c1120b313daa950d83c5d367e7d35727010a5117d4628d4f780ff7205a803"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev30.f33677c46cfb.png",
+      "sha256": "f33677c46cfb5223775981dfa630bb435006c583220296510670840cbea39d0b"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev40.png",
-      "sha256": "ebe0900d8132c336cb71bd5f838f14f712dcb212c6bf605bec9685fd2ce58178"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev40.6a60277bf1c9.png",
+      "sha256": "6a60277bf1c991b0db1d92a4cc5a6e93b01acdf5c39ebd929b0467026d58e2f6"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev50.png",
-      "sha256": "e4a1e83c2deb269ce1903834236c0847557825e6437ae41ae689aec4cb01bc52"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev50.4e3a28e67965.png",
+      "sha256": "4e3a28e67965121829175d14dffcb720535d690d1d970e13d9724b081cefea19"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev60.png",
-      "sha256": "0c04bab28bf10764bf20052d9bed8e0e0a2307912e7f4894bbfc33520e8ec211"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev60.b848b39ca3b0.png",
+      "sha256": "b848b39ca3b0694c9aef68d3bf8409fda626f04150ca29804711542d18d4eb8d"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev70.png",
-      "sha256": "654e7fd6768152213e4297fc5207c4493a93aaacc0b25bbe645139fc6353d9de"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev70.93f6c2a3c529.png",
+      "sha256": "93f6c2a3c529c62d1dd793af4c31f28ddb7f5c26239190b6d38e44bc8e36e39f"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+60-elev20.png",
-      "sha256": "c807d06cf9ea8bd819eddc41f16212b8a6b8ca48b4ef98e9512cb7ea24f51409"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+60-elev20.fb5c68336c27.png",
+      "sha256": "fb5c68336c277b897ff5f82d3503fae02555636a5680ba15b92ec2d89303d5e6"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+60-elev30.png",
-      "sha256": "8eceda1c315d209c22395992094fb988384a58b9225ecab53bced89efd3a7e1b"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+60-elev30.1f37462e1f25.png",
+      "sha256": "1f37462e1f25db6bb7b77d257e683725e92066fb6b9c26ac53440c0e5154e2de"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+60-elev40.png",
-      "sha256": "decca710e122da2df8ea1fc1190887d1331087a3c4d2a489622a8ef4fa431fd0"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+60-elev40.2ed6c923af6d.png",
+      "sha256": "2ed6c923af6daef4136bb45bd632f344bff90adabb912adf8a98dffb51bc3020"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+60-elev50.png",
-      "sha256": "b917f5444aae6151208c1754ca33abb48572a54e51235ac46c5c349bc51004dd"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+60-elev50.8d4923415bf6.png",
+      "sha256": "8d4923415bf631617eafa558517cf2cc2ba131fc9d207ae8fb05689d17074d4a"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+60-elev60.png",
-      "sha256": "a305de5d48984f9ece89b82517bcfe99f98d6a17d2372ac9f15bceb413ff986a"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+60-elev60.e773e7da2f7b.png",
+      "sha256": "e773e7da2f7b384a1449a7836940a3d1ac6c80e05564ca6ad67f89f15d34f013"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+60-elev70.png",
-      "sha256": "5fd105e25e3b9dcbc51f3ca9b6fa33e4ae6ba385cb91cf87ed2cc2c3c46e5580"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+60-elev70.c573380ecbb3.png",
+      "sha256": "c573380ecbb3149d83ca850d085969e7ac45424fcba39d6650cda9d9a0c17b18"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+90-elev20.png",
-      "sha256": "c837d0cd9941b7ff73bfd56a2ce6e497c7de77f8d8fdc8cc0207e2b12f1dbcd6"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+90-elev20.7ac2eb176953.png",
+      "sha256": "7ac2eb176953e66e8886fe8cc0ca5f3c99f20fe625ddceaa230fd490bb221eaa"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+90-elev30.png",
-      "sha256": "70a0327061beb8e5116eda8a46921158690008525935c6b97bff7bf15b2e0316"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+90-elev30.8de13796136e.png",
+      "sha256": "8de13796136ea7d13758a8c481c7d08e6165d6efca1fcb6f4f5a3d969ea5ca7f"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+90-elev40.png",
-      "sha256": "f3f2cbccaf19a82da9af03ce45dedcd5950679cccce4e24e921eee9287fab0c5"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+90-elev40.dd1ed5cf1d9b.png",
+      "sha256": "dd1ed5cf1d9be29c8c78a8486bbec15009b94770bd94a8c64bba3f967eda3dab"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+90-elev50.png",
-      "sha256": "cc4b20fbee6a37075440a11f29abfc9a2f8ecdb0b9eb38ff76fb8ef6633ae086"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+90-elev50.2e51a39fc06d.png",
+      "sha256": "2e51a39fc06de41cb60c6d3cf132d20c0f4bdaedc6fedf79bff8b7005be694e5"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+90-elev60.png",
-      "sha256": "b9a9f4a95e961036790281be860f4af97ea7b6f3c9b1e24cd415298339f4a629"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+90-elev60.4eac785b3e10.png",
+      "sha256": "4eac785b3e104aa4fd5f7d27d6df19e1036af19d32532a6a1d9e4bb1e7106326"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+90-elev70.png",
-      "sha256": "5e352970f063766ac332dc80005c5018f9681dc41575a68427fa8110d39a5693"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+90-elev70.b366792a3ded.png",
+      "sha256": "b366792a3ded762b04b59a42e744d7dedc3db87135b6a399ae5cdadf8e756131"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+120-elev20.png",
-      "sha256": "b92fe4a375bde38907bdf9c43f350f76c9c7c148a4cad8a45a71c3cea0e0e1bd"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+120-elev20.cca8ef2c9f4e.png",
+      "sha256": "cca8ef2c9f4e1f0c2ec7cf3403c040e9e0421e3ff52386b830b96d7b0026c433"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+120-elev30.png",
-      "sha256": "752c4d1a1ad260f67acabfdfacb1eee74c49abd75ce61fc0b4c374e5ed01f1c1"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+120-elev30.ecf97e3502a4.png",
+      "sha256": "ecf97e3502a40a5cf192b23b831d3d6dc52ff7d2ad100ef1eb1ca15131bf01f5"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+120-elev40.png",
-      "sha256": "6de8fa95a9641a62ff2eb2a4fad7394c50a527cb4248787e2b293fc120048523"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+120-elev40.e733c99337b2.png",
+      "sha256": "e733c99337b251d2eeccc590c57c4fbabef144b33f525b01a94492648c7531af"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+120-elev50.png",
-      "sha256": "994c9d14cf2da4bf07c1f8c76aea9e6b5ee07b2acaf52b53b6316a19a3144862"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+120-elev50.34462f86e1fa.png",
+      "sha256": "34462f86e1fa5a923f3c8d7b2ac33cb55b0f7aa81c0b6235d668f9ffb71ebeae"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+120-elev60.png",
-      "sha256": "a53fb7e4833c722991677875f3fb81a931d2a5b945d7bafe059d20ebcd9d6b6e"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+120-elev60.f801407eba71.png",
+      "sha256": "f801407eba7163cdd7af721d361ce5ad8ba9872ec4bb90ae310d23b58a77521f"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+120-elev70.png",
-      "sha256": "44875be7a1cb22f9c44fbad881c21beccac200ca6d3f5c3ebf89eb369a779d90"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+120-elev70.e0ab98c1103d.png",
+      "sha256": "e0ab98c1103dad34ef68f42f93eb03bce5f0a4bbe965c3e2f43aabfd17594734"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+150-elev20.png",
-      "sha256": "0f01034b2fde679c7b2e27eb85d40d08ab2705b8581cfb26c42a53998ac8f543"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+150-elev20.24073a5cff6c.png",
+      "sha256": "24073a5cff6c3992a4fe7401bdc7e08aa139902b8ffd378d3d50b997c1470d01"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+150-elev30.png",
-      "sha256": "1c36fc2bb04dfedb3eb803ead9dcc341ae0dbe2fde26738c91dfd06594c0b636"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+150-elev30.996758c813a0.png",
+      "sha256": "996758c813a069da8b05b3001b2734339b144a6f8c72ece2a5083635117fa5f5"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+150-elev40.png",
-      "sha256": "101b727333f463820c819198aadb54cdf014bd47bb21ba8297f2d389804d7d0f"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+150-elev40.209c003fad23.png",
+      "sha256": "209c003fad238b9f1fcf6f9b4ff4d304d5e18d896e818fb713af0deedc04dc69"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+150-elev50.png",
-      "sha256": "120eb1f83833844a4995ef13ed4abf7ce53302775256cae56d749e7788b01a5e"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+150-elev50.5fc4f61743ca.png",
+      "sha256": "5fc4f61743ca469a543561dced347474bbce7ee0fe079199f616229584c74c29"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+150-elev60.png",
-      "sha256": "a5a1f3b0db44333708245ecec723319db170591b1c2a4249a64a4f3662905cc2"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+150-elev60.4e6883a4a4d3.png",
+      "sha256": "4e6883a4a4d39d31499a8f6416bbace264598aefbd2a453bdaf771bc1a0d5147"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+150-elev70.png",
-      "sha256": "260dbdf679267c0009562e5991d6ae3bdeb01c0737b5b9049874ffee8635ab93"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+150-elev70.e152e4db40f1.png",
+      "sha256": "e152e4db40f180d7fe01e2105a7f7bcd13acddcc69b7704a44760ff9720f10d9"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+180-elev20.png",
-      "sha256": "a7f451f5d4f6486062079644a0861e0ffd43fff0bf881067badec0f273f2429d"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+180-elev20.8e958291c810.png",
+      "sha256": "8e958291c81058834fcd1de38d6705c4ee44053ab1051fd083358f050ce56189"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+180-elev30.png",
-      "sha256": "dd4edbed47f28568ea9c94117bd976525a8e1094dbc38cdc3aafa2c109acf8a5"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+180-elev30.23204b930d2b.png",
+      "sha256": "23204b930d2b8117bc8263a72cc05ac951303db49842c6dae5768b4f7e221704"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+180-elev40.png",
-      "sha256": "a8445ac1cfe72189615f8008364362c2ed62674ab5b21638b28fdcab4d48a34f"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+180-elev40.f0c9c78a5ec0.png",
+      "sha256": "f0c9c78a5ec03ff6017118027a3cf5fa324894cd4842c70683995c60d0fe5590"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+180-elev50.png",
-      "sha256": "153b5dad3744d32e289074c623b0503fbf8103af8e75d19bd8b9f84fac4270dc"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+180-elev50.2a772a7ed145.png",
+      "sha256": "2a772a7ed1455a79823e58d56b886783f6544e5e668c452eece12993cb6a9ac6"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+180-elev60.png",
-      "sha256": "36e8b730df933592f2a8d6473707cd083aa929aeb3c2ee18911256c0baa242f2"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+180-elev60.ea3e1b99dd44.png",
+      "sha256": "ea3e1b99dd443306fd9e7bf14c0610844f71904ab79ff7d10e55941c35c52245"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+180-elev70.png",
-      "sha256": "c592bf3dad1a08e786e5084b8cf66b1daf6142247eb7322e96e2977e42cec539"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+180-elev70.fa33c6a2c218.png",
+      "sha256": "fa33c6a2c218726297283aa654efa0fcc44f847e45876646ce9caa8abd12690a"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+210-elev20.png",
-      "sha256": "69fa64cd6a68abd51028168d53006299d6a12dca6eeb899ccbc5140c002e5226"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+210-elev20.91fb27108ae2.png",
+      "sha256": "91fb27108ae25b36cbe8845cb9317d8c5d70ad5de7f8121c161f7aaf3a807ec1"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+210-elev30.png",
-      "sha256": "47594008ac2237edee81f977e09a247cd79cf50066f6265742dc3488b0bb0f88"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+210-elev30.00c13b0ee177.png",
+      "sha256": "00c13b0ee177bacf3cee2a39f47533c46169dd4bbd1be6656a584d0700f7375d"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+210-elev40.png",
-      "sha256": "0e0b4fbbd4c5ad13dd9428e75f4414080974ea62ef854ea1c6024831ae6c3d47"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+210-elev40.99024397976f.png",
+      "sha256": "99024397976f31ad38ee3883bd413faa3c69b659d6366f334283e317fb1fcaa0"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+210-elev50.png",
-      "sha256": "3918c61f47e7554887ad1a6c62925190965135c54c55051ad6e2952c0a0177f7"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+210-elev50.4b0513fcf0b2.png",
+      "sha256": "4b0513fcf0b2b9364fa75a528f1eb1badc94cd2a97e26a7d372241b7f2c0f9a2"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+210-elev60.png",
-      "sha256": "6a83a56225e5857f25cf879e02e7241d9e40063651d94c9cded450ce55f980c4"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+210-elev60.89d6d3113e8c.png",
+      "sha256": "89d6d3113e8ca9061f1004f314d0dfb3b8b4d4e42ba271e13aa3b0f6dedfeb2c"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+210-elev70.png",
-      "sha256": "c221866b86e632bdf4d0d4d3e9ef7f1b069e790151428d18f1a3b0dae7d1ba1e"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+210-elev70.0c3d9975614a.png",
+      "sha256": "0c3d9975614a6d33d4fe528ffc418974370ee5bdb02196334f5241c6ea85c4da"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+240-elev20.png",
-      "sha256": "26e29293b50b80225b5786172d57a632d59783298b0c19e990a416df6579817e"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+240-elev20.ec4d11dcb940.png",
+      "sha256": "ec4d11dcb94053639eba3bbef82190da22656afbe487a192d2993f46a6258e31"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+240-elev30.png",
-      "sha256": "af267becdbc33db84a0b9623612c4be603e9d9e082c20e88db2ba2f2c96d84f6"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+240-elev30.663a5dd3d5e3.png",
+      "sha256": "663a5dd3d5e3df51c5d4fa68257b6c86999f59c3dac67334fe52d411517bc1b0"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+240-elev40.png",
-      "sha256": "39066a5b2b5044e9bd19f4c189a87d628047697ff69937cc04972d42e36c571f"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+240-elev40.f1e0b51b523f.png",
+      "sha256": "f1e0b51b523f4374ee430862c68e936a9f078d8c244044316df2d0b0417778d4"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+240-elev50.png",
-      "sha256": "cfac980475b98c0db854fd84fce0782a9efcb950cdb1b838f569823a6c54746c"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+240-elev50.dc38fffe2079.png",
+      "sha256": "dc38fffe207949bc321709e3899e01770da72cbc9ce4e4bc1bfac97b0a8fc5b7"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+240-elev60.png",
-      "sha256": "8377a87fb820030e3a9a11ac9a0fe51fb869f6925bea610161ecf47097e5294b"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+240-elev60.8e9d99e2818f.png",
+      "sha256": "8e9d99e2818fd32069703142ff427e4f636ef2ebcfa5db359f6bf938c29cd493"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+240-elev70.png",
-      "sha256": "78d847d651e890bbdd0c8405b06fc23dcfe2e417abf31f87e95a4089b4ba783f"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+240-elev70.8b6913a215f6.png",
+      "sha256": "8b6913a215f6aed34db83ec6770a62b9942288f91a6313f8f45cfb41084cc505"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+270-elev20.png",
-      "sha256": "4abe2c981f886af191f2ab6d273cbbcaf20e0ad48be215cce42ce7b383d6b10b"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+270-elev20.8e8cdc12a538.png",
+      "sha256": "8e8cdc12a5386b64978babb6f06d30bb63f8af53520d85dee7f4148b3c6a9668"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+270-elev30.png",
-      "sha256": "f273f4fb30e47423c2e55d38dcc7dfe1eaa62a84a0ac53fdb43e794c2898f9fa"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+270-elev30.2db74d4cf526.png",
+      "sha256": "2db74d4cf526e813d0a29796b84b89dc93a0aa1c2846b8dbbb6a5c2ba9b51f5b"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+270-elev40.png",
-      "sha256": "3a1a7da282c1428777368703c29b9d22c2237016d33e9a39fa1464e0f92927aa"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+270-elev40.20e920fbcb60.png",
+      "sha256": "20e920fbcb6001b50648a2d2b5b45445aca5e4458de49a638910c63f11e9c187"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+270-elev50.png",
-      "sha256": "6912554c6cfc1242627c3b39f3554a3727402864466ed6c7f8d1977bc7575e0a"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+270-elev50.4f16c0054ad2.png",
+      "sha256": "4f16c0054ad20437b12a91d50dab24e8174a4475cc9185d3290597e01335f066"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+270-elev60.png",
-      "sha256": "d94c62e4477bd985bca5efa195c9eca75c0b36a5d547ff5e0db32a5631a39815"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+270-elev60.f813c1a929f9.png",
+      "sha256": "f813c1a929f9a1987085380b30672d1f2d78b8bdbe4d5635ec3c73cf9f74b109"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+270-elev70.png",
-      "sha256": "aa81587405fbbe8a68eeac0bcfbd20859042aa2e99ba7421802f3084aa05b450"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+270-elev70.3b9099db588d.png",
+      "sha256": "3b9099db588dd7c9bec24f4533c1cca4e651071b8db8f6563ce3d695aae25c4c"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev20.png",
-      "sha256": "caee60ddf758b219e16175de0a8b1d4f4052242d3870657d2bc2d882b0b07736"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev20.a589d63c45e3.png",
+      "sha256": "a589d63c45e35c205c0bb069a0b448b556c6bd5bc6170ed7ba09fcff0fac07ab"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev30.png",
-      "sha256": "f7f74ed99499eb9b5dc4346ac14b314f04ee868113cc2af9055ea8cadeeacadc"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev30.ee1de9346324.png",
+      "sha256": "ee1de93463242b5940d669f3a38fff29f57fdc46273f686c4ec7d721d7067177"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev40.png",
-      "sha256": "f759ea459a83d388a4451ffd2ca2a88f9e01c57eddce00405f59b1f78d56446b"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev40.142e26025b0b.png",
+      "sha256": "142e26025b0b5e128eb866cf2d1f29bd9295172dc14ead22c9b4a774b60bcfa7"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev50.png",
-      "sha256": "9b7bdb0f956ba59a3b5a30d47c8496e45d60442e6818347244a0e4c7ef1a598f"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev50.7b480b822d8f.png",
+      "sha256": "7b480b822d8ffa3091de6591587b3021027d3b490e4f6a6fcb86413fdd1855c8"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev60.png",
-      "sha256": "6a47f539ac939c23f69561c1a12782926377a29f989312016b9f3f62958d3f83"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev60.ff1af6b1d86c.png",
+      "sha256": "ff1af6b1d86c2af51ac2a6bc6cb98dbb831875a73486248e357bffa00934c8d8"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev70.png",
-      "sha256": "cb2189c0c6a31e705b57b2401a5bbde6c224bbd524c96c1aacac245fb36ee2aa"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev70.b00ab84d7626.png",
+      "sha256": "b00ab84d762651b622df96d33b30bfe8d1dce74e01e74e13000816d20e4b6cb0"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+330-elev20.png",
-      "sha256": "4cfa26b3834e372bb6cd0ac396da863cd1fadc54013deac4ba6e84c629aee583"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+330-elev20.47a5ff797808.png",
+      "sha256": "47a5ff79780820b026041a75f892512767c028c5043ad1799d07515df23f62e9"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+330-elev30.png",
-      "sha256": "70677cdc0d7e8ad858d13d581050f42103fc4500e6fd13ebd71132991d7465a9"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+330-elev30.b02e6cf3cb07.png",
+      "sha256": "b02e6cf3cb07eb1e78aab3d307620cded712334797ef6dbe51c44fa0a876854a"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+330-elev40.png",
-      "sha256": "a73a0d0b7303970b2f73f16527e9652a57d6142c88c86554e478d8d2687b5445"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+330-elev40.af1db667e4b9.png",
+      "sha256": "af1db667e4b94ce65ba39e49237388e4bc8205ae9bdee41be1b3480fb8be01b7"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+330-elev50.png",
-      "sha256": "5b55169eb25a7abbf9083992faacd511a13de8ceadb417af71172ccf04e34672"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+330-elev50.1d412dd3dedc.png",
+      "sha256": "1d412dd3dedca502cde5bb6587ff3e3c27cc87ff5705f988932564fd14eb84c7"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+330-elev60.png",
-      "sha256": "cf73c425057acfe2e3de8235aedca9a99e33072f1e2ae84643efb04cca7bab55"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+330-elev60.02dc4fc57cef.png",
+      "sha256": "02dc4fc57cef310a942dfcd463ef65bdbdfad5730f9c7691c5921bab99db8518"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+330-elev70.png",
-      "sha256": "0edc9aa70873b651147b734e31cfb5a608419fcceb7fe15727fa7fb56f5c876a"
+      "image": "/assets/environment/oblique/utility.loading-dock-door.variants-yaw+330-elev70.2db6495e49ac.png",
+      "sha256": "2db6495e49ac148ae47b557f81b72feca7f58435aa5a441daa048ee09364f327"
     }
   ]
 }

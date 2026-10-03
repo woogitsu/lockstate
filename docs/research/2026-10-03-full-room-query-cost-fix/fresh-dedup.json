@@ -1,0 +1,282 @@
+﻿{
+    "atUTC":  "2026-10-03T10:05:19.7350462Z",
+    "queries":  [
+                    {
+                        "query":  "isEligible",
+                        "results":  {
+                                        "value":  [
+                                                      {
+                                                          "number":  893,
+                                                          "state":  "OPEN",
+                                                          "title":  "The staff panel\u0027s own advice buys coverage and buys no response: hiring the number it asks for is exactly the number that empties the responder pool",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/893"
+                                                      }
+                                                  ],
+                                        "Count":  1
+                                    },
+                        "exit":  0
+                    },
+                    {
+                        "query":  "full room query",
+                        "results":  {
+                                        "value":  [
+                                                      {
+                                                          "number":  1934,
+                                                          "state":  "OPEN",
+                                                          "title":  "Late numeric room-plan placement replies overwrite a newly selected card status",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/1934"
+                                                      },
+                                                      {
+                                                          "number":  2014,
+                                                          "state":  "OPEN",
+                                                          "title":  "Disconnected first Shower is retried forever while a reachable second Shower remains unused (live + V8)",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/2014"
+                                                      },
+                                                      {
+                                                          "number":  1946,
+                                                          "state":  "OPEN",
+                                                          "title":  "Room-plan dialog keeps obsolete readiness and collision marks during a new preflight",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/1946"
+                                                      },
+                                                      {
+                                                          "number":  1908,
+                                                          "state":  "OPEN",
+                                                          "title":  "Room plans remain armed when cursor movement supersedes placement confirmation",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/1908"
+                                                      },
+                                                      {
+                                                          "number":  79,
+                                                          "state":  "OPEN",
+                                                          "title":  "[Prisoners] Cell allocation asks only about capacity, never about who is already in the room",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/79"
+                                                      },
+                                                      {
+                                                          "number":  33,
+                                                          "state":  "OPEN",
+                                                          "title":  "[Presentation] Implement audio, reports, overlays, tutorial, weather and scenario framework",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/33"
+                                                      },
+                                                      {
+                                                          "number":  604,
+                                                          "state":  "OPEN",
+                                                          "title":  "HANDOVER 2026-08-29 late — main red three times, five PRs became six, and the design search landed",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/604"
+                                                      },
+                                                      {
+                                                          "number":  274,
+                                                          "state":  "OPEN",
+                                                          "title":  "[ADR] Audit of the whole ADR corpus (0001–0021 + README): status truth, claim truth, cross-ADR contradictions, number hygiene, dangling references and the owner\u0027s open-decision queue",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/274"
+                                                      },
+                                                      {
+                                                          "number":  966,
+                                                          "state":  "CLOSED",
+                                                          "title":  "Three places the simulation already computes something going right and publishes nothing — the actionable half of the acknowledgement gap",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/966"
+                                                      },
+                                                      {
+                                                          "number":  261,
+                                                          "state":  "CLOSED",
+                                                          "title":  "[Audit] What a player can actually do: one of thirteen systems does observable work, and the shortest path to a loop",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/261"
+                                                      },
+                                                      {
+                                                          "number":  111,
+                                                          "state":  "CLOSED",
+                                                          "title":  "[Prisoners] admitPrisoner initialises 5 of 18 component arrays, so a recycled index inherits the previous prisoner\u0027s needs and action state",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/111"
+                                                      }
+                                                  ],
+                                        "Count":  11
+                                    },
+                        "exit":  0
+                    },
+                    {
+                        "query":  "eligibility capacity",
+                        "results":  {
+                                        "value":  [
+                                                      {
+                                                          "number":  2013,
+                                                          "state":  "OPEN",
+                                                          "title":  "Blocked first Shower hides a later navigable Shower from action selection",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/2013"
+                                                      },
+                                                      {
+                                                          "number":  30,
+                                                          "state":  "OPEN",
+                                                          "title":  "[Progression] Implement unlock graph, rehabilitation programs and staff development",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/30"
+                                                      },
+                                                      {
+                                                          "number":  31,
+                                                          "state":  "OPEN",
+                                                          "title":  "[Legal/Reputation] Implement parole, release, reoffending, inspectors and external pressure",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/31"
+                                                      },
+                                                      {
+                                                          "number":  2008,
+                                                          "state":  "OPEN",
+                                                          "title":  "Blocked room anchor repeatedly wins action selection and starves a housed prisoner",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/2008"
+                                                      },
+                                                      {
+                                                          "number":  593,
+                                                          "state":  "CLOSED",
+                                                          "title":  "Classroom time buys the classification review eight of fifteen sentences can never reach (#584)",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/593"
+                                                      },
+                                                      {
+                                                          "number":  25,
+                                                          "state":  "CLOSED",
+                                                          "title":  "[Operations] Implement jobs, logistics, inventories and utility capacity foundation",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/25"
+                                                      },
+                                                      {
+                                                          "number":  540,
+                                                          "state":  "OPEN",
+                                                          "title":  "Should an admission ever carry prior incidents? `priorIncidents` is hard-coded to 0 and nothing decides whether it should be",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/540"
+                                                      },
+                                                      {
+                                                          "number":  604,
+                                                          "state":  "OPEN",
+                                                          "title":  "HANDOVER 2026-08-29 late — main red three times, five PRs became six, and the design search landed",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/604"
+                                                      },
+                                                      {
+                                                          "number":  553,
+                                                          "state":  "CLOSED",
+                                                          "title":  "Handover — session 01Sn8El, at v0.0.189",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/553"
+                                                      }
+                                                  ],
+                                        "Count":  9
+                                    },
+                        "exit":  0
+                    },
+                    {
+                        "query":  "freshness",
+                        "results":  {
+                                        "value":  [
+                                                      {
+                                                          "number":  1149,
+                                                          "state":  "OPEN",
+                                                          "title":  "Freshness audit, the part that needs a decision — five proposals, and one audit finding refuted",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/1149"
+                                                      },
+                                                      {
+                                                          "number":  2007,
+                                                          "state":  "OPEN",
+                                                          "title":  "Stationary room-plan ghost keeps obsolete preflight after actual Undo or Redo",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/2007"
+                                                      },
+                                                      {
+                                                          "number":  1257,
+                                                          "state":  "CLOSED",
+                                                          "title":  "The freshness argument to both `pressFloorMinorUnits` calls in `src/main.ts` is unobserved by any test",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/1257"
+                                                      },
+                                                      {
+                                                          "number":  1037,
+                                                          "state":  "CLOSED",
+                                                          "title":  "A finished door is drawn as an unbuilt ghost for 22–28 seconds after the Build panel says the queue is empty — and the fix cannot be written inside the feed",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/1037"
+                                                      },
+                                                      {
+                                                          "number":  930,
+                                                          "state":  "CLOSED",
+                                                          "title":  "ADR 0087\u0027s standing conditions are computed, emitted and diffed on every publication and read by nobody — and the transient notice defers the player\u0027s figure to them in terms",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/930"
+                                                      }
+                                                  ],
+                                        "Count":  5
+                                    },
+                        "exit":  0
+                    },
+                    {
+                        "query":  "saturated room",
+                        "results":  {
+                                        "value":  [
+                                                      {
+                                                          "number":  595,
+                                                          "state":  "OPEN",
+                                                          "title":  "The nine dead rooms need readers, not functions — four cheap ones (#584)",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/595"
+                                                      },
+                                                      {
+                                                          "number":  1061,
+                                                          "state":  "CLOSED",
+                                                          "title":  "A Holding Cell draws its NAME on the map but no zoning tint — and the same tile must carry the zoning id for both, so one of the two readers is wrong",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/1061"
+                                                      },
+                                                      {
+                                                          "number":  604,
+                                                          "state":  "OPEN",
+                                                          "title":  "HANDOVER 2026-08-29 late — main red three times, five PRs became six, and the design search landed",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/604"
+                                                      },
+                                                      {
+                                                          "number":  586,
+                                                          "state":  "CLOSED",
+                                                          "title":  "Overcrowding: give the 40-per-unmet-need withhold something to read (#584)",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/586"
+                                                      },
+                                                      {
+                                                          "number":  1008,
+                                                          "state":  "CLOSED",
+                                                          "title":  "`#331` pada na nietkniętym `main` przy bezczynnej maszynie, a w CI jest zielony — tym samym poleceniem",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/1008"
+                                                      }
+                                                  ],
+                                        "Count":  5
+                                    },
+                        "exit":  0
+                    },
+                    {
+                        "query":  "room query cost",
+                        "results":  {
+                                        "value":  [
+                                                      {
+                                                          "number":  2014,
+                                                          "state":  "OPEN",
+                                                          "title":  "Disconnected first Shower is retried forever while a reachable second Shower remains unused (live + V8)",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/2014"
+                                                      },
+                                                      {
+                                                          "number":  604,
+                                                          "state":  "OPEN",
+                                                          "title":  "HANDOVER 2026-08-29 late — main red three times, five PRs became six, and the design search landed",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/604"
+                                                      },
+                                                      {
+                                                          "number":  966,
+                                                          "state":  "CLOSED",
+                                                          "title":  "Three places the simulation already computes something going right and publishes nothing — the actionable half of the acknowledgement gap",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/966"
+                                                      },
+                                                      {
+                                                          "number":  274,
+                                                          "state":  "OPEN",
+                                                          "title":  "[ADR] Audit of the whole ADR corpus (0001–0021 + README): status truth, claim truth, cross-ADR contradictions, number hygiene, dangling references and the owner\u0027s open-decision queue",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/274"
+                                                      },
+                                                      {
+                                                          "number":  261,
+                                                          "state":  "CLOSED",
+                                                          "title":  "[Audit] What a player can actually do: one of thirteen systems does observable work, and the shortest path to a loop",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/261"
+                                                      },
+                                                      {
+                                                          "number":  442,
+                                                          "state":  "CLOSED",
+                                                          "title":  "[Incidents] Hiring one guard makes the incident system mathematically unreachable, and the only prison that riots has no guards to respond — `IncidentResponseSystem` has never executed in a playable prison",
+                                                          "url":  "https://github.com/woogitsu/lockstate/issues/442"
+                                                      }
+                                                  ],
+                                        "Count":  6
+                                    },
+                        "exit":  0
+                    }
+                ],
+    "repo":  "woogitsu/lockstate"
+}

@@ -1,0 +1,293 @@
+import { writeFile } from 'node:fs/promises';
+import { expect, test as base, type Page } from './network-changed-fixture';
+import { currentClock, installTee, sentCommands } from './playtest-harness';
+import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
+import type { RoomTemplatePreflight, RoomTemplateCostQuote } from '../../src/ui/room-template-tool';
+
+interface Target { kind: 'room-template'; templateId: string; origin: { x: number; y: number }; quarterTurns?: number; mirrorX?: boolean }
+interface Reply { id: string; target: Target; verdict: RoomTemplatePreflight }
+interface InputReceipt { type: string; trusted: boolean; canvas: boolean; x?: number; y?: number; code?: string }
+interface Probe {
+  replies: Reply[];
+  quotes: { templateId: string; quote: RoomTemplateCostQuote }[];
+  inputs: InputReceipt[];
+  snapshot(): Promise<SessionSnapshotBundle>;
+}
+const origin = { x: 20, y: 5 };
+const expectedQuote = { orderCount: 20, materials: [{ itemId: 'item.brick', quantity: 35 }, { itemId: 'item.wood-plank', quantity: 2 }], catalogueCostMinorUnits: 1530 };
+
+// Passive tee plus public read-only snapshot requests. Never submits a build,
+// history command or projection; those must arise from real controls below.
+async function observe(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const RealWorker = Worker;
+    let latest: Worker | undefined;
+    const requests = new Map<string, { projectionId: string; target: Target }>();
+    const readers = new Map<string, (message: unknown) => void>();
+    const probe: Probe = { replies: [], quotes: [], inputs: [], async snapshot() {
+      if (latest === undefined) throw Error('Actual worker absent');
+      const id = crypto.randomUUID();
+      const message = await new Promise<unknown>((resolve, reject) => {
+        const timer = setTimeout(() => { readers.delete(id); reject(Error('Actual snapshot timed out')); }, 20_000);
+        readers.set(id, value => { clearTimeout(timer); resolve(value); });
+        latest!.postMessage({ protocolVersion: 1, messageId: id, kind: 'simulation/request-snapshot', payload: { reason: 'consistency-check' } });
+      }) as { kind: string; payload: { snapshot: { data: SessionSnapshotBundle } } };
+      if (message.kind !== 'simulation/snapshot') throw Error(`Actual snapshot refused: ${message.kind}`);
+      return message.payload.snapshot.data;
+    } };
+    class ObservedWorker extends RealWorker {
+      constructor(url: string | URL, options?: WorkerOptions) {
+        super(url, options);
+        super.addEventListener('message', (event: MessageEvent) => {
+          const message = event.data as { replyTo?: string; kind?: string; payload?: { view?: { data?: unknown } } };
+          if (message.kind?.startsWith('simulation/')) latest=this;
+          const id = message.replyTo ?? '';
+          const reader = readers.get(id);
+          if (reader !== undefined) { readers.delete(id); reader(event.data); }
+          const request = requests.get(id);
+          if (message.kind !== 'simulation/projection' || request === undefined || message.payload?.view?.data === undefined) return;
+          requests.delete(id);
+          if (request.projectionId === 'world/room-template-preflight') probe.replies.push({ id, target: request.target, verdict: message.payload.view.data as RoomTemplatePreflight });
+          if (request.projectionId === 'world/room-template-cost') probe.quotes.push({ templateId: request.target.templateId, quote: message.payload.view.data as RoomTemplateCostQuote });
+        });
+      }
+      override postMessage(message: unknown, transfer?: Transferable[] | StructuredSerializeOptions): void {
+        const m = message as { messageId?: string; kind?: string; payload?: { projectionId?: string; target?: Target } };
+        if (m.kind === 'simulation/request-projection' && m.messageId !== undefined && m.payload?.target !== undefined && (m.payload.projectionId === 'world/room-template-preflight' || m.payload.projectionId === 'world/room-template-cost')) requests.set(m.messageId, { projectionId: m.payload.projectionId, target: m.payload.target });
+        if (transfer === undefined) super.postMessage(message);
+        else if (Array.isArray(transfer)) super.postMessage(message, transfer);
+        else super.postMessage(message, transfer);
+      }
+    }
+    Reflect.set(window, 'Worker', ObservedWorker); Reflect.set(window, 'historyVerdictProbe', probe);
+    for (const type of ['pointermove', 'pointerdown', 'pointerup', 'keydown', 'keyup']) window.addEventListener(type, event => {
+      if (event instanceof PointerEvent) probe.inputs.push({ type, trusted: event.isTrusted, canvas: event.target === document.querySelector('#game-root canvas'), x: event.clientX, y: event.clientY });
+      else if (event instanceof KeyboardEvent) probe.inputs.push({ type, trusted: event.isTrusted, canvas: false, code: event.code });
+    }, true);
+  });
+}
+const snapshot = (page: Page) => page.evaluate(() => (Reflect.get(window, 'historyVerdictProbe') as Probe).snapshot());
+const replies = (page: Page) => page.evaluate(() => (Reflect.get(window, 'historyVerdictProbe') as Probe).replies);
+const inputs = (page: Page) => page.evaluate(() => (Reflect.get(window, 'historyVerdictProbe') as Probe).inputs);
+const submitted = (page: Page) => sentCommands(page);
+const cellOrders = (data: SessionSnapshotBundle) => data.construction.orders.filter(order => order.location.x >= 20 && order.location.x < 27 && order.location.y >= 5 && order.location.y < 9);
+const cellObjects = (data: SessionSnapshotBundle) => data.simulation?.objects?.placedObjects.filter(object => object.anchorTile.x >= 20 && object.anchorTile.x < 27 && object.anchorTile.y >= 5 && object.anchorTile.y < 9) ?? [];
+const cellRooms = (data: SessionSnapshotBundle) => data.simulation?.prisoners.roomInstanceDefinitions.filter(room => room.roomCatalogId === 'room.cell') ?? [];
+function plane(data: SessionSnapshotBundle, x: number, y: number, name: 'squareStructure' | 'zoning'): number {
+  const size = data.world.chunkSize;
+  const chunk = data.world.chunks.find(c => c.x === Math.floor(x / size) && c.y === Math.floor(y / size));
+  if (chunk === undefined || chunk.lifecycle !== 'loaded') throw Error('Actual occupied chunk absent');
+  const runs = chunk[name];
+  if (runs === undefined) return 0; // Published absent plane encodes all zeroes.
+  let at = y % size * size + x % size;
+  for (const [value, count] of runs) { if (at < count) return value; at -= count; }
+  throw Error('Malformed actual plane RLE');
+}
+function assertCompletedCell(data: SessionSnapshotBundle): void {
+  const orders = cellOrders(data); expect(orders).toHaveLength(20);
+  expect(orders.every(order => order.state === 'completed')).toBe(true);
+  const expectedShell: string[] = [];
+  for (let y = 5; y < 9; y++) for (let x = 20; x < 27; x++) {
+    if ((y === 5 || y === 8 || x === 20 || x === 26) && !(x === 20 && y === 6)) expectedShell.push(`wall-brick@${x},${y}`);
+  }
+  // The visible door occupies square20,6; its east boundary is stored as
+  // the neighbouring tile21,6's west edge (the established q1 contract).
+  expectedShell.push('door-wooden@21,6');
+  expect(orders.filter(order => order.definitionId === 'door-wooden')).toMatchObject([{ location: { x: 21, y: 6, edge: 'west' } }]);
+  expect(orders.map(o => `${o.definitionId}@${o.location.x},${o.location.y}`).sort()).toEqual([...expectedShell, 'bed-wooden@24,6', 'toilet-brick@22,7'].sort());
+  expect(cellObjects(data).map(o => ({ id: o.objectId, anchor: o.anchorTile, orientation: o.orientation })).sort((a,b) => a.id.localeCompare(b.id))).toEqual([
+    { id: 'object.bed', anchor: { x: 24, y: 6 }, orientation: 1 }, { id: 'object.toilet', anchor: { x: 22, y: 7 }, orientation: 1 },
+  ]);
+  for (const object of cellObjects(data)) expect(orders.find(o => o.id === object.sourceOrderId)).toMatchObject({ state: 'completed', location: object.anchorTile, objectOrientation: 1 });
+  expect(cellRooms(data)).toMatchObject([{ roomCatalogId: 'room.cell', anchorTile: { x: 21, y: 6 }, width: 5, height: 2 }]);
+  for (let y = 6; y < 8; y++) for (let x = 21; x < 26; x++) expect(plane(data,x,y,'zoning')).toBe(1);
+  expect(data.simulation?.roomTemplates?.completed).toEqual(expect.arrayContaining([expect.objectContaining({ templateId: 'cell-basic', origin, quarterTurns: 1 })]));
+}
+async function placeNumeric(page: Page, name: string, x: number, turn = 0): Promise<void> {
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Room plans' });
+  await dialog.getByRole('button', { name, exact: true }).click();
+  const rotation = dialog.getByRole('combobox', { name: 'Room plan rotation (clockwise)' });
+  await rotation.focus(); await page.keyboard.press('Home'); if (turn === 1) await page.keyboard.press('ArrowDown');
+  await expect(rotation).toHaveValue(String(turn));
+  const input = dialog.getByRole('spinbutton', { name: 'Plan origin X' });
+  if (!await input.isVisible()) await dialog.getByText('Enter coordinates', { exact: true }).click();
+  await input.fill(String(x)); await dialog.getByRole('spinbutton', { name: 'Plan origin Y' }).fill('5');
+  await expect(dialog.getByRole('status')).toContainText('clear');
+  await dialog.getByRole('button', { name: 'Place room plan', exact: true }).click();
+  await expect(dialog.getByRole('status')).toContainText('submitted'); await page.keyboard.press('Escape'); await expect(dialog).toBeHidden();
+}
+async function finish(page: Page): Promise<void> {
+  const panel = page.locator('.hud-build');
+  const queued = async () => { const value=await panel.getAttribute('data-queued'); if(value===null) return 0; if(!/^\d+$/u.test(value)) throw Error('Actual queued counter malformed'); return Number(value); };
+  let count = await queued();
+  while (count > 0) {
+    await expect.poll(queued, { message: `actual construction advances from ${count} queued orders` }).toBeLessThan(count);
+    count = await queued();
+  }
+}
+async function viewIdentity(page: Page) {
+  return page.evaluate(() => ({
+    canvas: (()=>{ const canvas=document.querySelector<HTMLCanvasElement>('#game-root canvas'); if(canvas===null) throw Error('Canvas absent'); return {width:canvas.width,height:canvas.height}; })(),
+    points: [...document.querySelectorAll<SVGPolygonElement>('.room-template-world-ghost polygon')].map(p => p.getAttribute('points')),
+    camera: (() => { const v = document.querySelector<HTMLElement>('.hud-minimap__viewport'); if (v === null) throw Error('Minimap viewport absent'); return { left: v.style.left, top: v.style.top, width: v.style.width, height: v.style.height }; })(),
+  }));
+}
+function assertWholeQ1Footprint(view: Awaited<ReturnType<typeof viewIdentity>>): void {
+  expect(view.points).toHaveLength(28);
+  const quads = view.points.map(points => {
+    if(points===null) throw Error('Actual polygon points absent');
+    const parsed=points.trim().split(/\s+/u).map(pair=>pair.split(',').map(Number));
+    expect(parsed).toHaveLength(4);
+    expect(parsed.every(p=>p.length===2&&p.every(Number.isFinite))).toBe(true);
+    return parsed;
+  });
+  const first=quads[0]!,start=first[0]!;
+  const ux={x:first[1]![0]!-start[0]!,y:first[1]![1]!-start[1]!};
+  const uy={x:first[3]![0]!-start[0]!,y:first[3]![1]!-start[1]!};
+  expect(Math.abs(ux.x*uy.y-ux.y*uy.x)).toBeGreaterThan(1);
+  // Literal q1 Cell is7columns/4rows. Independent affine adjacency check;
+  // it never supplies the world origin, which must be actual target20,5.
+  for(let y=0;y<4;y++) for(let x=0;x<7;x++) for(let corner=0;corner<4;corner++) {
+    const actual=quads[y*7+x]![corner]!, base=first[corner]!;
+    expect(actual[0]).toBeCloseTo(base[0]!+x*ux.x+y*uy.x,4);
+    expect(actual[1]).toBeCloseTo(base[1]!+x*ux.y+y*uy.y,4);
+    expect(actual[0]).toBeGreaterThanOrEqual(0); expect(actual[0]).toBeLessThanOrEqual(view.canvas.width);
+    expect(actual[1]).toBeGreaterThanOrEqual(0); expect(actual[1]).toBeLessThanOrEqual(view.canvas.height);
+  }
+}
+async function assertNoPointerSince(page: Page, start: number): Promise<void> {
+  expect((await inputs(page)).slice(start).filter(input => input.type.startsWith('pointer'))).toEqual([]);
+}
+
+let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
+let capacitySnapshot: SessionSnapshotBundle | undefined;
+const test = base.extend({ storageState: async ({}, use) => { await use(routeStorage ?? { cookies: [], origins: [] }); } });
+test.describe.configure({ mode: 'serial' });
+test.afterEach(async ({ page }, info) => {
+  if (info.status === info.expectedStatus) return;
+  const data = await snapshot(page).catch(error => ({ observationError: String(error) }));
+  await writeFile(info.outputPath('failed-actual-worker-and-input.json'), JSON.stringify({ data, replies: await replies(page), inputs: await inputs(page), commands: await submitted(page) },null,2));
+  await page.screenshot({path:info.outputPath('failed-actual-fullhd.png')});
+});
+
+test('player completes and saves actual Storage/Delivery capacity before stationary Cell history cases', async ({page},info) => {
+  await installTee(page); await observe(page);
+  await page.addInitScript(() => localStorage.setItem('lockstate.settings.accessibility', JSON.stringify({ version: 1, reducedMotion: false, uiScale: 1 })));
+  await page.setViewportSize({width:1920,height:1080}); await page.goto('/?renderer=oblique');
+  await page.getByRole('button', { name: 'New prison', exact: true }).click(); await expect(page.locator('.hud-clock__day')).toHaveText('1');
+  await page.getByRole('button', { name: 'Pause', exact: true }).click(); await expect.poll(() => currentClock(page)).toEqual({ mode: 'paused' });
+  // Actual capacity/logistics route, not injected stock or physical-finish commands.
+  await placeNumeric(page, 'Storage Room', 5); await placeNumeric(page, 'Delivery Bay', 12);
+  await page.getByRole('button', { name: 'Fast forward', exact: true }).click(); await page.getByRole('button', { name: 'Fast forward', exact: true }).click(); await finish(page);
+  await expect(page.locator('[data-metric="rooms"] .ui-stat__value')).toHaveText('2');
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  const actual = await snapshot(page);
+  expect(actual.construction.orders.every(o => o.state === 'completed')).toBe(true);
+  expect(actual.simulation?.roomTemplates?.pending).toEqual([]);
+  expect(actual.simulation?.roomTemplates?.completed?.map(p => ({id:p.templateId,origin:p.origin})).sort((a,b)=>a.id.localeCompare(b.id))).toEqual([
+    {id:'delivery-bay-basic',origin:{x:12,y:5}}, {id:'storage-room-basic',origin:{x:5,y:5}},
+  ]);
+  expect(actual.simulation?.objects?.placedObjects).toHaveLength(3);
+  expect(await submitted(page)).toEqual([
+    {type:'PlaceRoomTemplate',templateId:'storage-room-basic',origin:{x:5,y:5}},
+    {type:'PlaceRoomTemplate',templateId:'delivery-bay-basic',origin:{x:12,y:5}},
+  ]);
+  await page.getByRole('button',{name:'Overview',exact:true}).click();
+  await page.getByRole('button',{name:'Save now',exact:true}).click();
+  await expect(page.locator('.save-panel__status')).toContainText('Saved');
+  capacitySnapshot=await snapshot(page); routeStorage=await page.context().storageState({indexedDB:true});
+  await writeFile(info.outputPath('actual-saved-capacity-snapshot.json'),JSON.stringify(capacitySnapshot,null,2));
+  await page.screenshot({path:info.outputPath('actual-saved-capacity-fullhd.png')});
+});
+
+for (const mode of ['world', 'oblique'] as const) test(`${mode} FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo`, async ({ page }, info) => {
+  await installTee(page); await observe(page);
+  await page.addInitScript(() => localStorage.setItem('lockstate.settings.accessibility', JSON.stringify({ version: 1, reducedMotion: false, uiScale: 1 })));
+  await page.setViewportSize({ width: 1920, height: 1080 }); await page.goto(mode === 'world' ? '/' : '/?renderer=oblique');
+  expect(routeStorage,'history cases consume the preceding actual public IndexedDB save').toBeDefined();
+  expect(capacitySnapshot).toBeDefined();
+  await page.locator('.save-panel__item').first().getByRole('button',{name:'Load',exact:true}).click();
+  await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+  // Restore starts a fresh paused kernel; explicitly confirm it through the real public control.
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await expect.poll(() => currentClock(page)).toEqual({mode:'paused'});
+  const loaded = await snapshot(page);
+  expect(loaded.world).toEqual(capacitySnapshot!.world);
+  expect(loaded.construction).toEqual(capacitySnapshot!.construction);
+  expect(loaded.simulation?.objects).toEqual(capacitySnapshot!.simulation?.objects);
+  expect(loaded.simulation?.roomTemplates).toEqual(capacitySnapshot!.simulation?.roomTemplates);
+  await expect(page.locator('[data-metric="rooms"] .ui-stat__value')).toHaveText('2');
+  await placeNumeric(page, 'Basic cell', 20, 1);
+  await page.getByRole('button', { name: 'Fast forward', exact: true }).click(); await page.getByRole('button', { name: 'Fast forward', exact: true }).click(); await finish(page);
+  await expect(page.locator('[data-metric="rooms"] .ui-stat__value')).toHaveText('3');
+  await expect.poll(async()=>cellOrders(await snapshot(page)).filter(o=>o.state==='completed').length).toBe(20);
+  await page.getByRole('button', { name: 'Pause', exact: true }).click(); await expect.poll(() => currentClock(page)).toEqual({ mode: 'paused' });
+  const completed = await snapshot(page); assertCompletedCell(completed);
+  await writeFile(info.outputPath('actual-completed-cell-snapshot.json'), JSON.stringify(completed,null,2));
+  const expectedCommands = [
+    { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin, quarterTurns: 1 },
+  ];
+  expect(await submitted(page)).toEqual(expectedCommands);
+  const region = page.getByRole('region', { name: 'Minimap', exact: true });
+  const map = page.locator('.hud-minimap__surface');
+  if (!await map.isVisible()) await region.getByRole('button', { name: 'Expand', exact: true }).click();
+  const bounds = await map.boundingBox(); if (bounds === null) throw Error('Actual minimap absent');
+  expect(await map.locator('canvas').evaluate(canvas => ({width:(canvas as HTMLCanvasElement).width,height:(canvas as HTMLCanvasElement).height}))).toEqual({width:32,height:32});
+  // Public minimap center is the independently chosen tile20,5 ground center.
+  await map.click({ position: { x: bounds.width * 20.5 / 32, y: bounds.height * 5.5 / 32 } });
+  await page.getByRole('button', { name: 'Build', exact: true }).click(); await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Room plans' });
+  await dialog.getByRole('button', { name: 'Basic cell', exact: true }).click();
+  const rotation = dialog.getByRole('combobox', { name: 'Room plan rotation (clockwise)' });
+  await rotation.focus(); await page.keyboard.press('Home'); await page.keyboard.press('ArrowDown'); await expect(rotation).toHaveValue('1');
+  await dialog.getByRole('button', { name: 'Place on map', exact: true }).focus(); await page.keyboard.press('Enter'); await expect(dialog).toBeHidden();
+  const canvas = await page.locator('#game-root canvas').boundingBox(); if(canvas===null) throw Error('Actual canvas absent');
+  const point={x:canvas.x+canvas.width/2,y:canvas.y+canvas.height/2};
+  expect(canvas.width).toBe(1920); expect(canvas.height).toBe(1080);
+  expect(await page.evaluate(p => document.elementFromPoint(p.x,p.y) === document.querySelector('#game-root canvas'),point)).toBe(true);
+  await page.mouse.move(point.x, point.y);
+  const ghost = page.locator('.room-template-world-ghost'); await expect(ghost).toBeVisible(); await expect(ghost).toHaveAttribute('data-ready','blocked'); await expect(ghost.locator('polygon')).toHaveCount(28);
+  const first = (await replies(page)).at(-1)!;
+  expect(first.target).toMatchObject({kind:'room-template',templateId:'cell-basic',origin,quarterTurns:1}); expect(first.target.mirrorX ?? false).toBe(false); expect(first.verdict).toMatchObject({ok:false});
+  expect(await page.evaluate(() => (Reflect.get(window,'historyVerdictProbe') as Probe).quotes.filter(q => q.templateId === 'cell-basic').at(-1)!.quote)).toEqual(expectedQuote);
+  const quote = (await ghost.getByRole('status').innerText()).split(' \u00b7 ').slice(1); expect(quote).toHaveLength(3);
+  expect((await inputs(page)).filter(i=>i.type==='pointermove').at(-1)).toMatchObject({trusted:true,canvas:true,x:point.x,y:point.y});
+  await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+  const identity = await viewIdentity(page); assertWholeQ1Footprint(identity); const eventCount = (await inputs(page)).length; const queryCount = (await replies(page)).length;
+  const ids = cellOrders(completed).map(o => o.id).sort();
+  await writeFile(info.outputPath('stationary-before-undo.json'),JSON.stringify({mode,origin,point,first,expectedQuote,identity,quote,eventCount,queryCount,ids},null,2));
+  await page.screenshot({path:info.outputPath('stationary-completed-cell-blocked.png')});
+  await page.keyboard.press('KeyZ');
+  await expect.poll(async () => cellOrders(await snapshot(page)).filter(o => o.state === 'cancelled').length).toBe(20);
+  const undone = await snapshot(page);
+  expect(cellOrders(undone).map(o => o.id).sort()).toEqual(ids); expect(cellObjects(undone)).toEqual([]); expect(cellRooms(undone)).toEqual([]);
+  for (let y=5;y<9;y++) for(let x=20;x<27;x++) { expect(plane(undone,x,y,'squareStructure')).toBe(0); expect(plane(undone,x,y,'zoning')).toBe(0); }
+  expect(undone.simulation?.roomTemplates?.undone).toEqual(expect.arrayContaining([expect.objectContaining({templateId:'cell-basic',origin,quarterTurns:1})]));
+  await expect(ghost).toHaveAttribute('data-ready','clear');
+  const undoQueries = (await replies(page)).slice(queryCount);
+  expect(undoQueries.some(q => q.target.templateId === 'cell-basic' && q.target.quarterTurns === 1 && q.target.origin.x === 20 && q.target.origin.y === 5 && q.verdict.ok)).toBe(true);
+  expect(await viewIdentity(page)).toEqual(identity); await assertNoPointerSince(page,eventCount);
+  expect((await ghost.getByRole('status').innerText()).split(' \u00b7 ').slice(1)).toEqual(quote);
+  expect(await submitted(page)).toEqual([...expectedCommands,{type:'Undo'}]);
+  await page.screenshot({path:info.outputPath('stationary-undo-clear.png')});
+  const undoQueryCount = (await replies(page)).length;
+  await page.keyboard.press('KeyY');
+  await expect.poll(async () => (await snapshot(page)).simulation?.roomTemplates?.pending.filter(p => p.templateId === 'cell-basic').length).toBe(1);
+  const redone = await snapshot(page);
+  expect(cellOrders(redone)).toHaveLength(20); expect(cellOrders(redone).map(o => o.id).sort()).toEqual(ids); expect(cellOrders(redone).every(o => o.state === 'approved')).toBe(true);
+  expect(cellObjects(redone)).toEqual([]); expect(cellRooms(redone)).toEqual([]);
+  expect(redone.simulation?.roomTemplates?.pending).toMatchObject([{templateId:'cell-basic',origin,quarterTurns:1}]);
+  await expect(ghost).toHaveAttribute('data-ready','blocked');
+  const redoQueries = (await replies(page)).slice(undoQueryCount);
+  expect(redoQueries.some(q => q.target.templateId === 'cell-basic' && q.target.quarterTurns === 1 && q.target.origin.x === 20 && q.target.origin.y === 5 && !q.verdict.ok && q.verdict.reason === 'structure-occupied')).toBe(true);
+  expect(await viewIdentity(page)).toEqual(identity); await assertNoPointerSince(page,eventCount);
+  expect((await ghost.getByRole('status').innerText()).split(' \u00b7 ').slice(1)).toEqual(quote);
+  expect(await submitted(page)).toEqual([...expectedCommands,{type:'Undo'},{type:'Redo'}]);
+  await expect.poll(() => currentClock(page)).toEqual({mode:'paused'});
+  const keys=(await inputs(page)).slice(eventCount).filter(e => e.type.startsWith('key'));
+  expect(keys).toEqual([{type:'keydown',trusted:true,canvas:false,code:'KeyZ'},{type:'keyup',trusted:true,canvas:false,code:'KeyZ'},{type:'keydown',trusted:true,canvas:false,code:'KeyY'},{type:'keyup',trusted:true,canvas:false,code:'KeyY'}]);
+  await page.screenshot({path:info.outputPath('stationary-redo-blocked.png')});
+  await writeFile(info.outputPath('actual-history-ghost-receipt.json'),JSON.stringify({mode,uiScale:1,origin,point,expectedQuote,first,identity,undoQueries,redoQueries,keys,completed,undone,redone,commands:await submitted(page)},null,2));
+});

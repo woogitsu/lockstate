@@ -1,0 +1,494 @@
+{
+  "source": "assets/source/blender/fixture.shower.head.blend",
+  "sourceSha256": "ac0cbe6a3673dd8db19c76375ddeb3d6f23d0cab6aa2e56b298ad8a8e70806fe",
+  "rawSceneMeshCount": 43,
+  "rawEvaluatedBounds": {
+    "min": [
+      -0.35499998927116394,
+      -0.49999961256980896,
+      0.7099999785423279
+    ],
+    "max": [
+      0.35499998927116394,
+      0.47500067949295044,
+      1.1399999856948853
+    ]
+  },
+  "materials": [
+    "Shower blue-grey enamel",
+    "Shower cold service mark",
+    "Shower hot service mark",
+    "Shower pale nozzle jets",
+    "Shower trim muted teal",
+    "Worn galvanized fixture metal",
+    "galvanized_edge",
+    "metal_recess",
+    "shade",
+    "steel"
+  ],
+  "originalNormals": [
+    {
+      "name": "Bent brushed-steel arm",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.04906402435153698,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Centre dark diffuser",
+      "evaluatedVertices": 64,
+      "evaluatedPolygons": 34,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 34,
+      "minimumOutwardNormalDistance": 0.004999697208404541,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Centre diffuser surround",
+      "evaluatedVertices": 64,
+      "evaluatedPolygons": 34,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 34,
+      "minimumOutwardNormalDistance": 0.006000161170959473,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Coupling dark joint",
+      "evaluatedVertices": 64,
+      "evaluatedPolygons": 34,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 34,
+      "minimumOutwardNormalDistance": 0.028999803587794304,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Dark plate bolt.-0.27.-0.35",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.006999969482421875,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Dark plate bolt.-0.27.-0.45",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.006999969482421875,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Dark plate bolt.0.27.-0.35",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.006999969482421875,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Dark plate bolt.0.27.-0.45",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.006999969482421875,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Deep charcoal nozzle face",
+      "evaluatedVertices": 128,
+      "evaluatedPolygons": 66,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 66,
+      "minimumOutwardNormalDistance": 0.008999168872833252,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Enamel wall mounting plate",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 54,
+      "minimumOutwardNormalDistance": 0.0899999737739563,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Head coupling bright sleeve",
+      "evaluatedVertices": 64,
+      "evaluatedPolygons": 34,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 34,
+      "minimumOutwardNormalDistance": 0.030999183654785156,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Inset blue-grey face",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [
+        26,
+        27,
+        30,
+        31,
+        36,
+        37,
+        42,
+        43,
+        49,
+        50,
+        52,
+        53
+      ],
+      "nondegeneratePolygons": 42,
+      "minimumOutwardNormalDistance": 0.0069997310638427734,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.0.0",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.0.1",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.0.2",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.005999981891363859,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.0.3",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.0.4",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.005999981891363859,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.0.5",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.0.6",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.005999981891363859,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.0.7",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.1.0",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.005999981891363859,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.1.1",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.1.10",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.005999981891363859,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.1.11",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.1.12",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.1.2",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.1.3",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.005999981891363859,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.1.4",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.005999981891363859,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.1.5",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.1.6",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.005999981891363859,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.1.7",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.005999981891363859,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.1.8",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Nozzle.1.9",
+      "evaluatedVertices": 24,
+      "evaluatedPolygons": 14,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 14,
+      "minimumOutwardNormalDistance": 0.0059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Recessed steel socket cover",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 50,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 50,
+      "minimumOutwardNormalDistance": 0.006998538970947266,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Service valve body.-0.255",
+      "evaluatedVertices": 48,
+      "evaluatedPolygons": 26,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 26,
+      "minimumOutwardNormalDistance": 0.06499987840652466,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Service valve body.0.255",
+      "evaluatedVertices": 48,
+      "evaluatedPolygons": 26,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 26,
+      "minimumOutwardNormalDistance": 0.06499987840652466,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Service valve lens.-0.255",
+      "evaluatedVertices": 48,
+      "evaluatedPolygons": 26,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 26,
+      "minimumOutwardNormalDistance": 0.006999492645263672,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Service valve lens.0.255",
+      "evaluatedVertices": 48,
+      "evaluatedPolygons": 26,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 26,
+      "minimumOutwardNormalDistance": 0.006999492645263672,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Shallow shower head shell",
+      "evaluatedVertices": 128,
+      "evaluatedPolygons": 66,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 66,
+      "minimumOutwardNormalDistance": 0.09999960660934448,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Small retaining screw",
+      "evaluatedVertices": 96,
+      "evaluatedPolygons": 50,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 50,
+      "minimumOutwardNormalDistance": 0.003998994827270508,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Teal rolled head ring",
+      "evaluatedVertices": 384,
+      "evaluatedPolygons": 384,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 384,
+      "minimumOutwardNormalDistance": 0.028039777418598533,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Wall pipe socket",
+      "evaluatedVertices": 64,
+      "evaluatedPolygons": 34,
+      "degenerateFaceIndices": [],
+      "nondegeneratePolygons": 34,
+      "minimumOutwardNormalDistance": 0.06499946117401123,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "Worn raised plate rim",
+      "evaluatedVertices": 56,
+      "evaluatedPolygons": 54,
+      "degenerateFaceIndices": [
+        26,
+        27,
+        30,
+        31,
+        36,
+        37,
+        42,
+        43,
+        49,
+        50,
+        52,
+        53
+      ],
+      "nondegeneratePolygons": 42,
+      "minimumOutwardNormalDistance": 0.0139998197555542,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    }
+  ],
+  "physicalConnection": {
+    "originalArmUndersideZ": 1.0049999952316284,
+    "originalCouplingTopZ": 0.9210000038146973,
+    "originalVerticalGap": 0.08399999141693115,
+    "actualOutletMinZ": 0.9210000038146973,
+    "actualOutletMaxZ": 1.0369999408721924
+  }
+}

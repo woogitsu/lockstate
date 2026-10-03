@@ -115,16 +115,18 @@ pricing, selection and UI; it is not the ownership test.
 - Checks terrain properties (e.g. `requiresBuildableTerrain`, `allowWater`).
 
 It has three production callers, each supplying its own requirement set:
-`ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:587`,
+`ConstructionSystem.submitOrder` (`src/simulation/construction/system.ts:722`,
 inside `admits`, with `SUBMISSION_REQUIREMENT`), `ObjectPlacementService`
-(`src/simulation/objects/object-placement-service.ts:526`,
-`PLACEMENT_REQUIREMENT`) and room zoning (`src/simulation/rooms/zoning.ts:555`,
+(`src/simulation/objects/object-placement-service.ts:559`,
+`PLACEMENT_REQUIREMENT`) and room zoning (`src/simulation/rooms/zoning.ts:559`,
 `ZONING_REQUIREMENT`). **This document said "its one production caller" from
 `f1d5c30` until this correction**; the second arrived at `041a379` (#269) and
 the third at `6cededc` (#320), so the sentence had been wrong for about a
 hundred releases. The terrain clause below is scoped to `SUBMISSION_REQUIREMENT`
 and does not describe the other two — `zoning.ts:417` records that `canBuildAt`
-defaults terrain checks **on**.
+defaults terrain checks **on**. The preceding `zoning.ts:555` indication remains
+historical; at coupled-refund checkpoint `91fd4e82b0`, the live fragment above
+still names `ZONING_REQUIREMENT`.
 
 `ConstructionSystem.submitOrder` refuses a
 build order whose tile the player does not own — the order is `failed` with
@@ -136,6 +138,38 @@ submission**, so a wall may currently be ordered on water or on rock. Turning
 either on is its own gameplay decision, and `SUBMISSION_REQUIREMENT` in
 `src/simulation/construction/system.ts` is where it would be taken.
 
+**Generic template-entrance footprint amendment at checkpoint 28cd9067cd.** The
+previous `system.ts:716`, `:594` and `:712` indications remain historical before
+the optional admission reader and its full-footprint predicate. The live
+fragments still quote `SUBMISSION_REQUIREMENT`, `public submitOrder` and `admits`;
+this applies the existing template entrance reservation without changing the
+legacy either-side edge ownership rule or terrain-deferred admission.
+
+**Generic object-order source amendment at checkpoint ca785768fd.** The preceding
+`system.ts:675`, `:592` and `:671` indications remain historical before the
+full-footprint submission guard. The live call quotes `SUBMISSION_REQUIREMENT`;
+the edge admission rule is unchanged.
+
+**Object footprint admission amendment at checkpoint 81dc3159f4.** The prior
+`system.ts:691` and `:687` indications remain historical before extending
+existing bounds/ownership admission to every physically occupied object tile.
+The live call still quotes `SUBMISSION_REQUIREMENT`; terrain stays deferred.
+
+**Pending-template footprint amendment at checkpoint ff609c7b9f.** The preceding
+`system.ts:709` and `:705` indications remain historical before the six-line
+incoming-object reservation check. The live call quotes `SUBMISSION_REQUIREMENT`;
+the helper is still `private admits` and the edge rule is unchanged.
+
+**Deferred-history source amendment at checkpoint a8435e3b90.** The preceding
+`object-placement-service.ts:535` indication remains historical before the
+internal continuation membership field. The live placement call still quotes
+`PLACEMENT_REQUIREMENT`; this history correction changes no admission policy.
+
+**Completed-square footprint amendment at checkpoint f8c2957af1.** The preceding
+`system.ts:715` and `:711` indications remain historical before the one-line
+expanded square-occupancy predicate. The live call still quotes
+`SUBMISSION_REQUIREMENT`; bounds, ownership and the legacy edge rule are unchanged.
+
 ### An edge order is judged by both tiles the edge separates
 
 An *edge* order is permitted when **either** of the two tiles the edge
@@ -144,12 +178,24 @@ of both and satisfied by either. The world keeps one slot per edge and keeps it
 on the north and west side, so the south face of owned land is addressed as the
 north edge of the first unowned row and its east face as the west edge of the
 first unowned column; `ConstructionSystem.submitOrder`
-(`src/simulation/construction/system.ts:540`) asks `admits` (`:583`) about the
+(`src/simulation/construction/system.ts:599`, `public submitOrder`) asks `admits` (`:718`) about the
 order's own tile and, only if that refuses, about the tile across the named
 edge. Non-edge buildables are unaffected — an object is addressed by a tile and
 has no far side, which is what `occupiesTileEdge` decides — and the refusal the
 player is told about is still the order's own tile's, because that is the tile
 they named.
+
+**2026-10-02 source amendment.** The earlier `system.ts:580` and `:651`
+coordinates are retained here as historical references from before the pending
+entrance reader was wired. The current `public submitOrder` and `admits`
+anchors above were checked against the source after that integration.
+
+**Whole-square furniture source amendment at checkpoint 2e2d058870.** The
+previous `system.ts:655`, `:585` and `:657` coordinates are retained as
+historical references before the square-only object-footprint reader. The
+live ownership call and entry point above still quote `SUBMISSION_REQUIREMENT`
+and `public submitOrder`; the new reader changes physical square occupancy,
+not the symmetric edge ownership rule.
 
 **This paragraph said the opposite until issue #448, and the reason it did is
 the durable half.** It read:

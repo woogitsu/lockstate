@@ -1,0 +1,335 @@
+[
+  {
+    "start": 3997589.628,
+    "ms": 98.6319999997504,
+    "method": "newPage"
+  },
+  {
+    "start": 3997690.024,
+    "ms": 2.3849999997764826,
+    "method": "setViewportSize"
+  },
+  {
+    "start": 3997693.902,
+    "ms": 1415.4390000002459,
+    "method": "goto"
+  },
+  {
+    "start": 3999285.739,
+    "ms": 240.74699999997392,
+    "method": "waitForSelector",
+    "selector": "#game-root canvas"
+  },
+  {
+    "start": 3999602.381,
+    "ms": 1238.7549999998882,
+    "method": "click",
+    "selector": "internal:role=button[name=/New prison|Nowe więzienie/]"
+  },
+  {
+    "start": 4000907.716,
+    "ms": 1753.117999999784,
+    "method": "click",
+    "selector": ".display-scale__cycle"
+  },
+  {
+    "start": 4002671.803,
+    "ms": 1296.3740000003017,
+    "method": "click",
+    "selector": ".display-scale__cycle"
+  },
+  {
+    "start": 4004076.011,
+    "ms": 1292.530999999959,
+    "method": "click",
+    "selector": ".display-scale__cycle"
+  },
+  {
+    "start": 4005377.085,
+    "ms": 1306.9840000001714,
+    "method": "click",
+    "selector": ".display-scale__cycle"
+  },
+  {
+    "start": 4006702.264,
+    "ms": 1312.1979999998584,
+    "method": "click",
+    "selector": ".ui-tab[data-tab=\"build\"]"
+  },
+  {
+    "start": 4008121.493,
+    "ms": 202.1980000003241,
+    "method": "expect",
+    "selector": ".hud-minimap >> .ui-panel__toggle"
+  },
+  {
+    "start": 4008435.138,
+    "ms": 202.09000000031665,
+    "method": "expect",
+    "selector": ".hud__corner > .hud-alerts--detached >> .ui-section__header"
+  },
+  {
+    "start": 4008741.708,
+    "ms": 200.89899999974295,
+    "method": "expect",
+    "selector": ".hud__corner > .hud-alerts--detached >> .ui-section__body"
+  },
+  {
+    "start": 4009049.06,
+    "ms": 199.72599999979138,
+    "method": "expect",
+    "selector": ".hud-build__arm"
+  },
+  {
+    "start": 4009353.997,
+    "ms": 719.9490000000224,
+    "method": "screenshot"
+  },
+  {
+    "start": 4010185.357,
+    "ms": 492.6070000003092,
+    "method": "focus",
+    "selector": ".hud-minimap >> .ui-panel__toggle"
+  },
+  {
+    "start": 4010789.422,
+    "ms": 301.2299999999814,
+    "method": "keyboardPress"
+  },
+  {
+    "start": 4011200.536,
+    "ms": 208.7770000002347,
+    "method": "expect",
+    "selector": ".hud-minimap >> .ui-panel__toggle"
+  },
+  {
+    "start": 4011518.628,
+    "ms": 196.33099999977276,
+    "method": "expect",
+    "selector": ".hud-minimap >> .hud-minimap__surface"
+  },
+  {
+    "start": 4011819.29,
+    "ms": 195.53700000001118,
+    "method": "expect",
+    "selector": ".hud__corner > .hud-alerts--detached >> .ui-section__header"
+  },
+  {
+    "start": 4012122.335,
+    "ms": 835.7030000002123,
+    "method": "screenshot"
+  },
+  {
+    "start": 4013067.027,
+    "ms": 1309.227000000421,
+    "method": "click",
+    "selector": ".ui-tab[data-tab=\"overview\"]"
+  },
+  {
+    "start": 4014387.593,
+    "ms": 10102.825000000186,
+    "method": "expect",
+    "selector": ".hud-minimap .hud-alerts__list",
+    "error": "Expect failed"
+  },
+  {
+    "start": 3997574.853,
+    "ms": 8.520999999716878,
+    "method": "pw:api"
+  },
+  {
+    "start": 3997574.307,
+    "ms": 13.350000000093132,
+    "method": "fixture"
+  },
+  {
+    "start": 3997587.873,
+    "ms": 0.7539999997243285,
+    "method": "fixture"
+  },
+  {
+    "start": 3997589.511,
+    "ms": 99.55400000000373,
+    "method": "pw:api"
+  },
+  {
+    "start": 3997588.807,
+    "ms": 100.32599999988452,
+    "method": "fixture"
+  },
+  {
+    "start": 3997562.856,
+    "ms": 126.32099999999627,
+    "method": "hook"
+  },
+  {
+    "start": 3997689.81,
+    "ms": 3.2119999998249114,
+    "method": "pw:api"
+  },
+  {
+    "start": 3997693.78,
+    "ms": 1585.8970000003465,
+    "method": "pw:api"
+  },
+  {
+    "start": 3999281.088,
+    "ms": 319.8650000002235,
+    "method": "pw:api",
+    "selector": "#game-root canvas"
+  },
+  {
+    "start": 3999602.127,
+    "ms": 1304.4920000000857,
+    "method": "pw:api",
+    "selector": "internal:role=button[name=/New prison|Nowe więzienie/]"
+  },
+  {
+    "start": 4000907.548,
+    "ms": 1763.125,
+    "method": "pw:api",
+    "selector": ".display-scale__cycle"
+  },
+  {
+    "start": 4002671.611,
+    "ms": 1403.5159999998286,
+    "method": "pw:api",
+    "selector": ".display-scale__cycle"
+  },
+  {
+    "start": 4004075.878,
+    "ms": 1300.155999999959,
+    "method": "pw:api",
+    "selector": ".display-scale__cycle"
+  },
+  {
+    "start": 4005376.963,
+    "ms": 1323.7259999997914,
+    "method": "pw:api",
+    "selector": ".display-scale__cycle"
+  },
+  {
+    "start": 4006702.028,
+    "ms": 1417.6370000001043,
+    "method": "pw:api",
+    "selector": ".ui-tab[data-tab=\"build\"]"
+  },
+  {
+    "start": 4008120.542,
+    "ms": 312.9799999999814,
+    "method": "expect"
+  },
+  {
+    "start": 4008434.096,
+    "ms": 306.3259999998845,
+    "method": "expect"
+  },
+  {
+    "start": 4008741.112,
+    "ms": 306.27299999957904,
+    "method": "expect"
+  },
+  {
+    "start": 4009048.074,
+    "ms": 304.7469999999739,
+    "method": "expect"
+  },
+  {
+    "start": 4009353.713,
+    "ms": 829.6129999998957,
+    "method": "pw:api"
+  },
+  {
+    "start": 4010185.14,
+    "ms": 603.2409999999218,
+    "method": "pw:api",
+    "selector": ".hud-minimap >> .ui-panel__toggle"
+  },
+  {
+    "start": 4010789.216,
+    "ms": 409.7870000000112,
+    "method": "pw:api"
+  },
+  {
+    "start": 4011199.712,
+    "ms": 317.64199999999255,
+    "method": "expect"
+  },
+  {
+    "start": 4011518.012,
+    "ms": 299.9309999998659,
+    "method": "expect"
+  },
+  {
+    "start": 4011818.628,
+    "ms": 301.95699999993667,
+    "method": "expect"
+  },
+  {
+    "start": 4012122.103,
+    "ms": 943.4929999997839,
+    "method": "pw:api"
+  },
+  {
+    "start": 4013066.882,
+    "ms": 1319.371999999974,
+    "method": "pw:api",
+    "selector": ".ui-tab[data-tab=\"overview\"]"
+  },
+  {
+    "start": 4014386.956,
+    "ms": 10189.424000000115,
+    "method": "expect",
+    "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.hud-minimap .hud-alerts__list')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('.hud-minimap .hud-alerts__list')\u001b[22m\n\u001b[2m    13 × locator resolved to <div class=\"hud-alerts__list\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n"
+  },
+  {
+    "start": 4024577.486,
+    "ms": 0.5529999998398125,
+    "method": "fixture"
+  },
+  {
+    "start": 4024578.266,
+    "ms": 1.259000000078231,
+    "method": "fixture"
+  },
+  {
+    "start": 4025449.757,
+    "ms": 8.504999999888241,
+    "method": "pw:api"
+  },
+  {
+    "start": 4024579.734,
+    "ms": 878.5570000000298,
+    "method": "fixture"
+  },
+  {
+    "start": 4025466.148,
+    "ms": 0.007999999914318323,
+    "method": "test.attach"
+  },
+  {
+    "start": 4025468.882,
+    "ms": 0.010999999940395355,
+    "method": "fixture"
+  },
+  {
+    "start": 4024576.858,
+    "ms": 897.933999999892,
+    "method": "hook"
+  },
+  {
+    "start": 4025475.639,
+    "ms": 42.058000000193715,
+    "method": "fixture"
+  },
+  {
+    "start": 4025518.316,
+    "ms": 0.014999999664723873,
+    "method": "fixture"
+  },
+  {
+    "start": 4025474.952,
+    "ms": 44.14300000015646,
+    "method": "hook"
+  }
+]

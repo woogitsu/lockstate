@@ -61,10 +61,10 @@ describe('an object buildable costs what its footprint says it costs', () => {
     // Exact rather than `toBeGreaterThan`, and it moves once per phase 4
     // group -- which is the point: a group of rows landing without this number
     // moving would mean the rows are not in the registry. Phase 4 adds
-    // seventeen rows in four groups, so this ends at 19 object buildables of
-    // 21 rows; `door-wooden` and `wall-brick` are the two that place no object.
-    expect(objectBuildables.length).toBe(19);
-    expect(BUILDABLE_REGISTRY.size).toBe(21);
+    // seventeen rows in four groups. The Yard station adds one optional object:
+    // twenty object buildables out of twenty-two rows; `door-wooden` and `wall-brick` are the two that place no object.
+    expect(objectBuildables.length).toBe(20);
+    expect(BUILDABLE_REGISTRY.size).toBe(22);
     // Every id the filter kept really does name a declared object.
     // `validateBuildableObjectReferences` throws at import for a broken
     // reference, so this is the assertion that the throw is doing its job
@@ -150,9 +150,10 @@ describe('an object buildable costs what its footprint says it costs', () => {
     ).toEqual([]);
 
     // Not vacuous: nineteen distinct object ids are required across the
-    // catalogue, and `object.sink` is the twentieth and only one that is not.
+    // room catalogue. The Yard exercise station is optional rather than a requirement.
     expect(required.size).toBe(19);
-    expect([...placeable].filter((objectId) => !required.has(objectId))).toEqual([]);
+    // Optional equipment is explicitly named; it does not become a Yard prerequisite.
+    expect([...placeable].filter((objectId) => !required.has(objectId))).toEqual(['object.exercise-station']);
 
     // And the room-level statement the pull request reports: 17 of the 18 room
     // definitions carry `object` requirements, and all 17 are now satisfiable.

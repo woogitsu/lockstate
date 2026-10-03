@@ -1,0 +1,7 @@
+00:01.110  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\hud-square-brick-calibration-20261002\assets\source\blender\wall.square.brick.full.blend"
+PASS full: export bounds=[(-8.847564458847046e-09, 1.0), (-8.847564458847046e-09, 1.0), (0.0, 0.75)]; 72 ground spans/pivots/model borders; unchanged source=c73fcc00471682135b53049e0b74f1d71588909b245bfeac0cac6cd93d696ae1
+00:01.188  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\hud-square-brick-calibration-20261002\assets\source\blender\wall.square.brick.low.blend"
+PASS low: export bounds=[(-8.847564458847046e-09, 1.0), (-8.847564458847046e-09, 1.0), (0.0, 0.3400000035762787)]; 72 ground spans/pivots/model borders; unchanged source=583c49382bf24191ee0d0e10518c0678716eb036c9638558036d5a06b0fbd1f1
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit

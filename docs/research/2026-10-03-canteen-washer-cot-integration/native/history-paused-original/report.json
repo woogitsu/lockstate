@@ -1,0 +1,215 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-washer-cot-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-history-paused-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-washer-cot-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build|dedicated-security-console-player-build|dedicated-medical-bed-player-build|dedicated-loading-dock-door-player-build|dedicated-camera-pan-player|oblique-pending-wall-player|room-template-renderer-stationary-hover|world-construction-chord-release|room-template-session-preflight|world-build-session-ownership|cell-cot-player-build|room-template-second-touch-ownership|hired-guard-player-build|room-template-history-verdict-player)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5184 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5184/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "room-template-history-verdict-player.spec.ts",
+      "file": "room-template-history-verdict-player.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player completes and saves actual Storage/Delivery capacity before stationary Cell history cases",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 44391,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T06:49:43.302Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "89339ddd74f99ca79aa7-47f3edf3640520d3027d",
+          "file": "room-template-history-verdict-player.spec.ts",
+          "line": 333,
+          "column": 1
+        },
+        {
+          "title": "world FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 22699,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[33m@@ -1,8 +1,8 @@\u001b[39m\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    \"bed-wooden@24,6\",\u001b[22m\n\u001b[32m-   \"door-wooden@20,6\",\u001b[39m\n\u001b[31m+   \"door-wooden@21,6\",\u001b[39m\n\u001b[2m    \"toilet-brick@22,7\",\u001b[22m\n\u001b[2m    \"wall-brick@20,5\",\u001b[22m\n\u001b[2m    \"wall-brick@20,7\",\u001b[22m\n\u001b[2m    \"wall-brick@20,8\",\u001b[22m\n\u001b[2m    \"wall-brick@21,5\",\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[33m@@ -1,8 +1,8 @@\u001b[39m\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    \"bed-wooden@24,6\",\u001b[22m\n\u001b[32m-   \"door-wooden@20,6\",\u001b[39m\n\u001b[31m+   \"door-wooden@21,6\",\u001b[39m\n\u001b[2m    \"toilet-brick@22,7\",\u001b[22m\n\u001b[2m    \"wall-brick@20,5\",\u001b[22m\n\u001b[2m    \"wall-brick@20,7\",\u001b[22m\n\u001b[2m    \"wall-brick@20,8\",\u001b[22m\n\u001b[2m    \"wall-brick@21,5\",\u001b[22m\n    at assertCompletedCell (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts:91:87)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts:221:43",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts",
+                      "column": 87,
+                      "line": 91
+                    },
+                    "snippet": "  89 |   const expectedShell: string[] = [];\n  90 |   for (let y = 5; y < 9; y++) for (let x = 20; x < 27; x++) if (y === 5 || y === 8 || x === 20 || x === 26) expectedShell.push(`${x === 20 && y === 6 ? 'door-wooden' : 'wall-brick'}@${x},${y}`);\n> 91 |   expect(orders.map(o => `${o.definitionId}@${o.location.x},${o.location.y}`).sort()).toEqual([...expectedShell, 'bed-wooden@24,6', 'toilet-brick@22,7'].sort());\n     |                                                                                       ^\n  92 |   expect(cellObjects(data).map(o => ({ id: o.objectId, anchor: o.anchorTile, orientation: o.orientation })).sort((a,b) => a.id.localeCompare(b.id))).toEqual([\n  93 |     { id: 'object.bed', anchor: { x: 24, y: 6 }, orientation: 1 }, { id: 'object.toilet', anchor: { x: 22, y: 7 }, orientation: 1 },\n  94 |   ]);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts",
+                        "column": 87,
+                        "line": 91
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[33m@@ -1,8 +1,8 @@\u001b[39m\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    \"bed-wooden@24,6\",\u001b[22m\n\u001b[32m-   \"door-wooden@20,6\",\u001b[39m\n\u001b[31m+   \"door-wooden@21,6\",\u001b[39m\n\u001b[2m    \"toilet-brick@22,7\",\u001b[22m\n\u001b[2m    \"wall-brick@20,5\",\u001b[22m\n\u001b[2m    \"wall-brick@20,7\",\u001b[22m\n\u001b[2m    \"wall-brick@20,8\",\u001b[22m\n\u001b[2m    \"wall-brick@21,5\",\u001b[22m\n\n  89 |   const expectedShell: string[] = [];\n  90 |   for (let y = 5; y < 9; y++) for (let x = 20; x < 27; x++) if (y === 5 || y === 8 || x === 20 || x === 26) expectedShell.push(`${x === 20 && y === 6 ? 'door-wooden' : 'wall-brick'}@${x},${y}`);\n> 91 |   expect(orders.map(o => `${o.definitionId}@${o.location.x},${o.location.y}`).sort()).toEqual([...expectedShell, 'bed-wooden@24,6', 'toilet-brick@22,7'].sort());\n     |                                                                                       ^\n  92 |   expect(cellObjects(data).map(o => ({ id: o.objectId, anchor: o.anchorTile, orientation: o.orientation })).sort((a,b) => a.id.localeCompare(b.id))).toEqual([\n  93 |     { id: 'object.bed', anchor: { x: 24, y: 6 }, orientation: 1 }, { id: 'object.toilet', anchor: { x: 22, y: 7 }, orientation: 1 },\n  94 |   ]);\n    at assertCompletedCell (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts:91:87)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts:221:43"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T06:50:27.813Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-paused-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\room-template-history-verdict-player.spec.ts",
+                    "column": 87,
+                    "line": 91
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "89339ddd74f99ca79aa7-32c9d218012c8ff0f9fc",
+          "file": "room-template-history-verdict-player.spec.ts",
+          "line": 431,
+          "column": 42
+        },
+        {
+          "title": "oblique FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T06:50:50.569Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "89339ddd74f99ca79aa7-8e69968e37fc5fda1781",
+          "file": "room-template-history-verdict-player.spec.ts",
+          "line": 431,
+          "column": 42
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T06:49:40.720Z",
+    "duration": 70330.515,
+    "expected": 1,
+    "skipped": 1,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

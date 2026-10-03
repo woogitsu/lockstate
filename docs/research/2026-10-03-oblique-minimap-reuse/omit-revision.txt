@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-oblique-minimap-reuse-20261003
+
+ ❯ tests/unit/oblique-minimap-projection-reuse.test.ts (5 tests | 1 failed) 13ms
+   × invalidates on changed revision even when world identity stays the same 4ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  13:08:02
+   Duration  927ms (transform 282ms, setup 0ms, import 758ms, tests 13ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-minimap-projection-reuse.test.ts > invalidates on changed revision even when world identity stays the same
+AssertionError: expected +0 to be 256 // Object.is equality
+
+- Expected
++ Received
+
+- 256
++ 0
+
+ ❯ tests/unit/oblique-minimap-projection-reuse.test.ts:60:35
+     58|   probe.publish(); reads.mockClear();
+     59|   probe.setFrame({ ...probe.frame(), revision: 2 }); probe.publish();
+     60|   expect(reads.mock.calls.length).toBe(256);
+       |                                   ^
+     61|   expect(probe.views[1]!.pixels).not.toBe(probe.views[0]!.pixels);
+     62|   expect(probe.views[1]!.pixels).toEqual(probe.views[0]!.pixels);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

@@ -147,6 +147,8 @@ function targetFor(projectionId: ProjectionId, harness: Harness): ProjectionTarg
       return { kind: 'id', id: 'cell-1' };
     case 'room-template':
       return { kind: 'room-template', templateId: 'cell-basic', origin: { x: 5, y: 5 } };
+    case 'object-placement':
+      return { kind: 'object-placement', definitionId: 'desk-wooden', anchor: { x: 5, y: 5 }, quarterTurns: 1 };
   }
 }
 

@@ -1,0 +1,34 @@
+{
+  "controls": [
+    {
+      "control": "producer-only-reversed-retained-door-winding",
+      "exitCode": 1,
+      "sourceFilesByteEqualBaseline": true,
+      "vertexBytesChangedByWinding": false
+    },
+    {
+      "control": "loaded-only-reversed-retained-door-winding",
+      "exitCode": 1,
+      "sourceFilesByteEqualBaseline": true,
+      "vertexBytesChangedByWinding": false
+    },
+    {
+      "control": "exact-restored-winding-verify",
+      "exitCode": 0,
+      "sourceFilesByteEqualBaseline": true,
+      "vertexBytesChangedByWinding": null
+    }
+  ],
+  "builderBytesRestored": true,
+  "wrapperBytesRestored": true,
+  "sourceIdentities": [
+    {
+      "path": "assets\\source\\blender\\utility.loading-dock-door.variants.blend",
+      "sha256": "9a8b5cd29ed5809ec1c3f2c6f36f3d97d3a9a7f69551c0743e096591c26908c4"
+    },
+    {
+      "path": "assets\\source\\blender\\utility.loading-dock-door.angled-detail.blend",
+      "sha256": "7eeca158b9e5f92abb139ab8164f5dd7a2aa2f2ca47936e4b08e4ea6c79a3aac"
+    }
+  ]
+}

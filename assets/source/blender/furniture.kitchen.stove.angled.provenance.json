@@ -1,0 +1,1320 @@
+{
+  "originalSource": "assets/source/blender/furniture.kitchen.stove.variants.blend",
+  "originalSourceSha256": "cbf3ed97f84e126ddb309ea55559810ac156d430371dcb9c074e7b7e1c3523d9",
+  "source": "assets/source/blender/furniture.kitchen.stove.angled.blend",
+  "sourceSha256": "540c8b22be73848bb1520fae9ffeabfce7711bb0c629161e529b6d6ae33ca5fc",
+  "footprintTiles": [
+    2,
+    1
+  ],
+  "originalMeshCount": 29,
+  "retainedAssemblyFit": [
+    0.9,
+    0.75,
+    1
+  ],
+  "retainedMaximumCoordinateError": 1.1920928955078125e-07,
+  "originalMeshNames": [
+    "burner",
+    "burner-hot",
+    "burner-hot.001",
+    "burner-hot.002",
+    "burner-hot.003",
+    "burner.001",
+    "burner.002",
+    "burner.003",
+    "control-knob",
+    "control-knob.001",
+    "control-knob.002",
+    "control-knob.003",
+    "control-knob.004",
+    "control-knob.005",
+    "control-rail",
+    "foot",
+    "foot.001",
+    "foot.002",
+    "foot.003",
+    "handle",
+    "handle.001",
+    "oven-door",
+    "oven-door.001",
+    "oven-window",
+    "oven-window.001",
+    "rear-splash",
+    "status-light",
+    "steel-deck",
+    "stove-body"
+  ],
+  "addedMeshNames": [
+    "angled-stove.burner collar 0",
+    "angled-stove.burner collar 1",
+    "angled-stove.burner collar 2",
+    "angled-stove.burner collar 3",
+    "angled-stove.control knob index 0",
+    "angled-stove.control knob index 1",
+    "angled-stove.control knob index 2",
+    "angled-stove.control knob index 3",
+    "angled-stove.control knob index 4",
+    "angled-stove.control knob index 5",
+    "angled-stove.oven hinge 0 0.3",
+    "angled-stove.oven hinge 0 0.91",
+    "angled-stove.oven hinge 1 0.3",
+    "angled-stove.oven hinge 1 0.91",
+    "angled-stove.oven seal horizontal 0 0.415",
+    "angled-stove.oven seal horizontal 0 0.905",
+    "angled-stove.oven seal horizontal 1 0.415",
+    "angled-stove.oven seal horizontal 1 0.905",
+    "angled-stove.oven seal vertical 0 -1",
+    "angled-stove.oven seal vertical 0 1",
+    "angled-stove.oven seal vertical 1 -1",
+    "angled-stove.oven seal vertical 1 1",
+    "angled-stove.pot support east-west 0",
+    "angled-stove.pot support east-west 1",
+    "angled-stove.pot support east-west 2",
+    "angled-stove.pot support east-west 3",
+    "angled-stove.pot support north-south 0",
+    "angled-stove.pot support north-south 1",
+    "angled-stove.pot support north-south 2",
+    "angled-stove.pot support north-south 3",
+    "angled-stove.rolled splash lip",
+    "angled-stove.side vent louvre -1 0",
+    "angled-stove.side vent louvre -1 1",
+    "angled-stove.side vent louvre -1 2",
+    "angled-stove.side vent louvre -1 3",
+    "angled-stove.side vent louvre -1 4",
+    "angled-stove.side vent louvre 1 0",
+    "angled-stove.side vent louvre 1 1",
+    "angled-stove.side vent louvre 1 2",
+    "angled-stove.side vent louvre 1 3",
+    "angled-stove.side vent louvre 1 4",
+    "angled-stove.side vent recess -1 0",
+    "angled-stove.side vent recess -1 1",
+    "angled-stove.side vent recess -1 2",
+    "angled-stove.side vent recess -1 3",
+    "angled-stove.side vent recess -1 4",
+    "angled-stove.side vent recess 1 0",
+    "angled-stove.side vent recess 1 1",
+    "angled-stove.side vent recess 1 2",
+    "angled-stove.side vent recess 1 3",
+    "angled-stove.side vent recess 1 4"
+  ],
+  "sourceEvaluatedBounds": {
+    "min": [
+      -0.9269999265670776,
+      -0.45750001072883606,
+      0.0
+    ],
+    "max": [
+      0.9269999265670776,
+      0.3400000035762787,
+      2.246000051498413
+    ]
+  },
+  "cameraTargetTiles": [
+    1,
+    0.5,
+    1.1230000257492065
+  ],
+  "meshes": [
+    {
+      "name": "angled-stove.burner collar 0",
+      "evaluatedVertices": 128,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.burner collar 1",
+      "evaluatedVertices": 128,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.burner collar 2",
+      "evaluatedVertices": 128,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.burner collar 3",
+      "evaluatedVertices": 128,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.control knob index 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.control knob index 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.control knob index 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.control knob index 3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.control knob index 4",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.control knob index 5",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.oven hinge 0 0.3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.oven hinge 0 0.91",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.oven hinge 1 0.3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.oven hinge 1 0.91",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.oven seal horizontal 0 0.415",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.oven seal horizontal 0 0.905",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.oven seal horizontal 1 0.415",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.oven seal horizontal 1 0.905",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.oven seal vertical 0 -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.oven seal vertical 0 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.oven seal vertical 1 -1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.oven seal vertical 1 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.pot support east-west 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.pot support east-west 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.pot support east-west 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.pot support east-west 3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.pot support north-south 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.pot support north-south 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.pot support north-south 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.pot support north-south 3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.rolled splash lip",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent louvre -1 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent louvre -1 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent louvre -1 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent louvre -1 3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent louvre -1 4",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent louvre 1 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent louvre 1 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent louvre 1 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent louvre 1 3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent louvre 1 4",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent recess -1 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent recess -1 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent recess -1 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent recess -1 3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent recess -1 4",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent recess 1 0",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent recess 1 1",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent recess 1 2",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent recess 1 3",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "angled-stove.side vent recess 1 4",
+      "evaluatedVertices": 56,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "burner",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "burner-hot",
+      "evaluatedVertices": 64,
+      "materials": [
+        [
+          "burner glow",
+          [
+            0.8500000238418579,
+            0.23999999463558197,
+            0.04500000178813934,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "burner-hot.001",
+      "evaluatedVertices": 64,
+      "materials": [
+        [
+          "burner glow",
+          [
+            0.8500000238418579,
+            0.23999999463558197,
+            0.04500000178813934,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "burner-hot.002",
+      "evaluatedVertices": 64,
+      "materials": [
+        [
+          "burner glow",
+          [
+            0.8500000238418579,
+            0.23999999463558197,
+            0.04500000178813934,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "burner-hot.003",
+      "evaluatedVertices": 64,
+      "materials": [
+        [
+          "burner glow",
+          [
+            0.8500000238418579,
+            0.23999999463558197,
+            0.04500000178813934,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "burner.001",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "burner.002",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "burner.003",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "control-knob",
+      "evaluatedVertices": 48,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "control-knob.001",
+      "evaluatedVertices": 48,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "control-knob.002",
+      "evaluatedVertices": 48,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "control-knob.003",
+      "evaluatedVertices": 48,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "control-knob.004",
+      "evaluatedVertices": 48,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "control-knob.005",
+      "evaluatedVertices": 48,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "control-rail",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "foot",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "foot.001",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "foot.002",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "foot.003",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "handle",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "handle.001",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "cast iron",
+          [
+            0.04500000178813934,
+            0.054999999701976776,
+            0.05999999865889549,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "oven-door",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "oven-door.001",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "oven-window",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "oven glass",
+          [
+            0.054999999701976776,
+            0.10000000149011612,
+            0.11999999731779099,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "oven-window.001",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "oven glass",
+          [
+            0.054999999701976776,
+            0.10000000149011612,
+            0.11999999731779099,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "rear-splash",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "status-light",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "status green",
+          [
+            0.15000000596046448,
+            0.699999988079071,
+            0.30000001192092896,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "steel-deck",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "brushed steel",
+          [
+            0.41999998688697815,
+            0.47999998927116394,
+            0.5,
+            1.0
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "stove-body",
+      "evaluatedVertices": 96,
+      "materials": [
+        [
+          "enamel",
+          [
+            0.7900000214576721,
+            0.800000011920929,
+            0.7599999904632568,
+            1.0
+          ]
+        ]
+      ]
+    }
+  ]
+}

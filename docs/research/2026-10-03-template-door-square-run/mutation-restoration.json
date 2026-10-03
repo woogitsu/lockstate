@@ -1,0 +1,12 @@
+{
+  "checkpoint": "c1f0244fe8b38600c0f516279f4ddbee56e6108c",
+  "branch": "codex/square-build-run-claims-audit-20261003",
+  "producer": "only square door-tile helper condition omitted",
+  "negativeExitCode": 1,
+  "restoredExitCode": 0,
+  "sourceSHA256Before": "75b7b3537a1da708b9120b1737d79b0c6e590157eb1824f637c1ec245cfe46df",
+  "sourceSHA256After": "75b7b3537a1da708b9120b1737d79b0c6e590157eb1824f637c1ec245cfe46df",
+  "sourceDiffExitCode": 0,
+  "detachedDuringMutation": true,
+  "branchRestored": "codex/square-build-run-claims-audit-20261003"
+}

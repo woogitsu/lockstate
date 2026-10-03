@@ -1,0 +1,43 @@
+{
+  "quarterTurns": 0,
+  "actualBefore": [
+    "object.storage-rack@23,6:orientation=0",
+    "object.storage-rack@24,7:orientation=0"
+  ],
+  "actualAfter": [
+    "object.storage-rack@23,6:orientation=0",
+    "object.storage-rack@24,7:orientation=0"
+  ],
+  "beforePixels": [
+    0,
+    0
+  ],
+  "afterPixels": [
+    0,
+    0
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "staff-room-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      }
+    },
+    {
+      "type": "PlaceObject",
+      "orderId": "object-adbf0acd-2424-4ee3-8a31-ab9e9e9cd7d4",
+      "definitionId": "storage-rack-wooden",
+      "x": 23,
+      "y": 6
+    },
+    {
+      "type": "PlaceObject",
+      "orderId": "object-e0c16f4d-2f91-49a9-af95-fe94f38016eb",
+      "definitionId": "storage-rack-wooden",
+      "x": 24,
+      "y": 7
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+pnpm : $ node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite a
+rtifact "--config" "tests/browser/.local-integrated-layout.config.ts" "--workers=1" "--output" "C:\\Users\\matma\\Docum
+ents\\Rozwój gier\\hud-angle-panel-review-runtime\\wheel-native-oblique-mutation"
+At line:2 char:752
++ ...  failed' }; pnpm test:artifact --config tests/browser/.local-integrat ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ node --experi...lique-mutation":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(node:19336) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 2 tests using 1 worker
+
+(node:42976) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:42976) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\camera-wheel-axis-native.spec.ts:4:3 › world horizontal native wheel preserves the view and armed square (7.4s)
+  x  2 tests\browser\camera-wheel-axis-native.spec.ts:4:3 › oblique horizontal native wheel preserves the view and armed square (8.0s)
+
+
+  1) tests\browser\camera-wheel-axis-native.spec.ts:4:3 › oblique horizontal native wheel preserves the view and armed square 
+
+    Error: horizontal-only wheel changed the actual painted view
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+      49 |       await writeFile(testInfo.outputPath(`${mode}-horizontal-${index}.png`), after);
+      50 |       await writeFile(testInfo.outputPath(`${mode}-horizontal-${index}.json`), JSON.stringify(measured, null, 2));
+    > 51 |       expect(measured.unchangedPixels, 'horizontal-only wheel changed the actual painted view').toBe(true);
+         |                                                                                                 ^
+      52 |       await expect(minimap).toHaveAttribute('style', viewport ?? '');
+      53 |       await expect(target).toHaveText(quote);
+      54 |       await expect(page.locator('.hud-build__arm')).toHaveText('Stop placing');
+        at C:\Users\matma\Documents\Rozwój gier\hud-camera-wheel-axis-audit-20261002\tests\browser\camera-wheel-axis-native.spec.ts:51:97
+
+    Error Context: ..\hud-angle-panel-review-runtime\wheel-native-oblique-mutation\camera-wheel-axis-native-o-5031c-s-the-view-and-armed-square\error-context.md
+
+  1 failed
+    tests\browser\camera-wheel-axis-native.spec.ts:4:3 › oblique horizontal native wheel preserves the view and armed square 
+  1 passed (18.4s)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+
+[ELIFECYCLE] Command failed with exit code 1.

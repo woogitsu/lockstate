@@ -1,0 +1,64 @@
+{
+  "controls": [
+    {
+      "control": "omit-physical-caster",
+      "exitCode": 1,
+      "error": "ValueError: Medical bed retained/authored mesh set changed"
+    },
+    {
+      "control": "move-physical-safety-rail",
+      "exitCode": 1,
+      "error": "ValueError: Medical bed actual evaluated authored geometry changed"
+    },
+    {
+      "control": "move-retained-control",
+      "exitCode": 1,
+      "error": "ValueError: Medical bed actual evaluated authored geometry changed"
+    },
+    {
+      "control": "change-retained-bevel",
+      "exitCode": 1,
+      "error": "ValueError: Medical bed actual authored raw topology/material/modifier data changed"
+    },
+    {
+      "control": "change-retained-material-graph",
+      "exitCode": 1,
+      "error": "ValueError: Medical bed retained four material graphs changed"
+    },
+    {
+      "control": "change-added-wheel-material",
+      "exitCode": 1,
+      "error": "ValueError: Medical bed actual authored raw topology/material/modifier data changed"
+    },
+    {
+      "control": "wrong-loaded-X-scale",
+      "exitCode": 1,
+      "error": "ValueError: Medical bed declared occupied footprint and source scale changed"
+    },
+    {
+      "control": "wrong-accepted-target",
+      "exitCode": 1,
+      "error": "ValueError: Medical bed declared target differs from measured source height"
+    },
+    {
+      "control": "wrong-canonical-descriptor",
+      "exitCode": 1,
+      "error": "ValueError: Medical bed exporter targets the wrong canonical descriptor"
+    },
+    {
+      "control": "wrong-camera-span",
+      "exitCode": 1,
+      "error": "ValueError: Medical bed actual camera pitch differs from64pixels per tile"
+    },
+    {
+      "control": "wrong-camera-vector",
+      "exitCode": 1,
+      "error": "ValueError: Medical bed actual camera ground basis differs from world projection"
+    }
+  ],
+  "exactRestoredNativeVerifyExitCode": 0,
+  "sourceBytesUnchanged": true,
+  "wrapperSha256": "6e9162cbeffb22932a15448374a929d13ff9ece878a0320aefbf9175d35f6681",
+  "sourceSha256": "d18a702e585d6e69f15602d9e9f294bc0c539da3f78bf4f48fe1330da286c4fe",
+  "originalSourceSha256": "1737b03a3ee1342e813e7096e0aef189f05d714d5a69437a8fe490c026d232be"
+}

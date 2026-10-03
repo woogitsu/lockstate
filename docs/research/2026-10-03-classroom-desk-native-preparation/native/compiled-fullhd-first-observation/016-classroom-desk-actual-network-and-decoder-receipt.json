@@ -1,0 +1,1137 @@
+{
+  "classroomPlanQuarterTurns": 0,
+  "publicIndividualDeskOrientation": 0,
+  "catalog": {
+    "schemaVersion": 1,
+    "assetId": "furniture.classroom.teacher-desk",
+    "source": "assets/source/blender/furniture.classroom.teacher-desk.blend",
+    "sourceSha256": "c1dd80d253667f8e1bca5b17371b183ec18b5a292bebdf9fd2062e85b01d55ff",
+    "resolutionPx": [
+      256,
+      256
+    ],
+    "nominalPixelsPerTile": 64,
+    "pivotPx": [
+      128,
+      128
+    ],
+    "cameraTargetTiles": [
+      1,
+      0.5,
+      0.6349999904632568
+    ],
+    "projection": "orthographic",
+    "yawDegrees": [
+      0,
+      30,
+      60,
+      90,
+      120,
+      150,
+      180,
+      210,
+      240,
+      270,
+      300,
+      330
+    ],
+    "elevationDegrees": [
+      20,
+      30,
+      40,
+      50,
+      60,
+      70
+    ],
+    "frames": [
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+00-elev20.34e3f37398ac.png",
+        "sha256": "34e3f37398ace8d63bcd4268fa6e7b3ee0af8d257ac0509841444354a0d97f37"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+00-elev30.415f0e4720d7.png",
+        "sha256": "415f0e4720d71750fad7ac606c55d8e1c758659e2ad3954d0cb4bd168d887909"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+00-elev40.bb94fc55cad0.png",
+        "sha256": "bb94fc55cad0f375633797993cc0d87c399dbe5cb9ebc1158dd2976e0e1f0de8"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+00-elev50.75f636fde67b.png",
+        "sha256": "75f636fde67b16e19ab061ed3f0663ae6e96dc3ec85797fcacfc6712feeed71f"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+00-elev60.4323714d582b.png",
+        "sha256": "4323714d582bd6439c905fb57c593773abba24cfd4a80e3797abaf75ffb87f9e"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+00-elev70.fffd896f85ea.png",
+        "sha256": "fffd896f85eae59e9d3490a9962efb78bd6f8483c6f2ac79ef269b9a272b3c45"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev20.1b01a19505ab.png",
+        "sha256": "1b01a19505ab5dda986b70a8b2ff3816cb72552321eafb9f2849b53d0f211eda"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev30.795c75fc9f25.png",
+        "sha256": "795c75fc9f252a2a486ff4fc90f8c9dc83726e702bffe12a4b59cad266e0c9ce"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev40.d25e7cf7d25f.png",
+        "sha256": "d25e7cf7d25faadf2ca1f413f1d117e03e5de6726cd52501c9f2d738e6580783"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev50.91326f867346.png",
+        "sha256": "91326f867346e104d72f1acaa4535b072f921db7f259b14de6da349814c375e6"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev60.36f2b87940cf.png",
+        "sha256": "36f2b87940cfa9349d3fcbd3327886e7b473211696f00077ce2ca101179025be"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev70.c48af6a176a6.png",
+        "sha256": "c48af6a176a6e73fb7abffc78793f1a6e15add596ac903792f1d1b6c07e87614"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev20.f34ba387c104.png",
+        "sha256": "f34ba387c104d70e5e314946daa511eda49d6c0d66ba36f179e47dbb29f21c12"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev30.f76ee324e693.png",
+        "sha256": "f76ee324e693c9c844e0353b789dd6a1a57abd3f9b6741411128775469816aca"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev40.721cae760da7.png",
+        "sha256": "721cae760da76bdb6830e99255ee7e9c01c0d1733735621b419a62997094a561"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev50.a2b37b735034.png",
+        "sha256": "a2b37b735034a0a05d74a4dc91dd148f66deb4aa0772af867a1b78085a6ddd83"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev60.b95ae567c183.png",
+        "sha256": "b95ae567c18372e45d03eec30c953c5cfbd445e41844a4836e9682616fbce066"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev70.b94c677e01b4.png",
+        "sha256": "b94c677e01b4181a5cf998cbe2d62b305a80fa7a38cbc08ecac9428ccca67102"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+90-elev20.7fdeff551fe8.png",
+        "sha256": "7fdeff551fe859eac793117f02e9a06be3ac7d08c5f2717820f7008401850afb"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+90-elev30.26f07abba951.png",
+        "sha256": "26f07abba951d03ba414b20dfb491083f896d2787e217f35de1cd6a8edf1a82a"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+90-elev40.854fadcdfa8d.png",
+        "sha256": "854fadcdfa8d1c1e5282e4c6c107ba5908263cd7379f5a3158cb216d51d1676d"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+90-elev50.6bb69581e390.png",
+        "sha256": "6bb69581e3900be8327b8fd6d3a696240040c5f8c113171999e653b436ecf889"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+90-elev60.0c442d07828d.png",
+        "sha256": "0c442d07828dfcca6e7bd07b142283bebfe00a47afc14d046ffba96d87f1d5f5"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+90-elev70.7194035b47e1.png",
+        "sha256": "7194035b47e12f6c231e3865d48ba84ae20c6d7fb3543fa62da17114aec4c77d"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+120-elev20.63dffecebef7.png",
+        "sha256": "63dffecebef7c7852070765296491c64c17380a6c898fcea268b038eccef47e6"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+120-elev30.cb6d43e6bf49.png",
+        "sha256": "cb6d43e6bf4988db8e1bfcb937b910f92a28b6bbd3ab3de8036ca63b34e648c2"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+120-elev40.5fbc1c502dd8.png",
+        "sha256": "5fbc1c502dd80fd99c5ab8791cba5769b696a7a3f912fe045f65d843d4795085"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+120-elev50.5965eb266782.png",
+        "sha256": "5965eb2667827bba0eeeb5c9286481445acdd85377a1215f4602d75e750b2acf"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+120-elev60.733c6aeed2c5.png",
+        "sha256": "733c6aeed2c5bc11e79a0c8c79a4d1821d0f423fe487fa3365cea53df53e0275"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+120-elev70.f7fd4c87b38d.png",
+        "sha256": "f7fd4c87b38de2ea9f30a3c8e64ab044eacbd4356c12a331f93dccf59b1a0389"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+150-elev20.1346a66da1e1.png",
+        "sha256": "1346a66da1e15c96c53013427a4a0ec9f94a0843ecb896e25f5edd41884bbb09"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+150-elev30.dbbc653e20f7.png",
+        "sha256": "dbbc653e20f7df2dd023e59812ce6a084b0f33e56c58a5a778839c5e2230b9a9"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+150-elev40.cdfd2ed62322.png",
+        "sha256": "cdfd2ed62322bd8128efc762591bbff018ac8b80a4265751ee088eab055fb24f"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+150-elev50.23f103154d3f.png",
+        "sha256": "23f103154d3f34798b760c98bffbc76b8021025ac8864a8e0b98f51dc8d36eef"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+150-elev60.09f6eb4b8e53.png",
+        "sha256": "09f6eb4b8e537ae802330476e972cfdb4af81aa850e9682f62e92837e92f8ad6"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+150-elev70.21f0a39147a8.png",
+        "sha256": "21f0a39147a8d84c28e467ffff20e0ee820057d2f362fc039f2eca1fceb1c1dc"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+180-elev20.cbcf4ad2c968.png",
+        "sha256": "cbcf4ad2c968f7f5e407bd30dd084d66b3927f63b5b88e2c91a0ba6c11cf90a0"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+180-elev30.7f7946136e08.png",
+        "sha256": "7f7946136e0873654cd08d44575193c72a3f9395c0972a70a6c31e4d693893f6"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+180-elev40.03f3ee6b93e5.png",
+        "sha256": "03f3ee6b93e5a80075a68a5b9f840a5e685561cb211a76a86d8bd7c6f6ebbf6e"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+180-elev50.978495d01686.png",
+        "sha256": "978495d01686fb73fc88b7fb7afac22d43e25409c5dce35bfafbe9abd0ac9c90"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+180-elev60.3d84206b81b6.png",
+        "sha256": "3d84206b81b625954d0d16f14dfebab07b1e7f81a0ce89e4ecab527716b5326d"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+180-elev70.76b2d102e435.png",
+        "sha256": "76b2d102e435304d17310b7343e64ab92d1ab454c70f575f48abd5d04b23cf09"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+210-elev20.e21960d96bb1.png",
+        "sha256": "e21960d96bb16676e9e1b86bcf80640c4ea7ed4030924616d44c5d21d585bc5c"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+210-elev30.e144733e0283.png",
+        "sha256": "e144733e02832bff9189db73e956f191b58a5292b3febab8791e4ac3d9110f71"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+210-elev40.419331a357a7.png",
+        "sha256": "419331a357a7a2aaca06f7bdb6b7fe1197b32ba9aaaa730c897caef9f0334683"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+210-elev50.c780a36bf2de.png",
+        "sha256": "c780a36bf2deea08b0fd877fd0245d7f022a44c0540eacd5da4c570d6aba8f02"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+210-elev60.5170bbb61db4.png",
+        "sha256": "5170bbb61db43e9f8497dd5f29fd424cea1b8f68d8c4e32797f3b94b3aecc76b"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+210-elev70.968ad57fdca4.png",
+        "sha256": "968ad57fdca452962ddbdcdb980043144d284f06ca2ada13899c9f1ef5ec4265"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+240-elev20.31e34d0bd13d.png",
+        "sha256": "31e34d0bd13d662df05183a453ec98efede1998d5041e534f24ebc5faa831fcd"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+240-elev30.d74be58addd0.png",
+        "sha256": "d74be58addd0ead28c0f65fd924b22fa457db5c6cc9b358869be363a40e6abff"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+240-elev40.0389c4d4fb5b.png",
+        "sha256": "0389c4d4fb5b5f2c31b93b399cde4e2b903a493e15fa1f962f3d569d1452598e"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+240-elev50.39532c42b6cf.png",
+        "sha256": "39532c42b6cff0a8b9f5816e0ec358516de816b0dd6f6bf2020b01082b59086c"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+240-elev60.0cf88dc29d82.png",
+        "sha256": "0cf88dc29d8215e93895ec33ea01b33832951e6fed6a6522f6b1b638df56013f"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+240-elev70.33dc625d5619.png",
+        "sha256": "33dc625d56190c121a3a20f9be61617ec7ede5b213f248bd57f7743e282dc81f"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+270-elev20.85b83ba1cc76.png",
+        "sha256": "85b83ba1cc765135d91982c57ba10bbffe2585b8aa6bb750ace995a3ce962649"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+270-elev30.1c71fb090757.png",
+        "sha256": "1c71fb090757f379719d78a0fbea3a78c574648e30afce26a0aea876d30b3c99"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+270-elev40.9c37c1852f0c.png",
+        "sha256": "9c37c1852f0cb6ddb8fac917ef4c7d6bbbcc4396e12b6788f90bffb6605b12bd"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+270-elev50.01dccfe15c68.png",
+        "sha256": "01dccfe15c681522a971f60cba60e1d0a993f819ec19a47cae39abd238cd18d9"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+270-elev60.dbdc97175625.png",
+        "sha256": "dbdc97175625295e49f68ad499fc03042375d45d39b388a124eaa138f7ddde17"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+270-elev70.af64d9de5ef8.png",
+        "sha256": "af64d9de5ef8f369e415bbbac7589dbeba33a80c4fd36cc0b3e450b8c46a8a9d"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+300-elev20.e5f73106ed42.png",
+        "sha256": "e5f73106ed42fde24f895ce841536a081a3b53d44565fce04b9d925ff85e7868"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+300-elev30.074bb47944e7.png",
+        "sha256": "074bb47944e7f7f6a4693bc409b3237d96d8afdc9798a88524f8241aff9a2653"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+300-elev40.63ce4baba5e5.png",
+        "sha256": "63ce4baba5e51423a4b320b914454bfeeaf0e7c392e42b18c6fad6524e71959b"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+300-elev50.e0b867a14d97.png",
+        "sha256": "e0b867a14d978f4a7e5ee2c4b89ac5764d139414c5412ff70ea1901dfdaa2200"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+300-elev60.ab209b12bc54.png",
+        "sha256": "ab209b12bc54692eb74f08ff8d158eb6aea09b166c1a364ec2d899ab474be50b"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+300-elev70.5ca7f8b5f295.png",
+        "sha256": "5ca7f8b5f29552e350c1db4760930a1726f196b65069d3aefa99105be04aef47"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev20.791c4a26444d.png",
+        "sha256": "791c4a26444d79ea273e6b1bf6368f07c97b0008597ff3f40618442395cca291"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev30.f24e4bf9af90.png",
+        "sha256": "f24e4bf9af90976280c1363b96872c1e1f18a3fcf4878f4352e88a53d2d36d26"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev40.ba2ac295ff47.png",
+        "sha256": "ba2ac295ff4768d9762e183e909c773ca5e3b64ef2004a7f5382631c4ae1f565"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev50.5ff07bdfd067.png",
+        "sha256": "5ff07bdfd067ff6957a5146a6e74645feaa7bc5be0d8c25e50d2c0eb34849511"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev60.5538315b546a.png",
+        "sha256": "5538315b546a79c7d8c59f161c6600aef8953da6d2f9e519c1d2525efd0a1d02"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev70.f1b19c34f602.png",
+        "sha256": "f1b19c34f6025b0c36d85d71df198705e02f47a904eab39fdc3d96b0554b5cdd"
+      }
+    ]
+  },
+  "descriptorBodySha256": "701d89104a0ed18b5750a1ffabb9dfb7fa389504b0e80495d671a67797ddb4ff",
+  "exposedFrameSha256": "721cae760da76bdb6830e99255ee7e9c01c0d1733735621b419a62997094a561",
+  "network": [
+    {
+      "url": "http://127.0.0.1:5365/assets/worker-xlrM5ErR.js",
+      "path": "/assets/worker-xlrM5ErR.js",
+      "status": 200,
+      "sha256": "611165d87ac997da1b09968fb571a45c16fc7167fc0fcb6c43900bb44413319c",
+      "bytes": 442773
+    },
+    {
+      "url": "http://127.0.0.1:5365/game-content/oblique-furniture-classroom-teacher-desk.v1.json",
+      "path": "/game-content/oblique-furniture-classroom-teacher-desk.v1.json",
+      "status": 200,
+      "sha256": "701d89104a0ed18b5750a1ffabb9dfb7fa389504b0e80495d671a67797ddb4ff",
+      "bytes": 19954
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+300-elev40.63ce4baba5e5.png",
+      "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+300-elev40.63ce4baba5e5.png",
+      "status": 307,
+      "location": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B300-elev40.63ce4baba5e5.png"
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B300-elev40.63ce4baba5e5.png",
+      "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+300-elev40.63ce4baba5e5.png",
+      "status": 200,
+      "sha256": "63ce4baba5e51423a4b320b914454bfeeaf0e7c392e42b18c6fad6524e71959b",
+      "bytes": 8076
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev40.ba2ac295ff47.png",
+      "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev40.ba2ac295ff47.png",
+      "status": 307,
+      "location": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B330-elev40.ba2ac295ff47.png"
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B330-elev40.ba2ac295ff47.png",
+      "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev40.ba2ac295ff47.png",
+      "status": 200,
+      "sha256": "ba2ac295ff4768d9762e183e909c773ca5e3b64ef2004a7f5382631c4ae1f565",
+      "bytes": 7197
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+00-elev40.bb94fc55cad0.png",
+      "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+00-elev40.bb94fc55cad0.png",
+      "status": 307,
+      "location": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B00-elev40.bb94fc55cad0.png"
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B00-elev40.bb94fc55cad0.png",
+      "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+00-elev40.bb94fc55cad0.png",
+      "status": 200,
+      "sha256": "bb94fc55cad0f375633797993cc0d87c399dbe5cb9ebc1158dd2976e0e1f0de8",
+      "bytes": 3657
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev40.d25e7cf7d25f.png",
+      "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev40.d25e7cf7d25f.png",
+      "status": 307,
+      "location": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B30-elev40.d25e7cf7d25f.png"
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B30-elev40.d25e7cf7d25f.png",
+      "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev40.d25e7cf7d25f.png",
+      "status": 200,
+      "sha256": "d25e7cf7d25faadf2ca1f413f1d117e03e5de6726cd52501c9f2d738e6580783",
+      "bytes": 7551
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev40.721cae760da7.png",
+      "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev40.721cae760da7.png",
+      "status": 307,
+      "location": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B60-elev40.721cae760da7.png"
+    },
+    {
+      "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.classroom.teacher-desk-yaw%2B60-elev40.721cae760da7.png",
+      "path": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev40.721cae760da7.png",
+      "status": 200,
+      "sha256": "721cae760da76bdb6830e99255ee7e9c01c0d1733735621b419a62997094a561",
+      "bytes": 7707
+    }
+  ],
+  "actualDecodedImages": [
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/6edc2645-756b-4611-b9a0-e87f883d7e23",
+      "currentSrc": "blob:http://127.0.0.1:5365/6edc2645-756b-4611-b9a0-e87f883d7e23",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "4e656013fc9cb562777c71ed4b94ed2de7ce485116a6f934f00146e102cc0458"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/f3fd9ceb-9ea5-4015-af6d-d19aee92e9a1",
+      "currentSrc": "blob:http://127.0.0.1:5365/f3fd9ceb-9ea5-4015-af6d-d19aee92e9a1",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "71ccffb2cc51119ea19ce62d6bc84a416a24f2f6928de7624e3fb020facbe0f6"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/5bb6dacf-3b35-4ed5-824e-bcf5af2c8024",
+      "currentSrc": "blob:http://127.0.0.1:5365/5bb6dacf-3b35-4ed5-824e-bcf5af2c8024",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "24f4e0f9b2718e92c0f01ed849049ddc3d759c31278517e72c34ff6e6a331dc0"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/536b19d0-5782-40bc-a363-4eafcc7851e7",
+      "currentSrc": "blob:http://127.0.0.1:5365/536b19d0-5782-40bc-a363-4eafcc7851e7",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "cb4bae62ae53809dba9e61f8556cfa7e854c22e243126379742ad0fbfd116a1f"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/7f7e75c2-0770-4c01-8ba9-c77b5357e445",
+      "currentSrc": "blob:http://127.0.0.1:5365/7f7e75c2-0770-4c01-8ba9-c77b5357e445",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "9e83b26d596c40780ccfaf5bdeaea34fd3fb9423382023d2bd54f1bc5c622d92"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/d413c32c-0584-4865-ac24-5a2e5edadfe0",
+      "currentSrc": "blob:http://127.0.0.1:5365/d413c32c-0584-4865-ac24-5a2e5edadfe0",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "a1f31f17de5a327f36605d69251bc76d91dc7b82aa5970e82b665659dbfcb800"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/319addae-2d55-444d-b4c2-e88a74601ba2",
+      "currentSrc": "blob:http://127.0.0.1:5365/319addae-2d55-444d-b4c2-e88a74601ba2",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "e9335cef165fe3e84a90cdf3bb629ddd884e34ecc248f64a60321f4a44937529"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/812aecc3-59b9-4354-a57f-80317bd034c3",
+      "currentSrc": "blob:http://127.0.0.1:5365/812aecc3-59b9-4354-a57f-80317bd034c3",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "fcfa401381d129d186f54dc13e9832869e4ed3153cae55e91d5d38d528f9cdb0"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/5d8b653b-0cdb-42de-9105-1760aad42f33",
+      "currentSrc": "blob:http://127.0.0.1:5365/5d8b653b-0cdb-42de-9105-1760aad42f33",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "6917ab6272c49c2a64aaf56ed9cfdd59d5c23f2f5101af67ea2446519f1df818"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/a0529e68-2b54-490a-b070-351e787c8722",
+      "currentSrc": "blob:http://127.0.0.1:5365/a0529e68-2b54-490a-b070-351e787c8722",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "1355322ca365edf6db9c561b66c9953de8a6263a6939c35d8aa051f7f5a60655"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/05d87931-1ab1-435b-ba07-5f6ca6170744",
+      "currentSrc": "blob:http://127.0.0.1:5365/05d87931-1ab1-435b-ba07-5f6ca6170744",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "8d8ce9ca121fe947e6dbfb8db4e7654efbfe28515ba9bb0dc6456396123d3ee0"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/8264da6e-c9ef-4809-859f-f2aa5196cae9",
+      "currentSrc": "blob:http://127.0.0.1:5365/8264da6e-c9ef-4809-859f-f2aa5196cae9",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "05788bcaeb3341e3ddb55506ecd56ebb01baa46efa2277578be4583931276b16"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/603b120b-bb77-4b26-b120-d799adc50344",
+      "currentSrc": "blob:http://127.0.0.1:5365/603b120b-bb77-4b26-b120-d799adc50344",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "f279d76d4d3035576ec232d68de20f079b2584394dc587662799a4d3be7aa635"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/02ac0b0d-9712-4c80-9ed7-c3033333d33e",
+      "currentSrc": "blob:http://127.0.0.1:5365/02ac0b0d-9712-4c80-9ed7-c3033333d33e",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "3447b706bed88addd78a51cc025eeac54f79ef79ce0b1fd949510dba52f2c6dc"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/cac69fef-da34-4391-aba7-37f47d22fe54",
+      "currentSrc": "blob:http://127.0.0.1:5365/cac69fef-da34-4391-aba7-37f47d22fe54",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "ce7e0bef821387716337a715515c628010c51b34db4ead050b6066fa51d29448"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/578246e6-09c6-4782-ab34-7bf663e17ec8",
+      "currentSrc": "blob:http://127.0.0.1:5365/578246e6-09c6-4782-ab34-7bf663e17ec8",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "9304f6a7697b1242d4c26d563b7bb2a4598b8b4dcd43cce008d7eaa81b91834d"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/7b91dd80-6b9d-4698-b742-de47bcf2ab00",
+      "currentSrc": "blob:http://127.0.0.1:5365/7b91dd80-6b9d-4698-b742-de47bcf2ab00",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "8a17ffe2678ca2c2c0246a89996aba64097fa29dead9c3eb2c9682ca594d73b8"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/f5dc199f-a2e2-484a-ad9d-d1f57dfc6ac0",
+      "currentSrc": "blob:http://127.0.0.1:5365/f5dc199f-a2e2-484a-ad9d-d1f57dfc6ac0",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "40921f9613417d04bd8ec9e842a93abf32982a48326bfecaf641153afbdfd2ec"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/fe38b5dd-9d69-43ed-ba05-9a8a5c9ffe88",
+      "currentSrc": "blob:http://127.0.0.1:5365/fe38b5dd-9d69-43ed-ba05-9a8a5c9ffe88",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "b17091c17260d041d14d4594e60a670bc4e0465412855b101a9b97f54b34762f"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/165c49d3-1215-4304-8e9d-d6e99ea11186",
+      "currentSrc": "blob:http://127.0.0.1:5365/165c49d3-1215-4304-8e9d-d6e99ea11186",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "1f712df62e5e4e7b5533bd14c3b438ee94255e3e682c64f6e093e02a4f308a47"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/15f32851-cd6f-43be-a417-4c545dd7a425",
+      "currentSrc": "blob:http://127.0.0.1:5365/15f32851-cd6f-43be-a417-4c545dd7a425",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "13d9fadda21f26afd30b16e61999905bf6f9e1ff9b3922ba1d20236dc3145b57"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/b55083d4-1bc9-476c-ac8a-cf67df5fd6b3",
+      "currentSrc": "blob:http://127.0.0.1:5365/b55083d4-1bc9-476c-ac8a-cf67df5fd6b3",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "142e26025b0b5e128eb866cf2d1f29bd9295172dc14ead22c9b4a774b60bcfa7"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/e68f6fb2-f427-4361-bc6d-e5c60cff0863",
+      "currentSrc": "blob:http://127.0.0.1:5365/e68f6fb2-f427-4361-bc6d-e5c60cff0863",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "2f3d110ea54c5305300070d398ebb846478baf2ea848d9103f5b14f6ee8d6e88"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/aea85b43-d89e-424a-9165-fbd7a4708c12",
+      "currentSrc": "blob:http://127.0.0.1:5365/aea85b43-d89e-424a-9165-fbd7a4708c12",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "ec72ac7ae01dff96f4b1d79852334d4af60e80a0de87a7240f33aa63b854c643"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/7e980b04-6842-4608-9b9f-e617e2f0ea5b",
+      "currentSrc": "blob:http://127.0.0.1:5365/7e980b04-6842-4608-9b9f-e617e2f0ea5b",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "4edfe021a8670ce6b704fb523764016aa35393689f1ac04a27cd8e8d1c9109f8"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/1b3385c7-c07a-49a4-9d20-e3f620dc8937",
+      "currentSrc": "blob:http://127.0.0.1:5365/1b3385c7-c07a-49a4-9d20-e3f620dc8937",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "4b149587d26e459fdd9c90c17ff890c189081e0be9803f19be7f46b3a5cdab0f"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/2e5bd4e1-1467-48bb-988c-5d928534f9a8",
+      "currentSrc": "blob:http://127.0.0.1:5365/2e5bd4e1-1467-48bb-988c-5d928534f9a8",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "63ce4baba5e51423a4b320b914454bfeeaf0e7c392e42b18c6fad6524e71959b"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/0f7faed2-04fa-4911-bd43-ae85fe35f55d",
+      "currentSrc": "blob:http://127.0.0.1:5365/0f7faed2-04fa-4911-bd43-ae85fe35f55d",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "19250d460ee942a48ed88c8c5ab3dc1d6fdd4d9b21439a8c32d41759ec3be604"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/76be3321-166f-471d-8334-b6fdba49e3bd",
+      "currentSrc": "blob:http://127.0.0.1:5365/76be3321-166f-471d-8334-b6fdba49e3bd",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "6e34ad2b3b0780272f87fc7085f6ea282a4bc5d53c77cc1b3b080c5a2b2b2a2c"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/b6bc7f61-41d6-41d9-b934-8bc29ac1dd40",
+      "currentSrc": "blob:http://127.0.0.1:5365/b6bc7f61-41d6-41d9-b934-8bc29ac1dd40",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "52980a5910f246cb1b11cf347b951b4f4ae49f48c955f7f7050f540577a53b28"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/31f698db-1737-4a46-a4e8-e321354ecc92",
+      "currentSrc": "blob:http://127.0.0.1:5365/31f698db-1737-4a46-a4e8-e321354ecc92",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "af1db667e4b94ce65ba39e49237388e4bc8205ae9bdee41be1b3480fb8be01b7"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/1a13840a-d7cf-4662-b3ca-8ac237237ffd",
+      "currentSrc": "blob:http://127.0.0.1:5365/1a13840a-d7cf-4662-b3ca-8ac237237ffd",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "ba2ac295ff4768d9762e183e909c773ca5e3b64ef2004a7f5382631c4ae1f565"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/ff5479ea-a1cb-46ab-aa39-5329629e1e62",
+      "currentSrc": "blob:http://127.0.0.1:5365/ff5479ea-a1cb-46ab-aa39-5329629e1e62",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "7ebbeb67ea3a2ef4c18233a5469a450633149d15450722fd3d8274c0898b2d21"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/9f5fe1f2-3b5d-45ff-86a2-0486627980b5",
+      "currentSrc": "blob:http://127.0.0.1:5365/9f5fe1f2-3b5d-45ff-86a2-0486627980b5",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "2f961851223ca89e5679bc8140315e197dea93bfe6436992ce59fbe3d7813d6f"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/a1884e8c-7cc7-4738-a9e8-1435e086c3ba",
+      "currentSrc": "blob:http://127.0.0.1:5365/a1884e8c-7cc7-4738-a9e8-1435e086c3ba",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "34529e35c6967bc502c02486803e4cce95afc95e9867309194e1a1de68e2ad52"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/6c3eae99-0f87-4a3d-ae86-0a95eda34c58",
+      "currentSrc": "blob:http://127.0.0.1:5365/6c3eae99-0f87-4a3d-ae86-0a95eda34c58",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "6400567e6befd5b9cf05291053d00e64f31f36d896ec04d55a688cc385fcd0e0"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/b22eb850-f9bc-4877-919f-c3b0a0b441c0",
+      "currentSrc": "blob:http://127.0.0.1:5365/b22eb850-f9bc-4877-919f-c3b0a0b441c0",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "1c49137bf58e53a0c312ea616dc83b409b8a86907efc4b954f15567f035a6893"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/b66d6bec-f7eb-4cb9-9226-c30405568bbf",
+      "currentSrc": "blob:http://127.0.0.1:5365/b66d6bec-f7eb-4cb9-9226-c30405568bbf",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "09e57ed29994e21f55f14db387586a460da4c891ac73b94136cde95afd59be1b"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/69df9e59-0960-44ff-bd86-24c166933fb3",
+      "currentSrc": "blob:http://127.0.0.1:5365/69df9e59-0960-44ff-bd86-24c166933fb3",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "66687c002c33b9d9389607f529d4b8c112983f2e435be96e663ea279120d8812"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/1c9a9a65-a8f6-4ecd-9d09-4cf30209006a",
+      "currentSrc": "blob:http://127.0.0.1:5365/1c9a9a65-a8f6-4ecd-9d09-4cf30209006a",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "66eaf497a3846d8295b98a47571e6bc236481a5b0cb1cb5194a8599ccabb48db"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/d61d3493-b7c2-4009-a8bc-313902cb9ca2",
+      "currentSrc": "blob:http://127.0.0.1:5365/d61d3493-b7c2-4009-a8bc-313902cb9ca2",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "bb94fc55cad0f375633797993cc0d87c399dbe5cb9ebc1158dd2976e0e1f0de8"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/d6453131-b6d6-4a72-b17d-e5417f8b156d",
+      "currentSrc": "blob:http://127.0.0.1:5365/d6453131-b6d6-4a72-b17d-e5417f8b156d",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "8b7df4260ff1fb56bcc5d744fa8b818f337320c05547b64751fe00adb9838578"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/fc363c2f-ac59-41cd-9bd8-a1e775e5826b",
+      "currentSrc": "blob:http://127.0.0.1:5365/fc363c2f-ac59-41cd-9bd8-a1e775e5826b",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "a8b8fbee8cd5f93bef4a2a4488a8104813ee6989dee7ea02d1608791c80a42a6"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/568859b8-5259-416b-ae40-bfc0df8f9216",
+      "currentSrc": "blob:http://127.0.0.1:5365/568859b8-5259-416b-ae40-bfc0df8f9216",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "e13a3e2ef5bf984ca2086f4d71ce0323f5d54e9978ab6342b93d6475a23190d9"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/ae9482a2-bcc0-4f1f-8a6e-aa57961463ee",
+      "currentSrc": "blob:http://127.0.0.1:5365/ae9482a2-bcc0-4f1f-8a6e-aa57961463ee",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "31d2677710f5bc394eb54e3a12348968daab038412e2d86ad74c1fe2ca1c825b"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/b0a40880-a5b3-4e77-97e6-bdf5d04cb51c",
+      "currentSrc": "blob:http://127.0.0.1:5365/b0a40880-a5b3-4e77-97e6-bdf5d04cb51c",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "219f5f189783babdcbe7b73cb166057729ab339c532b9b42c6203280dc16d499"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/dd532779-c1ff-47f6-b710-92268253f07c",
+      "currentSrc": "blob:http://127.0.0.1:5365/dd532779-c1ff-47f6-b710-92268253f07c",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "29a8e68cbfe51f41d66b080928cfbb211c7f144f4eeb0cd0075150a2e0d3b06c"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/52dc4081-e239-4e7f-85ec-a36225673f7f",
+      "currentSrc": "blob:http://127.0.0.1:5365/52dc4081-e239-4e7f-85ec-a36225673f7f",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "eb756ff209de38741708095cd83daa2f61c49447e44bc1809174128559b7ab6c"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/e0057040-bcce-4cfc-aeeb-dedf4e8eff43",
+      "currentSrc": "blob:http://127.0.0.1:5365/e0057040-bcce-4cfc-aeeb-dedf4e8eff43",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "930b2c2c1d08e57f9c3e2a0b8201b469565a7ec43f58c1f2d250f8439b7806df"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/2142a319-0300-4d8a-9b73-745cb3ae6523",
+      "currentSrc": "blob:http://127.0.0.1:5365/2142a319-0300-4d8a-9b73-745cb3ae6523",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "d25e7cf7d25faadf2ca1f413f1d117e03e5de6726cd52501c9f2d738e6580783"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/c59d6449-2517-4290-b2ae-81617b47b806",
+      "currentSrc": "blob:http://127.0.0.1:5365/c59d6449-2517-4290-b2ae-81617b47b806",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "b4f70db7c66d29296479a34d38127045e13f55fb54d1dbac80e0c9d4e576187a"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/ee954c5b-4893-4ffd-9cec-8fceee125cb1",
+      "currentSrc": "blob:http://127.0.0.1:5365/ee954c5b-4893-4ffd-9cec-8fceee125cb1",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "f0061be8c6240361aa7a4ae76d4b63c2d12733619edec1b65163cf74d0de01e4"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/3ba5aa09-0cca-4f70-8023-953c468c093e",
+      "currentSrc": "blob:http://127.0.0.1:5365/3ba5aa09-0cca-4f70-8023-953c468c093e",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "f5feda43b3966699dfd60d9ad798e40a4a0440cc9ae70e13b8192eb6db948104"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/0fc56220-5c27-46e1-a38c-73ff75508a1a",
+      "currentSrc": "blob:http://127.0.0.1:5365/0fc56220-5c27-46e1-a38c-73ff75508a1a",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "6a60277bf1c991b0db1d92a4cc5a6e93b01acdf5c39ebd929b0467026d58e2f6"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/fb3d6d57-4338-40cf-b69c-b2c5fdc94829",
+      "currentSrc": "blob:http://127.0.0.1:5365/fb3d6d57-4338-40cf-b69c-b2c5fdc94829",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "48603357483db36f76af57ab81f77d19461416efa0c5c4a648d094d670279ec3"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/17ab8e92-c9ac-4694-91dc-455c08975246",
+      "currentSrc": "blob:http://127.0.0.1:5365/17ab8e92-c9ac-4694-91dc-455c08975246",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "e0bf5374ce4dbe0319557af8fe8f096f70e9a5c1cee491fb3cb1e6ed29fa47a0"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/5a2dc3c5-672e-4610-a3df-d0bb166468a1",
+      "currentSrc": "blob:http://127.0.0.1:5365/5a2dc3c5-672e-4610-a3df-d0bb166468a1",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "1f7db6b8e731cbdf073e2180605f263213a2b4f36e16353c234aaf2266b0d26b"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/62754bb8-48b6-43b9-aaad-e0e76d8392fd",
+      "currentSrc": "blob:http://127.0.0.1:5365/62754bb8-48b6-43b9-aaad-e0e76d8392fd",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "b0befdfa1112861e4e9394b24c9155d3f80d07db8c981762d8ffa66a8d703129"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/2bdf0afd-8ef3-401b-8b69-dd3c2b9072d9",
+      "currentSrc": "blob:http://127.0.0.1:5365/2bdf0afd-8ef3-401b-8b69-dd3c2b9072d9",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "95f60188aa981482b54f3b429a8ab7bfa737251dc5e5157a32eeeded458bdd42"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/1193e62f-bc19-404c-a537-7a7ac4bd51d0",
+      "currentSrc": "blob:http://127.0.0.1:5365/1193e62f-bc19-404c-a537-7a7ac4bd51d0",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "b6bec6efd16958f66c093828866c3829dc3f7e3f2d7bab6fd0a4a678e243287b"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/78f86e5c-530d-4cec-96b6-694ca6219971",
+      "currentSrc": "blob:http://127.0.0.1:5365/78f86e5c-530d-4cec-96b6-694ca6219971",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "721cae760da76bdb6830e99255ee7e9c01c0d1733735621b419a62997094a561"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/fa3e201c-55cd-4b48-a375-7289b545b7e0",
+      "currentSrc": "blob:http://127.0.0.1:5365/fa3e201c-55cd-4b48-a375-7289b545b7e0",
+      "complete": true,
+      "width": 512,
+      "height": 512,
+      "error": false,
+      "sha256": "62cd5ad67992a0aadf1572ee09b66ac34be54ac45d12a6b3a223766e9fcbec03"
+    },
+    {
+      "assignedSrc": "blob:http://127.0.0.1:5365/1e4145a5-e8dc-4d5b-bd23-37bc459c235e",
+      "currentSrc": "blob:http://127.0.0.1:5365/1e4145a5-e8dc-4d5b-bd23-37bc459c235e",
+      "complete": true,
+      "width": 256,
+      "height": 256,
+      "error": false,
+      "sha256": "2ed6c923af6daef4136bb45bd632f344bff90adabb912adf8a98dffb51bc3020"
+    }
+  ],
+  "syntheticFetchUsed": false,
+  "rendererTextureReadUsed": false,
+  "deskVisualCalibrationComplete": false,
+  "visualAcceptancePending": true
+}

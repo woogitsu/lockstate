@@ -1,0 +1,11 @@
+00:01.406  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-model-20261003\assets\source\blender\furniture.classroom.teacher-desk.blend"
+CLASSROOM_DESK_SOURCE_GREEN 133 meshes/55 actual contacts/all original materials/four occupied turns
+00:01.969  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-model-20261003\assets\intermediate\classroom-teacher-desk-proof\repeat-yaw30-elev40.png'
+00:02.062  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-model-20261003\assets\intermediate\classroom-teacher-desk-proof\repeat-yaw120-elev40.png'
+00:02.172  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-model-20261003\assets\intermediate\classroom-teacher-desk-proof\repeat-yaw210-elev40.png'
+00:02.266  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-model-20261003\assets\intermediate\classroom-teacher-desk-proof\repeat-yaw300-elev40.png'
+KITCHEN_BOUNDS furniture.classroom.teacher-desk [0.0899999737739563, 0.08000001311302185, 0.0] [1.9100000858306885, 0.92249995470047, 1.2699999809265137]
+CLASSROOM_DESK_REPEAT4_BYTE_EXACT_GREEN no canonical files changed
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit

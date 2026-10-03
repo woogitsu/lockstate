@@ -1,0 +1,21 @@
+﻿import { expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { BUILDABLE_REGISTRY, occupiesTileEdge } from '../../src/simulation/construction';
+import { edgeChooserShown } from '../../src/ui/hud/build-panel';
+import type { HudBuildableViewModel } from '../../src/ui/hud/view-model';
+
+it('the actual #531 browser consumer setup agrees with real canonical chooser eligibility', async () => {
+ const source=readFileSync('tests/browser/app-shell.spec.ts','utf8');
+ const label="test('the Build catalogue offers a door its edge chooser, from the real registry (#531)'";
+ const start=source.indexOf(label);expect(start).toBeGreaterThan(-1);
+ const bodyStart=source.indexOf('async ({ page }) => {',start)+'async ({ page }) => {'.length;
+ const body=source.slice(bodyStart,source.indexOf('\n  });',bodyStart));
+ let selected='wall-brick',edge='north',collapsed='true';
+ const visible=()=>{const d=BUILDABLE_REGISTRY.get(selected)!;return edgeChooserShown({definitionId:d.id,occupiesEdge:occupiesTileEdge(d),squareFootprint:d.category==='wall'} as HudBuildableViewModel,false);};
+ const locator=(selector:string):any=>({selector,locator:(child:string)=>locator(`${selector} ${child}`),click:async()=>{const id=/data-buildable="([^"]+)"/.exec(selector)?.[1];if(id)selected=id; const choice=/data-choice="([^"]+)"/.exec(selector)?.[1];if(choice){expect(visible(),'actual selected row must expose a pressable edge').toBe(true);edge=choice;}if(selector.includes('ui-section__header'))collapsed='false';},count:()=>{const id=/data-buildable="([^"]+)"/.exec(selector)?.[1];return id===undefined||id===selected?1:0;},attribute:(name:string)=>name==='data-collapsed'?collapsed:name==='aria-checked'?String(selector.includes(`data-choice="${edge}"`)):undefined,visible});
+ const page={setViewportSize:async()=>{},getByRole:()=>locator('button'),locator};
+ const assertion=(target:any,message?:string)=>({toHaveText:async(text:string)=>expect(text,message).toBe('1'),toHaveAttribute:async(name:string,value:string)=>expect(target.attribute(name),message).toBe(value),toHaveCount:async(count:number)=>expect(target.count(),message).toBe(count),toBeVisible:async()=>expect(target.visible(),`real ${selected} chooser must be visible`).toBe(true),toBeHidden:async()=>expect(target.visible(),`real ${selected} chooser must be hidden`).toBe(false)});
+ const AsyncFunction=Object.getPrototypeOf(async()=>{}).constructor;
+ await new AsyncFunction('page','expect','openApp',body)(page,assertion,async()=>{});
+ expect(selected).toBe('door-wooden');expect(edge).toBe('west');expect(visible()).toBe(true);
+});

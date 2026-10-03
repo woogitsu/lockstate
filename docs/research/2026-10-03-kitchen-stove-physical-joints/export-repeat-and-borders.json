@@ -1,0 +1,960 @@
+{
+  "sourceSha256": "2a912331e9c20a35ea417c25d371cf89a5f80092c3f066504c7b792cb1a042a2",
+  "descriptorSha256": "a9cad53a9203bfd4dc4dbf0fad64ecdc7edb871a3b503157539281f516fb5f04",
+  "repeat": [
+    {
+      "label": "first",
+      "wrapper": "render-kitchen-stove-detail-oblique.py",
+      "exitCode": 0,
+      "descriptorAndFrameBytesExactlyEqual": true,
+      "comparedFiles": 73
+    },
+    {
+      "label": "dedicated-repeat",
+      "wrapper": "render-kitchen-stove-detail-oblique.py",
+      "exitCode": 0,
+      "descriptorAndFrameBytesExactlyEqual": true,
+      "comparedFiles": 73
+    },
+    {
+      "label": "production-repeat",
+      "wrapper": "render-kitchen-stove-oblique.py",
+      "exitCode": 0,
+      "descriptorAndFrameBytesExactlyEqual": true,
+      "comparedFiles": 73
+    }
+  ],
+  "decodedRGBAFrames": 72,
+  "minimumTransparentBorderPx": 33,
+  "frames": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        68,
+        52,
+        188,
+        203
+      ],
+      "minimumTransparentBorderPx": 52,
+      "sha256": "db280f49786b2e805331314186093916763dea0c8114f6424c3f434540d43ae4"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        68,
+        54,
+        188,
+        201
+      ],
+      "minimumTransparentBorderPx": 54,
+      "sha256": "d14ea9e4698b78e3e582620f6f39f00e6ceb1e85eae44adff1dc8314c7c36c0d"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        68,
+        58,
+        188,
+        196
+      ],
+      "minimumTransparentBorderPx": 58,
+      "sha256": "0826b15078d9cc2eaf89d24c238dda9380e95bf3504e71c80c49a87762419605"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        68,
+        64,
+        188,
+        190
+      ],
+      "minimumTransparentBorderPx": 64,
+      "sha256": "6581962d93391392ec2ee297cf7c516b5455312c955bc6684334e025a2629adf"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        68,
+        73,
+        188,
+        182
+      ],
+      "minimumTransparentBorderPx": 68,
+      "sha256": "5294238ba3c1b8ad3c3400cc5d18b2e47c8ce73202ad9500f0433864d17ca0f2"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        68,
+        82,
+        188,
+        173
+      ],
+      "minimumTransparentBorderPx": 68,
+      "sha256": "9e4aa0256b2307c284fcecf51cb646bea00016526182ed16644380e065623f8b"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        64,
+        43,
+        191,
+        211
+      ],
+      "minimumTransparentBorderPx": 43,
+      "sha256": "cf55c4883ee3bbd331fac2dfb600fa6bafab65e08327572fe84157468a582d8b"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        64,
+        41,
+        191,
+        213
+      ],
+      "minimumTransparentBorderPx": 41,
+      "sha256": "c2d9cf427fa0fc1241da3292926ae3b85b8342b3b5a64729776a097639229536"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        64,
+        42,
+        191,
+        212
+      ],
+      "minimumTransparentBorderPx": 42,
+      "sha256": "7367240351bc7eeff16ab8664976cf9d003e717a1f27eee42c77064efe6c9c10"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        64,
+        45,
+        191,
+        209
+      ],
+      "minimumTransparentBorderPx": 45,
+      "sha256": "9a053b5f19992927935d00a9ca02a80aac6137b434e9722ca62275f8e1194822"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        64,
+        50,
+        191,
+        203
+      ],
+      "minimumTransparentBorderPx": 50,
+      "sha256": "62b32218df364a4cac66c431837cac9bb19263b6f5dac3d154c10c8effadbcac"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        64,
+        58,
+        191,
+        196
+      ],
+      "minimumTransparentBorderPx": 58,
+      "sha256": "5b78dda24642b402ae02b4da5f28ce45a60c5cc24f83ba3ee4a1571cde35b462"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        77,
+        39,
+        177,
+        216
+      ],
+      "minimumTransparentBorderPx": 39,
+      "sha256": "40ce0cce9adbb83214382c2ffa5b9d034e5dfbefe33dce267406c8df94a8cd73"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        77,
+        35,
+        177,
+        219
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "b1f2adaca71de6f55e47e11c226761d7c80d1a6fd778527b1aa4250fbd7676c2"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        77,
+        33,
+        177,
+        221
+      ],
+      "minimumTransparentBorderPx": 33,
+      "sha256": "1572fd18e8091094eee6bae8bbfc67d585fe7dccc574eb601d046e1bc4ef4ae1"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        77,
+        35,
+        177,
+        219
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "3121eb7d23ab4ef136a0b0c6e61ebc7ec34f0217473f5e2dd7c6e87ca0bc404e"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        77,
+        39,
+        177,
+        215
+      ],
+      "minimumTransparentBorderPx": 39,
+      "sha256": "7984fcf047fbca7a8be2b441344dc0a05d0ed8c94eb4e012ef3228012db0774b"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        77,
+        45,
+        177,
+        208
+      ],
+      "minimumTransparentBorderPx": 45,
+      "sha256": "35a1f07fe0cc9e18afe43d2eceed8515768fd89e3a3dbd23c9efa95ee3ca90eb"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        98,
+        40,
+        151,
+        215
+      ],
+      "minimumTransparentBorderPx": 40,
+      "sha256": "166c65456df8e2a83d4c7bbd070696f498fb9aaec310c4b778bc81753fb7b9f4"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        98,
+        36,
+        151,
+        219
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "0bc29b877267feaec37459da7c9531a1cfe2a4ca61d1b5d2cb5d93480470378e"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        98,
+        35,
+        151,
+        219
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "3a2d88513496e70047798f63955fd88b3347658ae5dae636c3899a2420f48507"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        98,
+        37,
+        151,
+        218
+      ],
+      "minimumTransparentBorderPx": 37,
+      "sha256": "453187ef2b068322403b7872b0438fd68dd77305acf35c1246411d02a90ef61c"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        98,
+        41,
+        151,
+        213
+      ],
+      "minimumTransparentBorderPx": 41,
+      "sha256": "8337d721e4a0563e28baee1f04e105b044c742da3222753d790f3255c8a94f6d"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        98,
+        48,
+        151,
+        206
+      ],
+      "minimumTransparentBorderPx": 48,
+      "sha256": "6efec3724fbab3b8c29e73f44dd66699684c5985dfe9875fcf82a240a733289d"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        77,
+        45,
+        177,
+        216
+      ],
+      "minimumTransparentBorderPx": 40,
+      "sha256": "8d1797d900e1850f86d313467c0c790c2596793145ce5430e519e48df0f7e6d7"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        77,
+        44,
+        177,
+        219
+      ],
+      "minimumTransparentBorderPx": 37,
+      "sha256": "57ad6fb67277d5744fee9158700a0caae19295ca88b83b58e34be18aa069b129"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        77,
+        45,
+        177,
+        220
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "845dae23b5ede9142ee83dc6e08c145ffc127865dd9d54f0cedef0d7592933e5"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        77,
+        48,
+        177,
+        219
+      ],
+      "minimumTransparentBorderPx": 37,
+      "sha256": "d7d36c1c1d2f964f00852ab33001f631ed6a4f6ad4f42bd561323cc164619eeb"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        77,
+        54,
+        177,
+        215
+      ],
+      "minimumTransparentBorderPx": 41,
+      "sha256": "63d3aa1a9fa7b5e039b04c53a0ab3b6161a4bbcbf0e9c04c0fb04ac524d1a570"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        77,
+        63,
+        177,
+        208
+      ],
+      "minimumTransparentBorderPx": 48,
+      "sha256": "8c75d42d0cfa98be90185f475064a37405ca61aee6c3640c565074d95cd3d560"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        64,
+        54,
+        191,
+        211
+      ],
+      "minimumTransparentBorderPx": 45,
+      "sha256": "4b222683ba3b1155991a27bf7cc30692eab756d8169086f537f5339ebf3f3573"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        64,
+        57,
+        191,
+        213
+      ],
+      "minimumTransparentBorderPx": 43,
+      "sha256": "6ac0bedae4f2e8f09f65f51d1d90f355d1e0031a1a49937611c7626675548c8a"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        64,
+        62,
+        191,
+        212
+      ],
+      "minimumTransparentBorderPx": 44,
+      "sha256": "3ad45592a1d3b0716f41261fba09b447cc9894f133bc71cb2c349e3dac6060e8"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        64,
+        69,
+        191,
+        209
+      ],
+      "minimumTransparentBorderPx": 47,
+      "sha256": "b1857c4c2d92a6e52e299758ca756b175ef205f9307fb748ea45bbcf805206e0"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        64,
+        77,
+        191,
+        203
+      ],
+      "minimumTransparentBorderPx": 53,
+      "sha256": "abce85b793fed141cfc37299cb7746fbce02028b9e0bfaef1395d846e4899aeb"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        64,
+        76,
+        191,
+        195
+      ],
+      "minimumTransparentBorderPx": 61,
+      "sha256": "e27f1a8a0304964580db6038d9efa821e18201123968b3a3f6b4fae491bb8461"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        68,
+        65,
+        188,
+        203
+      ],
+      "minimumTransparentBorderPx": 53,
+      "sha256": "7cf32dc71f6a0994841bdb39839b76d4a395fb9b1564c4849692f4ee8785d8e9"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        68,
+        72,
+        188,
+        201
+      ],
+      "minimumTransparentBorderPx": 55,
+      "sha256": "5d3e08593500a098506a161c0437fe1b9d9f9776c470a6787e3cfead8b12859b"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        68,
+        82,
+        188,
+        196
+      ],
+      "minimumTransparentBorderPx": 60,
+      "sha256": "f1dac340dd19e5b59d61cffa146d3e94de619be3f731f5a7d1fa16e5ed94f1b4"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        68,
+        92,
+        188,
+        190
+      ],
+      "minimumTransparentBorderPx": 66,
+      "sha256": "18c61753aee4f9f401ec9137c1e95c9550df61f34d26b47a45ec312cfbcc05f7"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        68,
+        97,
+        188,
+        182
+      ],
+      "minimumTransparentBorderPx": 68,
+      "sha256": "51f3bd01e8d0b53e81f8f01662022778316a44e177d32aa0f0f58f5552604504"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        68,
+        100,
+        188,
+        172
+      ],
+      "minimumTransparentBorderPx": 68,
+      "sha256": "372dd5f75a6d247742eefd4400134bea3d2160004466c36ade2a7dba5818b615"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        65,
+        54,
+        192,
+        211
+      ],
+      "minimumTransparentBorderPx": 45,
+      "sha256": "9a549d0cf7145d6e6e92534f914b21f0c3b57653596b116f9f0fdb2437c776c6"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        65,
+        57,
+        192,
+        213
+      ],
+      "minimumTransparentBorderPx": 43,
+      "sha256": "17ee58fa180522cd2c79c2ebccd556decb92e108530d210d2283f3695f2167c0"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        65,
+        62,
+        192,
+        212
+      ],
+      "minimumTransparentBorderPx": 44,
+      "sha256": "b822428461eb71616ce5983fccbda02bd263bc81924948c38e892a96f0e4bbad"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        65,
+        69,
+        192,
+        209
+      ],
+      "minimumTransparentBorderPx": 47,
+      "sha256": "bd75655d5ea06671b95f5a6a8100bcc4bfbb466e7214d94d3535b4a4bf13103a"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        65,
+        77,
+        192,
+        203
+      ],
+      "minimumTransparentBorderPx": 53,
+      "sha256": "abdd8ff78ed49c268f8c6f41b65ca8e74237b5323cb14ef58ee37a235e5f870f"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        65,
+        76,
+        192,
+        196
+      ],
+      "minimumTransparentBorderPx": 60,
+      "sha256": "7e6873e07c520822366459c23bdcd372756b8b90efb5af2923e31878cd8b1d6f"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        79,
+        45,
+        179,
+        216
+      ],
+      "minimumTransparentBorderPx": 40,
+      "sha256": "4053a555d2318198c43248de243fe156c43cc662bb5c94a687ae64fa4c2c6acb"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        79,
+        44,
+        179,
+        219
+      ],
+      "minimumTransparentBorderPx": 37,
+      "sha256": "57d9026a23c73d87e1e1875bcbba841c776a4f3c317e9ed9dbd173b6720866d8"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        79,
+        45,
+        179,
+        221
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "f0456c7b9ba5e5d511810b0846da12f555bdc7815822842feb6de3feea438371"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        79,
+        48,
+        179,
+        219
+      ],
+      "minimumTransparentBorderPx": 37,
+      "sha256": "dbab6cc232cef7d07d70c2bb187c6bdb907a4049b37a8243eacd120b09c07f91"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        79,
+        54,
+        179,
+        215
+      ],
+      "minimumTransparentBorderPx": 41,
+      "sha256": "982762a8bd6e079d96926abe28ccd2c4785306c048a547e8102c565c40939b4a"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        79,
+        62,
+        179,
+        208
+      ],
+      "minimumTransparentBorderPx": 48,
+      "sha256": "5586d29e107b351a0b32e6a1023a7923f457e2bc197b17386a4f13295f430397"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        105,
+        40,
+        158,
+        215
+      ],
+      "minimumTransparentBorderPx": 40,
+      "sha256": "16b846806cb3c76c2cbd9c98bb80f4dd2fec071fc0b7e95d333afa6afd3511c9"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        105,
+        36,
+        158,
+        219
+      ],
+      "minimumTransparentBorderPx": 36,
+      "sha256": "d246d7225d0f1d54b7f5458b8a8214060be62671f30e6173b6d795ae7d78b4ba"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        105,
+        35,
+        158,
+        219
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "af3da746e1e0efb0bb3136e41bbef6feba1b69bf93bc9499beecc743c36fe5fd"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        105,
+        37,
+        158,
+        218
+      ],
+      "minimumTransparentBorderPx": 37,
+      "sha256": "bede9d086c29e7bcd0b455f891afc38a7df12ac4bae2b9353527498e5ed0d0d1"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        105,
+        41,
+        158,
+        213
+      ],
+      "minimumTransparentBorderPx": 41,
+      "sha256": "a7b347fc874a9e6a94ffe73e56243421149cee5c4ba3efc7b219ec146630a0bb"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        105,
+        48,
+        158,
+        206
+      ],
+      "minimumTransparentBorderPx": 48,
+      "sha256": "c72d57ac028dd9943d4169ab0531230b3956353591aa64cc7c182cb57f349854"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        79,
+        39,
+        179,
+        216
+      ],
+      "minimumTransparentBorderPx": 39,
+      "sha256": "20b7c7d7b549407409de744d6c136c99d0058beb9db8b074fed2a2478759714d"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        79,
+        35,
+        179,
+        219
+      ],
+      "minimumTransparentBorderPx": 35,
+      "sha256": "916fa955e6459d3528d2ef14f77b816fbc8e32d14d12491e453cfd479f7d8756"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        79,
+        33,
+        179,
+        220
+      ],
+      "minimumTransparentBorderPx": 33,
+      "sha256": "b8b57a8d367e0d23e1e4820475bed3f9027545951e0d0d7151316bcc76e43fe4"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        79,
+        34,
+        179,
+        219
+      ],
+      "minimumTransparentBorderPx": 34,
+      "sha256": "d8f6a62d2a0897c93680fdcd1767404d5df4a9c9af40967420859de04ae21eab"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        79,
+        39,
+        179,
+        215
+      ],
+      "minimumTransparentBorderPx": 39,
+      "sha256": "4caf6dcbfef4676c11de3db6598e9da886809f785579ec64ed002ba09ce301e7"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        79,
+        45,
+        179,
+        208
+      ],
+      "minimumTransparentBorderPx": 45,
+      "sha256": "b10b1c2c54341189527cded254a929e6178422ba2b4ea17c9cc5fae409cd5fc1"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "alphaBounds": [
+        65,
+        44,
+        192,
+        211
+      ],
+      "minimumTransparentBorderPx": 44,
+      "sha256": "ae24fa16716dbef11a7edd0158f971ae664e14b34b92f629dec63e8bea4879c1"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "alphaBounds": [
+        65,
+        41,
+        192,
+        213
+      ],
+      "minimumTransparentBorderPx": 41,
+      "sha256": "761beac1b13cde0935baf623808b0459bd2a03ba0c4fd0f4de4c0a2494ba2375"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "alphaBounds": [
+        65,
+        42,
+        192,
+        212
+      ],
+      "minimumTransparentBorderPx": 42,
+      "sha256": "8d5664af580bd2bfd64f0af88bfba8970ff80593861d7bcd1ac04adc9f5836fc"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "alphaBounds": [
+        65,
+        45,
+        192,
+        209
+      ],
+      "minimumTransparentBorderPx": 45,
+      "sha256": "0d562c69369d9971998f6a90d8b9c30d7bae51a356b9fb4e70d966cad03fa712"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "alphaBounds": [
+        65,
+        50,
+        192,
+        203
+      ],
+      "minimumTransparentBorderPx": 50,
+      "sha256": "b59bf053bef74d1b22b30b9097b8ac9d1c6b3e735b17615b4b1efeffc554501b"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "alphaBounds": [
+        65,
+        58,
+        192,
+        195
+      ],
+      "minimumTransparentBorderPx": 58,
+      "sha256": "d6dec2662ec3133a4a7f29ee7f9c029572e0f0ef2537ed0d4703e48aa4b9ce77"
+    }
+  ],
+  "retiredUnreferencedSameAssetFrames": [
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+00-elev20.a5358c5e6f9f.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+00-elev30.829dc0c3c49c.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+00-elev40.def8fef876f4.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+00-elev50.18afe9b910ee.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+00-elev60.eb0dcac272a3.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+00-elev70.57ca43517ba1.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev20.352f3e26ec10.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev30.faeddf072e09.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.e654758736c0.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev50.6b4deab69f9d.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev60.19225701c648.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev70.014d88aee6df.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev20.91b61b57d28e.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev30.7105ee157692.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev40.d41dbbc0ade7.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev50.b2b76f1b94c0.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev60.dcf642e8a943.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev70.118823723d07.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+90-elev20.b872c20649a6.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+90-elev30.f3826d1bb4d2.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+90-elev40.cb32e34e8fb5.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+90-elev50.452ac3076962.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+90-elev60.04d9e41d1fbe.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+90-elev70.60b5d269a177.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+120-elev20.2ae7743d8b96.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+120-elev30.a433f760a20d.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+120-elev40.f291fce29896.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+120-elev50.966d062bf1f9.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+120-elev60.4f0276f2fc22.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+120-elev70.3e003073b1e5.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+150-elev60.2c722917770d.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+150-elev70.8356244d04b6.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+180-elev60.e54bf854efcc.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+180-elev70.84c468fc7c24.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+210-elev60.336c7ee3f514.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+210-elev70.27742461e5c3.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+240-elev20.f235de0edb6b.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+240-elev30.a625c7a60129.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+240-elev40.a4f4ef863cab.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+240-elev50.adffe83127cb.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+240-elev60.43defede82b2.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+240-elev70.3e8b2c1cb046.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+270-elev20.4f07a3abb15e.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+270-elev30.7c4332f0bd67.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+270-elev40.93a9dd257a60.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+270-elev50.84f1ebbc4ca0.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+270-elev60.3e7f928e5682.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+270-elev70.21977542e6bc.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev20.4472611409f3.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev30.b4f1444a7aad.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev40.1c60dccb6ab8.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev50.51c5a4fddb38.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev60.89586807932f.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev70.9003ae8b7110.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+330-elev20.f0a06b09dcbc.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+330-elev30.cc03df5b20dd.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+330-elev40.f28389e62046.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+330-elev50.e0b2a26d2107.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+330-elev60.fd507e8a74b0.png",
+    "public/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+330-elev70.eb2ca6bcef92.png"
+  ],
+  "allGameContentJSONReferencesScanned": true,
+  "nativeBrowserStarted": false,
+  "serverStarted": false
+}

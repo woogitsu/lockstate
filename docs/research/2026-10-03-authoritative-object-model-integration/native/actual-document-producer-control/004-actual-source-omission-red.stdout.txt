@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-integration-20261003
+
+ ❯ tests/foundation/documented-wire-schema-membership-contract.test.ts (4 tests | 1 failed) 15ms
+     × reaches every wire field this contract names, so an unwrap that stops working fails by name 5ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  18:10:48
+   Duration  421ms (transform 44ms, setup 0ms, import 287ms, tests 15ms, environment 0ms)
+

@@ -1,0 +1,38 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-native-small-prison-showcase-prep-20261003
+
+ ❯ tests/integration/native-small-prison-showcase.test.ts (1 test | 1 failed) 131ms
+   × builds the literal four-cell prison within 25k and retains the whole stopped save 130ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  11:57:18
+   Duration  2.61s (transform 788ms, setup 0ms, import 2.37s, tests 131ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+$ vitest run "tests/integration/native-small-prison-showcase.test.ts"
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/native-small-prison-showcase.test.ts > builds the literal four-cell prison within 25k and retains the whole stopped save
+AssertionError: expected { width: 16, height: 8 } to deeply equal { width: 16, height: 7 }
+
+- Expected
++ Received
+
+  {
+-   "height": 7,
++   "height": 8,
+    "width": 16,
+  }
+
+ ❯ tests/integration/native-small-prison-showcase.test.ts:25:64
+     23|   for (const [index, plan] of SMALL_PRISON_PLANS.entries()) {
+     24|     const geometry = instantiateRoomTemplateForConstruction(plan.templ…
+     25|     expect({ width: geometry.width, height: geometry.height }).toEqual…
+       |                                                                ^
+     26|     expect(plan.origin.x).toBeGreaterThanOrEqual(0);
+     27|     expect(plan.origin.y).toBeGreaterThanOrEqual(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

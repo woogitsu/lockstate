@@ -1,0 +1,42 @@
+[
+  {
+    "url": "http://127.0.0.1:5184/assets/worker-CI5uwrgr.js",
+    "decodedPath": "/assets/worker-CI5uwrgr.js",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": false,
+    "rawPlusInUrl": false,
+    "sha256": "3d2f98b8514d20492636e9e1579109557c39325ae6b37cbc314294172e92f07b",
+    "bytes": 442115
+  },
+  {
+    "url": "http://127.0.0.1:5184/game-content/oblique-cell-toilet.v1.json",
+    "decodedPath": "/game-content/oblique-cell-toilet.v1.json",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": false,
+    "rawPlusInUrl": false,
+    "sha256": "b651cc3e7cfceb218d1fd7496a1325e4f0205397265e3fed34ac64026523c906",
+    "bytes": 18496
+  },
+  {
+    "url": "http://127.0.0.1:5184/assets/environment/oblique/cell-toilet-yaw-45-elev40.b3fe27fabbbf.png",
+    "decodedPath": "/assets/environment/oblique/cell-toilet-yaw-45-elev40.b3fe27fabbbf.png",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": false,
+    "rawPlusInUrl": false,
+    "sha256": "b3fe27fabbbfcbb68426c616196e2b221f0b67107b6f1312c170b150ab710b49",
+    "bytes": 14324
+  },
+  {
+    "url": "http://127.0.0.1:5184/assets/worker-CI5uwrgr.js",
+    "decodedPath": "/assets/worker-CI5uwrgr.js",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": false,
+    "rawPlusInUrl": false,
+    "sha256": "3d2f98b8514d20492636e9e1579109557c39325ae6b37cbc314294172e92f07b",
+    "bytes": 442115
+  }
+]

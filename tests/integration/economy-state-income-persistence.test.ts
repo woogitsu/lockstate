@@ -24,11 +24,12 @@ import { buildDeterminismScenario, SCENARIO_SEED, submitScenarioCommands } from 
  *
  * ## Why this needs no save-version bump, asserted rather than claimed
  *
- * `SAVE_SCHEMA_VERSION` was 4 when this file was written and is 7 now, and
+ * `SAVE_SCHEMA_VERSION` was 4 when this file was written and is 8 now, and
  * **no number in that sequence is this system's**: 5 belongs to ADR 0028 phase
  * 1, which took `capacity` off a room instance and put a rectangle on it, and 6
  * to ADR 0113, which put each classification group's timetable in the save so a
- * command could edit it. What
+ * command could edit it. V7 relocated travel fields; V8 records exact object
+ * construction ownership (#1975). What
  * this file asserts is unchanged and is the part that matters --
  * `StateIncomeSystem` holds no state at all
  * -- no accumulator, no last-paid tick -- so it adds no field to the payload,
@@ -101,7 +102,7 @@ function saveAndLoad(runtime: SimulationRuntime): { restored: SimulationRuntime;
   // edited cannot be recovered from an absent field -- and it is nothing to do
   // with the income line, which still adds no field to the payload. The two
   // paragraphs below the version check are what actually enforce that.
-  expect(SAVE_SCHEMA_VERSION, 'a bump needs its own reason; the income line is not one').toBe(7);
+  expect(SAVE_SCHEMA_VERSION, 'a bump needs its own reason; the income line is not one').toBe(8);
 
   const serialized = JSON.stringify(envelope);
   const decoded = decodeSaveEnvelope(JSON.parse(serialized) as unknown);

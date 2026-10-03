@@ -1,0 +1,46 @@
+pnpm : $ vitest run "tests/unit/camera-pan-ports.test.ts" "tests/unit/ui-camera-pan-control.test.ts" "tests/unit/obliqu
+e-loading-dock-detail-integrity.test.ts" "tests/integration/occupied-template-refusal-undo-selection.test.ts" "tests/in
+tegration/solitary-template-sanction-release.test.ts" "tests/integration/room-template-occupied-material-cancel.test.ts
+" "tests/foundation/research-index-contract.test.ts" "tests/foundation/documentation-links-contract.test.ts" "tests/fou
+ndation/typecheck-coverage-contract.test.ts" "tests/foundation/browser-suite-partition-contract.test.ts" "--maxWorkers=
+2"
+At line:23 char:467
++ ... +$env:PATH; pnpm --config.verify-deps-before-run=false test tests/uni ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-pan-dock-integration-20261003
+
+ ❯ tests/foundation/typecheck-coverage-contract.test.ts (4 tests | 1 failed) 41ms
+     × leaves no tracked module file outside every TypeScript project 39ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/typecheck-coverage-contract.test.ts > typecheck coverage contract > leaves no tracked module fi
+le outside every TypeScript project
+AssertionError: a tracked module file is in no tsconfig `include`, so no typechecker reads it. That is how #602 happene
+d: a benchmark kept calling a production signature that had changed, and neither `pnpm typecheck` nor `pnpm test` could
+ see it. Add the path to `tsconfig.json` or to `tsconfig.tools.json`: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-dedicated-camera-pan-native/reference-offline-audit.cjs",
++ ]
+
+ ❯ tests/foundation/typecheck-coverage-contract.test.ts:126:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 9 passed (10)
+      Tests  1 failed | 123 passed (124)
+   Start at  04:12:38
+   Duration  8.54s (transform 2.04s, setup 0ms, import 6.94s, tests 8.31s, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

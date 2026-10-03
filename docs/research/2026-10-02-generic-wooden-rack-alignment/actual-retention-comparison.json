@@ -1,0 +1,347 @@
+{
+  "comparedOriginalCatalogAndCommittedStandaloneSource": true,
+  "expectedOnlyAssemblyTranslation": [
+    0,
+    0,
+    0
+  ],
+  "meshCount": 48,
+  "meshes": [
+    {
+      "mesh": "Corner bolt.-0.43.-0.39",
+      "evaluatedVertices": 24,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Corner bolt.-0.43.0.39",
+      "evaluatedVertices": 24,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Corner bolt.0.43.-0.39",
+      "evaluatedVertices": 24,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Corner bolt.0.43.0.39",
+      "evaluatedVertices": 24,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Corner post.-0.43.-0.39",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Corner post.-0.43.0.39",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Corner post.0.43.-0.39",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Corner post.0.43.0.39",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Middle steel toolbox",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "North bundle strap",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "North crate handle",
+      "evaluatedVertices": 8,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "North folded blanket.0",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "North folded blanket.1",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "North wooden crate",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.canvas hem 0.267",
+      "evaluatedVertices": 8,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.canvas hem 0.315",
+      "evaluatedVertices": 8,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.canvas packet 0.267",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.canvas packet 0.315",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.canvas tie",
+      "evaluatedVertices": 8,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.middle carton",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.middle carton central seam",
+      "evaluatedVertices": 8,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.middle carton label",
+      "evaluatedVertices": 8,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.middle carton mark",
+      "evaluatedVertices": 8,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.north crate lid inset",
+      "evaluatedVertices": 8,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.north crate lid slat -0.105",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.north crate lid slat -0.275",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.recess 0",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.recess 1",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.recess 2",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.south crate edge -0.066",
+      "evaluatedVertices": 8,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.south crate edge -0.294",
+      "evaluatedVertices": 8,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.south crate printed band",
+      "evaluatedVertices": 8,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.south supply crate",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.steel rail 0",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.steel rail 1",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rack refinement.steel rail 2",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Rear brace",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Shelf lip.0",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Shelf lip.1",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Shelf lip.2",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Steel corner cap.-0.43.-0.39",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Steel corner cap.-0.43.0.39",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Steel corner cap.0.43.-0.39",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Steel corner cap.0.43.0.39",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Toolbox clasp",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Worn shelf.0",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Worn shelf.1",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    },
+    {
+      "mesh": "Worn shelf.2",
+      "evaluatedVertices": 56,
+      "maximumPositionErrorAfterDeclaredRecenter": 0.0,
+      "actualMaterialsDiffuseRGBAEqual": true,
+      "actualModifiersEqual": true
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-integration-20261003
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts (8 tests | 1 failed) 21ms
+     × cites only commits this repository publishes, so CI reads the same history a reader can 4ms
+pnpm : 
+At line:2 char:189
++ ... +$env:PATH; pnpm --config.verify-deps-before-run=false exec vitest ru ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-commit-citation-contract.test.ts > a commit sha cited in prose names a commit tha
+t exists > cites only commits this repository publishes, so CI reads the same history a reader can
+AssertionError: these cite a commit that exists on this disk and on no ref this repository publishes, so nobody else ca
+n check them and CI cannot either: `fetch-depth: 0` fetches all history for every published branch and tag and nothing 
+more. The usual cause is a sha read out of an agent's own worktree before the coordinator cherry-picked it, which rewri
+tes it -- `git branch -r --contains <sha>` tells you. Cite the commit as published, or record it in UNPUBLISHED_BY_ORIG
+IN with what it is and why the anchor cannot move: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-garbage-room-native-preparation/README.md:5 -> 3bd76298c1964a4eaa802f263c2347e717593206",
++   "docs/research/2026-10-03-world-roving-held-arrow/README.md:5 -> 3bd76298c1964a4eaa802f263c2347e717593206",
++ ]
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts:748:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 7 passed (8)
+      Tests  1 failed | 222 passed (223)
+   Start at  14:31:41
+   Duration  13.86s (transform 1.18s, setup 0ms, import 16.91s, tests 4.65s, environment 1ms)
+

@@ -1,0 +1,79 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-session-gesture-owner-audit-20261003
+
+stdout | tests/unit/ordinary-build-session-ownership.test.ts > world/new/wall: outgoing held gesture cannot report or submit into replacement worker
+ACTUAL_SESSION_OLD_PRIMARY_RELEASE {"mode":"world","operation":"new","tool":"wall","commands":[{"type":"PlaceBuildOrder","orderId":"order-eaefe138-364e-4bfe-a02c-02d39e0aca1e","definitionId":"wall-brick","x":11,"y":11,"footprint":"square","transactionId":"build-f1beb770-ab3c-4ee4-81fa-49eca9a2f676"}],"roomReports":[],"beforeOrders":0,"afterOrders":1}
+
+stdout | tests/unit/ordinary-build-session-ownership.test.ts > world/new/object: outgoing held gesture cannot report or submit into replacement worker
+ACTUAL_SESSION_OLD_PRIMARY_RELEASE {"mode":"world","operation":"new","tool":"object","commands":[{"type":"PlaceObject","orderId":"object-20ad98a8-94ca-4356-a49c-16f6f504ae70","definitionId":"bed-wooden","x":11,"y":11}],"roomReports":[],"beforeOrders":0,"afterOrders":0}
+
+stdout | tests/unit/ordinary-build-session-ownership.test.ts > world/new/room: outgoing held gesture cannot report or submit into replacement worker
+ACTUAL_SESSION_OLD_PRIMARY_RELEASE {"mode":"world","operation":"new","tool":"room","commands":[],"roomReports":[{"kind":"designate","roomId":"room.yard","area":{"x":11,"y":11,"width":1,"height":1}}],"beforeOrders":0,"afterOrders":0}
+
+stdout | tests/unit/ordinary-build-session-ownership.test.ts > world/load/wall: outgoing held gesture cannot report or submit into replacement worker
+ACTUAL_SESSION_OLD_PRIMARY_RELEASE {"mode":"world","operation":"load","tool":"wall","commands":[{"type":"PlaceBuildOrder","orderId":"order-5f30d1c5-2bac-4f38-a477-d52fb696dda0","definitionId":"wall-brick","x":11,"y":11,"footprint":"square","transactionId":"build-eb8b4521-3015-4287-a9c4-04cd8db33fdd"}],"roomReports":[],"beforeOrders":0,"afterOrders":1}
+
+stdout | tests/unit/ordinary-build-session-ownership.test.ts > world/load/object: outgoing held gesture cannot report or submit into replacement worker
+ACTUAL_SESSION_OLD_PRIMARY_RELEASE {"mode":"world","operation":"load","tool":"object","commands":[{"type":"PlaceObject","orderId":"object-ea228695-f8c2-47aa-9676-88b613ebb1f0","definitionId":"bed-wooden","x":11,"y":11}],"roomReports":[],"beforeOrders":0,"afterOrders":0}
+
+stdout | tests/unit/ordinary-build-session-ownership.test.ts > world/load/room: outgoing held gesture cannot report or submit into replacement worker
+ACTUAL_SESSION_OLD_PRIMARY_RELEASE {"mode":"world","operation":"load","tool":"room","commands":[],"roomReports":[{"kind":"designate","roomId":"room.yard","area":{"x":11,"y":11,"width":1,"height":1}}],"beforeOrders":0,"afterOrders":0}
+
+ ❯ tests/unit/ordinary-build-session-ownership.test.ts (30 tests | 6 failed) 89ms
+   × world/new/wall: outgoing held gesture cannot report or submit into replacement worker 20ms
+   × world/new/object: outgoing held gesture cannot report or submit into replacement worker 5ms
+   × world/new/room: outgoing held gesture cannot report or submit into replacement worker 3ms
+   × world/load/wall: outgoing held gesture cannot report or submit into replacement worker 5ms
+   × world/load/object: outgoing held gesture cannot report or submit into replacement worker 3ms
+   × world/load/room: outgoing held gesture cannot report or submit into replacement worker 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/new/wall: outgoing held gesture cannot report or submit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/new/object: outgoing held gesture cannot report or submit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/load/wall: outgoing held gesture cannot report or submit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/load/object: outgoing held gesture cannot report or submit into replacement worker
+AssertionError: the cancelled outgoing press must not enter the new worker: expected [ { protocolVersion: 1, …(3) } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/ordinary-build-session-ownership.test.ts:154:98
+    152|       console.log('ACTUAL_SESSION_OLD_PRIMARY_RELEASE', JSON.stringify…
+    153|         beforeOrders: before.construction.orders.length, afterOrders: …
+    154|       expect(h.actors.submitted(), 'the cancelled outgoing press must …
+       |                                                                                                  ^
+    155|       expect(h.roomReports, 'old room rectangle must not become new-se…
+    156|       expect(after).toEqual(before);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/new/room: outgoing held gesture cannot report or submit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/load/room: outgoing held gesture cannot report or submit into replacement worker
+AssertionError: old room rectangle must not become new-session pending confirmation: expected [ { kind: 'designate', …(2) } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/ordinary-build-session-ownership.test.ts:155:100
+    153|         beforeOrders: before.construction.orders.length, afterOrders: …
+    154|       expect(h.actors.submitted(), 'the cancelled outgoing press must …
+    155|       expect(h.roomReports, 'old room rectangle must not become new-se…
+       |                                                                                                    ^
+    156|       expect(after).toEqual(before);
+    157|       h.mouse('down', 0, 1); h.mouse('up', 0, 0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 24 passed (30)
+   Start at  06:29:24
+   Duration  3.37s (transform 1.11s, setup 0ms, import 3.15s, tests 89ms, environment 0ms)
+

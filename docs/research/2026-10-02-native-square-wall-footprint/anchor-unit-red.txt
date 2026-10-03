@@ -1,0 +1,48 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-square-brick-calibration-20261002
+
+ ❯ tests/unit/oblique-square-brick-wall-catalog.test.ts (2 tests | 2 failed) 8ms
+     × registers a complete 72-frame full Blender catalog 6ms
+     × registers a complete 72-frame low Blender catalog 1ms
+pnpm : 
+At line:2 char:1881
++ ... \bash.exe'; pnpm exec vitest run tests/unit/oblique-square-brick-wall ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-square-brick-wall-catalog.test.ts > square brick wall art for normal and cutaway camera poses
+ > registers a complete 72-frame full Blender catalog
+ FAIL  tests/unit/oblique-square-brick-wall-catalog.test.ts > square brick wall art for normal and cutaway camera poses
+ > registers a complete 72-frame low Blender catalog
+AssertionError: expected [ +0, +0, +0 ] to deeply equal [ 0.5, 0.5, +0 ]
+
+- Expected
++ Received
+
+  [
+-   0.5,
+-   0.5,
++   0,
++   0,
+    0,
+  ]
+
+ ❯ tests/unit/oblique-square-brick-wall-catalog.test.ts:29:39
+     27|     expect(catalog.pivotPx).toEqual([256, 256]);
+     28|     expect(catalog.nominalPixelsPerTile).toBe(64);
+     29|     expect(catalog.cameraTargetTiles).toEqual([0.5, 0.5, 0]);
+       |                                       ^
+     30|     expect(catalog.yawDegrees).toEqual(Array.from({ length: 24 }, (_, …
+     31|     expect(catalog.elevationDegrees).toEqual([25, 45, 65]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  21:58:12
+   Duration  220ms (transform 26ms, setup 0ms, import 99ms, tests 8ms, environment 0ms)
+

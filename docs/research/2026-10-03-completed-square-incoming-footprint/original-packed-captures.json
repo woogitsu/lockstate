@@ -1,0 +1,2274 @@
+﻿[
+    {
+        "originalFullCaptureSHA256":  "3827A7359D06215A056C87C6B67684A29926F6B590CE56B90316909290B00A7F",
+        "quarterTurns":  0,
+        "mirrorX":  false,
+        "type":  "PlaceBuildOrder",
+        "load":  false,
+        "conflicts":  false,
+        "anchor":  {
+                       "x":  12,
+                       "y":  12
+                   },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23470
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "admittedOrder":  {
+                              "id":  "later-bed",
+                              "definitionId":  "bed-wooden",
+                              "location":  {
+                                               "x":  12,
+                                               "y":  12
+                                           },
+                              "placementSequence":  1,
+                              "state":  "approved",
+                              "progress":  0,
+                              "materialsAllocated":  [
+
+                                                     ]
+                          },
+        "beforeObjects":  {
+                              "placedObjects":  [
+                                                    {
+                                                        "placedObjectId":  "object:11:11",
+                                                        "objectId":  "object.bed",
+                                                        "anchorTile":  {
+                                                                           "x":  11,
+                                                                           "y":  11
+                                                                       },
+                                                        "orientation":  0,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                    },
+                                                    {
+                                                        "placedObjectId":  "object:12:14",
+                                                        "objectId":  "object.toilet",
+                                                        "anchorTile":  {
+                                                                           "x":  12,
+                                                                           "y":  14
+                                                                       },
+                                                        "orientation":  0,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                    }
+                                                ]
+                          },
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:11:11",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  11,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:12:14",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  14
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   }
+                                               ]
+                         },
+        "beforeHistory":  {
+                              "undo":  [
+
+                                       ],
+                              "redo":  [
+
+                                       ],
+                              "current":  [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                          },
+        "afterHistory":  {
+                             "undo":  [
+                                          [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                                      ],
+                             "redo":  [
+
+                                      ],
+                             "current":  [
+                                             "later-bed"
+                                         ]
+                         }
+    },
+    {
+        "originalFullCaptureSHA256":  "D446C7BCE09A070478D702751A592D4023E7DEEBECE956E6F7F5CA6EF86A9E3D",
+        "quarterTurns":  0,
+        "mirrorX":  false,
+        "type":  "PlaceBuildOrder",
+        "load":  false,
+        "conflicts":  true,
+        "anchor":  {
+                       "x":  12,
+                       "y":  15
+                   },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23470
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "admittedOrder":  {
+                              "id":  "later-bed",
+                              "definitionId":  "bed-wooden",
+                              "location":  {
+                                               "x":  12,
+                                               "y":  15
+                                           },
+                              "placementSequence":  1,
+                              "state":  "approved",
+                              "progress":  0,
+                              "materialsAllocated":  [
+
+                                                     ]
+                          },
+        "beforeObjects":  {
+                              "placedObjects":  [
+                                                    {
+                                                        "placedObjectId":  "object:11:11",
+                                                        "objectId":  "object.bed",
+                                                        "anchorTile":  {
+                                                                           "x":  11,
+                                                                           "y":  11
+                                                                       },
+                                                        "orientation":  0,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                    },
+                                                    {
+                                                        "placedObjectId":  "object:12:14",
+                                                        "objectId":  "object.toilet",
+                                                        "anchorTile":  {
+                                                                           "x":  12,
+                                                                           "y":  14
+                                                                       },
+                                                        "orientation":  0,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                    }
+                                                ]
+                          },
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:11:11",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  11,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:12:14",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  14
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   }
+                                               ]
+                         },
+        "beforeHistory":  {
+                              "undo":  [
+
+                                       ],
+                              "redo":  [
+
+                                       ],
+                              "current":  [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                          },
+        "afterHistory":  {
+                             "undo":  [
+                                          [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                                      ],
+                             "redo":  [
+
+                                      ],
+                             "current":  [
+                                             "later-bed"
+                                         ]
+                         }
+    },
+    {
+        "originalFullCaptureSHA256":  "63079AF47D37D7ACCC84BFD4413F41B1FD5032715094C5859576C090AD3F024C",
+        "quarterTurns":  0,
+        "mirrorX":  false,
+        "type":  "PlaceBuildOrder",
+        "load":  true,
+        "conflicts":  false,
+        "anchor":  {
+                       "x":  12,
+                       "y":  12
+                   },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23470
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "admittedOrder":  {
+                              "id":  "later-bed",
+                              "definitionId":  "bed-wooden",
+                              "location":  {
+                                               "x":  12,
+                                               "y":  12
+                                           },
+                              "placementSequence":  1,
+                              "state":  "approved",
+                              "progress":  0,
+                              "materialsAllocated":  [
+
+                                                     ]
+                          },
+        "beforeObjects":  {
+                              "placedObjects":  [
+                                                    {
+                                                        "placedObjectId":  "object:11:11",
+                                                        "objectId":  "object.bed",
+                                                        "anchorTile":  {
+                                                                           "x":  11,
+                                                                           "y":  11
+                                                                       },
+                                                        "orientation":  0,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                    },
+                                                    {
+                                                        "placedObjectId":  "object:12:14",
+                                                        "objectId":  "object.toilet",
+                                                        "anchorTile":  {
+                                                                           "x":  12,
+                                                                           "y":  14
+                                                                       },
+                                                        "orientation":  0,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                    }
+                                                ]
+                          },
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:11:11",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  11,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:12:14",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  14
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   }
+                                               ]
+                         },
+        "beforeHistory":  {
+                              "undo":  [
+
+                                       ],
+                              "redo":  [
+
+                                       ],
+                              "current":  [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                          },
+        "afterHistory":  {
+                             "undo":  [
+                                          [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                                      ],
+                             "redo":  [
+
+                                      ],
+                             "current":  [
+                                             "later-bed"
+                                         ]
+                         }
+    },
+    {
+        "originalFullCaptureSHA256":  "995388E3A0DE14F712AD140702C94FDD39337B0FC4FB0551F4C4BE2B268BEE22",
+        "quarterTurns":  0,
+        "mirrorX":  false,
+        "type":  "PlaceBuildOrder",
+        "load":  true,
+        "conflicts":  true,
+        "anchor":  {
+                       "x":  12,
+                       "y":  15
+                   },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23470
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "admittedOrder":  {
+                              "id":  "later-bed",
+                              "definitionId":  "bed-wooden",
+                              "location":  {
+                                               "x":  12,
+                                               "y":  15
+                                           },
+                              "placementSequence":  1,
+                              "state":  "approved",
+                              "progress":  0,
+                              "materialsAllocated":  [
+
+                                                     ]
+                          },
+        "beforeObjects":  {
+                              "placedObjects":  [
+                                                    {
+                                                        "placedObjectId":  "object:11:11",
+                                                        "objectId":  "object.bed",
+                                                        "anchorTile":  {
+                                                                           "x":  11,
+                                                                           "y":  11
+                                                                       },
+                                                        "orientation":  0,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                    },
+                                                    {
+                                                        "placedObjectId":  "object:12:14",
+                                                        "objectId":  "object.toilet",
+                                                        "anchorTile":  {
+                                                                           "x":  12,
+                                                                           "y":  14
+                                                                       },
+                                                        "orientation":  0,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                    }
+                                                ]
+                          },
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:11:11",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  11,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:12:14",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  14
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   }
+                                               ]
+                         },
+        "beforeHistory":  {
+                              "undo":  [
+
+                                       ],
+                              "redo":  [
+
+                                       ],
+                              "current":  [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                          },
+        "afterHistory":  {
+                             "undo":  [
+                                          [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                                      ],
+                             "redo":  [
+
+                                      ],
+                             "current":  [
+                                             "later-bed"
+                                         ]
+                         }
+    },
+    {
+        "originalFullCaptureSHA256":  "D1A038CD8BB394A3CB0C9B4731CDB74E9135AFDB81145E0F1F661FFFD04F0650",
+        "quarterTurns":  0,
+        "mirrorX":  false,
+        "type":  "PlaceObject",
+        "load":  false,
+        "conflicts":  false,
+        "anchor":  {
+                       "x":  12,
+                       "y":  12
+                   },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23470
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "admittedOrder":  {
+                              "id":  "later-bed",
+                              "definitionId":  "bed-wooden",
+                              "location":  {
+                                               "x":  12,
+                                               "y":  12
+                                           },
+                              "placementSequence":  1,
+                              "state":  "approved",
+                              "progress":  0,
+                              "materialsAllocated":  [
+
+                                                     ]
+                          },
+        "beforeObjects":  {
+                              "placedObjects":  [
+                                                    {
+                                                        "placedObjectId":  "object:11:11",
+                                                        "objectId":  "object.bed",
+                                                        "anchorTile":  {
+                                                                           "x":  11,
+                                                                           "y":  11
+                                                                       },
+                                                        "orientation":  0,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                    },
+                                                    {
+                                                        "placedObjectId":  "object:12:14",
+                                                        "objectId":  "object.toilet",
+                                                        "anchorTile":  {
+                                                                           "x":  12,
+                                                                           "y":  14
+                                                                       },
+                                                        "orientation":  0,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                    }
+                                                ]
+                          },
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:11:11",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  11,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:12:14",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  14
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   }
+                                               ]
+                         },
+        "beforeHistory":  {
+                              "undo":  [
+
+                                       ],
+                              "redo":  [
+
+                                       ],
+                              "current":  [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                          },
+        "afterHistory":  {
+                             "undo":  [
+                                          [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                                      ],
+                             "redo":  [
+
+                                      ],
+                             "current":  [
+                                             "later-bed"
+                                         ]
+                         }
+    },
+    {
+        "originalFullCaptureSHA256":  "3A6FE5316417EC71B4E466D93E70CCEC49DD88E480D1CB741DEC72FFE5B1FDCA",
+        "quarterTurns":  0,
+        "mirrorX":  false,
+        "type":  "PlaceObject",
+        "load":  false,
+        "conflicts":  true,
+        "anchor":  {
+                       "x":  12,
+                       "y":  15
+                   },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23470
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "admittedOrder":  {
+                              "id":  "later-bed",
+                              "definitionId":  "bed-wooden",
+                              "location":  {
+                                               "x":  12,
+                                               "y":  15
+                                           },
+                              "placementSequence":  1,
+                              "state":  "approved",
+                              "progress":  0,
+                              "materialsAllocated":  [
+
+                                                     ]
+                          },
+        "beforeObjects":  {
+                              "placedObjects":  [
+                                                    {
+                                                        "placedObjectId":  "object:11:11",
+                                                        "objectId":  "object.bed",
+                                                        "anchorTile":  {
+                                                                           "x":  11,
+                                                                           "y":  11
+                                                                       },
+                                                        "orientation":  0,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                    },
+                                                    {
+                                                        "placedObjectId":  "object:12:14",
+                                                        "objectId":  "object.toilet",
+                                                        "anchorTile":  {
+                                                                           "x":  12,
+                                                                           "y":  14
+                                                                       },
+                                                        "orientation":  0,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                    }
+                                                ]
+                          },
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:11:11",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  11,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:12:14",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  14
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   }
+                                               ]
+                         },
+        "beforeHistory":  {
+                              "undo":  [
+
+                                       ],
+                              "redo":  [
+
+                                       ],
+                              "current":  [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                          },
+        "afterHistory":  {
+                             "undo":  [
+                                          [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                                      ],
+                             "redo":  [
+
+                                      ],
+                             "current":  [
+                                             "later-bed"
+                                         ]
+                         }
+    },
+    {
+        "originalFullCaptureSHA256":  "CB11A2213E94229D779C0B842BA3669BB95C271605DB906B6CEF39A63D79531A",
+        "quarterTurns":  0,
+        "mirrorX":  false,
+        "type":  "PlaceObject",
+        "load":  true,
+        "conflicts":  false,
+        "anchor":  {
+                       "x":  12,
+                       "y":  12
+                   },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23470
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "admittedOrder":  {
+                              "id":  "later-bed",
+                              "definitionId":  "bed-wooden",
+                              "location":  {
+                                               "x":  12,
+                                               "y":  12
+                                           },
+                              "placementSequence":  1,
+                              "state":  "approved",
+                              "progress":  0,
+                              "materialsAllocated":  [
+
+                                                     ]
+                          },
+        "beforeObjects":  {
+                              "placedObjects":  [
+                                                    {
+                                                        "placedObjectId":  "object:11:11",
+                                                        "objectId":  "object.bed",
+                                                        "anchorTile":  {
+                                                                           "x":  11,
+                                                                           "y":  11
+                                                                       },
+                                                        "orientation":  0,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                    },
+                                                    {
+                                                        "placedObjectId":  "object:12:14",
+                                                        "objectId":  "object.toilet",
+                                                        "anchorTile":  {
+                                                                           "x":  12,
+                                                                           "y":  14
+                                                                       },
+                                                        "orientation":  0,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                    }
+                                                ]
+                          },
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:11:11",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  11,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:12:14",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  14
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   }
+                                               ]
+                         },
+        "beforeHistory":  {
+                              "undo":  [
+
+                                       ],
+                              "redo":  [
+
+                                       ],
+                              "current":  [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                          },
+        "afterHistory":  {
+                             "undo":  [
+                                          [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                                      ],
+                             "redo":  [
+
+                                      ],
+                             "current":  [
+                                             "later-bed"
+                                         ]
+                         }
+    },
+    {
+        "originalFullCaptureSHA256":  "2401F832A908D0AC662AA00F174FA4ADECEF40227519925D94C73BE615E959DA",
+        "quarterTurns":  0,
+        "mirrorX":  false,
+        "type":  "PlaceObject",
+        "load":  true,
+        "conflicts":  true,
+        "anchor":  {
+                       "x":  12,
+                       "y":  15
+                   },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23470
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "admittedOrder":  {
+                              "id":  "later-bed",
+                              "definitionId":  "bed-wooden",
+                              "location":  {
+                                               "x":  12,
+                                               "y":  15
+                                           },
+                              "placementSequence":  1,
+                              "state":  "approved",
+                              "progress":  0,
+                              "materialsAllocated":  [
+
+                                                     ]
+                          },
+        "beforeObjects":  {
+                              "placedObjects":  [
+                                                    {
+                                                        "placedObjectId":  "object:11:11",
+                                                        "objectId":  "object.bed",
+                                                        "anchorTile":  {
+                                                                           "x":  11,
+                                                                           "y":  11
+                                                                       },
+                                                        "orientation":  0,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                    },
+                                                    {
+                                                        "placedObjectId":  "object:12:14",
+                                                        "objectId":  "object.toilet",
+                                                        "anchorTile":  {
+                                                                           "x":  12,
+                                                                           "y":  14
+                                                                       },
+                                                        "orientation":  0,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                    }
+                                                ]
+                          },
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:11:11",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  11,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:12:14",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  14
+                                                                      },
+                                                       "orientation":  0,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   }
+                                               ]
+                         },
+        "beforeHistory":  {
+                              "undo":  [
+
+                                       ],
+                              "redo":  [
+
+                                       ],
+                              "current":  [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                          },
+        "afterHistory":  {
+                             "undo":  [
+                                          [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                                      ],
+                             "redo":  [
+
+                                      ],
+                             "current":  [
+                                             "later-bed"
+                                         ]
+                         }
+    },
+    {
+        "originalFullCaptureSHA256":  "51F700C080CEF7478147293DFCDCB6492756EA41AEFC3386DE0ACC10ABF5AC8A",
+        "quarterTurns":  1,
+        "mirrorX":  true,
+        "type":  "PlaceBuildOrder",
+        "load":  false,
+        "conflicts":  false,
+        "anchor":  {
+                       "x":  11,
+                       "y":  11
+                   },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23470
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "admittedOrder":  {
+                              "id":  "later-bed",
+                              "definitionId":  "bed-wooden",
+                              "location":  {
+                                               "x":  11,
+                                               "y":  11
+                                           },
+                              "placementSequence":  1,
+                              "state":  "approved",
+                              "progress":  0,
+                              "materialsAllocated":  [
+
+                                                     ]
+                          },
+        "beforeObjects":  {
+                              "placedObjects":  [
+                                                    {
+                                                        "placedObjectId":  "object:12:11",
+                                                        "objectId":  "object.toilet",
+                                                        "anchorTile":  {
+                                                                           "x":  12,
+                                                                           "y":  11
+                                                                       },
+                                                        "orientation":  1,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                    },
+                                                    {
+                                                        "placedObjectId":  "object:14:12",
+                                                        "objectId":  "object.bed",
+                                                        "anchorTile":  {
+                                                                           "x":  14,
+                                                                           "y":  12
+                                                                       },
+                                                        "orientation":  1,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                    }
+                                                ]
+                          },
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:12:11",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:14:12",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  14,
+                                                                          "y":  12
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   }
+                                               ]
+                         },
+        "beforeHistory":  {
+                              "undo":  [
+
+                                       ],
+                              "redo":  [
+
+                                       ],
+                              "current":  [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                          },
+        "afterHistory":  {
+                             "undo":  [
+                                          [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                                      ],
+                             "redo":  [
+
+                                      ],
+                             "current":  [
+                                             "later-bed"
+                                         ]
+                         }
+    },
+    {
+        "originalFullCaptureSHA256":  "87201A2B7CC83AC33B767D9662E278936E430C70DA1306E522BC166A289F5E1B",
+        "quarterTurns":  1,
+        "mirrorX":  true,
+        "type":  "PlaceBuildOrder",
+        "load":  false,
+        "conflicts":  true,
+        "anchor":  {
+                       "x":  13,
+                       "y":  12
+                   },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23470
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "admittedOrder":  {
+                              "id":  "later-bed",
+                              "definitionId":  "bed-wooden",
+                              "location":  {
+                                               "x":  13,
+                                               "y":  12
+                                           },
+                              "placementSequence":  1,
+                              "state":  "approved",
+                              "progress":  0,
+                              "materialsAllocated":  [
+
+                                                     ]
+                          },
+        "beforeObjects":  {
+                              "placedObjects":  [
+                                                    {
+                                                        "placedObjectId":  "object:12:11",
+                                                        "objectId":  "object.toilet",
+                                                        "anchorTile":  {
+                                                                           "x":  12,
+                                                                           "y":  11
+                                                                       },
+                                                        "orientation":  1,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                    },
+                                                    {
+                                                        "placedObjectId":  "object:14:12",
+                                                        "objectId":  "object.bed",
+                                                        "anchorTile":  {
+                                                                           "x":  14,
+                                                                           "y":  12
+                                                                       },
+                                                        "orientation":  1,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                    }
+                                                ]
+                          },
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:12:11",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:14:12",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  14,
+                                                                          "y":  12
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   }
+                                               ]
+                         },
+        "beforeHistory":  {
+                              "undo":  [
+
+                                       ],
+                              "redo":  [
+
+                                       ],
+                              "current":  [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                          },
+        "afterHistory":  {
+                             "undo":  [
+                                          [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                                      ],
+                             "redo":  [
+
+                                      ],
+                             "current":  [
+                                             "later-bed"
+                                         ]
+                         }
+    },
+    {
+        "originalFullCaptureSHA256":  "78CCFA5325736D4AC7884621A28E5EC8730AE7C0CF61007EAF338C5828EFA683",
+        "quarterTurns":  1,
+        "mirrorX":  true,
+        "type":  "PlaceBuildOrder",
+        "load":  true,
+        "conflicts":  false,
+        "anchor":  {
+                       "x":  11,
+                       "y":  11
+                   },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23470
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "admittedOrder":  {
+                              "id":  "later-bed",
+                              "definitionId":  "bed-wooden",
+                              "location":  {
+                                               "x":  11,
+                                               "y":  11
+                                           },
+                              "placementSequence":  1,
+                              "state":  "approved",
+                              "progress":  0,
+                              "materialsAllocated":  [
+
+                                                     ]
+                          },
+        "beforeObjects":  {
+                              "placedObjects":  [
+                                                    {
+                                                        "placedObjectId":  "object:12:11",
+                                                        "objectId":  "object.toilet",
+                                                        "anchorTile":  {
+                                                                           "x":  12,
+                                                                           "y":  11
+                                                                       },
+                                                        "orientation":  1,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                    },
+                                                    {
+                                                        "placedObjectId":  "object:14:12",
+                                                        "objectId":  "object.bed",
+                                                        "anchorTile":  {
+                                                                           "x":  14,
+                                                                           "y":  12
+                                                                       },
+                                                        "orientation":  1,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                    }
+                                                ]
+                          },
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:12:11",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:14:12",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  14,
+                                                                          "y":  12
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   }
+                                               ]
+                         },
+        "beforeHistory":  {
+                              "undo":  [
+
+                                       ],
+                              "redo":  [
+
+                                       ],
+                              "current":  [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                          },
+        "afterHistory":  {
+                             "undo":  [
+                                          [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                                      ],
+                             "redo":  [
+
+                                      ],
+                             "current":  [
+                                             "later-bed"
+                                         ]
+                         }
+    },
+    {
+        "originalFullCaptureSHA256":  "AC27A580B3BCEAD831A9380D99541F1BA8B38EA0418D697C29FF0AA64AC3A7B6",
+        "quarterTurns":  1,
+        "mirrorX":  true,
+        "type":  "PlaceBuildOrder",
+        "load":  true,
+        "conflicts":  true,
+        "anchor":  {
+                       "x":  13,
+                       "y":  12
+                   },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23470
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "admittedOrder":  {
+                              "id":  "later-bed",
+                              "definitionId":  "bed-wooden",
+                              "location":  {
+                                               "x":  13,
+                                               "y":  12
+                                           },
+                              "placementSequence":  1,
+                              "state":  "approved",
+                              "progress":  0,
+                              "materialsAllocated":  [
+
+                                                     ]
+                          },
+        "beforeObjects":  {
+                              "placedObjects":  [
+                                                    {
+                                                        "placedObjectId":  "object:12:11",
+                                                        "objectId":  "object.toilet",
+                                                        "anchorTile":  {
+                                                                           "x":  12,
+                                                                           "y":  11
+                                                                       },
+                                                        "orientation":  1,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                    },
+                                                    {
+                                                        "placedObjectId":  "object:14:12",
+                                                        "objectId":  "object.bed",
+                                                        "anchorTile":  {
+                                                                           "x":  14,
+                                                                           "y":  12
+                                                                       },
+                                                        "orientation":  1,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                    }
+                                                ]
+                          },
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:12:11",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:14:12",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  14,
+                                                                          "y":  12
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   }
+                                               ]
+                         },
+        "beforeHistory":  {
+                              "undo":  [
+
+                                       ],
+                              "redo":  [
+
+                                       ],
+                              "current":  [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                          },
+        "afterHistory":  {
+                             "undo":  [
+                                          [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                                      ],
+                             "redo":  [
+
+                                      ],
+                             "current":  [
+                                             "later-bed"
+                                         ]
+                         }
+    },
+    {
+        "originalFullCaptureSHA256":  "C69CD04443EC82602C77B5658C8DEA71D5FF064679847EC690027E0450FCA700",
+        "quarterTurns":  1,
+        "mirrorX":  true,
+        "type":  "PlaceObject",
+        "load":  false,
+        "conflicts":  false,
+        "anchor":  {
+                       "x":  11,
+                       "y":  11
+                   },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23470
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "admittedOrder":  {
+                              "id":  "later-bed",
+                              "definitionId":  "bed-wooden",
+                              "location":  {
+                                               "x":  11,
+                                               "y":  11
+                                           },
+                              "placementSequence":  1,
+                              "state":  "approved",
+                              "progress":  0,
+                              "materialsAllocated":  [
+
+                                                     ]
+                          },
+        "beforeObjects":  {
+                              "placedObjects":  [
+                                                    {
+                                                        "placedObjectId":  "object:12:11",
+                                                        "objectId":  "object.toilet",
+                                                        "anchorTile":  {
+                                                                           "x":  12,
+                                                                           "y":  11
+                                                                       },
+                                                        "orientation":  1,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                    },
+                                                    {
+                                                        "placedObjectId":  "object:14:12",
+                                                        "objectId":  "object.bed",
+                                                        "anchorTile":  {
+                                                                           "x":  14,
+                                                                           "y":  12
+                                                                       },
+                                                        "orientation":  1,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                    }
+                                                ]
+                          },
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:12:11",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:14:12",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  14,
+                                                                          "y":  12
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   }
+                                               ]
+                         },
+        "beforeHistory":  {
+                              "undo":  [
+
+                                       ],
+                              "redo":  [
+
+                                       ],
+                              "current":  [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                          },
+        "afterHistory":  {
+                             "undo":  [
+                                          [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                                      ],
+                             "redo":  [
+
+                                      ],
+                             "current":  [
+                                             "later-bed"
+                                         ]
+                         }
+    },
+    {
+        "originalFullCaptureSHA256":  "C00C80990C8AA0614204D8B9AF354EAE555B2F36DAD4F4AA85ABE3731EF73A88",
+        "quarterTurns":  1,
+        "mirrorX":  true,
+        "type":  "PlaceObject",
+        "load":  false,
+        "conflicts":  true,
+        "anchor":  {
+                       "x":  13,
+                       "y":  12
+                   },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23470
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "admittedOrder":  {
+                              "id":  "later-bed",
+                              "definitionId":  "bed-wooden",
+                              "location":  {
+                                               "x":  13,
+                                               "y":  12
+                                           },
+                              "placementSequence":  1,
+                              "state":  "approved",
+                              "progress":  0,
+                              "materialsAllocated":  [
+
+                                                     ]
+                          },
+        "beforeObjects":  {
+                              "placedObjects":  [
+                                                    {
+                                                        "placedObjectId":  "object:12:11",
+                                                        "objectId":  "object.toilet",
+                                                        "anchorTile":  {
+                                                                           "x":  12,
+                                                                           "y":  11
+                                                                       },
+                                                        "orientation":  1,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                    },
+                                                    {
+                                                        "placedObjectId":  "object:14:12",
+                                                        "objectId":  "object.bed",
+                                                        "anchorTile":  {
+                                                                           "x":  14,
+                                                                           "y":  12
+                                                                       },
+                                                        "orientation":  1,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                    }
+                                                ]
+                          },
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:12:11",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:14:12",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  14,
+                                                                          "y":  12
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   }
+                                               ]
+                         },
+        "beforeHistory":  {
+                              "undo":  [
+
+                                       ],
+                              "redo":  [
+
+                                       ],
+                              "current":  [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                          },
+        "afterHistory":  {
+                             "undo":  [
+                                          [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                                      ],
+                             "redo":  [
+
+                                      ],
+                             "current":  [
+                                             "later-bed"
+                                         ]
+                         }
+    },
+    {
+        "originalFullCaptureSHA256":  "935973AB018D0B42934F8F617116A582F23E3F7309297B37EC95050E3960CA76",
+        "quarterTurns":  1,
+        "mirrorX":  true,
+        "type":  "PlaceObject",
+        "load":  true,
+        "conflicts":  false,
+        "anchor":  {
+                       "x":  11,
+                       "y":  11
+                   },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23470
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "admittedOrder":  {
+                              "id":  "later-bed",
+                              "definitionId":  "bed-wooden",
+                              "location":  {
+                                               "x":  11,
+                                               "y":  11
+                                           },
+                              "placementSequence":  1,
+                              "state":  "approved",
+                              "progress":  0,
+                              "materialsAllocated":  [
+
+                                                     ]
+                          },
+        "beforeObjects":  {
+                              "placedObjects":  [
+                                                    {
+                                                        "placedObjectId":  "object:12:11",
+                                                        "objectId":  "object.toilet",
+                                                        "anchorTile":  {
+                                                                           "x":  12,
+                                                                           "y":  11
+                                                                       },
+                                                        "orientation":  1,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                    },
+                                                    {
+                                                        "placedObjectId":  "object:14:12",
+                                                        "objectId":  "object.bed",
+                                                        "anchorTile":  {
+                                                                           "x":  14,
+                                                                           "y":  12
+                                                                       },
+                                                        "orientation":  1,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                    }
+                                                ]
+                          },
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:12:11",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:14:12",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  14,
+                                                                          "y":  12
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   }
+                                               ]
+                         },
+        "beforeHistory":  {
+                              "undo":  [
+
+                                       ],
+                              "redo":  [
+
+                                       ],
+                              "current":  [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                          },
+        "afterHistory":  {
+                             "undo":  [
+                                          [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                                      ],
+                             "redo":  [
+
+                                      ],
+                             "current":  [
+                                             "later-bed"
+                                         ]
+                         }
+    },
+    {
+        "originalFullCaptureSHA256":  "9D8E1C40B580716562EED564901A246DFCCBC872272E5C8FC7104A2DE261479E",
+        "quarterTurns":  1,
+        "mirrorX":  true,
+        "type":  "PlaceObject",
+        "load":  true,
+        "conflicts":  true,
+        "anchor":  {
+                       "x":  13,
+                       "y":  12
+                   },
+        "beforeTreasury":  {
+                               "balanceMinorUnits":  23470
+                           },
+        "afterTreasury":  {
+                              "balanceMinorUnits":  23405
+                          },
+        "admittedOrder":  {
+                              "id":  "later-bed",
+                              "definitionId":  "bed-wooden",
+                              "location":  {
+                                               "x":  13,
+                                               "y":  12
+                                           },
+                              "placementSequence":  1,
+                              "state":  "approved",
+                              "progress":  0,
+                              "materialsAllocated":  [
+
+                                                     ]
+                          },
+        "beforeObjects":  {
+                              "placedObjects":  [
+                                                    {
+                                                        "placedObjectId":  "object:12:11",
+                                                        "objectId":  "object.toilet",
+                                                        "anchorTile":  {
+                                                                           "x":  12,
+                                                                           "y":  11
+                                                                       },
+                                                        "orientation":  1,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                    },
+                                                    {
+                                                        "placedObjectId":  "object:14:12",
+                                                        "objectId":  "object.bed",
+                                                        "anchorTile":  {
+                                                                           "x":  14,
+                                                                           "y":  12
+                                                                       },
+                                                        "orientation":  1,
+                                                        "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                    }
+                                                ]
+                          },
+        "afterObjects":  {
+                             "placedObjects":  [
+                                                   {
+                                                       "placedObjectId":  "object:12:11",
+                                                       "objectId":  "object.toilet",
+                                                       "anchorTile":  {
+                                                                          "x":  12,
+                                                                          "y":  11
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-001"
+                                                   },
+                                                   {
+                                                       "placedObjectId":  "object:14:12",
+                                                       "objectId":  "object.bed",
+                                                       "anchorTile":  {
+                                                                          "x":  14,
+                                                                          "y":  12
+                                                                      },
+                                                       "orientation":  1,
+                                                       "sourceOrderId":  "room-template-000000000000-2-object-000"
+                                                   }
+                                               ]
+                         },
+        "beforeHistory":  {
+                              "undo":  [
+
+                                       ],
+                              "redo":  [
+
+                                       ],
+                              "current":  [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                          },
+        "afterHistory":  {
+                             "undo":  [
+                                          [
+                                              "room-template-000000000000-0-wall-000",
+                                              "room-template-000000000000-0-wall-001",
+                                              "room-template-000000000000-0-wall-002",
+                                              "room-template-000000000000-0-wall-003",
+                                              "room-template-000000000000-0-wall-004",
+                                              "room-template-000000000000-0-wall-005",
+                                              "room-template-000000000000-0-wall-006",
+                                              "room-template-000000000000-0-wall-007",
+                                              "room-template-000000000000-0-wall-008",
+                                              "room-template-000000000000-0-wall-009",
+                                              "room-template-000000000000-0-wall-010",
+                                              "room-template-000000000000-0-wall-011",
+                                              "room-template-000000000000-0-wall-012",
+                                              "room-template-000000000000-0-wall-013",
+                                              "room-template-000000000000-0-wall-014",
+                                              "room-template-000000000000-0-wall-015",
+                                              "room-template-000000000000-0-wall-016",
+                                              "room-template-000000000000-1-door-000",
+                                              "room-template-000000000000-2-object-000",
+                                              "room-template-000000000000-2-object-001"
+                                          ]
+                                      ],
+                             "redo":  [
+
+                                      ],
+                             "current":  [
+                                             "later-bed"
+                                         ]
+                         }
+    }
+]

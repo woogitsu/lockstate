@@ -1,88 +1,477 @@
 {
   "schemaVersion": 1,
   "assetId": "furniture.chair.wooden",
-  "source": "environment.mvp.catalog.blend",
-  "sourceSha256": "57db9afb7e48996cef9aaedda72b8e874e865eb56862ee4add8b177a9713887d",
-  "sourceDependencies": [],
+  "source": "assets/source/blender/furniture.chair.wooden.angled-detail.blend",
+  "sourceSha256": "acd0e9decb3bb451b44e8354e797fb5656825f4748bbed832bab61659f06cd88",
   "resolutionPx": [
-    512,
-    512
-  ],
-  "nominalPixelsPerTile": 64,
-  "pivotPx": [
     256,
     256
   ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    128,
+    128
+  ],
   "cameraTargetTiles": [
-    0.0,
-    0.0,
-    0.0
+    0.5,
+    0.5,
+    0.6600000262260437
   ],
   "projection": "orthographic",
   "yawDegrees": [
-    -45,
     0,
-    45
+    30,
+    60,
+    90,
+    120,
+    150,
+    180,
+    210,
+    240,
+    270,
+    300,
+    330
   ],
   "elevationDegrees": [
-    25,
-    45,
-    65
+    20,
+    30,
+    40,
+    50,
+    60,
+    70
   ],
   "frames": [
     {
-      "yawDegrees": -45,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-chair-yaw-45-elev25.70f1e2e46b84.png",
-      "sha256": "70f1e2e46b840fae9040ea0b09c6e826b18212f18ec73fc12487b11ce2ad4f08"
-    },
-    {
-      "yawDegrees": -45,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-chair-yaw-45-elev45.ab799d52cc06.png",
-      "sha256": "ab799d52cc065171a51505e01e58e5914fbb01f4b3cf182dedac64417d76d4d3"
-    },
-    {
-      "yawDegrees": -45,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-chair-yaw-45-elev65.f80dd11f6157.png",
-      "sha256": "f80dd11f6157d8f487c909bcecee8587a574c3b4e7cfb8a5b96a32e5024ddda4"
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+00-elev20.81f989e50888.png",
+      "sha256": "81f989e50888951cedba58388af99202c4c478b32ed20fd1b7135de0bf34e988"
     },
     {
       "yawDegrees": 0,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-chair-yaw+00-elev25.1b61948ce443.png",
-      "sha256": "1b61948ce4437d3ef376f60cc05913b12c140f9fe0299b6b69044eaf5de0aa32"
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+00-elev30.c3829499378a.png",
+      "sha256": "c3829499378a45c816658f2237770cdd6785987840070e5210dd5c42f46c5d86"
     },
     {
       "yawDegrees": 0,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-chair-yaw+00-elev45.448781174250.png",
-      "sha256": "44878117425084f1b2f146758e22e369a45b9a5f613d18a6479f245ae8dab229"
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+00-elev40.a1259503682a.png",
+      "sha256": "a1259503682a4cc639cb5e6317ccbf265b54e3702144a444e8d2e2e6fb2f51cd"
     },
     {
       "yawDegrees": 0,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-chair-yaw+00-elev65.572119b85368.png",
-      "sha256": "572119b85368bd3fa770fb64916954d7fadd53e5253e9870121a7f5c68197f5c"
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+00-elev50.544883e4da87.png",
+      "sha256": "544883e4da8733529e8de80272398143579c3150be1763d628e0bc87b2b9e129"
     },
     {
-      "yawDegrees": 45,
-      "elevationDegrees": 25,
-      "image": "/assets/environment/oblique/cell-chair-yaw+45-elev25.fbdb7797901c.png",
-      "sha256": "fbdb7797901c9581a3f6f726ce1c2ba736c0ce0c613b645424b5e3381ca11eee"
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+00-elev60.705c17162bea.png",
+      "sha256": "705c17162bea9c9778c649305878f173f02c4d5c9bf4485ad5c288d0d311bdf9"
     },
     {
-      "yawDegrees": 45,
-      "elevationDegrees": 45,
-      "image": "/assets/environment/oblique/cell-chair-yaw+45-elev45.6f037d0141b1.png",
-      "sha256": "6f037d0141b11e7e3559fbebe1321a909eaf152c5d709ba11289fa3f28e51a65"
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+00-elev70.3cac063d1a6d.png",
+      "sha256": "3cac063d1a6d102a66f78fcdd966e4a16b756c33a4c1031ef82fbc27bcb739ce"
     },
     {
-      "yawDegrees": 45,
-      "elevationDegrees": 65,
-      "image": "/assets/environment/oblique/cell-chair-yaw+45-elev65.bf062b11e13b.png",
-      "sha256": "bf062b11e13bbc0b7e1030d1228443fa87f5abc991f0a37dd493694e09eeb88a"
+      "yawDegrees": 30,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+30-elev20.b9eedb0f4cb3.png",
+      "sha256": "b9eedb0f4cb3a67959b935662f146b3c958b3b3c1fea01ba838af0d5a9f29564"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+30-elev30.5e105e521315.png",
+      "sha256": "5e105e52131581b4078b7b72b469bb7513f909d7dabd369c794e14746cff119d"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+30-elev40.d2ecb91c5287.png",
+      "sha256": "d2ecb91c52873adfc8ac7240a00638da85cef512da696d15586f935da74ea096"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+30-elev50.3aca640a7d89.png",
+      "sha256": "3aca640a7d89fe74e0b2f8423e1bd67e03db50ee89190a023b0289619856becf"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+30-elev60.5ce165fdfd0c.png",
+      "sha256": "5ce165fdfd0c46589847525ba39787b31de33715ce0f4eea4248a0fae89b79bd"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+30-elev70.f6ea392ddd4b.png",
+      "sha256": "f6ea392ddd4b697fc4db406237f3a647a632cbe4f4f89ec86a80dd80c606f40a"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+60-elev20.e73d3275ae52.png",
+      "sha256": "e73d3275ae5264eb990e5f6ef794ea3546286c03809e87b3632cc4dd5ff40104"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+60-elev30.a11e261d271a.png",
+      "sha256": "a11e261d271a73c7b1decd233fa1b4490d3307acbffa56767c5efb9a36619e24"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+60-elev40.c235ab779920.png",
+      "sha256": "c235ab779920a0492384b832138017aef3b2809acd600caee53cc41a126a3c6a"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+60-elev50.7e27a083f890.png",
+      "sha256": "7e27a083f890a7dd7a449d2070e30491efc797e1dc346a039a05789292bc6cdb"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+60-elev60.8f4b75161600.png",
+      "sha256": "8f4b75161600ca6331dac2d66fcbabf8bbc21854c9c1669865b6f3a713af4649"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+60-elev70.0cefc03d3744.png",
+      "sha256": "0cefc03d3744fe656112bbb65c459fe1194b29dffe4b436cd68f444216fff776"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+90-elev20.cef72f4f55b6.png",
+      "sha256": "cef72f4f55b6f767a453bac9ea81924874b18f11f7b32fab6c30cffb9529816f"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+90-elev30.88ed11c82156.png",
+      "sha256": "88ed11c821561e352e65ab3690d4e83b5f4637a0e454d76dac0c7c18fa235048"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+90-elev40.47f84b0da67e.png",
+      "sha256": "47f84b0da67e61a6d0e4ed0183081b53a038ee4430b9d4a83fa45df72817f5a8"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+90-elev50.fe0ec1ca4f83.png",
+      "sha256": "fe0ec1ca4f830cb11429a93b4b471cc6fb2ddec702a29693ac750253b4bd5edb"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+90-elev60.7e125fa7d70e.png",
+      "sha256": "7e125fa7d70e906bea5a8d33e6a210a6efd6acde0d2e48fc10abf81f5ef4acda"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+90-elev70.6d5a0f50475d.png",
+      "sha256": "6d5a0f50475da5e88c145d140f0a9fc9a620a658f649817c9d2d37735d3fbbf5"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+120-elev20.0dc0da76e94d.png",
+      "sha256": "0dc0da76e94d10f91d84c908319c7761b74456eb2234f2f861d93bcd38a829be"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+120-elev30.83be8aa584f7.png",
+      "sha256": "83be8aa584f7076ea1ea6e79b1e842476701c53f785e92dd95d26fa3c513add0"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+120-elev40.e5bf71ec52a4.png",
+      "sha256": "e5bf71ec52a42d83598fe3bf1136f33e505ae6e47572bb6c25dfe5cf7ba980ae"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+120-elev50.4f702222f61e.png",
+      "sha256": "4f702222f61e245ffbd3976cc865c2c2087f615e3cb4eca376062d2a37d802dc"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+120-elev60.8812b6de3391.png",
+      "sha256": "8812b6de3391707f9d6f742ea6f6049747fd6649aa972b73cb9c795b9022a469"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+120-elev70.d4d3123883f2.png",
+      "sha256": "d4d3123883f22662d186ecaa2578e8a0d6f0d719095fe04c9a29bd1073c7ed6b"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+150-elev20.90113c527160.png",
+      "sha256": "90113c527160e636224fceaf76b35bc0ece36514c1f3d06db794edc47e6ab40d"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+150-elev30.67a79ead2cf1.png",
+      "sha256": "67a79ead2cf10391e20ddb88e4c53181c85fb5196273f9c337cf80422ca15926"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+150-elev40.395f5784042c.png",
+      "sha256": "395f5784042c373ab3141a807b70e0dbe501930b4c52f9021bbf4cfb058f9ad0"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+150-elev50.460ef04a5cc9.png",
+      "sha256": "460ef04a5cc97d3396febe93d74cbd1fb4822713737ab1cefb6c6d4d4eaabbc5"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+150-elev60.b7ce902db25d.png",
+      "sha256": "b7ce902db25db2891f216cc49190a5b80796b09f891188deea392d2632a025e8"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+150-elev70.424b45406f24.png",
+      "sha256": "424b45406f24fca47e16a4c408eb348beaae1bbb28192fa94e27075a68aa08c3"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+180-elev20.467276e995a8.png",
+      "sha256": "467276e995a8b8e1db9a97c7aea288978fe10e2c40e1ff57318f331c6870b5be"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+180-elev30.6dccf2b2056f.png",
+      "sha256": "6dccf2b2056fd5a3e20409e15065650bf18416abafcdbe8351f753fdc0c1f6b3"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+180-elev40.8cf8179d2196.png",
+      "sha256": "8cf8179d2196d8e5053607c26bd8ddbedd1232b011676d608af34891339b6c48"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+180-elev50.9ddb320bde2b.png",
+      "sha256": "9ddb320bde2bb5efaae91904fb0863b275e1ce8b0d151e89bd7053dfc04111d5"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+180-elev60.1a24bd07b27a.png",
+      "sha256": "1a24bd07b27ad71a6c356d33b2537e0d2fbfc5fd7d8fdbf2212113562041b497"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+180-elev70.b735ff03c469.png",
+      "sha256": "b735ff03c4690d161415639faad7d345ddaf3df0365ac13b8ae9c37a9f54b21c"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+210-elev20.91b9565a8b46.png",
+      "sha256": "91b9565a8b4649c0f2cd28bee4d0c31d41ade8b91466ae481c46ebd4679da2a8"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+210-elev30.6124e00f7f95.png",
+      "sha256": "6124e00f7f955b50474bf62a0ee935f92f2972c3423d750e1961d1e89caaf310"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+210-elev40.f2b2f5948604.png",
+      "sha256": "f2b2f5948604161aca84f823c60478bec1c15e1bb9a005c09f4bd818a36c844c"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+210-elev50.f7e679654a01.png",
+      "sha256": "f7e679654a018c93a1cb20c4aa419baf187dc9865ca6982810294dc1baf1be62"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+210-elev60.9815ba763d5a.png",
+      "sha256": "9815ba763d5a5b8b58aa5be4a105d9dd0bad812e775d8a358826c30f66bf5019"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+210-elev70.85e586e25c3b.png",
+      "sha256": "85e586e25c3b5a657dd4c394c20949dc8413fd948aca16686efdc7703388db03"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+240-elev20.0a72e8620b7f.png",
+      "sha256": "0a72e8620b7f1bb8b4ff980d60ddee38f4abc25efbb9d0902c2df997b60e3f59"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+240-elev30.93e973a11f1a.png",
+      "sha256": "93e973a11f1ab4f4dc7011370adce10e6fa76541ff9bd2c90ecf47b39290e40c"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+240-elev40.d9b76c097384.png",
+      "sha256": "d9b76c0973845c4b463226d9376f38c6306313d052f85c1dc8f06976a406867d"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+240-elev50.d24f019a99eb.png",
+      "sha256": "d24f019a99ebd15fd21d64b6aca067ff892d6cb87da89775a32f54f9c071f68f"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+240-elev60.96d303d6b06e.png",
+      "sha256": "96d303d6b06ec2117a3c03b2838d78d55f7bb59e5f6cdca33cece09a668193bb"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+240-elev70.5ff272bd7851.png",
+      "sha256": "5ff272bd785152d4815f6c38c7c78c2aa0598fef1b45c8ddbf4e1a0b1de07a09"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+270-elev20.edd1b9c0b813.png",
+      "sha256": "edd1b9c0b813b94be77541350325f00394b1754eb1dc40bd077c4011058929da"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+270-elev30.1ed6304cde43.png",
+      "sha256": "1ed6304cde43f06ac0a4b44d7429d5cadffcd8090e915a6eacb350b263982b67"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+270-elev40.56e81799f16c.png",
+      "sha256": "56e81799f16c596672c8d48fc1a6078623c5d6353ac0c462dfb0dcdaf26401bc"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+270-elev50.9b74b98d522e.png",
+      "sha256": "9b74b98d522e0caebc4c8faed00122bfadf46b692ddab21e1a51d3a0744ab828"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+270-elev60.13015bfe81a2.png",
+      "sha256": "13015bfe81a2465f0cf13137e59c286b786f4d3f323b7edb56015577b248d388"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+270-elev70.194ef22632ed.png",
+      "sha256": "194ef22632ed6c2c3d8338b5f2d7a344d3431e20cc5af03e5eacbe1926418eb4"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+300-elev20.bded01c17d62.png",
+      "sha256": "bded01c17d62f7b0ab38b0f7bb186b1eaa71461aad63230fb9b5955019e04a3b"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+300-elev30.61d4b121451d.png",
+      "sha256": "61d4b121451ded57f051d871cfa5457f84082c9dd9e136c94753650aaa152a36"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+300-elev40.2f3d110ea54c.png",
+      "sha256": "2f3d110ea54c5305300070d398ebb846478baf2ea848d9103f5b14f6ee8d6e88"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+300-elev50.3af65375c7bd.png",
+      "sha256": "3af65375c7bdc7747e2918d1334a7ea5235fed2ef9d9c5b666fad5ca15e797e3"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+300-elev60.c13827c86f0d.png",
+      "sha256": "c13827c86f0d309c87a075eb3b58b05acbd22d7d3918c310e567a3aac9c135bc"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+300-elev70.2b9f1124b17d.png",
+      "sha256": "2b9f1124b17d0858a329cca84dccad91df5b688ebcfe6b3d600cf06a5e0db406"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+330-elev20.ec6ee7f031e9.png",
+      "sha256": "ec6ee7f031e964fdc1118ed75fc51a22a26f5aad0b37fc852011b476298cb9ed"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+330-elev30.3bb28dde81ae.png",
+      "sha256": "3bb28dde81ae1f3f899f0db1e354efd32b824c80df3248c6776c2c251ac9a869"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+330-elev40.78770b7dfff2.png",
+      "sha256": "78770b7dfff2085eb984c1edfa0dc0c1d46a056b92060d131f1c65a60b48ba04"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+330-elev50.a1120be62820.png",
+      "sha256": "a1120be62820160883fe785a53fdc9fc1b08634114b41e5070fd2bca8366ebed"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+330-elev60.956e8d09382c.png",
+      "sha256": "956e8d09382c718c0795597358c5e1a614748acf3d76f70532c0ce367d537ac6"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.chair.wooden-yaw+330-elev70.123cdd7ea03e.png",
+      "sha256": "123cdd7ea03e2ff10a8d39d7e572c3e55a7767c797f06d9ffce74651783bb843"
     }
   ]
 }

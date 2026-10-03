@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-reception-context-blender-guards-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  4 passed | 1 skipped (5)
+   Start at  14:30:49
+   Duration  176ms (transform 15ms, setup 0ms, import 35ms, tests 25ms, environment 0ms)
+
+$ vitest run "tests/determinism/art-pipeline-determinism.test.ts"

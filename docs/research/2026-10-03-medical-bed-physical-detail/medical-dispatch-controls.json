@@ -1,0 +1,21 @@
+{
+  "controls": [
+    {
+      "control": "original-bed-source-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Medical bed retained/authored mesh set changed"
+    },
+    {
+      "control": "wrong-bed-Y-fit-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Medical bed declared occupied footprint and source scale changed"
+    },
+    {
+      "control": "wrong-bed-target-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Medical bed declared target differs from measured source height"
+    }
+  ],
+  "wrapperBytesExactlyRestored": true,
+  "exactRestoredNativeVerifyExitCode": 0
+}

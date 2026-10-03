@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-classroom-teacher-desk-native-prep-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  13:53:09
+   Duration  3.15s (transform 850ms, setup 0ms, import 2.64s, tests 397ms, environment 0ms)
+
+$ vitest run "tests/integration/native-classroom-desk-preparation.test.ts"

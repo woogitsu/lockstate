@@ -1,8 +1,10 @@
+import { defaultObjectRegistry } from '../../content/object-catalog';
+import { objectFootprintTiles } from '../objects/placed-object';
 import { type SystemRegistration, type SimulationContext } from '../kernel/system';
 import { type BuildEdge, type BuildOrder, type BuildOrderFailReason, compareBuildOrderExecution, resolveBuildEdge } from './build-order';
 import { BUILDABLE_REGISTRY, type BuildableDefinition, type MaterialRequirement, edgeNumericIdFor, getBuildableDefinition, occupiesTileEdge } from './definition';
 import { type ConstructionMaterialsProvider, UNLIMITED_MATERIALS_PROVIDER } from './materials-provider';
-import { type ConstructionProcurementSink, type MaterialsProcurementReport, type QueuedOrderDemand } from './materials-procurement';
+import { type CancellationRefundPreviewStep, type ConstructionProcurementSink, type MaterialsProcurementReport, type QueuedOrderDemand } from './materials-procurement';
 import { SnapshotRefusedError } from '../runtime/restore-refusal';
 import { SparseWorld } from '../world/sparse-world';
 import { type BuildabilityRequirement, canBuildAt } from '../world/buildability';
@@ -246,8 +248,8 @@ const SUBMISSION_FAIL_REASONS: Readonly<Record<string, BuildOrderFailReason>> = 
  * `ObjectPlacementService` documents the one interleaving that produces it.
  */
 export interface ObjectPlacementSink {
-  onOrderCompleted(objectId: string, anchor: TilePosition): boolean;
-  onOrderReverted(objectId: string, anchor: TilePosition): boolean;
+  onOrderCompleted(objectId: string, anchor: TilePosition, orientation?: 0 | 1 | 2 | 3, sourceOrderId?: string): boolean;
+  onOrderReverted(objectId: string, anchor: TilePosition, sourceOrderId?: string): boolean;
 }
 
 /**
@@ -361,6 +363,9 @@ export class ConstructionSystem implements SystemRegistration {
   private orderRevisions = new Map<string, number>();
 
   // A transaction is just a list of order IDs.
+  /** Runtime ports for real non-order transactions; their ids share history ordering. */
+  private readonly reversibleWorldTransactions = new Map<string, { readonly undo: () => boolean; readonly redo: () => boolean; readonly canUndo: () => boolean; readonly canRedo: () => boolean }>();
+  private undoPreparation?: (orderIds: readonly string[]) => boolean;
   private undoStack: string[][] = [];
   private redoStack: string[][] = [];
   /**
@@ -389,6 +394,28 @@ export class ConstructionSystem implements SystemRegistration {
   private newerActionThanTheStackTop = false;
   private currentTransaction: string[] = [];
   private currentTransactionId: string | undefined;
+  private pendingRoomTemplateClaims?: (tile: TilePosition, sequence: number | undefined) => boolean;
+  private pendingRoomTemplateDoorApproachClaims?: (order: BuildOrder) => boolean;
+  private objectFootprintClaims?: (tile: TilePosition) => boolean;
+  private roomDoorApproachTileClaims?: (tile: TilePosition) => boolean;
+
+  /** The session supplies its live template reservations after both systems exist. */
+  public setPendingRoomTemplateClaims(reader: (tile: TilePosition, sequence: number | undefined) => boolean): void {
+    this.pendingRoomTemplateClaims = reader;
+  }
+
+  public setPendingRoomTemplateDoorApproachClaims(reader: (order: BuildOrder) => boolean): void {
+    this.pendingRoomTemplateDoorApproachClaims = reader;
+  }
+
+  /** A whole wall square cannot share a standing or in-flight object tile. */
+  public setObjectFootprintClaims(reader: (tile: TilePosition) => boolean): void {
+    this.objectFootprintClaims = reader;
+  }
+
+  public setRoomDoorApproachTileClaims(reader: (tile: TilePosition) => boolean): void {
+    this.roomDoorApproachTileClaims = reader;
+  }
 
   public constructor(
     private readonly world: SparseWorld,
@@ -596,11 +623,46 @@ export class ConstructionSystem implements SystemRegistration {
       return;
     }
 
+    if (order.footprint === 'square' && this.objectFootprintClaims?.(order.location) === true) {
+      this.setState(order, 'failed');
+      order.failReason = 'unbuildable';
+      this.orders.set(order.id, order);
+      return;
+    }
+
+    // A room plan owns its entire rectangle while its shell is in flight,
+    // including empty interior squares that have no world geometry yet. Its
+    // own shell/furniture orders retain the plan's sequence and may enter.
+    const across = order.footprint !== 'square' && occupiesTileEdge(definition)
+      ? tileAcrossEdge(order.location, resolveBuildEdge(order)) : undefined;
+    if (this.pendingRoomTemplateDoorApproachClaims?.(order) === true ||
+        this.pendingRoomTemplateClaims?.(order.location, order.placementSequence) === true ||
+        (across !== undefined && this.pendingRoomTemplateClaims?.(across, order.placementSequence) === true)) {
+      this.setState(order, 'failed');
+      order.failReason = 'unbuildable';
+      this.orders.set(order.id, order);
+      return;
+    }
+
     if (this.duplicateClaim(order, definition) !== undefined) {
       this.setState(order, 'failed');
       order.failReason = 'duplicate-order';
       this.orders.set(order.id, order);
       return;
+    }
+
+    // The generic build-order entry must respect the same physical object
+    // claims as PlaceObject, including the non-anchor squares of either model.
+    // Bare construction fixtures retain their existing optional-reader path.
+    if (this.objectFootprintClaims !== undefined && definition.placesObjectId !== undefined) {
+      const object = defaultObjectRegistry.getById(definition.placesObjectId);
+      if (object !== undefined && objectFootprintTiles(object, order.location, order.objectOrientation ?? 0)
+        .some((tile) => this.objectFootprintClaims?.(tile) === true)) {
+        this.setState(order, 'failed');
+        order.failReason = 'unbuildable';
+        this.orders.set(order.id, order);
+        return;
+      }
     }
 
     const refusal = this.admits(order.location);
@@ -612,6 +674,32 @@ export class ConstructionSystem implements SystemRegistration {
         order.failReason = refusal;
         this.orders.set(order.id, order);
         return;
+      }
+    }
+
+    // Object geometry occupies every footprint square, not only its anchor.
+    // Use the same bounds/ownership requirement as admission above: terrain
+    // remains deliberately deferred, and edge geometry keeps its either-side rule.
+    if (definition.placesObjectId !== undefined) {
+      const object = defaultObjectRegistry.getById(definition.placesObjectId);
+      if (object !== undefined) {
+        for (const tile of objectFootprintTiles(object, order.location, order.objectOrientation ?? 0)) {
+          const footprintRefusal = this.admits(tile);
+          if (footprintRefusal !== undefined) {
+            this.setState(order, 'failed');
+            order.failReason = footprintRefusal;
+            this.orders.set(order.id, order);
+            return;
+          }
+          if (this.world.getSquareStructure(tile) !== 0 || this.hasPendingSquareStructureAt(tile) ||
+              this.roomDoorApproachTileClaims?.(tile) === true ||
+              this.pendingRoomTemplateClaims?.(tile, order.placementSequence) === true) {
+            this.setState(order, 'failed');
+            order.failReason = 'unbuildable';
+            this.orders.set(order.id, order);
+            return;
+          }
+        }
       }
     }
 
@@ -636,6 +724,15 @@ export class ConstructionSystem implements SystemRegistration {
     return SUBMISSION_FAIL_REASONS[buildability.reason] ?? 'unbuildable';
   }
 
+  /** A paid, unfinished square owns the same tile its completion will occupy. */
+  private hasPendingSquareStructureAt(tile: TilePosition): boolean {
+    for (const candidate of this.orders.values()) {
+      if (candidate.footprint === 'square' && candidate.state !== 'completed' &&
+          candidate.state !== 'cancelled' && candidate.state !== 'failed' &&
+          candidate.location.x === tile.x && candidate.location.y === tile.y) return true;
+    }
+    return false;
+  }
   /**
    * The other order this exact request duplicates, or `undefined` if none
    * claims the same ground (issue #514).
@@ -715,6 +812,7 @@ export class ConstructionSystem implements SystemRegistration {
    * one -- so the raw `Map` is walked directly rather than through
    * `orderedOrders()`, which would pay for a sort this method has no use for.
    */
+
   private duplicateClaim(order: BuildOrder, definition: BuildableDefinition): BuildOrder | undefined {
     const edge = resolveBuildEdge(order);
     const isObjectBuildable = definition.placesObjectId !== undefined;
@@ -724,6 +822,7 @@ export class ConstructionSystem implements SystemRegistration {
       if (existing.state === 'completed' && isObjectBuildable) continue;
       if (existing.definitionId !== order.definitionId) continue;
       if (existing.footprint !== order.footprint) continue;
+      if (isObjectBuildable && (existing.objectOrientation ?? 0) !== (order.objectOrientation ?? 0)) continue;
       if (existing.location.x !== order.location.x || existing.location.y !== order.location.y) continue;
       if (resolveBuildEdge(existing) !== edge) continue;
       return existing;
@@ -731,7 +830,33 @@ export class ConstructionSystem implements SystemRegistration {
     return undefined;
   }
 
-  public registerTransactionOrder(orderId: string, transactionId?: string): void {
+  /** Reattach an explicitly saved world gesture without altering its saved history. */
+  public attachReversibleWorldTransaction(id: string, port: { readonly undo: () => boolean; readonly redo: () => boolean; readonly canUndo: () => boolean; readonly canRedo: () => boolean }): void {
+    this.reversibleWorldTransactions.set(id, port);
+  }
+
+  /** A zoning gesture is a real transaction, not a construction order with fake geometry. */
+  public beginReversibleWorldTransaction(id: string): void {
+    if (!this.reversibleWorldTransactions.has(id)) throw new Error('World transaction must have a reversible port.');
+    if (this.currentTransaction.length > 0) this.undoStack.push([...this.currentTransaction]);
+    this.currentTransaction = [id];
+    this.currentTransactionId = id;
+    this.redoStack = [];
+    this.newerActionThanTheStackTop = false;
+  }
+
+  public registerTransactionOrder(orderId: string, transactionId?: string, historyContinuationOrderIds?: readonly string[]): void {
+    // Deferred authored work extends the original paid gesture. It is not a
+    // newer player action: retain the current selection, Redo and refusal flag.
+    // No matching history means there is no gesture here to extend.
+    if (historyContinuationOrderIds !== undefined) {
+      if (historyContinuationOrderIds.length > 0) {
+        const transaction = [this.currentTransaction, ...this.undoStack].find(ids =>
+          historyContinuationOrderIds.every(id => ids.includes(id)));
+        if (transaction !== undefined && !transaction.includes(orderId)) transaction.push(orderId);
+      }
+      return;
+    }
     if (transactionId !== this.currentTransactionId) {
       if (this.currentTransaction.length > 0) {
         this.undoStack.push([...this.currentTransaction]);
@@ -783,6 +908,11 @@ export class ConstructionSystem implements SystemRegistration {
   /** Whether `undo()` has any transaction at all to reach, open gesture included. */
   public get hasSomethingToUndo(): boolean {
     return this.currentTransaction.length > 0 || this.undoStack.length > 0;
+  }
+
+  /** Prepare coupled world obligations before changing any order or history. */
+  public setUndoPreparation(prepare: (orderIds: readonly string[]) => boolean): void {
+    this.undoPreparation = prepare;
   }
 
   /**
@@ -843,6 +973,8 @@ export class ConstructionSystem implements SystemRegistration {
    * the other side.
    */
   public undo(): ConstructionUndoOutcome {
+    const newest = this.currentTransaction.length > 0 ? this.currentTransaction : this.undoStack.at(-1);
+    if (newest !== undefined && this.undoPreparation?.(newest) === false) return { reversed: false };
     if (this.currentTransaction.length > 0) {
       this.undoStack.push([...this.currentTransaction]);
       this.currentTransaction = [];
@@ -856,6 +988,11 @@ export class ConstructionSystem implements SystemRegistration {
     let spendDestroyed = false;
 
     for (const orderId of transaction) {
+      const worldTransaction = this.reversibleWorldTransactions.get(orderId);
+      if (worldTransaction !== undefined) {
+        if (worldTransaction.undo()) redoTransaction.push(orderId);
+        continue;
+      }
       const order = this.orders.get(orderId);
       if (!order) continue;
 
@@ -900,6 +1037,11 @@ export class ConstructionSystem implements SystemRegistration {
     const undoTransaction: string[] = [];
 
     for (const orderId of transaction) {
+      const worldTransaction = this.reversibleWorldTransactions.get(orderId);
+      if (worldTransaction !== undefined) {
+        if (worldTransaction.redo()) undoTransaction.push(orderId);
+        continue;
+      }
       const order = this.orders.get(orderId);
       if (!order) continue;
       
@@ -920,6 +1062,11 @@ export class ConstructionSystem implements SystemRegistration {
     // change exists to fix.
     this.newerActionThanTheStackTop = false;
     return true;
+  }
+
+  /** Whether one Undo transaction still offers every order of a room plan for Redo. */
+  public canRedoOrdersTogether(orderIds: readonly string[]): boolean {
+    return this.redoStack.some((transaction) => orderIds.every((id) => transaction.includes(id)));
   }
 
   /**
@@ -1196,6 +1343,39 @@ export class ConstructionSystem implements SystemRegistration {
     }
   }
 
+  private cancellationSequenceReader?: (orderId: string) => readonly string[] | undefined;
+
+  /** Session-only association/feasibility reader; nothing is added to snapshots. */
+  public setCancellationSequenceReader(reader: (orderId: string) => readonly string[] | undefined): void {
+    this.cancellationSequenceReader = reader;
+  }
+
+  private previewCancellationSequence(ids: readonly string[], sink: ConstructionProcurementSink): number {
+    const excluded = new Set<string>();
+    const steps: CancellationRefundPreviewStep[] = [];
+    for (const id of ids) {
+      const order = this.orders.get(id);
+      if (order === undefined || !isCancellable(order.state) || excluded.has(id)) continue;
+      excluded.add(id);
+      const surplus: Array<{ itemId: string; demandedQuantity: number; limit: number }> = [];
+      if (order.state === 'approved' || order.state === 'materials-pending') {
+        const definition = BUILDABLE_REGISTRY.get(order.definitionId);
+        if (definition !== undefined) {
+          const requirements = requiredQuantitiesByItemId(definition);
+          const demand = this.pendingOrderDemand(this.orderedOrders().filter(candidate => !excluded.has(candidate.id)));
+          for (const itemId of [...requirements.keys()].sort()) {
+            let demandedQuantity = 0;
+            for (const pending of demand) for (const material of pending.requirements)
+              if (material.itemId === itemId) demandedQuantity += material.quantity;
+            surplus.push({ itemId, demandedQuantity, limit: requirements.get(itemId)! });
+          }
+        }
+      }
+      steps.push({ allocations: destroysSpendOnCancel(order.state) ? [] : order.materialsAllocated, surplus });
+    }
+    return sink.previewCancellationSequenceRefundMinorUnits?.(steps) ?? 0;
+  }
+
   /**
    * What `cancelOrder(orderId)` would credit the treasury right now, without
    * calling it -- the figure the Build panel's queue row shows beside its own
@@ -1218,7 +1398,7 @@ export class ConstructionSystem implements SystemRegistration {
    * preview has no mutated `order.state` to dispatch on and therefore cannot
    * be folded into `refundSurplusOf`'s existing dispatch the way this method's
    * one sibling call is. What is **not** restated is any arithmetic: every
-   * money figure below is computed by one of the sink's three preview methods
+   * ordinary-order money figure below is computed by one of the sink's three preview methods
    * -- `previewSurplusRefundMinorUnits`, `previewSurplusStockRefundMinorUnits`
    * and `previewAllocatedRefundMinorUnits` -- the exact non-mutating twins of
    * the three calls `cancelOrder` itself makes (`refundSurplusDeliveries`,
@@ -1240,7 +1420,7 @@ export class ConstructionSystem implements SystemRegistration {
    * that, so it passes the order's own id to exclude it explicitly instead --
    * see `pendingOrderDemand`'s comment.
    *
-   * `0` for an id that names no order, for a terminal state (`isCancellable`
+   * For an ordinary order, `0` for an id that names no order, for a terminal state (`isCancellable`
    * says no), and for every state ruling 20 (and the owner's ruling of
    * 2026-09-01 for `completed`) pays nothing for: `'planned'`,
    * `'in-progress'`, `'completed'`. `0` also when no procurement sink is
@@ -1253,11 +1433,16 @@ export class ConstructionSystem implements SystemRegistration {
    * `refundSurplusDeliveries` and its siblings are held to (must not throw)
    * binds transitively -- a row that cannot be cancelled simply reads `0`.
    */
+  // A template queue press also cancels its coupled orders. Its figure is
+  // the sequential supply preview, or zero when collective unzoning refuses.
   public previewCancelRefundMinorUnits(orderId: string): number {
     const order = this.orders.get(orderId);
     if (order === undefined || !isCancellable(order.state)) return 0;
     const sink = this.materialsProcurement;
     if (sink === undefined) return 0;
+
+    const sequence = this.cancellationSequenceReader?.(orderId);
+    if (sequence !== undefined) return this.previewCancellationSequence(sequence, sink);
 
     const stateAtCancellation = order.state;
     if (order.materialsAllocated.length > 0) {
@@ -1414,6 +1599,23 @@ export class ConstructionSystem implements SystemRegistration {
    * happened. `[]` when no sink is wired -- a bare `ConstructionSystem` buys
    * nothing, so nothing can have been cancelled on its behalf.
    */
+  /** Exact #687 newest-first withdrawals after one still-pending delivery is removed; no mutation. */
+  public previewMaterialWithdrawalOrderIds(itemId: string, cancelledQuantity: number): readonly string[] {
+    const sink = this.materialsProcurement;
+    if (sink === undefined) return [];
+    const remaining = [...this.orderedOrders()];
+    const held = Math.max(0, sink.heldOrInFlightOf(itemId) - cancelledQuantity);
+    const withdrawn: string[] = [];
+    for (;;) {
+      const demanded = this.pendingMaterialDemand(remaining).find(requirement => requirement.itemId === itemId)?.quantity ?? 0;
+      if (demanded <= held) return withdrawn;
+      const candidate = this.lastOrderAwaitingMaterial(itemId, remaining);
+      if (candidate === undefined) return withdrawn;
+      withdrawn.push(candidate.id);
+      remaining.splice(remaining.indexOf(candidate), 1);
+    }
+  }
+
   public withdrawOrdersAwaitingMaterial(itemId: string): readonly string[] {
     const sink = this.materialsProcurement;
     if (sink === undefined) return [];
@@ -1459,8 +1661,7 @@ export class ConstructionSystem implements SystemRegistration {
    * nothing to the demand would not move the figure the caller is driving to
    * zero, and the loop would then cancel the whole queue one order at a time.
    */
-  private lastOrderAwaitingMaterial(itemId: string): BuildOrder | undefined {
-    const ordered = this.orderedOrders();
+  private lastOrderAwaitingMaterial(itemId: string, ordered = this.orderedOrders()): BuildOrder | undefined {
     for (let index = ordered.length - 1; index >= 0; index -= 1) {
       const order = ordered[index]!;
       if (order.state !== 'approved' && order.state !== 'materials-pending') continue;
@@ -1992,7 +2193,7 @@ export class ConstructionSystem implements SystemRegistration {
       // and the room it stands in has its capacity re-derived on the same call
       // (ADR 0028 decision 2, moment one of three).
       if (definition.placesObjectId !== undefined) {
-        this.objectPlacement?.onOrderCompleted(definition.placesObjectId, order.location);
+        this.objectPlacement?.onOrderCompleted(definition.placesObjectId, order.location, order.objectOrientation ?? 0, order.id);
       }
       this.markGeometryChanged(order.location);
       return;
@@ -2045,7 +2246,7 @@ export class ConstructionSystem implements SystemRegistration {
       // bed permanent while a misplaced wall is not. Moment two of the
       // resolver's three.
       if (definition.placesObjectId !== undefined) {
-        this.objectPlacement?.onOrderReverted(definition.placesObjectId, order.location);
+        this.objectPlacement?.onOrderReverted(definition.placesObjectId, order.location, order.id);
       }
       this.markGeometryChanged(order.location);
       return;
@@ -2242,6 +2443,8 @@ export class ConstructionSystem implements SystemRegistration {
       this.currentTransaction.length > 0 ? this.currentTransaction : this.undoStack[this.undoStack.length - 1];
     if (transaction === undefined) return false;
     return transaction.some((orderId) => {
+      const external = this.reversibleWorldTransactions.get(orderId);
+      if (external !== undefined) return external.canUndo();
       const order = this.orders.get(orderId);
       return order !== undefined && isCancellable(order.state);
     });
@@ -2271,6 +2474,9 @@ export class ConstructionSystem implements SystemRegistration {
   public get redoWouldReapplySomething(): boolean {
     const transaction = this.redoStack[this.redoStack.length - 1];
     if (transaction === undefined) return false;
-    return transaction.some((orderId) => this.orders.get(orderId)?.state === 'cancelled');
+    return transaction.some((orderId) => {
+      const external = this.reversibleWorldTransactions.get(orderId);
+      return external === undefined ? this.orders.get(orderId)?.state === 'cancelled' : external.canRedo();
+    });
   }
 }

@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-camera-gameout-audit-20261002
+
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  23:00:24
+   Duration  878ms (transform 267ms, setup 0ms, import 742ms, tests 5ms, environment 0ms)
+

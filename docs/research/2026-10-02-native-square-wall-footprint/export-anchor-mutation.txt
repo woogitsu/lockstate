@@ -1,0 +1,18 @@
+00:01.125  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\hud-square-brick-calibration-20261002\assets\source\blender\wall.square.brick.full.blend"
+blender.exe : Traceback (most recent call last):
+At line:2 char:238
++ ... 0, 0.0)')); & 'C:\Program Files\Blender Foundation\Blender 5.2\blende ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\matma\Documents\Rozwój gier\hud-square-brick-calibration-20261002\tests\blender\square-brick-export-pl
+acement.py", line 35, in <module>
+    assert abs(centre.x-.5)<1e-6 and abs(centre.y-.5)<1e-6, (kind,yaw,elevation,tuple(centre))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('full', -180, 25, (0.4374999701976776, 0.52641361951828, 4.45315408706665))
+
+Error: script failed, file: 'tests/blender/square-brick-export-placement.py', exiting.
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit

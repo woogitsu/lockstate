@@ -1,0 +1,65 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-preflight-session-20261003
+
+ ❯ tests/foundation/research-index-contract.test.ts (5 tests | 1 failed) 13407ms
+     × names every collection of records that lives in a subdirectory 13362ms
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts (8 tests | 2 failed) 57ms
+     × resolves every cited commit 16ms
+     × cites only commits this repository publishes, so CI reads the same history a reader can 2ms
+
+ Test Files  2 failed | 6 passed (8)
+      Tests  3 failed | 59 passed (62)
+   Start at  06:05:01
+   Duration  34.57s (transform 268ms, setup 0ms, import 29.96s, tests 35.39s, environment 1ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-commit-citation-contract.test.ts > a commit sha cited in prose names a commit that exists > resolves every cited commit
+AssertionError: these cite a commit that does not exist in this repository. A sha is how a claim about a tree stops expiring, so a sha that names nothing is a claim that can never be checked -- and `git cat-file -e <sha>^{commit}` before writing one is two seconds. If a citation is real but unreachable from any published branch or tag, it belongs in UNPUBLISHED_BY_ORIGIN with the reason, not here: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-library-bookshelf-physical-detail/README.md:19 -> 9e2066aef7ef",
++ ]
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts:726:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/foundation/documentation-commit-citation-contract.test.ts > a commit sha cited in prose names a commit that exists > cites only commits this repository publishes, so CI reads the same history a reader can
+AssertionError: these cite a commit that exists on this disk and on no ref this repository publishes, so nobody else can check them and CI cannot either: `fetch-depth: 0` fetches all history for every published branch and tag and nothing more. The usual cause is a sha read out of an agent's own worktree before the coordinator cherry-picked it, which rewrites it -- `git branch -r --contains <sha>` tells you. Cite the commit as published, or record it in UNPUBLISHED_BY_ORIGIN with what it is and why the anchor cannot move: expected [ …(4) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-library-bookshelf-physical-detail/README.md:35 -> acb443b24bbac076985f5ee28194e7b981b851dc",
++   "docs/research/2026-10-03-renderer-template-cursor-audit/README.md:9 -> 9643890ef5bd476a3388cd86fc7d6cc58b78fa5f",
++   "docs/research/2026-10-03-renderer-template-cursor-audit/README.md:172 -> eaea1b8bfec19390b6b60b3f3a6b1ad490368f9b",
++   "docs/research/2026-10-03-template-preflight-session-lifecycle/README.md:5 -> 458f8eaad142de927f889f78d5adc8ac85eb73d3",
++ ]
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts:748:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/foundation/research-index-contract.test.ts > research index contract > names every collection of records that lives in a subdirectory
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/foundation/research-index-contract.test.ts:177:3
+    175|   });
+    176|
+    177|   it('names every collection of records that lives in a subdirectory',…
+       |   ^
+    178|     // `design-search-2026-08-29/` -- six documents reduced from ninet…
+    179|     // owner-supplied answers -- was linked from nowhere in the reposi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+

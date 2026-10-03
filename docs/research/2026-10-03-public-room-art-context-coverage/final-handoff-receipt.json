@@ -1,0 +1,15 @@
+{
+  "baseResearchRowsPreservedInOrder": 356,
+  "newRows": [
+    "| [2026-10-03 Public room art context coverage](./2026-10-03-public-room-art-context-coverage/README.md) | Do all actual public plans select their intended room model through rotated complete occupied footprints? | 183 integration checks; actual context8RED/registry9RED, exact restoration1708files; final218GREEN/type/build. No new model/native claim. |",
+    "| [Reception visitor registration desk](./2026-10-03-reception-registration-desk/README.md) | Can the actual Reception Office desk gain functional visitor handover equipment while retaining its authored geometry and palette? | Genuine retained94parts/six graphs plus16 functional counter/tray parts,20contacts and72 exports; four actual art controls and context3RED/registry1RED restoredGREEN;70focused/typecheck/buildGREEN, native root pending. |"
+  ],
+  "worker": {
+    "path": "dist/client/assets/worker-kUGEcMXP.js",
+    "bytes": 442888,
+    "sha256": "61e9b39e99e600ab2e93d43debe5700d32a606b4f08f9a3fefc7cd7e2de2e21c"
+  },
+  "scope": "new tests/research only, after existing Reception dependency",
+  "newRenders": 0,
+  "nativeRun": false
+}

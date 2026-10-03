@@ -1,0 +1,595 @@
+{
+  "Table underframe": {
+    "degenerate": [],
+    "min": 0.07499969005584717,
+    "faces": 54,
+    "negative": 0
+  },
+  "Trestle.-1.13": {
+    "degenerate": [],
+    "min": 0.07999980449676514,
+    "faces": 54,
+    "negative": 0
+  },
+  "Floor plate.-1.13": {
+    "degenerate": [],
+    "min": 0.03999999165534973,
+    "faces": 54,
+    "negative": 0
+  },
+  "Trestle.1.13": {
+    "degenerate": [],
+    "min": 0.07999992370605469,
+    "faces": 54,
+    "negative": 0
+  },
+  "Floor plate.1.13": {
+    "degenerate": [],
+    "min": 0.03999999165534973,
+    "faces": 54,
+    "negative": 0
+  },
+  "Stool support rail": {
+    "degenerate": [],
+    "min": 0.050000011920928955,
+    "faces": 54,
+    "negative": 0
+  },
+  "Deep bolted tabletop rim": {
+    "degenerate": [],
+    "min": 0.05999988317489624,
+    "faces": 54,
+    "negative": 0
+  },
+  "Dark tabletop inset": {
+    "degenerate": [
+      26,
+      27,
+      30,
+      31,
+      36,
+      37,
+      42,
+      43,
+      49,
+      50,
+      52,
+      53
+    ],
+    "min": 0.009499846957623959,
+    "faces": 54,
+    "negative": 0
+  },
+  "Individual walnut tabletop plank.0": {
+    "degenerate": [
+      26,
+      27,
+      30,
+      31,
+      36,
+      37,
+      42,
+      43,
+      49,
+      50,
+      52,
+      53
+    ],
+    "min": 0.025999844074249268,
+    "faces": 54,
+    "negative": 0
+  },
+  "Recessed tabletop bolt.0.-1.27": {
+    "degenerate": [],
+    "min": 0.004999876022338867,
+    "faces": 14,
+    "negative": 0
+  },
+  "Recessed tabletop bolt.0.1.27": {
+    "degenerate": [],
+    "min": 0.004999876022338867,
+    "faces": 14,
+    "negative": 0
+  },
+  "Individual walnut tabletop plank.1": {
+    "degenerate": [
+      26,
+      27,
+      30,
+      31,
+      36,
+      37,
+      42,
+      43,
+      49,
+      50,
+      52,
+      53
+    ],
+    "min": 0.025999844074249268,
+    "faces": 54,
+    "negative": 0
+  },
+  "Recessed tabletop bolt.1.-1.27": {
+    "degenerate": [],
+    "min": 0.004999876022338867,
+    "faces": 14,
+    "negative": 0
+  },
+  "Recessed tabletop bolt.1.1.27": {
+    "degenerate": [],
+    "min": 0.004999876022338867,
+    "faces": 14,
+    "negative": 0
+  },
+  "Individual walnut tabletop plank.2": {
+    "degenerate": [
+      26,
+      27,
+      30,
+      31,
+      36,
+      37,
+      42,
+      43,
+      49,
+      50,
+      52,
+      53
+    ],
+    "min": 0.025999844074249268,
+    "faces": 54,
+    "negative": 0
+  },
+  "Recessed tabletop bolt.2.-1.27": {
+    "degenerate": [],
+    "min": 0.00499987555667758,
+    "faces": 14,
+    "negative": 0
+  },
+  "Recessed tabletop bolt.2.1.27": {
+    "degenerate": [],
+    "min": 0.00499987555667758,
+    "faces": 14,
+    "negative": 0
+  },
+  "Individual walnut tabletop plank.3": {
+    "degenerate": [
+      26,
+      27,
+      30,
+      31,
+      36,
+      37,
+      42,
+      43,
+      49,
+      50,
+      52,
+      53
+    ],
+    "min": 0.025999844074249268,
+    "faces": 54,
+    "negative": 0
+  },
+  "Recessed tabletop bolt.3.-1.27": {
+    "degenerate": [],
+    "min": 0.004999876022338867,
+    "faces": 14,
+    "negative": 0
+  },
+  "Recessed tabletop bolt.3.1.27": {
+    "degenerate": [],
+    "min": 0.004999876022338867,
+    "faces": 14,
+    "negative": 0
+  },
+  "Meal tray shadow.0": {
+    "degenerate": [
+      26,
+      27,
+      30,
+      31,
+      36,
+      37,
+      42,
+      43,
+      49,
+      50,
+      52,
+      53
+    ],
+    "min": 0.006999969482421875,
+    "faces": 54,
+    "negative": 0
+  },
+  "Brushed meal tray.0": {
+    "degenerate": [
+      26,
+      27,
+      30,
+      31,
+      36,
+      37,
+      42,
+      43,
+      49,
+      50,
+      52,
+      53
+    ],
+    "min": 0.010499775409698486,
+    "faces": 54,
+    "negative": 0
+  },
+  "Enamel plate rim.0": {
+    "degenerate": [],
+    "min": 0.010999739170074463,
+    "faces": 34,
+    "negative": 0
+  },
+  "Recessed plate well.0": {
+    "degenerate": [],
+    "min": 0.004999637603759766,
+    "faces": 34,
+    "negative": 0
+  },
+  "Fork.0": {
+    "degenerate": [
+      26,
+      27,
+      30,
+      31,
+      36,
+      37,
+      42,
+      43,
+      49,
+      50,
+      52,
+      53
+    ],
+    "min": 0.005999743472784758,
+    "faces": 54,
+    "negative": 0
+  },
+  "Spoon.0": {
+    "degenerate": [
+      26,
+      27,
+      30,
+      31,
+      36,
+      37,
+      42,
+      43,
+      49,
+      50,
+      52,
+      53
+    ],
+    "min": 0.005999743938446045,
+    "faces": 54,
+    "negative": 0
+  },
+  "Meal tray shadow.1": {
+    "degenerate": [
+      26,
+      27,
+      30,
+      31,
+      36,
+      37,
+      42,
+      43,
+      49,
+      50,
+      52,
+      53
+    ],
+    "min": 0.006999969482421875,
+    "faces": 54,
+    "negative": 0
+  },
+  "Brushed meal tray.1": {
+    "degenerate": [
+      26,
+      27,
+      30,
+      31,
+      36,
+      37,
+      42,
+      43,
+      49,
+      50,
+      52,
+      53
+    ],
+    "min": 0.010499775409698486,
+    "faces": 54,
+    "negative": 0
+  },
+  "Enamel plate rim.1": {
+    "degenerate": [],
+    "min": 0.010999739170074463,
+    "faces": 34,
+    "negative": 0
+  },
+  "Recessed plate well.1": {
+    "degenerate": [],
+    "min": 0.004999637603759766,
+    "faces": 34,
+    "negative": 0
+  },
+  "Fork.1": {
+    "degenerate": [
+      26,
+      27,
+      30,
+      31,
+      36,
+      37,
+      42,
+      43,
+      49,
+      50,
+      52,
+      53
+    ],
+    "min": 0.005999743938446045,
+    "faces": 54,
+    "negative": 0
+  },
+  "Spoon.1": {
+    "degenerate": [
+      26,
+      27,
+      30,
+      31,
+      36,
+      37,
+      42,
+      43,
+      49,
+      50,
+      52,
+      53
+    ],
+    "min": 0.005999743938446045,
+    "faces": 54,
+    "negative": 0
+  },
+  "Meal tray shadow.2": {
+    "degenerate": [
+      26,
+      27,
+      30,
+      31,
+      36,
+      37,
+      42,
+      43,
+      49,
+      50,
+      52,
+      53
+    ],
+    "min": 0.006999969482421875,
+    "faces": 54,
+    "negative": 0
+  },
+  "Brushed meal tray.2": {
+    "degenerate": [
+      26,
+      27,
+      30,
+      31,
+      36,
+      37,
+      42,
+      43,
+      49,
+      50,
+      52,
+      53
+    ],
+    "min": 0.010499775409698486,
+    "faces": 54,
+    "negative": 0
+  },
+  "Enamel plate rim.2": {
+    "degenerate": [],
+    "min": 0.010999739170074463,
+    "faces": 34,
+    "negative": 0
+  },
+  "Recessed plate well.2": {
+    "degenerate": [],
+    "min": 0.004999637603759766,
+    "faces": 34,
+    "negative": 0
+  },
+  "Fork.2": {
+    "degenerate": [
+      26,
+      27,
+      30,
+      31,
+      36,
+      37,
+      42,
+      43,
+      49,
+      50,
+      52,
+      53
+    ],
+    "min": 0.005999743938446045,
+    "faces": 54,
+    "negative": 0
+  },
+  "Spoon.2": {
+    "degenerate": [
+      26,
+      27,
+      30,
+      31,
+      36,
+      37,
+      42,
+      43,
+      49,
+      50,
+      52,
+      53
+    ],
+    "min": 0.005999743938446045,
+    "faces": 54,
+    "negative": 0
+  },
+  "Stool floor mount.0": {
+    "degenerate": [],
+    "min": 0.03999999910593033,
+    "faces": 18,
+    "negative": 0
+  },
+  "Stool floor bolt.0.-0.08": {
+    "degenerate": [],
+    "min": 0.0044999863021075726,
+    "faces": 14,
+    "negative": 0
+  },
+  "Stool floor bolt.0.0.08": {
+    "degenerate": [],
+    "min": 0.0044999863021075726,
+    "faces": 14,
+    "negative": 0
+  },
+  "Stool post.0": {
+    "degenerate": [],
+    "min": 0.06865473091602325,
+    "faces": 18,
+    "negative": 0
+  },
+  "Stool dark rim.0": {
+    "degenerate": [],
+    "min": 0.05999976024031639,
+    "faces": 34,
+    "negative": 0
+  },
+  "Worn wooden stool seat.0": {
+    "degenerate": [],
+    "min": 0.013999581336975098,
+    "faces": 34,
+    "negative": 0
+  },
+  "Stool seat rivet.0.-0.18": {
+    "degenerate": [],
+    "min": 0.004499911796301603,
+    "faces": 14,
+    "negative": 0
+  },
+  "Stool seat rivet.0.0.18": {
+    "degenerate": [],
+    "min": 0.004499912261962891,
+    "faces": 14,
+    "negative": 0
+  },
+  "Stool floor mount.1": {
+    "degenerate": [],
+    "min": 0.03999999910593033,
+    "faces": 18,
+    "negative": 0
+  },
+  "Stool floor bolt.1.-0.08": {
+    "degenerate": [],
+    "min": 0.0044999863021075726,
+    "faces": 14,
+    "negative": 0
+  },
+  "Stool floor bolt.1.0.08": {
+    "degenerate": [],
+    "min": 0.0044999863021075726,
+    "faces": 14,
+    "negative": 0
+  },
+  "Stool post.1": {
+    "degenerate": [],
+    "min": 0.06865485105663538,
+    "faces": 18,
+    "negative": 0
+  },
+  "Stool dark rim.1": {
+    "degenerate": [],
+    "min": 0.05999976396560669,
+    "faces": 34,
+    "negative": 0
+  },
+  "Worn wooden stool seat.1": {
+    "degenerate": [],
+    "min": 0.013999581336975098,
+    "faces": 34,
+    "negative": 0
+  },
+  "Stool seat rivet.1.-0.18": {
+    "degenerate": [],
+    "min": 0.004499912261962891,
+    "faces": 14,
+    "negative": 0
+  },
+  "Stool seat rivet.1.0.18": {
+    "degenerate": [],
+    "min": 0.004499912261962891,
+    "faces": 14,
+    "negative": 0
+  },
+  "Stool floor mount.2": {
+    "degenerate": [],
+    "min": 0.03999999910593033,
+    "faces": 18,
+    "negative": 0
+  },
+  "Stool floor bolt.2.-0.08": {
+    "degenerate": [],
+    "min": 0.0044999863021075726,
+    "faces": 14,
+    "negative": 0
+  },
+  "Stool floor bolt.2.0.08": {
+    "degenerate": [],
+    "min": 0.0044999863021075726,
+    "faces": 14,
+    "negative": 0
+  },
+  "Stool post.2": {
+    "degenerate": [],
+    "min": 0.06865469738841057,
+    "faces": 18,
+    "negative": 0
+  },
+  "Stool dark rim.2": {
+    "degenerate": [],
+    "min": 0.05999976396560669,
+    "faces": 34,
+    "negative": 0
+  },
+  "Worn wooden stool seat.2": {
+    "degenerate": [],
+    "min": 0.013999581336975098,
+    "faces": 34,
+    "negative": 0
+  },
+  "Stool seat rivet.2.-0.18": {
+    "degenerate": [],
+    "min": 0.004499912261962891,
+    "faces": 14,
+    "negative": 0
+  },
+  "Stool seat rivet.2.0.18": {
+    "degenerate": [],
+    "min": 0.004499911796301603,
+    "faces": 14,
+    "negative": 0
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "controls": [
+    {
+      "control": "original-rack-source-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Generic wooden rack retained/authored mesh set changed"
+    },
+    {
+      "control": "wrong-rack-Y-fit-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Generic wooden rack declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-rack-target-in-dispatch",
+      "exitCode": 1,
+      "error": "ValueError: Generic wooden rack declared occupied rectangle/source fit/accepted target changed"
+    }
+  ],
+  "wrapperBytesExactlyRestored": true,
+  "exactRestoredNativeVerifyExitCode": 0
+}

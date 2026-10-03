@@ -1,6 +1,6 @@
 import { expect, test } from './network-changed-fixture';
 
-test('native wheel zoom keeps the same Build target under the pointer at a changed camera pose', async ({ page }) => {
+test('native wheel zoom keeps the same Build square under the pointer after a pose change and renderer switch', async ({ page }) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/?renderer=oblique');
   await page.getByRole('button', { name: 'New prison', exact: true }).click();
@@ -17,20 +17,22 @@ test('native wheel zoom keeps the same Build target under the pointer at a chang
   const pointer = { x: 1410, y: 760 };
   await page.mouse.move(pointer.x, pointer.y);
   const before = await target.innerText();
-  expect(before).toMatch(/\d+/);
+  expect(before).toContain('square');
   const viewportBefore = await minimap.getAttribute('style');
   await page.mouse.wheel(0, -100);
   await expect(minimap).not.toHaveAttribute('style', viewportBefore ?? '');
-  // Main's current hover readout refreshes on physical movement. Re-read the
-  // same screen position, rather than accepting an unchanged cached label.
-  await page.mouse.move(pointer.x + 1, pointer.y);
-  await page.mouse.move(pointer.x, pointer.y);
   await expect(target, 'wheel zoom moved the Build square beneath the stationary cursor').toHaveText(before);
 
+  const view = page.getByRole('combobox', { name: 'View' });
+  await view.selectOption('world');
+  await expect(view).toHaveValue('world');
+  await view.selectOption('oblique');
+  await expect(view).toHaveValue('oblique');
+  await page.mouse.move(pointer.x, pointer.y);
+  const afterSwitch = await target.innerText();
+  expect(afterSwitch).toContain('square');
   const secondViewportBefore = await minimap.getAttribute('style');
   await page.mouse.wheel(0, 100);
   await expect(minimap).not.toHaveAttribute('style', secondViewportBefore ?? '');
-  await page.mouse.move(pointer.x + 1, pointer.y);
-  await page.mouse.move(pointer.x, pointer.y);
-  await expect(target, 'zooming back out moved the Build target').toHaveText(before);
+  await expect(target, 'wheel zoom after renderer switching moved the Build square').toHaveText(afterSwitch);
 });

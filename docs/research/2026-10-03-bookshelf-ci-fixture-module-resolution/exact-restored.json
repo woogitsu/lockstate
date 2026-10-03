@@ -1,0 +1,10 @@
+{
+  "args": [
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/foundation/browser-network-changed-retry-contract.test.ts",
+    "--maxWorkers=2"
+  ],
+  "exitCode": 0,
+  "elapsedMs": 497
+}

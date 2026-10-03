@@ -1,0 +1,7 @@
+Scoped source correction published on codex/hud-template-history-verdict-audit-20261003: diagnostic4572d3efad38145e6d7a5f94d58a9303fec66327, source5c9f1019da.
+
+The existing main ghost adapter reads the published geometry revision from SimulationSnapshotFeed. Bridge same-origin/selection dedup now also requires unchanged world revision, so its existing frame refresh issues a new read-only query after genuine completed Undo or pending Redo. Preserves fitted origin, selection/press/session ownership, second-touch cancellation and authoritative worker validation. No new polling/protocol/persistence/Scene/copy/layout.
+
+Actual production main/dialog/Scene/worker/feed source fixture: original4 RED/4 legal GREEN, fixed8 GREEN. Independent unique omissions of bridge revision guard and main feed adapter each reproduced4 RED/4 legal GREEN. Both restored entire original bytes in finally; before/after SHA256 identical. Final neighboring7 files112/112 GREEN; strict fixtures and app/tools typechecks plus production client/worker build exit0. Legacy extracted-main harnesses only receive the required static unchanged-world feed port; all assertions/commands/verdicts retained. Missing-port/setup failures remain separately archived.
+
+No browser/server/CI was launched for this checkpoint. Native trust/pixels and real FullHD200% layout remain pending root acceptance. Receipts: docs/research/2026-10-03-template-history-verdict/README.md.

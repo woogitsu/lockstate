@@ -1,0 +1,29 @@
+﻿# Individual object preflight session-arm review
+
+2026-10-03. Independent review of exact 8a8aa7a02b6ba98136bb628a9d403df40b4c1108 and descendant0133444974a5d14dcf0884c7162f940cd09fbee8 (actual ancestor verified). Own isolated worktree at013; no browser/server. Initial request read-only; root then authorized a minimal confirmed lifecycle correction.
+
+## Confirmed finding
+
+013 main.ts ready callback411 and worker-availability callback4607 call ObjectTool.setArmed(false). The Build panel keeps its existing armed/removal/selected state across Load; Hud.setUnavailable only changes the unavailable notice. Existing public oblique-room-object-load-gesture.spec.ts expressly cancels the held outgoing press, then requires a fresh press to send one PlaceObject without another arm-button click. New disarm violates this: ObjectTool.place returns immediately when disarmed, while the UI still says Stop placing. Both placement and removal are affected.
+
+The new focused test extracts and executes the real composition-root callbacks, then drives the real ObjectTool, real revision observer and actual release method. Ready and availability × placing/removing: **4 RED**, all at actual armed=false vs expectedtrue. [Baseline](./raw/baseline.txt). A first test-import attempt produced0 tests because installed TypeScript7 exposes version metadata rather than the removed parser API; [fixture error](./raw/initial-fixture-import-error.txt) is retained and is not product evidence. Corrected test uses bounded extraction of the actual existing JavaScript-compatible callbacks, not a copied callback implementation.
+
+## Reviewed authoritative path and planned correction
+
+Scene commitGesture still calls ObjectTool.place; it does not read or trust allowed/blocked preview to admit a command. ObjectTool.place reports the HUD gesture, the composition root submits packed PlaceObject, and ObjectPlacementService.place executes the shared preflight again before minting the order. Real query is advisory and write-free: footprint/allocation/history/treasury mutation occurs only after admission in place. Catalogue reference and duplicate-order ordering remain intact. This review found no other confirmed runtime defect at these reviewed commits; native integration remains outside this source proof.
+
+Minimal correction: invalidate old preview owner/aim/readout while retaining armed/removing/definition/footprint. Preserve cancelConstructionGesture at worker availability and also cancel it at ready/stopped publication. Old asynchronous replies cannot own a fresh aim, and fresh releases still pass through actual place regardless of preview.
+
+## Published correction and genuine producer verification
+
+Source checkpoint `83b2ce08dc240c6776c9822fef6c5f62e2487a95`: `ObjectTool.resetPreview` clears only preview owner/value/retained aim and withdraws readout. Main ready/stopped callback resets preview and cancels the outgoing scene gesture; worker-availability callback resets preview before its existing cancellation. The public tool's armed/removing/selection/footprint stays in sync with the unchanged Build panel. No snapshot, save schema, input binding, new copy or query-based command admission was added.
+
+[Focused fixed controls](./raw/fixed.txt): **15 GREEN /5 files** covering actual callback release, stale reply ownership, real shared admission/whole V8 snapshots, forced same-tick paused publication, unsolicited running publication and real World/Oblique pointer repaint. Initial strict test-message error omitted required ready replyTo; corrected only that fixture field, retained [initial compiler receipt](./raw/initial-types.txt), final [strict compiler receipt](./raw/types.txt) both exit0.
+
+Detached exact83b2 before producer mutation. Reintroduce real session-disarm consumers in main: [4 RED](./raw/negative-session-disarm.txt). Omit actual old-owner clearing in resetPreview: [1 RED /3 legal controls](./raw/negative-old-preview-owner.txt), specifically the old availability-boundary reply repainting a blocked verdict. [Actual byte/SHA restoration](./raw/mutation-restoration.json) verifies both source buffers exactly restored and source diff0, then [restored15 GREEN](./raw/restored.txt). Two preliminary mutation-probe errors are retained honestly: CRLF exact pattern missed the second producer before mutation, then a malformed replacement produced a syntax error/0 tests. Neither is counted as a successful negative; initial metadata receipts are superseded by the final explicit per-source byte receipt. Inert [first executed probe](./raw/mutation-executed.cjs.txt) and [corrected owner probe](./raw/owner-mutation-executed.cjs.txt) preserve the actual scripts, with Git text normalization disclosed.
+
+[Neighbor controls](./raw/neighbors.txt): **28 GREEN /3 files** for ordinary ObjectTool and actual worker channel/projection determinism. [Production compilation](./raw/build.txt) GREEN; this is compilation, not hydrated texture/native acceptance. [Unchanged existing native collection](./raw/existing-native-collection.txt):2 tests/1 file. No browser/server was launched and no native GREEN is claimed. Root/HUD already own the native recipe; this branch does not duplicate it.
+
+Own [research-index gate](./raw/index.txt):5 GREEN. Initial PowerShell build pipeline reported its warning stream as a shell error despite verified output; a bounded direct-child receipt resolves that ambiguity: [actual build child exit0](./raw/build-exit.txt). Native remains pending.
+
+Root recorded the independently confirmed regression after fresh deduplication as [Issue #2022](https://github.com/woogitsu/lockstate/issues/2022). Source/evidence are branch checkpoints above, not a claim of released production or native acceptance. The own canonical continuous research-index row is included in8c8640498cf86eb202607d1f4991548d6c36ec0e; retain that row when integrating.

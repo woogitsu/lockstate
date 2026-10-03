@@ -1,5 +1,6 @@
 import type { SimulationContext, SystemRegistration } from '../kernel/system';
 import type { ChunkPosition, TilePosition } from '../world/coordinates';
+import { tileKey } from '../world/coordinates';
 import { type ChunkState, SparseWorld } from '../world/sparse-world';
 import { DoorRegistry } from './door';
 import { FlowFieldCache, type FlowFieldCacheMetrics } from './flow-field';
@@ -11,7 +12,7 @@ import {
   type PathRequestQueueSnapshot,
   type ResolvedPathRequest,
 } from './path-request-queue';
-import { buildNavigationGraph, isNavigationGraphStale, type NavigationGraph } from './region-graph';
+import { buildNavigationGraph, isNavigationGraphStale, type NavigationGraph, type RegionId } from './region-graph';
 import type { Route, RouteResult } from './route';
 import { RouteCache, type RouteCacheMetrics } from './route-cache';
 import type { RouteContext } from './route-context';
@@ -97,6 +98,8 @@ export class NavigationSystem implements SystemRegistration {
   private readonly results = new Map<string, ResolvedPathRequest>();
   private loadedChunkPositions: readonly ChunkPosition[] = [];
   private graph: NavigationGraph;
+  private physicalComponentGraph: NavigationGraph | undefined;
+  private physicalComponents: ReadonlyMap<RegionId, RegionId> = new Map();
 
   public constructor(
     private readonly world: SparseWorld,
@@ -340,6 +343,42 @@ export class NavigationSystem implements SystemRegistration {
 
   public getGraph(): NavigationGraph {
     return this.ensureGraph();
+  }
+
+  /**
+   * Rejects physical disconnection without computing a route. Registered doors
+   * join regions regardless of access; permission-aware routing stays queued.
+   * Sorted labels cost O(regions log regions + portals) per graph generation, then O(1) per
+   * query. Unlike the exterior room readout, this answer depends only on the
+   * graph, not zoned rectangles, so graph replacement completely invalidates it.
+   */
+  public sharesPhysicalComponent(origin: TilePosition, destination: TilePosition): boolean {
+    const graph = this.ensureGraph();
+    const from = graph.tileToRegion.get(tileKey(origin));
+    const to = graph.tileToRegion.get(tileKey(destination));
+    if (from === undefined || to === undefined) return false;
+    if (from === to) return true;
+    if (this.physicalComponentGraph !== graph) {
+      const components = new Map<RegionId, RegionId>();
+      for (const seed of [...graph.regionTiles.keys()].sort((a, b) => a - b)) {
+        if (components.has(seed)) continue;
+        components.set(seed, seed);
+        const pending = [seed];
+        while (pending.length > 0) {
+          const region = pending.pop()!;
+          for (const portal of graph.regionPortals.get(region) ?? []) {
+            const other = portal.regionA === region ? portal.regionB : portal.regionA;
+            if (components.has(other)) continue;
+            components.set(other, seed);
+            pending.push(other);
+          }
+        }
+      }
+      this.physicalComponents = components;
+      this.physicalComponentGraph = graph;
+    }
+    const component = this.physicalComponents.get(from);
+    return component !== undefined && component === this.physicalComponents.get(to);
   }
 
   /**

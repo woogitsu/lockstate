@@ -1,0 +1,134 @@
+node : [2m[WebServer] [22m(node:18888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:22 char:2
++  node --experimental-transform-types --disable-warning=ExperimentalWa ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 4 tests using 1 worker
+
+(node:56980) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56980) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\dedicated-medical-bed-player-build.spec.ts:199:1 › player creates actual storage and delivery capacity before detailed medical bed Infirmary (44.0s)
+  x  2 tests\browser\dedicated-medical-bed-player-build.spec.ts:262:3 › player builds Infirmary at quarterTurns1 and retains the authored medical bed headboard palette and anchors after Save/Load (43.7s)
+(node:27864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:27864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 tests\browser\dedicated-security-console-player-build.spec.ts:197:1 › player creates actual storage and delivery capacity before detailed Security Office (43.6s)
+  x  4 tests\browser\dedicated-security-console-player-build.spec.ts:260:3 › player builds Security Office at quarterTurns1 and retains the authored console monitor palette and anchors after Save/Load (37.5s)
+
+
+  1) tests\browser\dedicated-medical-bed-player-build.spec.ts:262:3 › player builds Infirmary at quarterTurns1 and retains the authored medical bed headboard palette and anchors after Save/Load 
+
+    Error: medical bed retained headboard 1 after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      215 |   }, null, 2));
+      216 |   beforePixels.forEach((count, index) => expect.soft(count, `medical bed retained headboard ${index + 1} after construction`)
+    > 217 |     .toBeGreaterThan(100));
+          |      ^
+      218 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      219 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      220 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-safe-restore-integration-20261003\tests\browser\dedicated-medical-bed-player-build.spec.ts:217:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-safe-restore-integration-20261003\tests\browser\dedicated-medical-bed-player-build.spec.ts:216:16
+
+    Error: medical bed retained headboard 1 after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      231 |   const afterPixels = await bedPalettePixels(page, loaded, quarterTurns);
+      232 |   afterPixels.forEach((count, index) => expect.soft(count, `medical bed retained headboard ${index + 1} after Load`)
+    > 233 |     .toBeGreaterThan(100));
+          |      ^
+      234 |   expect(afterPixels).toEqual(beforePixels);
+      235 |   const evidencePath = info.outputPath('dedicated-medical-bed-worker-and-save-evidence.json');
+      236 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-safe-restore-integration-20261003\tests\browser\dedicated-medical-bed-player-build.spec.ts:233:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-safe-restore-integration-20261003\tests\browser\dedicated-medical-bed-player-build.spec.ts:232:15
+
+    attachment #1: dedicated-medical-bed-worker-and-save-evidence (application/json) ───────────────
+    ..\..\..\AppData\Local\Temp\lockstate-safe-model-native-mutation-20261003\results\dedicated-medical-bed-play-55a65-and-anchors-after-Save-Load\attachments\dedicated-medical-bed-worker-and-save-evidence-a6e0fa8ac8de3b71dee0bbfadfe6005c0e56d6d0.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-safe-model-native-mutation-20261003\results\dedicated-medical-bed-play-55a65-and-anchors-after-Save-Load\error-context.md
+
+  2) tests\browser\dedicated-security-console-player-build.spec.ts:260:3 › player builds Security Office at quarterTurns1 and retains the authored console monitor palette and anchors after Save/Load 
+
+    Error: console retained monitor 1 after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m0[39m
+
+      215 |   }, null, 2));
+      216 |   beforePixels.forEach((count, index) => expect.soft(count, `console retained monitor ${index + 1} after construction`)
+    > 217 |     .toBeGreaterThan(quarterTurns === 0 ? 100 : 200));
+          |      ^
+      218 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      219 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      220 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-safe-restore-integration-20261003\tests\browser\dedicated-security-console-player-build.spec.ts:217:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-safe-restore-integration-20261003\tests\browser\dedicated-security-console-player-build.spec.ts:216:16
+
+    Error: console retained monitor 1 after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m0[39m
+
+      231 |   const afterPixels = await consolePalettePixels(page, loaded, quarterTurns);
+      232 |   afterPixels.forEach((count, index) => expect.soft(count, `console retained monitor ${index + 1} after Load`)
+    > 233 |     .toBeGreaterThan(quarterTurns === 0 ? 100 : 200));
+          |      ^
+      234 |   expect(afterPixels).toEqual(beforePixels);
+      235 |   const evidencePath = info.outputPath('dedicated-security-console-worker-and-save-evidence.json');
+      236 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-safe-restore-integration-20261003\tests\browser\dedicated-security-console-player-build.spec.ts:233:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-safe-restore-integration-20261003\tests\browser\dedicated-security-console-player-build.spec.ts:232:15
+
+    attachment #1: dedicated-security-console-worker-and-save-evidence (application/json) ──────────
+    ..\..\..\AppData\Local\Temp\lockstate-safe-model-native-mutation-20261003\results\dedicated-security-console-9e650-and-anchors-after-Save-Load\attachments\dedicated-security-console-worker-and-save-evidence-79a2ec71ed6a60c1e57fcecb40f9e1d14d81fd59.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-safe-model-native-mutation-20261003\results\dedicated-security-console-9e650-and-anchors-after-Save-Load\error-context.md
+
+  2 failed
+    tests\browser\dedicated-medical-bed-player-build.spec.ts:262:3 › player builds Infirmary at quarterTurns1 and retains the authored medical bed headboard palette and anchors after Save/Load 
+    tests\browser\dedicated-security-console-player-build.spec.ts:260:3 › player builds Security Office at quarterTurns1 and retains the authored console monitor palette and anchors after Save/Load 
+  2 passed (2.9m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+

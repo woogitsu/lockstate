@@ -1,0 +1,347 @@
+{
+  "schemaVersion": 1,
+  "originalSource": "assets/source/blender/fixture.cell.waste_bin.blend",
+  "originalSourceSha256": "acac99dd51895f561f0b25b1e7453c0290141ed6c7953f123575b2cb8bb95963",
+  "source": "assets/source/blender/fixture.cell.waste_bin.angled.blend",
+  "sourceSha256": "ff8f91f62e67ad69293c0560849664524a5e7cd34824137171f5cb3d740376c3",
+  "footprintTiles": [
+    1,
+    1
+  ],
+  "sourceAlignmentTranslation": [
+    0,
+    -0.057499974966049194,
+    0
+  ],
+  "originalBounds": {
+    "minimum": [
+      -0.3499999940395355,
+      -0.4300000071525574,
+      0.0
+    ],
+    "maximum": [
+      0.3499999940395355,
+      0.5449999570846558,
+      0.9340000152587891
+    ]
+  },
+  "minimum": [
+    -0.3499999940395355,
+    -0.4874999523162842,
+    0.0
+  ],
+  "maximum": [
+    0.3499999940395355,
+    0.48750001192092896,
+    0.9340000152587891
+  ],
+  "cameraTargetTiles": [
+    0.5,
+    0.5,
+    0.46700000762939453
+  ],
+  "maximumRigidVertexError": 2.9802322387695312e-08,
+  "originalMeshes": [
+    {
+      "name": "bin body",
+      "evaluatedVertices": 64,
+      "evaluatedPositionSha256": "608d557e23216b936f61d07cfbe27b20c849b5d735fa4210234abadb12ae7a41",
+      "modifiers": [],
+      "materials": [
+        "waste bin enamel"
+      ]
+    },
+    {
+      "name": "bin cavity",
+      "evaluatedVertices": 64,
+      "evaluatedPositionSha256": "95d3061ee20e29f77945246a6fbad0c48788c36b7e33267688f58eccb8720025",
+      "modifiers": [],
+      "materials": [
+        "waste bin cavity"
+      ]
+    },
+    {
+      "name": "bin shoulder",
+      "evaluatedVertices": 64,
+      "evaluatedPositionSha256": "f2d0c81bf097dd7a82b665fbe1821b94cae8f73b51558002c2264c2f5fdf9ea6",
+      "modifiers": [],
+      "materials": [
+        "waste bin edge"
+      ]
+    },
+    {
+      "name": "hinge bridge",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "29a412a5f7f02f7354866c6b025fac89493deb2ff03916abce312dbd4dad25a6",
+      "modifiers": [
+        "BEVEL"
+      ],
+      "materials": [
+        "waste bin enamel"
+      ]
+    },
+    {
+      "name": "label",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "5fd7d4743f89cf83e75484b7405bee23bea027fa2863985fb8fa27b2fca773a6",
+      "modifiers": [
+        "BEVEL"
+      ],
+      "materials": [
+        "waste bin label"
+      ]
+    },
+    {
+      "name": "lid",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "5d698cd91b98893105feac6b82041f724830a3856a4638df26c58cc3b7fcf524",
+      "modifiers": [
+        "BEVEL"
+      ],
+      "materials": [
+        "waste bin edge"
+      ]
+    },
+    {
+      "name": "lid front",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "0b0843cb2e04c5a67347a07494088a4a7aa807a76a43f4d2697036fd2e116a05",
+      "modifiers": [
+        "BEVEL"
+      ],
+      "materials": [
+        "waste bin edge"
+      ]
+    },
+    {
+      "name": "lid inset",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "cff7175f4c2f17cdba12981afcb3b59970021ee584e3ef31c4dd80d096735f53",
+      "modifiers": [
+        "BEVEL"
+      ],
+      "materials": [
+        "waste bin enamel"
+      ]
+    },
+    {
+      "name": "pedal",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "5a56d2913753994280790688b0d63f521bc105bd1ea754d4a6f8eb3484349c76",
+      "modifiers": [
+        "BEVEL"
+      ],
+      "materials": [
+        "waste bin pedal"
+      ]
+    },
+    {
+      "name": "pedal stem",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "ea0ae06a18ad0bf681ffebdcae16f7242d631e54633a45bb899df8d366e6ef85",
+      "modifiers": [
+        "BEVEL"
+      ],
+      "materials": [
+        "waste bin enamel"
+      ]
+    },
+    {
+      "name": "side handle -0.33",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "8b1e220d3c18aaef5d2c133c297767ee9197ffc7cafb5b336ee9f3bf38f8ecaf",
+      "modifiers": [
+        "BEVEL"
+      ],
+      "materials": [
+        "waste bin edge"
+      ]
+    },
+    {
+      "name": "side handle 0.33",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "85e40e366281bca29cb1f68ee07dc2e330ace442d0562bbda01709110f9e1195",
+      "modifiers": [
+        "BEVEL"
+      ],
+      "materials": [
+        "waste bin edge"
+      ]
+    }
+  ],
+  "meshes": [
+    {
+      "name": "bin body",
+      "evaluatedVertices": 64,
+      "evaluatedPositionSha256": "f56bd1e5fcef904a89c7fd10e847f2ce0cc5ed2ca1df69aaf82769606d98fe0b",
+      "modifiers": [],
+      "materials": [
+        "waste bin enamel"
+      ]
+    },
+    {
+      "name": "bin cavity",
+      "evaluatedVertices": 64,
+      "evaluatedPositionSha256": "f40fd43604c8a86d875a6e9b461040a526473184ea30fbc160f5f1151e507c91",
+      "modifiers": [],
+      "materials": [
+        "waste bin cavity"
+      ]
+    },
+    {
+      "name": "bin shoulder",
+      "evaluatedVertices": 64,
+      "evaluatedPositionSha256": "456b3f65c85b25cc74e15795784aa7743f7eba5e785281f9063670f65110be13",
+      "modifiers": [],
+      "materials": [
+        "waste bin edge"
+      ]
+    },
+    {
+      "name": "hinge bridge",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "f0e89371b506c4572248942d7a04bcc403a257aede61752e3adb7c5dd0fe1615",
+      "modifiers": [
+        "BEVEL"
+      ],
+      "materials": [
+        "waste bin enamel"
+      ]
+    },
+    {
+      "name": "label",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "40a4e15bb21c61a5af89da9e5ccf71db3769be9ac69879d508dddc539b2136eb",
+      "modifiers": [
+        "BEVEL"
+      ],
+      "materials": [
+        "waste bin label"
+      ]
+    },
+    {
+      "name": "lid",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "a8b1f7ede87921493142a35a3b4708db034c1a233a44bf10717506b519e30a88",
+      "modifiers": [
+        "BEVEL"
+      ],
+      "materials": [
+        "waste bin edge"
+      ]
+    },
+    {
+      "name": "lid front",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "9789c70a1e900cd29dae6e11e5a4b2834337142448544292231bd1a718cc4629",
+      "modifiers": [
+        "BEVEL"
+      ],
+      "materials": [
+        "waste bin edge"
+      ]
+    },
+    {
+      "name": "lid inset",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "82cb7b2ee148bbc46d7874ae2d4a79de8b51ac89fa8407c6a28417d494560628",
+      "modifiers": [
+        "BEVEL"
+      ],
+      "materials": [
+        "waste bin enamel"
+      ]
+    },
+    {
+      "name": "pedal",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "27ee8928f4bff56d0c94f40b2b684b2c8ac56c66710922097f521432ca5b6d1a",
+      "modifiers": [
+        "BEVEL"
+      ],
+      "materials": [
+        "waste bin pedal"
+      ]
+    },
+    {
+      "name": "pedal stem",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "a2250a7bc50b2f2acd3e5ff1074ca5817845c3f2c761ef7105802f368dba71cb",
+      "modifiers": [
+        "BEVEL"
+      ],
+      "materials": [
+        "waste bin enamel"
+      ]
+    },
+    {
+      "name": "side handle -0.33",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "609854858d96910940c09b61b7a4c4bea93cdde1ad189d67cd3aa3f7440838da",
+      "modifiers": [
+        "BEVEL"
+      ],
+      "materials": [
+        "waste bin edge"
+      ]
+    },
+    {
+      "name": "side handle 0.33",
+      "evaluatedVertices": 56,
+      "evaluatedPositionSha256": "63a4bc6efeb3a0000a1a4bbc5c8fc6f928d32e80ff5f11b0ba200b7f4a126132",
+      "modifiers": [
+        "BEVEL"
+      ],
+      "materials": [
+        "waste bin edge"
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "waste bin cavity",
+      "diffuseRGBA": [
+        0.017999999225139618,
+        0.02500000037252903,
+        0.027000000700354576,
+        1.0
+      ]
+    },
+    {
+      "name": "waste bin edge",
+      "diffuseRGBA": [
+        0.3799999952316284,
+        0.550000011920929,
+        0.550000011920929,
+        1.0
+      ]
+    },
+    {
+      "name": "waste bin enamel",
+      "diffuseRGBA": [
+        0.10000000149011612,
+        0.3400000035762787,
+        0.3700000047683716,
+        1.0
+      ]
+    },
+    {
+      "name": "waste bin label",
+      "diffuseRGBA": [
+        0.7799999713897705,
+        0.8199999928474426,
+        0.7200000286102295,
+        1.0
+      ]
+    },
+    {
+      "name": "waste bin pedal",
+      "diffuseRGBA": [
+        0.6800000071525574,
+        0.41999998688697815,
+        0.1599999964237213,
+        1.0
+      ]
+    }
+  ]
+}

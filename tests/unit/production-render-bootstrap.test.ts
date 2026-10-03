@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { prepareProductionRenderScene, productionRenderMode } from '../../src/rendering/scene/production-render-bootstrap';
+import { cacheVerifiedObliqueCatalogs, prepareProductionRenderScene, productionRenderMode } from '../../src/rendering/scene/production-render-bootstrap';
 
 describe('production render bootstrap', () => {
   it('keeps the default WorldScene registry-free', async () => {
@@ -29,4 +29,21 @@ describe('production render bootstrap', () => {
     expect(productionRenderMode('?view=oblique')).toBe('oblique');
     expect(productionRenderMode('?renderer=flat')).toBe('world');
   });
+});
+
+it('uses the verified catalogue during a rollback even if the network subsequently fails',async()=>{
+  const verified={module:'bed'};
+  const network=vi.fn(async()=>verified);
+  const cached=cacheVerifiedObliqueCatalogs(network);
+  expect(await cached()).toBe(verified);
+  network.mockRejectedValueOnce(new Error('offline during rollback'));
+  expect(await cached()).toBe(verified);
+  expect(network).toHaveBeenCalledOnce();
+});
+it('can retry an initial failed catalogue without caching its rejection',async()=>{
+  const network=vi.fn(async()=>({module:'bed'})).mockRejectedValueOnce(new Error('503'));
+  const cached=cacheVerifiedObliqueCatalogs(network);
+  await expect(cached()).rejects.toThrow('503');
+  expect(await cached()).toEqual({module:'bed'});
+  expect(network).toHaveBeenCalledTimes(2);
 });
