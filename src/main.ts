@@ -4597,6 +4597,7 @@ async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle)
         // case, a plan armed against the outgoing worker must not retain its
         // fitted camera origin or submit into a replacement session.
         roomTemplateTool?.standDown();
+        worldScene.cancelConstructionGesture();
         // This page keeps one renderer and one feed across prisons. Wait for
         // the replacement worker's first snapshot before centering its map;
         // the feed may still expose the outgoing world's last frame meanwhile.

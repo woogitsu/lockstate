@@ -511,3 +511,5 @@ and it stopped one step short of its own consequence.
   summariser, the incident alert projection and the whole tunnel registry with no
   caller in `src/` — the same class as issue #287's two uncalled capabilities,
   three layers deeper.
+
+| [2026-10-03 ordinary Build session ownership](./2026-10-03-ordinary-build-session-ownership/README.md) | Can a World primary construction press survive actual worker New/Load into a replacement session? | Existing #1949 World extension:6 original RED/24 legal controls after explicit #2004 dependency; one common construction-only cancellation, omission6 RED, exact restored30 GREEN and66 neighboring source tests. Wall actual order, Bed transmission and Rooms report-only remain distinct; native pending root. |

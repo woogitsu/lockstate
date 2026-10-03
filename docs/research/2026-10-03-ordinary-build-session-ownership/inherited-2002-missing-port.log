@@ -1,0 +1,106 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-session-gesture-owner-audit-20261003
+
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts (9 tests | 9 failed) 10ms
+   × fresh 'new' session admits a new plan after outgoing preflight, armed=false 5ms
+   × fresh 'new' session admits a new plan after outgoing preflight, armed=true 1ms
+   × fresh 'load' session admits a new plan after outgoing preflight, armed=false 0ms
+   × fresh 'load' session admits a new plan after outgoing preflight, armed=true 0ms
+   × a delayed genuine same-session preflight submits exactly one plan 1ms
+   × cancel/rearm keeps the newer pending owner when an older real preflight settles, armed=false 0ms
+   × cancel/rearm keeps the newer pending owner when an older real preflight settles, armed=true 0ms
+   × an abandoned old session requester timing out cannot release a newer generation busy token 1ms
+   × standing down a numeric unarmed request discards its actual late clear result 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > fresh 'new' session admits a new plan after outgoing preflight, armed=false
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > fresh 'new' session admits a new plan after outgoing preflight, armed=true
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > fresh 'load' session admits a new plan after outgoing preflight, armed=false
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > fresh 'load' session admits a new plan after outgoing preflight, armed=true
+TypeError: worldScene.cancelConstructionGesture is not a function
+ ❯ Object.eval [as onWorkerAvailability] tests/unit/ui-room-template-session-preflight.test.ts:42:10
+     40| const callback = stripTypeScriptTypes(source.slice(start, end + '\n   …
+     41| function availability(tool: RoomTemplateTool) {
+     42|   return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldS…
+       |          ^
+     43|     (tool, {}, class {}, { setUnavailable() {} }, 'unavailable', undef…
+     44| }
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ui-room-template-session-preflight.test.ts:59:3
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:75:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > a delayed genuine same-session preflight submits exactly one plan
+TypeError: worldScene.cancelConstructionGesture is not a function
+ ❯ Object.eval [as onWorkerAvailability] tests/unit/ui-room-template-session-preflight.test.ts:42:10
+     40| const callback = stripTypeScriptTypes(source.slice(start, end + '\n   …
+     41| function availability(tool: RoomTemplateTool) {
+     42|   return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldS…
+       |          ^
+     43|     (tool, {}, class {}, { setUnavailable() {} }, 'unavailable', undef…
+     44| }
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ui-room-template-session-preflight.test.ts:59:3
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:119:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > cancel/rearm keeps the newer pending owner when an older real preflight settles, armed=false
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > cancel/rearm keeps the newer pending owner when an older real preflight settles, armed=true
+TypeError: worldScene.cancelConstructionGesture is not a function
+ ❯ Object.eval [as onWorkerAvailability] tests/unit/ui-room-template-session-preflight.test.ts:42:10
+     40| const callback = stripTypeScriptTypes(source.slice(start, end + '\n   …
+     41| function availability(tool: RoomTemplateTool) {
+     42|   return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldS…
+       |          ^
+     43|     (tool, {}, class {}, { setUnavailable() {} }, 'unavailable', undef…
+     44| }
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ui-room-template-session-preflight.test.ts:59:3
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:133:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > an abandoned old session requester timing out cannot release a newer generation busy token
+TypeError: worldScene.cancelConstructionGesture is not a function
+ ❯ Object.eval [as onWorkerAvailability] tests/unit/ui-room-template-session-preflight.test.ts:42:10
+     40| const callback = stripTypeScriptTypes(source.slice(start, end + '\n   …
+     41| function availability(tool: RoomTemplateTool) {
+     42|   return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldS…
+       |          ^
+     43|     (tool, {}, class {}, { setUnavailable() {} }, 'unavailable', undef…
+     44| }
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ui-room-template-session-preflight.test.ts:59:3
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:159:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > standing down a numeric unarmed request discards its actual late clear result
+TypeError: worldScene.cancelConstructionGesture is not a function
+ ❯ Object.eval [as onWorkerAvailability] tests/unit/ui-room-template-session-preflight.test.ts:42:10
+     40| const callback = stripTypeScriptTypes(source.slice(start, end + '\n   …
+     41| function availability(tool: RoomTemplateTool) {
+     42|   return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldS…
+       |          ^
+     43|     (tool, {}, class {}, { setUnavailable() {} }, 'unavailable', undef…
+     44| }
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ui-room-template-session-preflight.test.ts:59:3
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:186:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  9 failed (9)
+   Start at  06:33:57
+   Duration  2.78s (transform 922ms, setup 0ms, import 2.64s, tests 10ms, environment 0ms)
+

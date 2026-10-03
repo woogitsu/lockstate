@@ -49,3 +49,41 @@ using the already-approved2004 cancelConstructionGesture port. Dependency2004 mu
 be explicit. Preserve Oblique releaseSessionInput/reframe and RoomTemplate standDown
 (#2002) exactly. No new hover/camera/protocol/save/copy/layout policy. Original source
 receipt is published before applying the dependency/correction.
+
+
+## Implemented correction and exact-source evidence
+
+The one common availability-callback call is now
+`worldScene.cancelConstructionGesture()`, immediately after existing template
+`standDown()`. This uses the existing #2004 construction-only port in both scenes.
+The existing Oblique `releaseSessionInput()` and available-session reframe remain
+unchanged. No camera, hover, painter order, input mapping, worker protocol or saved
+format changes are introduced.
+
+Explicit dependency: #2004 commits4c0178c14916, a2d822e46922 and1bed49eadba3.
+They are present in this branch as f484b7ddb9, f12e68159c and ecb27aafdb;
+the parent already has their originals and must not cherry-pick those duplicates.
+After that dependency and before the new common call, the actual-source boundary
+still gives6 RED/24 legal GREEN (`original-after-2004-dependency6red24controls.log`).
+
+The fixture now binds the actually created scene before initial host start,
+matching production boot order. This is harness plumbing, not a new defect.
+The existing #2002 preflight fixture's previous empty scene stub failed9 cases
+because it lacked the now-required cancellation port. That initial failure is
+retained in `inherited-2002-missing-port.log`; only its existing scene adapter
+received a no-op cancel port. No preflight assertions, worker verdicts, delays,
+states or host behavior were changed.
+
+A temporary unique omission of ONLY the new common availability call yields
+6 RED/24 legal GREEN. Exact original fixed bytes are restored in `finally`;
+`mutation-restoration.json` pins SHA256 and byte equality. The restored own suite
+passes30/30. `focused-neighbors.log` passes66/66 across ordinary ownership,
+HUD cancellation/re-arm, actual WorkerPerSessionHost and existing #2002 preflight.
+Strict fixture types and production build (application and tools TypeScript plus
+client/worker bundle) both exit0. Every source run uses maxWorkers2.
+
+This proves source/registered-callback ownership, not native physical timing.
+ROOT retains the browser lease; no browser/server or remote CI was run here.
+Wall accepted-order, Bed transmission and Rooms report-only boundaries above
+remain distinct. Existing native #1949 evidence is not relabeled as these new
+World New/Load cases. Physical FullHD acceptance is pending parent integration.
