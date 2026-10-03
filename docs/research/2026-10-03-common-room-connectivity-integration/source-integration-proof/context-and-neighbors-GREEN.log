@@ -1,0 +1,19 @@
+﻿pnpm : $ vitest run "tests/unit/oblique-garbage-classroom-context.test.ts" "tests/unit/oblique-yard-waste-bin-context.t
+est.ts" "tests/unit/oblique-classroom-chair-context.test.ts" "tests/unit/oblique-object-mapping.test.ts" "tests/unit/ob
+lique-classroom-teacher-desk-art.test.ts" "tests/unit/oblique-garbage-room-bin-art.test.ts" "tests/integration/native-g
+arbage-room-preparation.test.ts"
+At line:2 char:161
++ ... +$env:PATH; pnpm --config.verify-deps-before-run=false test tests/uni ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...ration.test.ts":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-integration-20261003
+
+
+ Test Files  7 passed (7)
+      Tests  49 passed (49)
+   Start at  13:55:20
+   Duration  3.12s (transform 1.43s, setup 0ms, import 4.32s, tests 1.61s, environment 0ms)
+

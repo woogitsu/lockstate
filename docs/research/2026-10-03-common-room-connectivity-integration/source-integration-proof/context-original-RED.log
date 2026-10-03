@@ -1,0 +1,89 @@
+﻿pnpm : $ vitest run "tests/unit/oblique-garbage-classroom-context.test.ts"
+At line:2 char:203
++ ... +$env:PATH; pnpm --config.verify-deps-before-run=false test tests/uni ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...ontext.test.ts":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-integration-20261003
+
+ ❯ tests/unit/oblique-garbage-classroom-context.test.ts (11 tests | 9 failed) 16ms
+     × uses refuse trolley for completed Garbage Room bin orientation 0 6ms
+     × uses refuse trolley for completed Garbage Room bin orientation 1 2ms
+     × uses refuse trolley for completed Garbage Room bin orientation 2 1ms
+     × uses refuse trolley for completed Garbage Room bin orientation 3 2ms
+     × uses teaching desk only when the entire rotated footprint fits, orientation 0 1ms
+     × uses teaching desk only when the entire rotated footprint fits, orientation 1 1ms
+     × uses teaching desk only when the entire rotated footprint fits, orientation 2 0ms
+     × uses teaching desk only when the entire rotated footprint fits, orientation 3 0ms
+     × loads both selected assets from the real runtime registry and matching descriptors 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > uses r
+efuse trolley for completed Garbage Room bin orientation 0
+ FAIL  tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > uses r
+efuse trolley for completed Garbage Room bin orientation 1
+ FAIL  tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > uses r
+efuse trolley for completed Garbage Room bin orientation 2
+ FAIL  tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > uses r
+efuse trolley for completed Garbage Room bin orientation 3
+AssertionError: expected 'fixture.cell.waste_bin' to be 'fixture.garbage-room.waste-bin' // Object.is equality
+
+Expected: "fixture.garbage-room.waste-bin"
+Received: "fixture.cell.waste_bin"
+
+ ❯ tests/unit/oblique-garbage-classroom-context.test.ts:30:8
+     28|   it.each([0, 1, 2, 3] as const)('uses refuse trolley for completed Ga…
+     29|     expect(projected('waste-bin-brick', [room('room.garbage-room')], o…
+     30|       .toBe('fixture.garbage-room.waste-bin');
+       |        ^
+     31|   });
+     32|   it('preserves Yard and ordinary bin presentation and excludes unfini…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > uses t
+eaching desk only when the entire rotated footprint fits, orientation 0
+ FAIL  tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > uses t
+eaching desk only when the entire rotated footprint fits, orientation 1
+ FAIL  tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > uses t
+eaching desk only when the entire rotated footprint fits, orientation 2
+ FAIL  tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > uses t
+eaching desk only when the entire rotated footprint fits, orientation 3
+AssertionError: expected 'furniture.office.desk.generic' to be 'furniture.classroom.teacher-desk' // Object.is equality
+
+Expected: "furniture.classroom.teacher-desk"
+Received: "furniture.office.desk.generic"
+
+ ❯ tests/unit/oblique-garbage-classroom-context.test.ts:39:86
+     37|   });
+     38|   it.each([0, 1, 2, 3] as const)('uses teaching desk only when the ent…
+     39|     expect(projected('desk-wooden', [room('room.classroom')], orientat…
+       |                                                                                      ^
+     40|     const horizontal = orientation % 2 === 0;
+     41|     expect(projected('desk-wooden', [room('room.classroom', horizontal…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > loads 
+both selected assets from the real runtime registry and matching descriptors
+AssertionError: fixture.garbage-room.waste-bin: expected undefined to be defined
+ ❯ tests/unit/oblique-garbage-classroom-context.test.ts:54:30
+     52|     for (const assetId of ['fixture.garbage-room.waste-bin', 'furnitur…
+     53|       const entry = registry.entries.find(row => row.assetId === asset…
+     54|       expect(entry, assetId).toBeDefined();
+       |                              ^
+     55|       const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSyn…
+     56|       expect(catalog.assetId).toBe(assetId);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  9 failed | 2 passed (11)
+   Start at  13:53:55
+   Duration  819ms (transform 335ms, setup 0ms, import 670ms, tests 16ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
