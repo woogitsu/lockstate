@@ -32,4 +32,3 @@ AssertionError: a row sits outside the table. The index appends at one point and
     225| });
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
-
