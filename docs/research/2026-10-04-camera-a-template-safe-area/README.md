@@ -53,12 +53,20 @@ fails28ms with expected0/actual28 (`camera-omission-red.raw.txt`). Corrected
 source was restored byte-exact:
 
 - SHA256 `8F3699E4713D87B85811FAA50535D77A9571492F0193A0B1DF6FE80D47BB2F2E`.
-- Git blob `9080f8575ae9d8d9e101965120935aa0dadaa475`.
+- Git object identifier `blob:9080f8575ae9d8d9e101965120935aa0dadaa475`
+  (file content, not a commit citation).
 
 After restoration, all9 relevant source/fit/label/held/chord/history/numeric
 ownership files pass125/125 under maxWorkers4. App and tools strict typecheck
 exit0. Raw PowerShell captures are retained; its NativeCommandError label wraps
 routine stderr command banners even on exit0 and is not a test failure.
+
+Final research index/claims/published citation contracts pass28/28. Their first
+run was2 RED/26 GREEN: this report's bare blob token was interpreted as a
+commit, corrected to explicitly qualified `blob:` content identity; an
+inherited V10 citation's published branch ref was stale locally. Fetching that
+actual published branch resolved the second failure without a foreign file
+change or contract exception. See `documentation.raw.txt` for final output.
 
 ## Reproduce and remaining acceptance
 
