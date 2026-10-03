@@ -5,6 +5,7 @@ export function readMinimapGeometry() {
     '.hud__corner', '.hud__corner > select.hud-build__category',
     '.hud-camera-pan', '.hud-camera-pose', '.hud-zoom',
     '.hud__corner button', '.hud__corner select',
+    '.camera-review-toolbox', '.camera-review-toolbox select', '.camera-review-toolbox button', '.camera-review-trigger',
     '.hud-minimap', '.hud-minimap > .ui-panel__header',
     '.hud-minimap > .ui-panel__body', '.hud-minimap__surface',
     '.hud-minimap .hud-alerts', '.hud-minimap .ui-section__header-row',

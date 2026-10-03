@@ -3,6 +3,8 @@
   "include": [
     "./quote-clamp-dom.test.ts",
     "./minimap-geometry-probe.ts",
+    "./camera-variant-native.ts",
+    "./camera-variant-native-recipe.ts",
     "./vitest.config.ts"
   ]
 }

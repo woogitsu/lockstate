@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pl">
+<meta charset="utf-8">
+<title>Sterowanie kamerą — dwa warianty do przeglądu</title>
+<style>
+body{font:16px system-ui;margin:24px auto;padding:0 20px;max-width:1100px;color:#173441;background:#edf2f5}
+section{background:#fff;padding:22px;border-radius:12px;margin:20px 0}
+button,select{font:inherit;padding:10px;border:1px solid #b8cbd2;border-radius:7px;background:white;color:inherit;cursor:pointer}
+button.active{background:#006c72;color:white}button:focus-visible,select:focus-visible{outline:3px solid #00999d}
+.choices{display:flex;flex-wrap:wrap;gap:10px}.note{color:#4e6874;line-height:1.5}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid #dce6eb}
+.stage{--s:1;position:relative;aspect-ratio:16/9;overflow:hidden;border:1px solid #b8cbd2;background:repeating-linear-gradient(0deg,transparent 0 29px,#c3c6b9 29px 30px),repeating-linear-gradient(90deg,#e1e3d9 0 29px,#c3c6b9 29px 30px);font-size:calc(12px*var(--s))}
+.strip{position:absolute;inset:0 0 auto;height:16%;background:#e9f0f4;padding:12px;box-sizing:border-box;font-weight:700}
+.nav{position:absolute;left:0;top:16%;bottom:0;width:14%;background:#f1f6f8;display:flex;flex-direction:column;justify-content:space-evenly;text-align:center}
+.rail{position:absolute;right:0;top:16%;bottom:0;width:24%;background:#f1f6f8;padding:12px;box-sizing:border-box}
+.corner{position:absolute;left:16%;bottom:12px;width:30%;background:#fff;border:1px solid #afc4cc;border-radius:7px;padding:10px;box-sizing:border-box}
+.zoom{display:flex;align-items:center;gap:6px;margin-bottom:9px}.stage button,.stage select{font-size:inherit;min-height:calc(22px*var(--s));min-width:calc(22px*var(--s));padding:4px}
+.map{height:calc(50px*var(--s));background:#92b473;border:1px solid #567e50;border-radius:5px}
+.alerts{padding-top:10px}.row{margin-top:8px;padding:10px;background:#eef4f7;border:1px solid #d8e5e9;border-radius:5px;min-height:calc(22px*var(--s));box-sizing:border-box}
+.toolbox{position:absolute;left:16%;top:19%;width:44%;display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;background:#fff;border:1px solid #afc4cc;border-radius:7px;padding:8px;box-sizing:border-box}
+.toolbox[hidden],.pose[hidden],#trigger[hidden]{display:none}.pan,.pose{display:flex;flex-wrap:wrap;gap:5px}.pose button,.pan button{width:calc(22px*var(--s))}
+img{max-width:100%;height:auto}.effect{padding:12px;background:#e6f2f0;border-radius:6px;line-height:1.5}
+</style>
+<h1>Sterowanie kamerą bez utraty alertów</h1>
+<p>Dwa warianty do decyzji właściciela. Żaden nie jest wdrożony ani zaakceptowany pomiarem natywnym. Oba zachowują powiększenie, wybór widoku, cztery kierunki przesuwania oraz cztery kontrolki obrotu i nachylenia w Angled.</p>
+<section>
+<div class="choices"><button id="a" class="active">A — rozwijanie obok Zoom</button><button id="b">B — osobny panel kamery</button><select id="language" aria-label="Język podglądu"><option value="pl">Polski</option><option value="en">English</option></select><select id="scale" aria-label="Skala podglądu"><option value="1">100%</option><option value="2">200%</option></select></div>
+<p class="effect" id="effect">A: Zoom pozostaje stale widoczny. Przycisk „Widok” otwiera panel z dotychczasowym wyborem widoku, przesuwaniem, obrotem i nachyleniem. Otwarcie wymaga jednego dodatkowego naciśnięcia; Escape zamyka panel i oddaje fokus przyciskowi. Po zamknięciu panel nie zasłania mapy.</p>
+<p class="note">Schemat interaktywny, nie zrzut gry. Kontrolki tutaj tylko pokazują układ. Rzeczywisty wariant natywny będzie używał oryginalnych elementów i ich oryginalnych zdarzeń. Podgląd nie dowodzi wysokości wiersza alertu ani hit-testów.</p>
+<div class="stage" id="stage">
+ <div class="strip">LockState.io &nbsp; PRE-ALPHA &nbsp; ⏸ &nbsp; 0</div>
+ <nav class="nav"><span>Overview</span><span>Build</span><span>Zones</span><span>Manage</span><span>Schedule</span><span>Security</span></nav>
+ <aside class="rail"><b>100% / 200%</b><p>Prisons</p><button>New prison</button><p>Finances</p></aside>
+ <div class="corner"><div class="zoom"><span id="zoomLabel">Powiększenie</span><button aria-label="Zoom out">−</button><button aria-label="Zoom in">+</button><button id="trigger" aria-expanded="false" aria-controls="toolbox">Widok</button></div><b>Minimap</b><div class="map"></div><div class="alerts"><b>Alerts</b><div class="row" id="alert">Brak aktywnych alertów</div></div></div>
+ <section class="toolbox" id="toolbox" hidden aria-label="Sterowanie kamerą"><select id="view" aria-label="Widok"><option value="world">Z góry</option><option value="oblique">Pod kątem</option></select><div class="pan"><button title="Przesuń kamerę w lewo">←</button><button title="Przesuń kamerę w górę">↑</button><button title="Przesuń kamerę w dół">↓</button><button title="Przesuń kamerę w prawo">→</button></div><div class="pose" id="pose" hidden><button title="Obróć kamerę w lewo">↶</button><button title="Obróć kamerę w prawo">↷</button><button title="Podnieś kąt kamery">⌃</button><button title="Obniż kąt kamery">⌄</button></div></section>
+</div>
+</section>
+<section><h2>Co musi pozostać prawdą na publicznej stronie</h2><table><tr><th>Obszar</th><th>Wymaganie</th></tr><tr><td>#1292</td><td>Oryginalne 398 px narożnika, sześć sekcji, próg 781 px i odstępy 29,19 / 10,19 / 9,19 px przy 1280×800 / 781 / 780. Nie zmieniamy testów.</td></tr><tr><td>Alerty</td><td>Pełny rzeczywisty wiersz mieści się w clientHeight listy. Lista widoczna po Build → Overview przy 100% i 200%; panel kamery nie przykrywa jej centrum.</td></tr><tr><td>Kontrolki</td><td>Oryginalne elementy i zdarzenia. Każda widoczna kontrolka zachowuje target 44 px × skalę i przechodzi hit-test centrum. Obrót i nachylenie dostępne po przejściu do Angled.</td></tr><tr><td>Mapa</td><td>Nie odejmujemy miejsca z minimapy ani alertu. Panel kamery zajmuje osobne miejsce nad mapą i zawija swoje grupy; jego faktyczna wysokość i ewentualne kolizje wymagają zrzutu i pomiaru.</td></tr></table></section>
+<section><h2>Tekst i różnica dla gracza</h2><p>A używa obecnego tekstu widocznego „View” / „Widok” na przycisku. Nowa nazwa regionu i dostępna nazwa przycisku: <b>EN: Camera controls</b>; <b>PL: Sterowanie kamerą</b>. Nazwy opcji, przesuwania, obrotu, nachylenia i Zoom pozostają obecne. B potrzebuje tylko tej samej nowej nazwy regionu.</p><p>B utrzymuje wszystkie kontrolki stale pod ręką i nie dodaje naciśnięcia, ale stale zasłania część górnej mapy. A oddaje to miejsce po zamknięciu, ale wymaga otwarcia przed wyborem widoku, przesuwaniem przyciskami, obrotem lub nachyleniem. Klawiatura, przeciąganie i istniejące skróty pozostają poza proponowaną zmianą.</p><p class="note">Wariant odjęcia 96 / 148 px od powierzchni minimapy został odrzucony jako pełne rozwiązanie: Angled ma za małą powierzchnię, a przy FullHD200 budżet staje się ujemny.</p></section>
+<section><details><summary>Oryginalny rzeczywisty zrzut CI: Build, 200%, przed wariantami</summary><p>Zapisany błąd, nie wynik kandydatów. SHA256: c29577e163dbeb1244e263bf3b73c99261693df27c2a1d770f988ee3aa3ca888.</p><img src="./ci-build-200-expanded.png" alt="Oryginalny zrzut CI przy 200%: kontrolki i minimapa ściśnięte, tekst alertu poniżej dolnej krawędzi"></details><p><a href="./camera-variant-native-recipe.ts">Typowany przepis natywny</a> · <a href="./camera-variant-native.ts">Tymczasowe warianty DOM i niezmienione asercje</a></p></section>
+<script>
+const $=id=>document.getElementById(id);let variant='disclosure';
+function choose(value){variant=value;$('a').classList.toggle('active',value==='disclosure');$('b').classList.toggle('active',value==='toolbox');$('trigger').hidden=value==='toolbox';$('toolbox').hidden=value==='disclosure';$('trigger').setAttribute('aria-expanded','false');$('effect').textContent=value==='disclosure'?'A: Zoom pozostaje stale widoczny. „Widok” otwiera dotychczasowe sterowanie kamerą; Escape zamyka panel i oddaje fokus. Po zamknięciu panel nie zasłania mapy.':'B: pełne sterowanie kamerą jest stale widoczne w osobnym panelu. Brak dodatkowego naciśnięcia, ale część górnej mapy jest stale zasłonięta. Alert i minimapa zachowują własne miejsce.';}
+$('a').onclick=()=>choose('disclosure');$('b').onclick=()=>choose('toolbox');$('trigger').onclick=()=>{$('toolbox').hidden=!$('toolbox').hidden;$('trigger').setAttribute('aria-expanded',String(!$('toolbox').hidden));if(!$('toolbox').hidden)$('view').focus()};$('toolbox').onkeydown=e=>{if(e.key==='Escape'&&variant==='disclosure'){$('toolbox').hidden=true;$('trigger').setAttribute('aria-expanded','false');$('trigger').focus()}};$('view').onchange=()=>{$('pose').hidden=$('view').value!=='oblique'};$('scale').onchange=()=>{$('stage').style.setProperty('--s',$('scale').value)};
+$('language').onchange=()=>{const pl=$('language').value==='pl';$('trigger').textContent=pl?'Widok':'View';$('zoomLabel').textContent=pl?'Powiększenie':'Zoom';$('alert').textContent=pl?'Brak aktywnych alertów':'No active alerts';$('view').options[0].textContent=pl?'Z góry':'Top-down';$('view').options[1].textContent=pl?'Pod kątem':'Angled view';$('toolbox').setAttribute('aria-label',pl?'Sterowanie kamerą':'Camera controls')};
+</script>
+</html>

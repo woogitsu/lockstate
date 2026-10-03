@@ -1,0 +1,17 @@
+{
+  "productionSourceChanged": false,
+  "nativeRun": false,
+  "transientDomOnly": true,
+  "strictTypesExit": 0,
+  "reviewScriptSyntax": "valid, not executed",
+  "originalScreenshotSha256": "c29577e163dbeb1244e263bf3b73c99261693df27c2a1d770f988ee3aa3ca888",
+  "candidates": [
+    "disclosure",
+    "toolbox"
+  ],
+  "newCopy": {
+    "en": "Camera controls",
+    "pl": "Sterowanie kamerą"
+  },
+  "nativeResults": []
+}
