@@ -1,0 +1,20 @@
+{
+  "quarterTurns": 0,
+  "actualBefore": [
+    "object.toilet@22,9:orientation=0"
+  ],
+  "beforePixels": [
+    0,
+    0
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "cell-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      }
+    }
+  ]
+}

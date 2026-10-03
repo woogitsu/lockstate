@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-The existing2×1wooden Bench and1×1Cell Toilet retain all original parts and material graphs; only genuine contacts are added. Their exact source guards, canonical camera exports and dedicated three-case built-browser preparations are integrated on the published branch. This is source integration, not native or production completion.
+The existing2×1wooden Bench and1×1Cell Toilet retain all original parts and material graphs; only genuine contacts are added. Their exact source guards, canonical camera exports and genuine player purchases are integrated. The final combined built-client acceptance is8/8GREEN with exact source and compiled restoration after actual consumer omissions. Full hosted CI and production release remain separate gates.
 
 Real gameplay fixes are integrated for blocked room-anchor action fallback (#2008), physically eligible fixed delivery endpoints (#2009), ownership of a map press after accepted numeric placement (#1908), and square walls on completed template door tiles (#2011). Existing tariffs, ordinary doors, edge wall policy, persistence format and player text remain unchanged. The source gates run on the combined branch:63GREEN/8files, including legal ordinary/pending/adjacent controls and live/V8 room interactions. Each individual source producer-negative proof remains in its original linked research record.
 
@@ -10,10 +10,6 @@ The root's completed15-case Canteen/Washer/Cot/Guard/history/touch proof and exp
 
 ## Next required gates
 
-- Strict native fixture types and the production build.
-- Actual six-case Bench/CellToilet player purchases with exact independent owners, orientations, public camera controls and whole paused Save/Load.
-- Actual default-consumer omissions followed by exact source and compiled restoration, with every original palette crop/minimum and budget unchanged.
-- Genuine advanced numeric purchase with a held map pointer in both actual renderer modes.
 - Exact full hosted CI, mergeability and serial main CI before production release.
 
 Tiny hardware-only native pixel crops and private per-object texture binding are not claimed. This checkpoint preserves the owner's full playable angled-view/full-square/all-template/model priority.
@@ -31,4 +27,12 @@ The next numeric observer2RED confirms the prepared bare-canvas coordinates were
 ## Actual held-primary numeric acceptance
 
 Corrected actual native2/2GREEN(World9.8s,Angled11.5s), zero skipped/flaky/errors. The real pointer stays held while trusted Tab/Enter types20,5 in the public dialog and buys exactly18approved shell orders with q1pendingsequence0; the authoritative workerquote remains20orders/35Brick/2Wood/1530. Closing the modal and releasing the original pointer preserves the ENTIRE worker snapshot and exactly one construction command. No synthetic verdict/command/pointer feed. Actual raw report, snapshots/inputattachments and captures are retained under native/numeric-corrected; frozen compiled423189bf remains unchanged by observer-only commits. Consumer omissions and final integrated pack remain required.
+
+## Final integrated consumer acceptance
+
+The actual frozen5008b18920edce057bd4d21446ddfcac1ac8586e client completes8/8GREEN in277.086s, no skips/flaky/global errors. Both room orientations preserve independently specified completed object owners, the original authored palette crops/minima, genuine decoded model provenance and whole paused Save/Load. World and Angled numeric placement preserve the entire worker snapshot after the originally held map pointer is released, with exactly one accepted construction command.
+
+Removing the actual default Bench/Toilet dispatch and accepted numeric-selection consumer produces4RED/2legalGREEN/2serialSKIP: both missing palettes become0pixels and the two numeric ghosts incorrectly stay armed. The separate q1 run produces2RED/2legalGREEN/0skip, exposing both serial cases. Original test budgets, palette assertions, prices and snapshots remain unchanged; no network retry or observer weakening converts these failures to passes.
+
+The two source files restore byte exactly. The production client index-ClnjsNGm.js (1,932,422 bytes, SHA2562b7891abc62d7e6d12418eec08936f4fa9b1608a8a6cd44192190f464d5a7408) and worker-CI5uwrgr.js (442,115 bytes, SHA2563d2f98b8514d20492636e9e1579109557c39325ae6b37cbc314294172e92f07b) also restore byte exactly. Raw native reports, screenshots and passive input/worker attachments are in native/consumer-negative, native/consumer-q1-negative and native/consumer-restored-eight; the executed inert script, build logs and exact receipts are in [consumer-restoration](native/consumer-restoration/actual-summary.json). This is actual local playable acceptance, not a hosted-CI or deployed-production claim.
 

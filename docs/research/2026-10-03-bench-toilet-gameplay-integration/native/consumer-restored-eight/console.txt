@@ -1,0 +1,39 @@
+node : [2m[WebServer] [22m(node:63856) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At C:\Users\matma\AppData\Local\Temp\lockstate-bench-toilet-numeric-consumer-controls-20261003.ps1:67 char:2
++  node --experimental-transform-types --disable-warning=ExperimentalWa ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 8 tests using 1 worker
+
+(node:50832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\dedicated-cell-toilet-player-build.spec.ts:197:1 › player creates storage and delivery capacity before Basic cell (42.9s)
+  ok 2 tests\browser\dedicated-cell-toilet-player-build.spec.ts:263:3 › player builds Basic cell at quarterTurns0 and retains toilet palettes and anchors after Save/Load (41.7s)
+  ok 3 tests\browser\dedicated-cell-toilet-player-build.spec.ts:263:3 › player builds Basic cell at quarterTurns1 and retains toilet palettes and anchors after Save/Load (42.6s)
+  ok 4 tests\browser\room-template-numeric-held-primary.spec.ts:208:42 › world FullHD: numeric purchase consumes the originally held canvas primary without a second transaction (#1908) (9.7s)
+  ok 5 tests\browser\room-template-numeric-held-primary.spec.ts:208:42 › oblique FullHD: numeric purchase consumes the originally held canvas primary without a second transaction (#1908) (11.7s)
+  ok 6 tests\browser\wooden-bench-player-build.spec.ts:178:1 › player creates storage and delivery capacity before Holding Cell (42.4s)
+  ok 7 tests\browser\wooden-bench-player-build.spec.ts:244:3 › player builds Holding Cell at quarterTurns0 and retains authored timber palette after Save/Load (43.3s)
+  ok 8 tests\browser\wooden-bench-player-build.spec.ts:244:3 › player builds Holding Cell at quarterTurns1 and retains authored timber palette after Save/Load (39.9s)
+
+  8 passed (4.6m)

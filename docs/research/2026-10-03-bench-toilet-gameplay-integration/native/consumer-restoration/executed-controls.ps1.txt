@@ -1,0 +1,76 @@
+$ErrorActionPreference='Stop'
+$env:PATH=(Join-Path $env:TEMP 'lockstate-pnpm-11-22-20261002')+';C:/Users/matma/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin;'+$env:PATH
+$consumerBranch=(git -c core.longpaths=true branch --show-current).Trim()
+$consumerFrozen=(git -c core.longpaths=true rev-parse HEAD).Trim()
+if($consumerBranch -ne 'codex/integrate-bench-gameplay-20261003'){throw 'Unexpected own branch'}
+if((git -c core.longpaths=true status --porcelain).Length -ne 0){throw 'Control requires a clean own tree'}
+$consumerUtf8=[Text.UTF8Encoding]::new($false)
+$consumerFiles=@('src/rendering/assets/oblique-object-mapping.ts','src/ui/hud/room-template-preview.ts')
+$consumerBytes=@{}
+$consumerReceipt=@{frozen=$consumerFrozen;branch=$consumerBranch;before=@{};after=@{};buildBefore=@{};buildAfter=@{};negativeExit=$null;complementExit=$null;restoredExit=$null}
+$ErrorActionPreference='Continue'
+pnpm --config.verify-deps-before-run=false build *> (Join-Path $env:TEMP 'lockstate-bench-toilet-numeric-frozen-build-20261003.txt')
+$consumerBuildExit=$LASTEXITCODE
+$ErrorActionPreference='Stop'
+if($consumerBuildExit -ne 0){throw 'Frozen positive build failed'}
+foreach($consumerFile in $consumerFiles){
+ $consumerBytes[$consumerFile]=[IO.File]::ReadAllBytes((Join-Path $PWD $consumerFile))
+ $consumerReceipt.before[$consumerFile]=(Get-FileHash -LiteralPath $consumerFile -Algorithm SHA256).Hash.ToLower()
+}
+foreach($consumerCompiled in (Get-ChildItem -LiteralPath 'dist/client/assets' -File | Where-Object {$_.Name -match '^(index|worker)-.*\.js$'})){
+ $consumerReceipt.buildBefore[$consumerCompiled.Name]=@{sha256=(Get-FileHash -LiteralPath $consumerCompiled.FullName -Algorithm SHA256).Hash.ToLower();bytes=$consumerCompiled.Length}
+}
+if($consumerReceipt.buildBefore.Count -ne 2){throw 'Missing actual compiled client/worker'}
+git -c core.longpaths=true switch --detach $consumerFrozen
+if($LASTEXITCODE -ne 0){throw 'Detach failed'}
+function Remove-Consumer([string]$consumerFile,[string]$consumerNeedle){
+ $consumerPath=Join-Path $PWD $consumerFile
+ $consumerText=[IO.File]::ReadAllText($consumerPath)
+ if([regex]::Matches($consumerText,[regex]::Escape($consumerNeedle)).Count -ne 1){throw "Nonunique consumer: $consumerFile"}
+ [IO.File]::WriteAllText($consumerPath,$consumerText.Replace($consumerNeedle,''),$consumerUtf8)
+}
+try {
+ Remove-Consumer $consumerFiles[0] "  'object.bench': 'furniture.corridor.bench.variants',"
+ Remove-Consumer $consumerFiles[0] "  'object.toilet': 'fixture.cell.toilet_sink',"
+ Remove-Consumer $consumerFiles[1] '      const owningSelection = tool.revision;'
+ Remove-Consumer $consumerFiles[1] '        if (result.ok && tool.isArmed() && tool.revision === owningSelection) tool.standDown();'
+ $ErrorActionPreference='Continue'
+ pnpm --config.verify-deps-before-run=false build *> (Join-Path $env:TEMP 'lockstate-bench-toilet-numeric-negative-build-20261003.txt')
+ $consumerBuildExit=$LASTEXITCODE
+ $ErrorActionPreference='Stop'
+ if($consumerBuildExit -ne 0){throw 'Negative build failed before native'}
+ $env:PLAYWRIGHT_JSON_OUTPUT_NAME=Join-Path $env:TEMP 'lockstate-bench-toilet-numeric-negative-20261003.json'
+ $ErrorActionPreference='Continue'
+ node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite artifact wooden-bench-player-build.spec.ts dedicated-cell-toilet-player-build.spec.ts room-template-numeric-held-primary.spec.ts --workers=1 --reporter=list,json --output (Join-Path $env:TEMP 'lockstate-bench-toilet-numeric-negative-20261003') *> (Join-Path $env:TEMP 'lockstate-bench-toilet-numeric-negative-20261003.txt')
+ $consumerReceipt.negativeExit=$LASTEXITCODE
+ $env:PLAYWRIGHT_JSON_OUTPUT_NAME=Join-Path $env:TEMP 'lockstate-bench-toilet-complement-negative-20261003.json'
+ node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite artifact wooden-bench-player-build.spec.ts dedicated-cell-toilet-player-build.spec.ts --workers=1 --reporter=list,json --grep 'storage and delivery|quarterTurns1' --output (Join-Path $env:TEMP 'lockstate-bench-toilet-complement-negative-20261003') *> (Join-Path $env:TEMP 'lockstate-bench-toilet-complement-negative-20261003.txt')
+ $consumerReceipt.complementExit=$LASTEXITCODE
+ $ErrorActionPreference='Stop'
+} finally {
+ foreach($consumerFile in $consumerFiles){
+  [IO.File]::WriteAllBytes((Join-Path $PWD $consumerFile),$consumerBytes[$consumerFile])
+  $consumerReceipt.after[$consumerFile]=(Get-FileHash -LiteralPath $consumerFile -Algorithm SHA256).Hash.ToLower()
+  if($consumerReceipt.before[$consumerFile] -ne $consumerReceipt.after[$consumerFile]){throw 'Source byte restoration mismatch'}
+ }
+ $ErrorActionPreference='Continue'
+ pnpm --config.verify-deps-before-run=false build *> (Join-Path $env:TEMP 'lockstate-bench-toilet-numeric-restored-build-20261003.txt')
+ $consumerRestoreBuild=$LASTEXITCODE
+ $ErrorActionPreference='Stop'
+ if($consumerRestoreBuild -ne 0){throw 'Restored build failed'}
+ foreach($consumerCompiled in (Get-ChildItem -LiteralPath 'dist/client/assets' -File | Where-Object {$_.Name -match '^(index|worker)-.*\.js$'})){
+  $consumerReceipt.buildAfter[$consumerCompiled.Name]=@{sha256=(Get-FileHash -LiteralPath $consumerCompiled.FullName -Algorithm SHA256).Hash.ToLower();bytes=$consumerCompiled.Length}
+ }
+ foreach($consumerName in $consumerReceipt.buildBefore.Keys){if($consumerReceipt.buildBefore[$consumerName].sha256 -ne $consumerReceipt.buildAfter[$consumerName].sha256){throw 'Compiled byte restoration mismatch'}}
+ $env:PLAYWRIGHT_JSON_OUTPUT_NAME=Join-Path $env:TEMP 'lockstate-bench-toilet-numeric-restored-eight-20261003.json'
+ $ErrorActionPreference='Continue'
+ node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite artifact wooden-bench-player-build.spec.ts dedicated-cell-toilet-player-build.spec.ts room-template-numeric-held-primary.spec.ts --workers=1 --reporter=list,json --output (Join-Path $env:TEMP 'lockstate-bench-toilet-numeric-restored-eight-20261003') *> (Join-Path $env:TEMP 'lockstate-bench-toilet-numeric-restored-eight-20261003.txt')
+ $consumerReceipt.restoredExit=$LASTEXITCODE
+ $ErrorActionPreference='Stop'
+ [IO.File]::WriteAllText((Join-Path $env:TEMP 'lockstate-bench-toilet-numeric-byte-restoration-20261003.json'),($consumerReceipt|ConvertTo-Json -Depth 7)+"`n",$consumerUtf8)
+ git -c core.longpaths=true switch $consumerBranch
+ if($LASTEXITCODE -ne 0){throw 'Named branch restoration failed'}
+ if((git -c core.longpaths=true status --porcelain).Length -ne 0){throw 'Restored tree is not clean'}
+}
+if($consumerReceipt.negativeExit -ne 1 -or $consumerReceipt.complementExit -ne 1 -or $consumerReceipt.restoredExit -ne 0){throw 'Unexpected actual consumer control exits'}
+$consumerReceipt | ConvertTo-Json -Depth 7 -Compress
