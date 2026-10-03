@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-old-browser-failure-current-audit-20261003
+
+ ❯ tests/unit/catalogue-category-geometry-probe.test.ts (1 test | 1 failed) 27ms
+   × actual catalogue geometry callback measures Category, not earlier View with reused class 26ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  17:47:52
+   Duration  166ms (transform 12ms, setup 0ms, import 21ms, tests 27ms, environment 0ms)
+

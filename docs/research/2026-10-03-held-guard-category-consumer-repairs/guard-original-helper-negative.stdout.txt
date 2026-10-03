@@ -1,0 +1,13 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-old-browser-failure-current-audit-20261003
+
+ ❯ tests/integration/held-guard-square-fixture-probe.test.ts (3 tests | 3 failed) 90ms
+   × actual held-Guard helper owns exactly ten exterior square faces, never Cell interior 23ms
+   × actual helper squares complete, admit a real unhoused occupant and post/release one genuine hired Guard 42ms
+   × a genuine omitted exterior square keeps the actual Cell unzoneable 24ms
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  17:44:58
+   Duration  2.15s (transform 716ms, setup 0ms, import 1.95s, tests 90ms, environment 0ms)
+
