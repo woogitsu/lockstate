@@ -1,0 +1,71 @@
+
+node : [1A[2K[2m[WebServer] [22m(node:55992) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env be
+ing set.
+At line:2 char:381
++ ... 1003.json'; node node_modules/@playwright/test/cli.js test --config t ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([1A[2K[2m[We... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wra
+ngler.json configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 3 tests using 1 worker
+
+[1A[2K(node:35680) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:35680) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K[1/3] tests\browser\laundry-linen-rack\player-build.spec.ts:144:1 › player creates storage and delivery capacity before the paid Laundry rack
+[1A[2K[2/3] tests\browser\laundry-linen-rack\player-build.spec.ts:208:3 › player builds Laundry q0, independently buys linen rack and retains whole V9 after Save/Load
+[1A[2K  1) tests\browser\laundry-linen-rack\player-build.spec.ts:208:3 › player builds Laundry q0, independently buys linen rack and retains whole V9 after Save/Load 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 0[39m
+    [31m+ Received  + 1[39m
+
+    [2m  Array [[22m
+    [2m    Object {[22m
+    [2m      "itemId": "item.wood-plank",[22m
+    [31m+     "orderId": "order-1b301bd6-25c7-4035-a41c-62a4ad0017fe",[39m
+    [2m      "quantity": 1,[22m
+    [2m      "type": "PurchaseMaterials",[22m
+    [2m    },[22m
+    [2m  ][22m
+
+      147 |     if (typeof paidOrderId !== 'string' || paidOrderId.length === 0) throw new Error('sole public rack purchase has no real owner UUID');
+      148 |     expect(bought).toEqual([{ type: 'PlaceObject', orderId: paidOrderId, definitionId: 'storage-rack-wooden', x: slot.x, y: slot.y }]);
+    > 149 |     expect((await sentCommands(page)).filter(command => command.type === 'PurchaseMaterials')).toEqual([
+          |                                                                                                ^
+      150 |       { type: 'PurchaseMaterials', itemId: 'item.wood-plank', quantity: 1 },
+      151 |     ]);
+      152 |     await page.getByRole('button', { name: 'Fast forward', exact: true }).click();
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\laundry-linen-rack\player-build.spec.ts:149:96
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-modern-laundry-cycles-native-20261003\player-build-player-builds-0437f-ns-whole-V9-after-Save-Load\error-context.md
+
+
+[1A[2K[3/3] tests\browser\laundry-linen-rack\player-build.spec.ts:208:3 › player builds Laundry q1, independently buys linen rack and retains whole V9 after Save/Load
+[1A[2K  1 failed
+    tests\browser\laundry-linen-rack\player-build.spec.ts:208:3 › player builds Laundry q0, independently buys linen rack and retains whole V9 after Save/Load 
+  1 did not run
+  1 passed (1.3m)

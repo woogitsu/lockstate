@@ -1,0 +1,75 @@
+[
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-laundry-cycles-native-20261003.json",
+    "archived": "original-modern/report.json",
+    "sourceBytes": 10868,
+    "sourceSha256": "2443a6b86f6e9b76324bfa45e959d502c66ba618c0fb5ed35d09e6457c2c91e2",
+    "archivedBytes": 10868,
+    "archivedSha256": "2443a6b86f6e9b76324bfa45e959d502c66ba618c0fb5ed35d09e6457c2c91e2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-laundry-cycles-native-20261003.txt",
+    "archived": "original-modern/console.txt",
+    "sourceBytes": 8226,
+    "sourceSha256": "a2386e9b55857c5b387fe6e511139e6bc85a2a6a459de38889f7753d9cd52891",
+    "archivedBytes": 4125,
+    "archivedSha256": "d0d93a7e7f1198ac3ecdb57c4e8e2935e1564bcea694873396a2367c4317f94a",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-laundry-cycles-native-20261003\\.last-run.json",
+    "archived": "original-modern/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "ea0259e0bbd7a4bed82b02e0293fffa39d8a45cc14e63a7b8b279928baa589f9",
+    "archivedBytes": 96,
+    "archivedSha256": "ea0259e0bbd7a4bed82b02e0293fffa39d8a45cc14e63a7b8b279928baa589f9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-laundry-cycles-native-20261003\\player-build-player-builds-0437f-ns-whole-V9-after-Save-Load\\capacity-whole-V9-paused.json",
+    "archived": "original-modern/002-capacity-whole-V9-paused.json",
+    "sourceBytes": 56664,
+    "sourceSha256": "7d56f7d3973aec7cd604b38b328d578b3e29cd0757efe35ecf47f3a8705507db",
+    "archivedBytes": 56664,
+    "archivedSha256": "7d56f7d3973aec7cd604b38b328d578b3e29cd0757efe35ecf47f3a8705507db"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-laundry-cycles-native-20261003\\player-build-player-builds-0437f-ns-whole-V9-after-Save-Load\\completed-Laundry-before-rack.json",
+    "archived": "original-modern/003-completed-Laundry-before-rack.json",
+    "sourceBytes": 79365,
+    "sourceSha256": "7fbe10f81696bfcf84b77003ec143c63a28e4e46bbefccb85e14f00e482e5521",
+    "archivedBytes": 79365,
+    "archivedSha256": "7fbe10f81696bfcf84b77003ec143c63a28e4e46bbefccb85e14f00e482e5521"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-laundry-cycles-native-20261003\\player-build-player-builds-0437f-ns-whole-V9-after-Save-Load\\error-context.md",
+    "archived": "original-modern/004-error-context.md",
+    "sourceBytes": 15792,
+    "sourceSha256": "2ef02e88fdfd171a057691f10d8986791b2082d6f13d4207caae36a2ad6aa937",
+    "archivedBytes": 15792,
+    "archivedSha256": "2ef02e88fdfd171a057691f10d8986791b2082d6f13d4207caae36a2ad6aa937"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-laundry-cycles-native-20261003\\player-build-player-builds-0437f-ns-whole-V9-after-Save-Load\\failed-actual-network.json",
+    "archived": "original-modern/005-failed-actual-network.json",
+    "sourceBytes": 533,
+    "sourceSha256": "4800d8d08ddd946096574a8408360d059d1b43031e934e20599685d085d15130",
+    "archivedBytes": 533,
+    "archivedSha256": "4800d8d08ddd946096574a8408360d059d1b43031e934e20599685d085d15130"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-laundry-cycles-native-20261003\\player-build-player-builds-0437f-ns-whole-V9-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "original-modern/006-failed-player-fullhd.png",
+    "sourceBytes": 1659944,
+    "sourceSha256": "8e848dece6685343624faeca22b1bdb5f03fb73709e897cd003275411dd9c937",
+    "archivedBytes": 1659944,
+    "archivedSha256": "8e848dece6685343624faeca22b1bdb5f03fb73709e897cd003275411dd9c937"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-laundry-cycles-native-20261003\\player-build-player-builds-0437f-ns-whole-V9-after-Save-Load\\failed-whole-worker-snapshot.json",
+    "archived": "original-modern/007-failed-whole-worker-snapshot.json",
+    "sourceBytes": 80255,
+    "sourceSha256": "b02e6c2d9ab07a909534921175e236868c257780a4dc3954783cf169b45d62f9",
+    "archivedBytes": 80255,
+    "archivedSha256": "b02e6c2d9ab07a909534921175e236868c257780a4dc3954783cf169b45d62f9"
+  }
+]

@@ -216,7 +216,7 @@ test(`player builds the existing bed in a Basic cell q${quarterTurns} and keeps 
     assetId: string; sourceSha256: string; frames: { image: string; sha256: string }[];
   } | undefined;
   expect(descriptor).toMatchObject({ assetId: 'furniture.cell.cot.single',
-    sourceSha256: 'ca8ed38a7250dd941b542a93b6e371ccdd692f6a0829d3646401d53d43a561ef' });
+    sourceSha256: '1e3710b77601d6864f1de30d7b37a6220357320ae832354d3920b9fa95b17eba' });
   expect(descriptor?.frames).toContainEqual(expect.objectContaining({ image: HEADBOARD_FRAME.url, sha256: HEADBOARD_FRAME.sha256 }));
   expect(await workerSnapshot(page), 'read-only camera buttons leave the whole paused worker unchanged').toEqual(pausedAfter);
   await page.screenshot({ path: info.outputPath('cell-cot-headboard-pending-calibration-fullhd.png') });

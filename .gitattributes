@@ -70,3 +70,7 @@ docs/research/2026-10-03-camera-a-scale-fit/native/**/*.zip filter=lfs diff=lfs 
 docs/research/2026-10-03-approved-individual-object-rotate/native/** -text
 docs/research/2026-10-03-approved-individual-object-rotate/native/**/*.png filter=lfs diff=lfs merge=lfs -text
 docs/research/2026-10-03-approved-individual-object-rotate/native/**/*.zip filter=lfs diff=lfs merge=lfs -text
+
+docs/research/2026-10-03-laundry-retained-cycles-production/native/** -text
+docs/research/2026-10-03-laundry-retained-cycles-production/native/**/*.png filter=lfs diff=lfs merge=lfs -text
+docs/research/2026-10-03-laundry-retained-cycles-production/native/**/*.zip filter=lfs diff=lfs merge=lfs -text

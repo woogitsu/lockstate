@@ -1,0 +1,16 @@
+[
+  {
+    "url": "http://127.0.0.1:5375/assets/worker-WcGkBU2M.js",
+    "path": "/assets/worker-WcGkBU2M.js",
+    "status": 200,
+    "sha256": "89e135f6d8a1de2f903ae33bbcbe88a7d32ba1519c0c8ba03df46371b13d6105",
+    "bytes": 444899
+  },
+  {
+    "url": "http://127.0.0.1:5375/game-content/oblique-furniture-laundry-linen-rack.v1.json",
+    "path": "/game-content/oblique-furniture-laundry-linen-rack.v1.json",
+    "status": 200,
+    "sha256": "53b3b43b52c56cd984561ec2574f78a0143ee46ed635d483a5de4ae61ffeafd9",
+    "bytes": 19669
+  }
+]

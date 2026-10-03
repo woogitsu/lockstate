@@ -146,8 +146,12 @@ for (const turns of [0, 1] as const) {
     expect(paidOrderId).toEqual(expect.any(String));
     if (typeof paidOrderId !== 'string' || paidOrderId.length === 0) throw new Error('sole public rack purchase has no real owner UUID');
     expect(bought).toEqual([{ type: 'PlaceObject', orderId: paidOrderId, definitionId: 'storage-rack-wooden', x: slot.x, y: slot.y }]);
-    expect((await sentCommands(page)).filter(command => command.type === 'PurchaseMaterials')).toEqual([
-      { type: 'PurchaseMaterials', itemId: 'item.wood-plank', quantity: 1 },
+    const materialPurchases = (await sentCommands(page)).filter(command => command.type === 'PurchaseMaterials');
+    const materialOrderId = materialPurchases[0]?.orderId;
+    expect(materialOrderId).toMatch(/^order-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+    expect(materialOrderId).not.toBe(paidOrderId);
+    expect(materialPurchases).toEqual([
+      { type: 'PurchaseMaterials', orderId: materialOrderId, itemId: 'item.wood-plank', quantity: 1 },
     ]);
     await page.getByRole('button', { name: 'Fast forward', exact: true }).click();
     await page.getByRole('button', { name: 'Fast forward', exact: true }).click();

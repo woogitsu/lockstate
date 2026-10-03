@@ -12,3 +12,19 @@ Actual pinned command: Blender5.2.1 --background --factory-startup --threads1 --
 Actual saved-source contact, dedicated dispatch, valid SHA/CRC PNG border, historical descriptor, registry omission and context omission controls each RED ? exact restore GREEN. All232 protected files restored byte exact. Four genuine canonical repeats byte exact, total4.9987663seconds. Final19 tests passed, one optional generic Blender-on-PATH skipped; actual pinned Blender source/render/control/repeats ran GREEN. Both strict source and tooling types exit0.
 
 Root authorized only source/descriptor/frame literal pins in existing Laundry native art fixture and its unit source literal. Existing public actions/helpers, network/Blob decode, exact washer/paid-rack owners/cost, V9 SaveLoad,60s/expect10/w1/r0 and all pixel thresholds unchanged. Actual native screenshots and in-game aesthetic acceptance remain pending root. [Exact handoff](./INTEGRATION_HANDOFF.md).
+
+## First actual combined-game run retained
+
+The real c28 Cloudflare client run reached **1 GREEN / 1 RED / 1 not run**,
+78.086s, original60s/expect10s/worker1/retries0. Capacity preparation passed;
+q0 reached the genuine separate material purchase and failed because the
+observer omitted its required public `orderId` from an exact command object.
+The actual command carried a genuine UUID. This did not establish completed
+rack appearance or whole Save/Load; q1 was not reached after the serial failure.
+[Original raw report and captures](./native/original-modern/report.json) remain.
+
+The source observer now requires that actual UUID4 orderId, distinct from the
+separate rack order, and the same exact one-plank command. It preserves every
+other owner, cost, action, full-state and material guard. This is a correction
+of the observer, not a native GREEN result. A new actual integrated run remains
+required after V10 and the current model integration.

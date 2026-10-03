@@ -1,0 +1,215 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\laundry-linen-rack\\native.audit.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/tests/browser/laundry-linen-rack",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "json"
+      ],
+      [
+        "line"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-modern-laundry-cycles-native-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/tests/browser/laundry-linen-rack",
+        "testIgnore": [],
+        "testMatch": [
+          "/player-build\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5375 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5375/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "player-build.spec.ts",
+      "file": "player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before the paid Laundry rack",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 41600,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T21:25:03.351Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7bd4f5f52098f6b7e11f-c34bf4380e584648208c",
+          "file": "player-build.spec.ts",
+          "line": 144,
+          "column": 1
+        },
+        {
+          "title": "player builds Laundry q0, independently buys linen rack and retains whole V9 after Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 33294,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 0\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[2m      \"itemId\": \"item.wood-plank\",\u001b[22m\n\u001b[31m+     \"orderId\": \"order-1b301bd6-25c7-4035-a41c-62a4ad0017fe\",\u001b[39m\n\u001b[2m      \"quantity\": 1,\u001b[22m\n\u001b[2m      \"type\": \"PurchaseMaterials\",\u001b[22m\n\u001b[2m    },\u001b[22m\n\u001b[2m  ]\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 0\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[2m      \"itemId\": \"item.wood-plank\",\u001b[22m\n\u001b[31m+     \"orderId\": \"order-1b301bd6-25c7-4035-a41c-62a4ad0017fe\",\u001b[39m\n\u001b[2m      \"quantity\": 1,\u001b[22m\n\u001b[2m      \"type\": \"PurchaseMaterials\",\u001b[22m\n\u001b[2m    },\u001b[22m\n\u001b[2m  ]\u001b[22m\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\laundry-linen-rack\\player-build.spec.ts:149:96",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\laundry-linen-rack\\player-build.spec.ts",
+                      "column": 96,
+                      "line": 149
+                    },
+                    "snippet": "  147 |     if (typeof paidOrderId !== 'string' || paidOrderId.length === 0) throw new Error('sole public rack purchase has no real owner UUID');\n  148 |     expect(bought).toEqual([{ type: 'PlaceObject', orderId: paidOrderId, definitionId: 'storage-rack-wooden', x: slot.x, y: slot.y }]);\n> 149 |     expect((await sentCommands(page)).filter(command => command.type === 'PurchaseMaterials')).toEqual([\n      |                                                                                                ^\n  150 |       { type: 'PurchaseMaterials', itemId: 'item.wood-plank', quantity: 1 },\n  151 |     ]);\n  152 |     await page.getByRole('button', { name: 'Fast forward', exact: true }).click();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\laundry-linen-rack\\player-build.spec.ts",
+                        "column": 96,
+                        "line": 149
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 0\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[2m      \"itemId\": \"item.wood-plank\",\u001b[22m\n\u001b[31m+     \"orderId\": \"order-1b301bd6-25c7-4035-a41c-62a4ad0017fe\",\u001b[39m\n\u001b[2m      \"quantity\": 1,\u001b[22m\n\u001b[2m      \"type\": \"PurchaseMaterials\",\u001b[22m\n\u001b[2m    },\u001b[22m\n\u001b[2m  ]\u001b[22m\n\n  147 |     if (typeof paidOrderId !== 'string' || paidOrderId.length === 0) throw new Error('sole public rack purchase has no real owner UUID');\n  148 |     expect(bought).toEqual([{ type: 'PlaceObject', orderId: paidOrderId, definitionId: 'storage-rack-wooden', x: slot.x, y: slot.y }]);\n> 149 |     expect((await sentCommands(page)).filter(command => command.type === 'PurchaseMaterials')).toEqual([\n      |                                                                                                ^\n  150 |       { type: 'PurchaseMaterials', itemId: 'item.wood-plank', quantity: 1 },\n  151 |     ]);\n  152 |     await page.getByRole('button', { name: 'Fast forward', exact: true }).click();\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\laundry-linen-rack\\player-build.spec.ts:149:96"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T21:25:45.016Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-laundry-cycles-native-20261003\\player-build-player-builds-0437f-ns-whole-V9-after-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\laundry-linen-rack\\player-build.spec.ts",
+                    "column": 96,
+                    "line": 149
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "7bd4f5f52098f6b7e11f-e6900621033a89231959",
+          "file": "player-build.spec.ts",
+          "line": 208,
+          "column": 3
+        },
+        {
+          "title": "player builds Laundry q1, independently buys linen rack and retains whole V9 after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T21:26:18.361Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "7bd4f5f52098f6b7e11f-5efb2e894aa6d1175272",
+          "file": "player-build.spec.ts",
+          "line": 208,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T21:25:00.539Z",
+    "duration": 78085.948,
+    "expected": 1,
+    "skipped": 1,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

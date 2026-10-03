@@ -5,8 +5,8 @@ import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore
 import type { BuildOrder } from '../../src/simulation/construction/build-order';
 
 export const HEADBOARD_FRAME = {
-  url: '/assets/environment/oblique/furniture.cell.cot.single-yaw+60-elev40.a1ad40038e9e.png',
-  sha256: 'a1ad40038e9ea5a0f8710fbc8ac3cca8c1ae513eaabc28aa2dfada4a4405dbb1',
+  url: '/assets/environment/oblique/furniture.cell.cot.single-yaw+60-elev40.9940cac80b9b.png',
+  sha256: '9940cac80b9b6b16a4e0bde165308b4475b0d319436a6fc94bee2996b9a90e8b',
 };
 
 interface LoadedImage {
