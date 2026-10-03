@@ -1,0 +1,13 @@
+## Registered-source reproduction; native acceptance pending
+
+At original source 79c00d238469e96902323caab418f66208e9d345, WorldScene input handlers complete a held left-button construction gesture when the middle mouse button is released. Actual Phaser Pointer.down/up leaves primaryDown=true and buttons=1; actual InputPlugin.processUpEvents nevertheless emits pointerup/pointerupoutside for this non-owning button. World finishPointer checked only the shared pointer ID.
+
+Actual BuildTool/ObjectTool reports pass through the unchanged main command producer bodies, SimulationCommandSender and initialized SimulationWorkerStateMachine. They submit PlaceBuildOrder (whole square 11,11) or PlaceObject (Bed 11,11) before left release. Actual RoomTool also completes its rectangle prematurely. **Rooms HUD requires explicit confirmation: this does not automatically transmit ZoneRoom in the game.** The first diagnostic directly connected the room report to the main ZoneRoom adapter and overstated that boundary; its raw historical evidence is retained, and the corrected test observes the room report without bypassing confirmation.
+
+Sequence: arm a tool; left down/buttons1; move; middle down/buttons5; move; middle up/buttons1. Expected: retain construction until actual owning left release; finish only the middle camera pan. Corrected exact-source suite: original 6 RED /24 legal controls GREEN; scoped finishPointer fix 30 GREEN. Both World inside/outside routes fail across all three tools. Angled equivalents, genuine camera-only pan, fresh left completion, Escape/blur cancellation, single touch and second-touch cancellation are controls.
+
+The unique actual production guard was mutated to unconditional commit: 6 RED /24 GREEN. Finally byte-exact restored source: 30 GREEN. Focused neighbors 131/131, strict types and production build pass. These are registered-source checks with actual engine Camera, Pointer and release-dispatch body; no native browser was launched.
+
+Prepared tests/browser/world-construction-chord-release.spec.ts contains three native World FullHD 1920x1080 UI100% cases, with trusted mouse chord receipts and independent public minimap ground coordinates. Wall/Bed assert no early worker command and exact commands on final left release. Yard asserts no premature confirmation, then explicit confirmation before exactly one ZoneRoom. Native acceptance remains queued with ROOT; UI200% is outside this fixture.
+
+Fresh dedup read full #1950, #1907 and #516 plus retained all-state searches: other consumers/causes. Evidence: docs/research/2026-10-03-camera-build-gesture-audit/. Only WorldScene.finishPointer production source changed; no protocol/save/copy/layout changes.

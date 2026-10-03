@@ -1,0 +1,23 @@
+{
+  "runs": [
+    {
+      "name": "original-correct-room-boundary-6red-24controls",
+      "exitCode": 1
+    },
+    {
+      "name": "fixed-correct-room-boundary-30green",
+      "exitCode": 0
+    },
+    {
+      "name": "primary-release-producer-negative",
+      "exitCode": 1
+    },
+    {
+      "name": "final-exact-restored-30green",
+      "exitCode": 0
+    }
+  ],
+  "exactRestored": true,
+  "source": "src/rendering/scene/world-scene.ts",
+  "SHA256": "13b43f356fb2398c7d9fd33e3d8d5b38a2ade0a9d526833a5dde9d159f98ec15"
+}
