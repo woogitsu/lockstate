@@ -1,0 +1,4 @@
+Listing tests:
+  oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw0
+  oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw180
+Total: 2 tests in 1 file
