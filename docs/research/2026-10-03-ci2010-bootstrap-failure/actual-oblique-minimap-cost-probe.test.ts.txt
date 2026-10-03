@@ -1,0 +1,51 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+import { performance } from 'node:perf_hooks';
+import { expect, it, vi } from 'vitest';
+import { ObliqueWorldScene } from '../../src/rendering/scene/oblique-world-scene';
+import { WorldRenderView } from '../../src/rendering/world/world-view';
+import { projectMinimap } from '../../src/rendering/world/minimap-projection';
+import type { RenderFrame } from '../../src/rendering/feed/render-feed';
+import type { MinimapView } from '../../src/shared/minimap-view';
+
+// Only GPU construction is stubbed: the production minimap publishing method,
+// actual hosted immutable world and projection/viewport math execute unchanged.
+vi.mock('phaser', () => ({ default: { Scene: class {} } }));
+it('measures unchanged actual hosted world across repeated minimap publications', () => {
+  const record = 'docs/research/2026-10-03-ci2010-bootstrap-failure';
+  const reply = JSON.parse(readFileSync(`${record}/actual-failed-dock-worker-snapshot.json`, 'utf8'));
+  const world = WorldRenderView.fromSnapshot(reply.payload.snapshot.data.world);
+  const frame: RenderFrame = { revision: 1, world, structures: [], actors: [], rooms: [], roomConditions: [] };
+  const reads = vi.spyOn(world, 'readTile');
+  const actual = new ObliqueWorldScene({ feed: { readFrame: () => frame },
+    keyValueStore: { getItem: () => null, setItem: () => undefined } });
+  Reflect.set(actual, 'lastFrame', frame);
+  Reflect.set(actual, 'pose', { target: { x: 16 * 64, y: 16 * 64 },
+    viewport: { width: 1920, height: 1080 }, zoom: 1.25,
+    yawRadians: -Math.PI / 4, elevationRadians: Math.PI / 4 });
+  const publications: MinimapView[] = [];
+  Reflect.set(actual, 'minimapSink', (view: MinimapView) => publications.push(view));
+  const publish = Reflect.get(actual, 'publishMinimap').bind(actual) as () => void;
+  const start = performance.now();
+  for (let frame = 0; frame < 120; frame++) publish();
+  const elapsedMs = performance.now() - start;
+  const actualReads = reads.mock.calls.length;
+  const identities = new Set(publications.map(view => view.pixels));
+  expect(publications).toHaveLength(120);
+  expect(identities.size).toBe(120);
+  expect(publications.every(view => Buffer.from(view.pixels).equals(Buffer.from(publications[0]!.pixels)))).toBe(true);
+  // Compare the already-existing WorldScene projection reuse rule, with the
+  // same actual source projection and no production edit or guessed pixels.
+  reads.mockClear();
+  const cachedStart = performance.now();
+  const projected = projectMinimap(world)!;
+  for (let frame = 0; frame < 119; frame++) expect(projected.pixels).toBe(projected.pixels);
+  const oneProjectionMs = performance.now() - cachedStart;
+  const hypotheticalHudFillRects = publications.reduce((sum, view) => sum + view.width * view.height, 0);
+  writeFileSync(`${record}/actual-oblique-minimap-cost.json`, JSON.stringify({
+    frames: 120, unchangedWorld: true, actualTileReads: actualReads,
+    actualPixelBufferIdentities: identities.size, elapsedMs,
+    projectionReuseTileReads: reads.mock.calls.length, oneProjectionMs,
+    hudIdentityGuardWouldRepaint: identities.size, hypotheticalHudFillRects,
+    measurementBoundary: 'real scene publisher and world; no GPU or DOM execution; native elapsed attribution unproved',
+  }, null, 2) + '\n');
+});

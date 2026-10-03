@@ -1,0 +1,512 @@
+{
+  "catalogModels": 64,
+  "obliquePngRequests": 84,
+  "uniqueObliquePngUrls": 84,
+  "requests": [
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.yard.exercise-station-yaw+300-elev40.96bf089124af.png",
+      "status": 200,
+      "time": 7.336,
+      "bodySize": 10802
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+300-elev40.d3f2d1b9659c.png",
+      "status": 200,
+      "time": 6.554,
+      "bodySize": 11301
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.classroom.school-chair-yaw+300-elev40.4edfe021a867.png",
+      "status": 200,
+      "time": 6.272,
+      "bodySize": 6619
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.cell.cot.single-yaw+300-elev40.faccdd4d94af.png",
+      "status": 200,
+      "time": 4.743,
+      "bodySize": 7706
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.storage-room.timber-rack-yaw+300-elev40.13d9fadda21f.png",
+      "status": 200,
+      "time": 2.8790000000000004,
+      "bodySize": 8256
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/wall-module-full-yaw-45-elev45.d11380f7c0ac.png",
+      "status": 200,
+      "time": 2.633,
+      "bodySize": 21750
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/wall-module-west-full-yaw-45-elev45.961310abe678.png",
+      "status": 200,
+      "time": 5.636,
+      "bodySize": 22376
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/wall-module-cutaway-yaw-45-elev45.e9397ac4b9d6.png",
+      "status": 200,
+      "time": 5.681,
+      "bodySize": 13344
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/wall-module-west-cutaway-yaw-45-elev45.d98fa663476f.png",
+      "status": 200,
+      "time": 5.813000000000001,
+      "bodySize": 13822
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/cell-bed-yaw-45-elev45.74095e5922cd.png",
+      "status": 200,
+      "time": 6.0280000000000005,
+      "bodySize": 26244
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/cell-door-open-yaw-45-elev45.40921f961341.png",
+      "status": 200,
+      "time": 6.51,
+      "bodySize": 19909
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/cell-door-north-cutaway-yaw-45-elev45.03ababd95b12.png",
+      "status": 200,
+      "time": 6.518,
+      "bodySize": 11196
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/cell-door-west-full-yaw-45-elev45.ec435cdad35d.png",
+      "status": 200,
+      "time": 6.845000000000001,
+      "bodySize": 21709
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/cell-door-west-cutaway-yaw-45-elev45.6109b4c8f99c.png",
+      "status": 200,
+      "time": 7.1129999999999995,
+      "bodySize": 11439
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/cell-toilet-yaw-45-elev40.f315c0e4faac.png",
+      "status": 200,
+      "time": 7.221,
+      "bodySize": 14261
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.storage.rack.wooden-yaw+300-elev40.8846d69e2316.png",
+      "status": 200,
+      "time": 7.561999999999999,
+      "bodySize": 10405
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.chair.wooden-yaw+300-elev40.2f3d110ea54c.png",
+      "status": 200,
+      "time": 7.59,
+      "bodySize": 7831
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/floor-cell-yaw-45-elev45.f362fceb7be3.png",
+      "status": 200,
+      "time": 7.3629999999999995,
+      "bodySize": 8724
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/floor-corridor-yaw-45-elev45.c0ef65857ded.png",
+      "status": 200,
+      "time": 9.803,
+      "bodySize": 6129
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/floor-canteen-yaw-45-elev45.b8bf710d732d.png",
+      "status": 200,
+      "time": 9.8,
+      "bodySize": 6130
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/actor-prisoner-yaw-45-elev45.2ecf5465679a.png",
+      "status": 200,
+      "time": 9.838000000000001,
+      "bodySize": 14616
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/actor-guard-yaw-45-elev45.c7352a388ac2.png",
+      "status": 200,
+      "time": 9.836,
+      "bodySize": 9501
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/actor-cook-yaw-45-elev45.16b8abd3656c.png",
+      "status": 200,
+      "time": 9.771,
+      "bodySize": 10814
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/actor-medic-yaw-45-elev45.3c68840d1fbf.png",
+      "status": 200,
+      "time": 10.097000000000001,
+      "bodySize": 11134
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/actor-staff-yaw-45-elev45.bb8d15f97f7d.png",
+      "status": 200,
+      "time": 2.219,
+      "bodySize": 10273
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/wall-corner-north-west-full-yaw-45-elev45.f871ecb6f11f.png",
+      "status": 200,
+      "time": 4.326,
+      "bodySize": 18245
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/wall-corner-north-west-cutaway-yaw-45-elev45.46222ac72e32.png",
+      "status": 200,
+      "time": 4.417,
+      "bodySize": 11337
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/floor-shower-yaw-45-elev45.421ea8f74f06.png",
+      "status": 200,
+      "time": 4.476,
+      "bodySize": 6762
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/fixture.shower.head-yaw+300-elev40.84bd56fcf5f1.png",
+      "status": 200,
+      "time": 4.541,
+      "bodySize": 6000
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/shower-privacy-door-full-yaw-45-elev45.18b909749016.png",
+      "status": 200,
+      "time": 4.585,
+      "bodySize": 17562
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/shower-privacy-door-cutaway-yaw-45-elev45.e992058304fe.png",
+      "status": 200,
+      "time": 6.962,
+      "bodySize": 11417
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/floor-terrain-dirt-yaw-45-elev45.40d4eca89db2.png",
+      "status": 200,
+      "time": 6.266,
+      "bodySize": 7940
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/floor-terrain-grass-yaw-45-elev45.751dcd28f827.png",
+      "status": 200,
+      "time": 2.276,
+      "bodySize": 7618
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/floor-dirt-grass-edge-north-yaw-45-elev45.a681371bbea0.png",
+      "status": 200,
+      "time": 11.716,
+      "bodySize": 2868
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/floor-dirt-grass-edge-east-yaw-45-elev45.b4392b01567c.png",
+      "status": 200,
+      "time": 9.030000000000001,
+      "bodySize": 2904
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/floor-dirt-grass-edge-south-yaw-45-elev45.c07bdc4b76ab.png",
+      "status": 200,
+      "time": 11.074,
+      "bodySize": 2760
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/floor-dirt-grass-edge-west-yaw-45-elev45.a2ec33364338.png",
+      "status": 200,
+      "time": 10.548,
+      "bodySize": 3009
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/wall-corner-north-east-full-yaw-45-elev45.0d98bdcab1df.png",
+      "status": 200,
+      "time": 10.346,
+      "bodySize": 30402
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/wall-corner-north-east-cutaway-yaw-45-elev45.307a1fd32c82.png",
+      "status": 200,
+      "time": 3.445,
+      "bodySize": 16454
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/wall-corner-south-east-full-yaw-45-elev45.e9f94d81d85a.png",
+      "status": 200,
+      "time": 7.93,
+      "bodySize": 27213
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/wall-corner-south-east-cutaway-yaw-45-elev45.06bf1b3a0d8a.png",
+      "status": 200,
+      "time": 8.052,
+      "bodySize": 16926
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/wall-junction-t-west-full-yaw-45-elev45.c5e0ff6eca9d.png",
+      "status": 200,
+      "time": 8.359,
+      "bodySize": 34240
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/wall-junction-t-west-cutaway-yaw-45-elev45.13f7928a8d50.png",
+      "status": 200,
+      "time": 9.524999999999999,
+      "bodySize": 19908
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/square-brick-full-wall-yaw-045-elev45.b17091c17260.png",
+      "status": 200,
+      "time": 9.838999999999999,
+      "bodySize": 9218
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/square-brick-low-wall-yaw-045-elev45.1f712df62e5e.png",
+      "status": 200,
+      "time": 5.521,
+      "bodySize": 7062
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.dining.table.wooden-yaw+300-elev40.88831c70a40d.png",
+      "status": 200,
+      "time": 9.4,
+      "bodySize": 17467
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev40.bc9186a5257c.png",
+      "status": 200,
+      "time": 9.628,
+      "bodySize": 8489
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/floor-reception-yaw-45-elev45.6dcaf6e6b44b.png",
+      "status": 200,
+      "time": 10.095,
+      "bodySize": 6343
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+300-elev40.09dee978bfed.png",
+      "status": 200,
+      "time": 10.679,
+      "bodySize": 10008
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev40.bd2db1e50007.png",
+      "status": 200,
+      "time": 10.857,
+      "bodySize": 11674
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev40.717733ee6861.png",
+      "status": 200,
+      "time": 10.003,
+      "bodySize": 3243
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/utility.security-console.variants-yaw+300-elev40.9efe0d30115d.png",
+      "status": 200,
+      "time": 8.656,
+      "bodySize": 5480
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/utility.loading-dock-door.variants-yaw+300-elev40.142e26025b0b.png",
+      "status": 200,
+      "time": 8.957,
+      "bodySize": 7584
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/utility.utility-panel.variants-yaw+300-elev40.b7048d770cd1.png",
+      "status": 200,
+      "time": 9.215,
+      "bodySize": 4792
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev40.ec72ac7ae01d.png",
+      "status": 200,
+      "time": 9.567,
+      "bodySize": 11946
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev40.b8b57a8d367e.png",
+      "status": 200,
+      "time": 9.823,
+      "bodySize": 11961
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev40.daa34902b620.png",
+      "status": 200,
+      "time": 10.129,
+      "bodySize": 11446
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+300-elev40.09bfb9c9da1a.png",
+      "status": 200,
+      "time": 7.583,
+      "bodySize": 6240
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/utility.washing-machine.variants-yaw+300-elev40.b285c8f9ed0a.png",
+      "status": 200,
+      "time": 9.582,
+      "bodySize": 9710
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/fixture.cell.waste-bin-yaw+300-elev40.9cf00229dd97.png",
+      "status": 200,
+      "time": 9.384,
+      "bodySize": 4547
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.office.desk.generic-yaw+300-elev40.4b149587d26e.png",
+      "status": 200,
+      "time": 9.532,
+      "bodySize": 6829
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/fixture.cell.sink.handwash-yaw+300-elev40.9a0b41e7cdc2.png",
+      "status": 200,
+      "time": 12.844,
+      "bodySize": 4765
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.yard.steel-bench-yaw+300-elev40.5e4ce93fa297.png",
+      "status": 200,
+      "time": 13.08,
+      "bodySize": 12445
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/fixture.yard.steel-waste-bin-yaw+300-elev40.963e6e5c1242.png",
+      "status": 200,
+      "time": 12.552,
+      "bodySize": 7144
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.cell.cot.single-yaw+30-elev40.c411cffdd2e9.png",
+      "status": 200,
+      "time": 4.925,
+      "bodySize": 7800
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev40.d3887ff2b88d.png",
+      "status": 200,
+      "time": 3.415,
+      "bodySize": 7872
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev40.f5feda43b396.png",
+      "status": 200,
+      "time": 2.0330000000000004,
+      "bodySize": 12041
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.chair.wooden-yaw+30-elev40.d2ecb91c5287.png",
+      "status": 200,
+      "time": 3.351,
+      "bodySize": 7906
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.office.desk.generic-yaw+30-elev40.d897abb62c60.png",
+      "status": 200,
+      "time": 3.531,
+      "bodySize": 6394
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.dining.table.wooden-yaw+30-elev40.9b324d6785ec.png",
+      "status": 200,
+      "time": 5.509,
+      "bodySize": 14583
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.yard.exercise-station-yaw+30-elev40.0223005b8d32.png",
+      "status": 200,
+      "time": 8.619,
+      "bodySize": 11308
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+30-elev40.e8c155f69b7c.png",
+      "status": 200,
+      "time": 7.78,
+      "bodySize": 6599
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev40.192df82e8bc9.png",
+      "status": 200,
+      "time": 7.817,
+      "bodySize": 11123
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.7367240351bc.png",
+      "status": 200,
+      "time": 18.402,
+      "bodySize": 11557
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/utility.loading-dock-door.variants-yaw+30-elev40.6a60277bf1c9.png",
+      "status": 200,
+      "time": 18.514,
+      "bodySize": 6926
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/utility.utility-panel.variants-yaw+30-elev40.270f569c006a.png",
+      "status": 200,
+      "time": 18.425,
+      "bodySize": 4993
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/utility.washing-machine.variants-yaw+30-elev40.0b6460310582.png",
+      "status": 200,
+      "time": 18.447,
+      "bodySize": 10435
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/fixture.cell.waste-bin-yaw+30-elev40.f2070ef8bf9c.png",
+      "status": 200,
+      "time": 18.75,
+      "bodySize": 4030
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev40.83af650639a5.png",
+      "status": 200,
+      "time": 18.796,
+      "bodySize": 10991
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev40.281e33a689ed.png",
+      "status": 200,
+      "time": 24.247,
+      "bodySize": 3472
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/utility.security-console.variants-yaw+30-elev40.c8867d214cf2.png",
+      "status": 200,
+      "time": 24.428,
+      "bodySize": 6042
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/fixture.shower.head-yaw+30-elev40.7547ec7624ea.png",
+      "status": 200,
+      "time": 24.475,
+      "bodySize": 5471
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/cell-toilet-yaw+45-elev40.4fc3f8da449d.png",
+      "status": 200,
+      "time": 27.852,
+      "bodySize": 14005
+    },
+    {
+      "url": "http://127.0.0.1:42161/assets/environment/oblique/furniture.storage.rack.wooden-yaw+30-elev40.7a6866f5ca17.png",
+      "status": 200,
+      "time": 27.97,
+      "bodySize": 9722
+    }
+  ],
+  "policy": "all model descriptors, one boot-selected PNG pose per model; subsequent visible pose selection only, not all72frames"
+}

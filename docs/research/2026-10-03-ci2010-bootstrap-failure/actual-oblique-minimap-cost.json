@@ -1,0 +1,12 @@
+{
+  "frames": 120,
+  "unchangedWorld": true,
+  "actualTileReads": 122880,
+  "actualPixelBufferIdentities": 120,
+  "elapsedMs": 34.11279999999999,
+  "projectionReuseTileReads": 1024,
+  "oneProjectionMs": 1.25100000000009,
+  "hudIdentityGuardWouldRepaint": 120,
+  "hypotheticalHudFillRects": 122880,
+  "measurementBoundary": "real scene publisher and world; no GPU or DOM execution; native elapsed attribution unproved"
+}
