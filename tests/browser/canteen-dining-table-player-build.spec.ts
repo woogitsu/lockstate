@@ -2,7 +2,7 @@ import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
-import { observeCanteenImages, publicSupportPose, requireCanteenOwners, SUPPORT_FRAME } from './canteen-dining-table-evidence';
+import { observeCanteenImages, publicSupportPose, requireCanteenOwners, SUPPORT_FRAME, CANTEEN_BENCH_FRAME } from './canteen-dining-table-evidence';
 
 interface ProbeWindow extends Window {
   askWorker?: (kind: string, payload: unknown) => Promise<unknown>;
@@ -39,11 +39,13 @@ async function installWorkerProbe(page: Page): Promise<void> {
 }
 
 async function workerSnapshot(page: Page): Promise<SessionSnapshotBundle> {
-  return page.evaluate(async () => {
+  const snapshot = await page.evaluate(async () => {
     const reply = await (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' }) as {
-      payload: { snapshot: { data: SessionSnapshotBundle } } };
-    return reply.payload.snapshot.data;
+      payload: { snapshot: { schemaVersion: number; data: SessionSnapshotBundle } } };
+    return reply.payload.snapshot;
   });
+  expect(snapshot.schemaVersion).toBe(4);
+  return snapshot.data;
 }
 async function fixtureAnchors(page: Page): Promise<string[]> {
   const snapshot = await workerSnapshot(page);
@@ -213,6 +215,14 @@ test(`player builds Canteen at quarterTurns${quarterTurns} and retains authored 
     decodeURIComponent(new URL(response.url).pathname) === SUPPORT_FRAME.url && response.sha256 === SUPPORT_FRAME.sha256)).toBe(true);
   await expect.poll(async () => (await loadedImages()).images.some(image =>
     image.sha256 === SUPPORT_FRAME.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);
+  await expect.poll(async () => (await loadedImages()).responses.some(response =>
+    decodeURIComponent(new URL(response.url).pathname) === CANTEEN_BENCH_FRAME.url && response.sha256 === CANTEEN_BENCH_FRAME.sha256)).toBe(true);
+  await expect.poll(async () => (await loadedImages()).images.some(image =>
+    image.sha256 === CANTEEN_BENCH_FRAME.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);
+  await expect.poll(async () => [...new Set((await loadedImages()).catalogs.map(row =>
+    decodeURIComponent(new URL(row.url).pathname)))].sort()).toEqual([
+      '/game-content/oblique-canteen-bench.v1.json', '/game-content/oblique-furniture.canteen-dining-table.v1.json',
+    ]);
   const pngLoading = await loadedImages();
   expect(pngLoading.errors).toEqual([]);
   const actualLoadedFrame = pngLoading.responses.find(response => decodeURIComponent(new URL(response.url).pathname) === SUPPORT_FRAME.url);
@@ -227,7 +237,7 @@ test(`player builds Canteen at quarterTurns${quarterTurns} and retains authored 
   await writeFile(evidencePath, JSON.stringify({
     quarterTurns, actualBefore, actualAfter, beforePixels, afterPixels,
     planned, pausedBefore, pausedAfter, ownersBefore, ownersAfter, lowPoseWorker,
-    cameraControls, expectedSupportFrame: SUPPORT_FRAME, pngLoading,
+    cameraControls, expectedSupportFrame: SUPPORT_FRAME, expectedBenchFrame: CANTEEN_BENCH_FRAME, pngLoading,
     actualLoadedFrame, completionElapsedMs, finalElapsedMs: Date.now() - beganAt,
     boundPerObjectRuntimeFrameObserved: false, supportPixelCalibrationPending: true,
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),

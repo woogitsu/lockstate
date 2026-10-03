@@ -1,0 +1,15 @@
+﻿const fs = require('node:fs'); const crypto = require('node:crypto'); const assert=require('node:assert/strict');
+const read=p=>fs.readFileSync(p,'utf8');
+const table=JSON.parse(read('public/game-content/oblique-furniture.canteen-dining-table.v1.json'));
+const bench=JSON.parse(read('public/game-content/oblique-canteen-bench.v1.json'));
+const checks=[];
+function check(name,fn){try{fn();checks.push({name,ok:true})}catch(error){checks.push({name,ok:false,error:String(error)})}}
+for(const [name,catalog,file] of [['table',table,'tests/browser/canteen-dining-table-evidence.ts'],['bench',bench,'tests/browser/wooden-bench-crossrails-evidence.ts']]){
+check(name+' current source pin',()=>assert.ok(read(file).includes(catalog.sourceSha256)));
+check(name+' current exposed60/40 pin',()=>assert.ok(read(file).includes(catalog.frames.find(f=>f.yawDegrees===60&&f.elevationDegrees===40).sha256)));
+for(const frame of catalog.frames)check(name+' PNG '+frame.yawDegrees+'/'+frame.elevationDegrees,()=>assert.equal(crypto.createHash('sha256').update(fs.readFileSync('public'+frame.image)).digest('hex'),frame.sha256));
+}
+check('current snapshot wrapper4',()=>assert.match(read('tests/browser/wooden-bench-player-build.spec.ts'),/expect\(snapshot.schemaVersion\).toBe\(4\)/));
+check('Canteen four bench owners',()=>assert.ok(read('tests/browser/canteen-dining-table-evidence.ts').includes("objectId: 'object.bench'")));
+if(fs.existsSync('tests/browser/canteen-modern-source-pins.json'))check('immutable full144 descriptor tuples',()=>assert.deepEqual(JSON.parse(read('tests/browser/canteen-modern-source-pins.json')),{table,bench}));
+console.log(JSON.stringify({checks,green:checks.filter(x=>x.ok).length,red:checks.filter(x=>!x.ok).length},null,2));process.exitCode=checks.some(x=>!x.ok)?1:0;

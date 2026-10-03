@@ -1,23 +1,18 @@
 /** Pending native Bench evidence; public worker/network/image APIs only. */
 import { createHash } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
-import { expect, type Page, type Response, type TestInfo } from '@playwright/test';
+import { expect, type Page, type TestInfo } from './network-changed-fixture';
+import pins from './canteen-modern-source-pins.json';
+import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
+import type { BuildOrder } from '../../src/simulation/construction/build-order';
+import { tileCoordinate } from '../../src/simulation/world/coordinates';
+type Response = Awaited<ReturnType<Page['waitForResponse']>>;
 
-export interface BenchSnapshotData {
-  kernel: { tick: number };
-  world: { version: number };
-  simulation: { objects: { placedObjects: {
-    placedObjectId: string; objectId: string; sourceOrderId?: string;
-    anchorTile: { x: number; y: number }; orientation: number;
-  }[] } };
-  construction: { orders: {
-    id: string; definitionId: string; location: { x: number; y: number };
-    state: string; objectOrientation?: number;
-  }[] };
-}
+export type BenchSnapshotData = SessionSnapshotBundle;
 export function assertBenchProducer(data: BenchSnapshotData, quarterTurns: 0 | 1, built = true): void {
   expect(data.world.version).toBe(1);
-  const benches = data.simulation.objects.placedObjects.filter(object => object.objectId === 'object.bench');
+  const benches = data.simulation?.objects?.placedObjects.filter(object => object.objectId === 'object.bench');
+  if (benches === undefined) throw new Error('Actual worker placed registry absent');
   expect(benches).toHaveLength(built ? 2 : 0);
   if (!built) return;
   // Literal scalar rotation of original6x6, authored2x1 fixtures at(1,1)/(3,3).
@@ -31,7 +26,9 @@ export function assertBenchProducer(data: BenchSnapshotData, quarterTurns: 0 | 1
     expect(objects).toHaveLength(1); expect(objects[0]).toEqual(expected);
     const orders = data.construction.orders.filter(order => order.id === id);
     expect(orders).toHaveLength(1);
-    expect(orders[0]).toMatchObject({id,definitionId:'bench-wooden',state:'completed',location:{x,y}});
+    const expectedOrder: Pick<BuildOrder, 'id' | 'definitionId' | 'state' | 'location' | 'placementSequence'> =
+      {id,definitionId:'bench-wooden',state:'completed',location:{x:tileCoordinate(x),y:tileCoordinate(y)},placementSequence:2};
+    expect(orders[0]).toMatchObject(expectedOrder);
     expect(orders[0]!.objectOrientation ?? 0).toBe(quarterTurns);
     expect(benches.filter(object => object.placedObjectId === expected.placedObjectId)).toHaveLength(1);
   }
@@ -39,9 +36,9 @@ export function assertBenchProducer(data: BenchSnapshotData, quarterTurns: 0 | 1
 }
 
 const descriptorPath = '/game-content/oblique-canteen-bench.v1.json';
-const sourceSha256 = '8518e5d755352f6511bcb4f2165674e1bca44f918f945e7c5cfa09b60ba05986';
-const exposedFrame = '/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev40.b2399fd4b40d.png';
-const exposedSha256 = 'b2399fd4b40d565ea877fc4af39be18468d191cd5faf5f95bb00c6519c00096a';
+const sourceSha256 = 'b4e5ca9317c74e0f8182937658c0a3f7026f114fcb7e1661101628cbd75c4e94';
+const exposedFrame = '/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev40.5ad7afdb520e.png';
+const exposedSha256 = '5ad7afdb520ed6cb58c5dd87e652a5e7165d7095d593b48708f40746bc90ac8f';
 const sha = (body: Buffer): string => createHash('sha256').update(body).digest('hex');
 interface NetworkRow {
   url: string; decodedPath: string; status: number; location?: string; sha256?: string;
@@ -99,7 +96,8 @@ export function observeBenchNetwork(page: Page) {
       await Promise.all(pending);
       const catalog = JSON.parse(bodies.get(descriptorPath)!.toString('utf8')) as BenchCatalog;
       expect(catalog.assetId).toBe('furniture.corridor.bench.variants');
-      expect(catalog.source).toBe('assets/source/blender/furniture.corridor.bench.grounded-detail.blend');
+      expect(catalog, 'actual HTTP descriptor preserves all72 pinned published source/frame tuples').toEqual(pins.bench);
+      expect(catalog.source).toBe('assets/source/blender/furniture.corridor.bench.soft-light.blend');
       expect(catalog.sourceSha256).toBe(sourceSha256);
       expect(catalog.resolutionPx).toEqual([256,256]); expect(catalog.pivotPx).toEqual([128,128]);
       expect(catalog.cameraTargetTiles).toEqual([1,.5,.44325]); expect(catalog.nominalPixelsPerTile).toBe(64);
