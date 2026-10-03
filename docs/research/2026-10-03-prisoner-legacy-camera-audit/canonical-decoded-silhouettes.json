@@ -1,0 +1,1196 @@
+{
+  "frames": [
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        236,
+        154,
+        276,
+        258
+      ],
+      "alphaWidthPx": 40,
+      "alphaHeightPx": 104,
+      "opaqueOrPartialAlphaPixels": 3006,
+      "defaultZoom1_25DisplayedWidthPx": 50.0,
+      "defaultZoom1_25DisplayedHeightPx": 130.0
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        236,
+        174,
+        276,
+        260
+      ],
+      "alphaWidthPx": 40,
+      "alphaHeightPx": 86,
+      "opaqueOrPartialAlphaPixels": 2494,
+      "defaultZoom1_25DisplayedWidthPx": 50.0,
+      "defaultZoom1_25DisplayedHeightPx": 107.5
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        236,
+        203,
+        276,
+        261
+      ],
+      "alphaWidthPx": 40,
+      "alphaHeightPx": 58,
+      "opaqueOrPartialAlphaPixels": 1688,
+      "defaultZoom1_25DisplayedWidthPx": 50.0,
+      "defaultZoom1_25DisplayedHeightPx": 72.5
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        236,
+        154,
+        276,
+        260
+      ],
+      "alphaWidthPx": 40,
+      "alphaHeightPx": 106,
+      "opaqueOrPartialAlphaPixels": 2978,
+      "defaultZoom1_25DisplayedWidthPx": 50.0,
+      "defaultZoom1_25DisplayedHeightPx": 132.5
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        236,
+        174,
+        276,
+        262
+      ],
+      "alphaWidthPx": 40,
+      "alphaHeightPx": 88,
+      "opaqueOrPartialAlphaPixels": 2484,
+      "defaultZoom1_25DisplayedWidthPx": 50.0,
+      "defaultZoom1_25DisplayedHeightPx": 110.0
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        236,
+        203,
+        276,
+        264
+      ],
+      "alphaWidthPx": 40,
+      "alphaHeightPx": 61,
+      "opaqueOrPartialAlphaPixels": 1717,
+      "defaultZoom1_25DisplayedWidthPx": 50.0,
+      "defaultZoom1_25DisplayedHeightPx": 76.25
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        238,
+        154,
+        275,
+        261
+      ],
+      "alphaWidthPx": 37,
+      "alphaHeightPx": 107,
+      "opaqueOrPartialAlphaPixels": 2871,
+      "defaultZoom1_25DisplayedWidthPx": 46.25,
+      "defaultZoom1_25DisplayedHeightPx": 133.75
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        238,
+        174,
+        275,
+        264
+      ],
+      "alphaWidthPx": 37,
+      "alphaHeightPx": 90,
+      "opaqueOrPartialAlphaPixels": 2416,
+      "defaultZoom1_25DisplayedWidthPx": 46.25,
+      "defaultZoom1_25DisplayedHeightPx": 112.5
+    },
+    {
+      "yawDegrees": -150,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        238,
+        202,
+        274,
+        266
+      ],
+      "alphaWidthPx": 36,
+      "alphaHeightPx": 64,
+      "opaqueOrPartialAlphaPixels": 1685,
+      "defaultZoom1_25DisplayedWidthPx": 45.0,
+      "defaultZoom1_25DisplayedHeightPx": 80.0
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        240,
+        154,
+        275,
+        261
+      ],
+      "alphaWidthPx": 35,
+      "alphaHeightPx": 107,
+      "opaqueOrPartialAlphaPixels": 2674,
+      "defaultZoom1_25DisplayedWidthPx": 43.75,
+      "defaultZoom1_25DisplayedHeightPx": 133.75
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        240,
+        174,
+        275,
+        265
+      ],
+      "alphaWidthPx": 35,
+      "alphaHeightPx": 91,
+      "opaqueOrPartialAlphaPixels": 2281,
+      "defaultZoom1_25DisplayedWidthPx": 43.75,
+      "defaultZoom1_25DisplayedHeightPx": 113.75
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        240,
+        202,
+        275,
+        268
+      ],
+      "alphaWidthPx": 35,
+      "alphaHeightPx": 66,
+      "opaqueOrPartialAlphaPixels": 1603,
+      "defaultZoom1_25DisplayedWidthPx": 43.75,
+      "defaultZoom1_25DisplayedHeightPx": 82.5
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        241,
+        154,
+        275,
+        262
+      ],
+      "alphaWidthPx": 34,
+      "alphaHeightPx": 108,
+      "opaqueOrPartialAlphaPixels": 2431,
+      "defaultZoom1_25DisplayedWidthPx": 42.5,
+      "defaultZoom1_25DisplayedHeightPx": 135.0
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        241,
+        173,
+        275,
+        266
+      ],
+      "alphaWidthPx": 34,
+      "alphaHeightPx": 93,
+      "opaqueOrPartialAlphaPixels": 2087,
+      "defaultZoom1_25DisplayedWidthPx": 42.5,
+      "defaultZoom1_25DisplayedHeightPx": 116.25
+    },
+    {
+      "yawDegrees": -120,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        241,
+        202,
+        275,
+        269
+      ],
+      "alphaWidthPx": 34,
+      "alphaHeightPx": 67,
+      "opaqueOrPartialAlphaPixels": 1494,
+      "defaultZoom1_25DisplayedWidthPx": 42.5,
+      "defaultZoom1_25DisplayedHeightPx": 83.75
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        243,
+        153,
+        273,
+        262
+      ],
+      "alphaWidthPx": 30,
+      "alphaHeightPx": 109,
+      "opaqueOrPartialAlphaPixels": 2217,
+      "defaultZoom1_25DisplayedWidthPx": 37.5,
+      "defaultZoom1_25DisplayedHeightPx": 136.25
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        243,
+        173,
+        273,
+        266
+      ],
+      "alphaWidthPx": 30,
+      "alphaHeightPx": 93,
+      "opaqueOrPartialAlphaPixels": 1938,
+      "defaultZoom1_25DisplayedWidthPx": 37.5,
+      "defaultZoom1_25DisplayedHeightPx": 116.25
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        243,
+        202,
+        273,
+        269
+      ],
+      "alphaWidthPx": 30,
+      "alphaHeightPx": 67,
+      "opaqueOrPartialAlphaPixels": 1436,
+      "defaultZoom1_25DisplayedWidthPx": 37.5,
+      "defaultZoom1_25DisplayedHeightPx": 83.75
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        244,
+        153,
+        270,
+        262
+      ],
+      "alphaWidthPx": 26,
+      "alphaHeightPx": 109,
+      "opaqueOrPartialAlphaPixels": 2096,
+      "defaultZoom1_25DisplayedWidthPx": 32.5,
+      "defaultZoom1_25DisplayedHeightPx": 136.25
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        244,
+        173,
+        270,
+        265
+      ],
+      "alphaWidthPx": 26,
+      "alphaHeightPx": 92,
+      "opaqueOrPartialAlphaPixels": 1865,
+      "defaultZoom1_25DisplayedWidthPx": 32.5,
+      "defaultZoom1_25DisplayedHeightPx": 115.0
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        244,
+        202,
+        270,
+        268
+      ],
+      "alphaWidthPx": 26,
+      "alphaHeightPx": 66,
+      "opaqueOrPartialAlphaPixels": 1427,
+      "defaultZoom1_25DisplayedWidthPx": 32.5,
+      "defaultZoom1_25DisplayedHeightPx": 82.5
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        243,
+        153,
+        273,
+        263
+      ],
+      "alphaWidthPx": 30,
+      "alphaHeightPx": 110,
+      "opaqueOrPartialAlphaPixels": 2247,
+      "defaultZoom1_25DisplayedWidthPx": 37.5,
+      "defaultZoom1_25DisplayedHeightPx": 137.5
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        243,
+        173,
+        273,
+        267
+      ],
+      "alphaWidthPx": 30,
+      "alphaHeightPx": 94,
+      "opaqueOrPartialAlphaPixels": 1986,
+      "defaultZoom1_25DisplayedWidthPx": 37.5,
+      "defaultZoom1_25DisplayedHeightPx": 117.5
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        243,
+        201,
+        273,
+        271
+      ],
+      "alphaWidthPx": 30,
+      "alphaHeightPx": 70,
+      "opaqueOrPartialAlphaPixels": 1500,
+      "defaultZoom1_25DisplayedWidthPx": 37.5,
+      "defaultZoom1_25DisplayedHeightPx": 87.5
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        241,
+        153,
+        275,
+        263
+      ],
+      "alphaWidthPx": 34,
+      "alphaHeightPx": 110,
+      "opaqueOrPartialAlphaPixels": 2457,
+      "defaultZoom1_25DisplayedWidthPx": 42.5,
+      "defaultZoom1_25DisplayedHeightPx": 137.5
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        241,
+        172,
+        275,
+        268
+      ],
+      "alphaWidthPx": 34,
+      "alphaHeightPx": 96,
+      "opaqueOrPartialAlphaPixels": 2157,
+      "defaultZoom1_25DisplayedWidthPx": 42.5,
+      "defaultZoom1_25DisplayedHeightPx": 120.0
+    },
+    {
+      "yawDegrees": -60,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        241,
+        201,
+        275,
+        272
+      ],
+      "alphaWidthPx": 34,
+      "alphaHeightPx": 71,
+      "opaqueOrPartialAlphaPixels": 1620,
+      "defaultZoom1_25DisplayedWidthPx": 42.5,
+      "defaultZoom1_25DisplayedHeightPx": 88.75
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        240,
+        153,
+        275,
+        264
+      ],
+      "alphaWidthPx": 35,
+      "alphaHeightPx": 111,
+      "opaqueOrPartialAlphaPixels": 2676,
+      "defaultZoom1_25DisplayedWidthPx": 43.75,
+      "defaultZoom1_25DisplayedHeightPx": 138.75
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        240,
+        172,
+        275,
+        269
+      ],
+      "alphaWidthPx": 35,
+      "alphaHeightPx": 97,
+      "opaqueOrPartialAlphaPixels": 2345,
+      "defaultZoom1_25DisplayedWidthPx": 43.75,
+      "defaultZoom1_25DisplayedHeightPx": 121.25
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        240,
+        201,
+        275,
+        273
+      ],
+      "alphaWidthPx": 35,
+      "alphaHeightPx": 72,
+      "opaqueOrPartialAlphaPixels": 1740,
+      "defaultZoom1_25DisplayedWidthPx": 43.75,
+      "defaultZoom1_25DisplayedHeightPx": 90.0
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        238,
+        153,
+        275,
+        263
+      ],
+      "alphaWidthPx": 37,
+      "alphaHeightPx": 110,
+      "opaqueOrPartialAlphaPixels": 2907,
+      "defaultZoom1_25DisplayedWidthPx": 46.25,
+      "defaultZoom1_25DisplayedHeightPx": 137.5
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        238,
+        172,
+        275,
+        268
+      ],
+      "alphaWidthPx": 37,
+      "alphaHeightPx": 96,
+      "opaqueOrPartialAlphaPixels": 2523,
+      "defaultZoom1_25DisplayedWidthPx": 46.25,
+      "defaultZoom1_25DisplayedHeightPx": 120.0
+    },
+    {
+      "yawDegrees": -30,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        238,
+        200,
+        274,
+        272
+      ],
+      "alphaWidthPx": 36,
+      "alphaHeightPx": 72,
+      "opaqueOrPartialAlphaPixels": 1853,
+      "defaultZoom1_25DisplayedWidthPx": 45.0,
+      "defaultZoom1_25DisplayedHeightPx": 90.0
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        236,
+        153,
+        276,
+        263
+      ],
+      "alphaWidthPx": 40,
+      "alphaHeightPx": 110,
+      "opaqueOrPartialAlphaPixels": 3035,
+      "defaultZoom1_25DisplayedWidthPx": 50.0,
+      "defaultZoom1_25DisplayedHeightPx": 137.5
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        236,
+        172,
+        276,
+        267
+      ],
+      "alphaWidthPx": 40,
+      "alphaHeightPx": 95,
+      "opaqueOrPartialAlphaPixels": 2624,
+      "defaultZoom1_25DisplayedWidthPx": 50.0,
+      "defaultZoom1_25DisplayedHeightPx": 118.75
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        236,
+        200,
+        276,
+        271
+      ],
+      "alphaWidthPx": 40,
+      "alphaHeightPx": 71,
+      "opaqueOrPartialAlphaPixels": 1927,
+      "defaultZoom1_25DisplayedWidthPx": 50.0,
+      "defaultZoom1_25DisplayedHeightPx": 88.75
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        236,
+        153,
+        276,
+        262
+      ],
+      "alphaWidthPx": 40,
+      "alphaHeightPx": 109,
+      "opaqueOrPartialAlphaPixels": 3086,
+      "defaultZoom1_25DisplayedWidthPx": 50.0,
+      "defaultZoom1_25DisplayedHeightPx": 136.25
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        236,
+        172,
+        276,
+        265
+      ],
+      "alphaWidthPx": 40,
+      "alphaHeightPx": 93,
+      "opaqueOrPartialAlphaPixels": 2645,
+      "defaultZoom1_25DisplayedWidthPx": 50.0,
+      "defaultZoom1_25DisplayedHeightPx": 116.25
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        236,
+        200,
+        276,
+        268
+      ],
+      "alphaWidthPx": 40,
+      "alphaHeightPx": 68,
+      "opaqueOrPartialAlphaPixels": 1929,
+      "defaultZoom1_25DisplayedWidthPx": 50.0,
+      "defaultZoom1_25DisplayedHeightPx": 85.0
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        236,
+        153,
+        276,
+        263
+      ],
+      "alphaWidthPx": 40,
+      "alphaHeightPx": 110,
+      "opaqueOrPartialAlphaPixels": 3036,
+      "defaultZoom1_25DisplayedWidthPx": 50.0,
+      "defaultZoom1_25DisplayedHeightPx": 137.5
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        236,
+        172,
+        276,
+        267
+      ],
+      "alphaWidthPx": 40,
+      "alphaHeightPx": 95,
+      "opaqueOrPartialAlphaPixels": 2623,
+      "defaultZoom1_25DisplayedWidthPx": 50.0,
+      "defaultZoom1_25DisplayedHeightPx": 118.75
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        236,
+        200,
+        276,
+        271
+      ],
+      "alphaWidthPx": 40,
+      "alphaHeightPx": 71,
+      "opaqueOrPartialAlphaPixels": 1928,
+      "defaultZoom1_25DisplayedWidthPx": 50.0,
+      "defaultZoom1_25DisplayedHeightPx": 88.75
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        237,
+        153,
+        274,
+        263
+      ],
+      "alphaWidthPx": 37,
+      "alphaHeightPx": 110,
+      "opaqueOrPartialAlphaPixels": 2903,
+      "defaultZoom1_25DisplayedWidthPx": 46.25,
+      "defaultZoom1_25DisplayedHeightPx": 137.5
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        237,
+        172,
+        274,
+        268
+      ],
+      "alphaWidthPx": 37,
+      "alphaHeightPx": 96,
+      "opaqueOrPartialAlphaPixels": 2524,
+      "defaultZoom1_25DisplayedWidthPx": 46.25,
+      "defaultZoom1_25DisplayedHeightPx": 120.0
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        238,
+        200,
+        274,
+        272
+      ],
+      "alphaWidthPx": 36,
+      "alphaHeightPx": 72,
+      "opaqueOrPartialAlphaPixels": 1850,
+      "defaultZoom1_25DisplayedWidthPx": 45.0,
+      "defaultZoom1_25DisplayedHeightPx": 90.0
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        237,
+        153,
+        272,
+        264
+      ],
+      "alphaWidthPx": 35,
+      "alphaHeightPx": 111,
+      "opaqueOrPartialAlphaPixels": 2679,
+      "defaultZoom1_25DisplayedWidthPx": 43.75,
+      "defaultZoom1_25DisplayedHeightPx": 138.75
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        237,
+        172,
+        272,
+        269
+      ],
+      "alphaWidthPx": 35,
+      "alphaHeightPx": 97,
+      "opaqueOrPartialAlphaPixels": 2346,
+      "defaultZoom1_25DisplayedWidthPx": 43.75,
+      "defaultZoom1_25DisplayedHeightPx": 121.25
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        237,
+        201,
+        272,
+        273
+      ],
+      "alphaWidthPx": 35,
+      "alphaHeightPx": 72,
+      "opaqueOrPartialAlphaPixels": 1741,
+      "defaultZoom1_25DisplayedWidthPx": 43.75,
+      "defaultZoom1_25DisplayedHeightPx": 90.0
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        237,
+        153,
+        271,
+        263
+      ],
+      "alphaWidthPx": 34,
+      "alphaHeightPx": 110,
+      "opaqueOrPartialAlphaPixels": 2452,
+      "defaultZoom1_25DisplayedWidthPx": 42.5,
+      "defaultZoom1_25DisplayedHeightPx": 137.5
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        237,
+        172,
+        271,
+        268
+      ],
+      "alphaWidthPx": 34,
+      "alphaHeightPx": 96,
+      "opaqueOrPartialAlphaPixels": 2154,
+      "defaultZoom1_25DisplayedWidthPx": 42.5,
+      "defaultZoom1_25DisplayedHeightPx": 120.0
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        237,
+        201,
+        271,
+        272
+      ],
+      "alphaWidthPx": 34,
+      "alphaHeightPx": 71,
+      "opaqueOrPartialAlphaPixels": 1621,
+      "defaultZoom1_25DisplayedWidthPx": 42.5,
+      "defaultZoom1_25DisplayedHeightPx": 88.75
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        239,
+        153,
+        269,
+        263
+      ],
+      "alphaWidthPx": 30,
+      "alphaHeightPx": 110,
+      "opaqueOrPartialAlphaPixels": 2241,
+      "defaultZoom1_25DisplayedWidthPx": 37.5,
+      "defaultZoom1_25DisplayedHeightPx": 137.5
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        239,
+        172,
+        269,
+        267
+      ],
+      "alphaWidthPx": 30,
+      "alphaHeightPx": 95,
+      "opaqueOrPartialAlphaPixels": 1984,
+      "defaultZoom1_25DisplayedWidthPx": 37.5,
+      "defaultZoom1_25DisplayedHeightPx": 118.75
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        239,
+        201,
+        269,
+        271
+      ],
+      "alphaWidthPx": 30,
+      "alphaHeightPx": 70,
+      "opaqueOrPartialAlphaPixels": 1499,
+      "defaultZoom1_25DisplayedWidthPx": 37.5,
+      "defaultZoom1_25DisplayedHeightPx": 87.5
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        242,
+        153,
+        268,
+        262
+      ],
+      "alphaWidthPx": 26,
+      "alphaHeightPx": 109,
+      "opaqueOrPartialAlphaPixels": 2097,
+      "defaultZoom1_25DisplayedWidthPx": 32.5,
+      "defaultZoom1_25DisplayedHeightPx": 136.25
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        242,
+        173,
+        268,
+        265
+      ],
+      "alphaWidthPx": 26,
+      "alphaHeightPx": 92,
+      "opaqueOrPartialAlphaPixels": 1865,
+      "defaultZoom1_25DisplayedWidthPx": 32.5,
+      "defaultZoom1_25DisplayedHeightPx": 115.0
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        242,
+        202,
+        268,
+        268
+      ],
+      "alphaWidthPx": 26,
+      "alphaHeightPx": 66,
+      "opaqueOrPartialAlphaPixels": 1428,
+      "defaultZoom1_25DisplayedWidthPx": 32.5,
+      "defaultZoom1_25DisplayedHeightPx": 82.5
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        239,
+        153,
+        269,
+        262
+      ],
+      "alphaWidthPx": 30,
+      "alphaHeightPx": 109,
+      "opaqueOrPartialAlphaPixels": 2226,
+      "defaultZoom1_25DisplayedWidthPx": 37.5,
+      "defaultZoom1_25DisplayedHeightPx": 136.25
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        239,
+        173,
+        269,
+        266
+      ],
+      "alphaWidthPx": 30,
+      "alphaHeightPx": 93,
+      "opaqueOrPartialAlphaPixels": 1942,
+      "defaultZoom1_25DisplayedWidthPx": 37.5,
+      "defaultZoom1_25DisplayedHeightPx": 116.25
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        239,
+        202,
+        269,
+        269
+      ],
+      "alphaWidthPx": 30,
+      "alphaHeightPx": 67,
+      "opaqueOrPartialAlphaPixels": 1439,
+      "defaultZoom1_25DisplayedWidthPx": 37.5,
+      "defaultZoom1_25DisplayedHeightPx": 83.75
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        237,
+        154,
+        271,
+        262
+      ],
+      "alphaWidthPx": 34,
+      "alphaHeightPx": 108,
+      "opaqueOrPartialAlphaPixels": 2441,
+      "defaultZoom1_25DisplayedWidthPx": 42.5,
+      "defaultZoom1_25DisplayedHeightPx": 135.0
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        237,
+        173,
+        271,
+        266
+      ],
+      "alphaWidthPx": 34,
+      "alphaHeightPx": 93,
+      "opaqueOrPartialAlphaPixels": 2092,
+      "defaultZoom1_25DisplayedWidthPx": 42.5,
+      "defaultZoom1_25DisplayedHeightPx": 116.25
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        237,
+        202,
+        271,
+        269
+      ],
+      "alphaWidthPx": 34,
+      "alphaHeightPx": 67,
+      "opaqueOrPartialAlphaPixels": 1497,
+      "defaultZoom1_25DisplayedWidthPx": 42.5,
+      "defaultZoom1_25DisplayedHeightPx": 83.75
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        237,
+        154,
+        272,
+        261
+      ],
+      "alphaWidthPx": 35,
+      "alphaHeightPx": 107,
+      "opaqueOrPartialAlphaPixels": 2678,
+      "defaultZoom1_25DisplayedWidthPx": 43.75,
+      "defaultZoom1_25DisplayedHeightPx": 133.75
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        237,
+        174,
+        272,
+        265
+      ],
+      "alphaWidthPx": 35,
+      "alphaHeightPx": 91,
+      "opaqueOrPartialAlphaPixels": 2282,
+      "defaultZoom1_25DisplayedWidthPx": 43.75,
+      "defaultZoom1_25DisplayedHeightPx": 113.75
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        237,
+        202,
+        272,
+        268
+      ],
+      "alphaWidthPx": 35,
+      "alphaHeightPx": 66,
+      "opaqueOrPartialAlphaPixels": 1604,
+      "defaultZoom1_25DisplayedWidthPx": 43.75,
+      "defaultZoom1_25DisplayedHeightPx": 82.5
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        237,
+        154,
+        274,
+        261
+      ],
+      "alphaWidthPx": 37,
+      "alphaHeightPx": 107,
+      "opaqueOrPartialAlphaPixels": 2878,
+      "defaultZoom1_25DisplayedWidthPx": 46.25,
+      "defaultZoom1_25DisplayedHeightPx": 133.75
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        237,
+        174,
+        274,
+        264
+      ],
+      "alphaWidthPx": 37,
+      "alphaHeightPx": 90,
+      "opaqueOrPartialAlphaPixels": 2421,
+      "defaultZoom1_25DisplayedWidthPx": 46.25,
+      "defaultZoom1_25DisplayedHeightPx": 112.5
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        238,
+        202,
+        274,
+        266
+      ],
+      "alphaWidthPx": 36,
+      "alphaHeightPx": 64,
+      "opaqueOrPartialAlphaPixels": 1690,
+      "defaultZoom1_25DisplayedWidthPx": 45.0,
+      "defaultZoom1_25DisplayedHeightPx": 80.0
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 25,
+      "alphaBounds": [
+        236,
+        154,
+        276,
+        260
+      ],
+      "alphaWidthPx": 40,
+      "alphaHeightPx": 106,
+      "opaqueOrPartialAlphaPixels": 2980,
+      "defaultZoom1_25DisplayedWidthPx": 50.0,
+      "defaultZoom1_25DisplayedHeightPx": 132.5
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 45,
+      "alphaBounds": [
+        236,
+        174,
+        276,
+        262
+      ],
+      "alphaWidthPx": 40,
+      "alphaHeightPx": 88,
+      "opaqueOrPartialAlphaPixels": 2488,
+      "defaultZoom1_25DisplayedWidthPx": 50.0,
+      "defaultZoom1_25DisplayedHeightPx": 110.0
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 65,
+      "alphaBounds": [
+        236,
+        203,
+        276,
+        264
+      ],
+      "alphaWidthPx": 40,
+      "alphaHeightPx": 61,
+      "opaqueOrPartialAlphaPixels": 1717,
+      "defaultZoom1_25DisplayedWidthPx": 50.0,
+      "defaultZoom1_25DisplayedHeightPx": 76.25
+    }
+  ],
+  "actualSourceRerenders": [
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 25,
+      "publishedFrameByteEqualToActualPinnedRender": false,
+      "actualPixelDifferenceCount": 262144
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 45,
+      "publishedFrameByteEqualToActualPinnedRender": false,
+      "actualPixelDifferenceCount": 262143
+    },
+    {
+      "yawDegrees": -180,
+      "elevationDegrees": 65,
+      "publishedFrameByteEqualToActualPinnedRender": false,
+      "actualPixelDifferenceCount": 262144
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 25,
+      "publishedFrameByteEqualToActualPinnedRender": false,
+      "actualPixelDifferenceCount": 262144
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 45,
+      "publishedFrameByteEqualToActualPinnedRender": false,
+      "actualPixelDifferenceCount": 262143
+    },
+    {
+      "yawDegrees": -90,
+      "elevationDegrees": 65,
+      "publishedFrameByteEqualToActualPinnedRender": false,
+      "actualPixelDifferenceCount": 262144
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 25,
+      "publishedFrameByteEqualToActualPinnedRender": false,
+      "actualPixelDifferenceCount": 262144
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "publishedFrameByteEqualToActualPinnedRender": false,
+      "actualPixelDifferenceCount": 262143
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 65,
+      "publishedFrameByteEqualToActualPinnedRender": false,
+      "actualPixelDifferenceCount": 262143
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 25,
+      "publishedFrameByteEqualToActualPinnedRender": false,
+      "actualPixelDifferenceCount": 262144
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 45,
+      "publishedFrameByteEqualToActualPinnedRender": false,
+      "actualPixelDifferenceCount": 262144
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 65,
+      "publishedFrameByteEqualToActualPinnedRender": false,
+      "actualPixelDifferenceCount": 262142
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 25,
+      "publishedFrameByteEqualToActualPinnedRender": false,
+      "actualPixelDifferenceCount": 262144
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "publishedFrameByteEqualToActualPinnedRender": false,
+      "actualPixelDifferenceCount": 262144
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 65,
+      "publishedFrameByteEqualToActualPinnedRender": false,
+      "actualPixelDifferenceCount": 262143
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 25,
+      "publishedFrameByteEqualToActualPinnedRender": false,
+      "actualPixelDifferenceCount": 262142
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 45,
+      "publishedFrameByteEqualToActualPinnedRender": false,
+      "actualPixelDifferenceCount": 262144
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 65,
+      "publishedFrameByteEqualToActualPinnedRender": false,
+      "actualPixelDifferenceCount": 262144
+    }
+  ],
+  "allCanonicalBytesShaVerified": true,
+  "canonicalAssetUntouched": true
+}
