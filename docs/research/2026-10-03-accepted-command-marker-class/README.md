@@ -68,3 +68,9 @@ Scope: SessionCommands only, plus genuine regression tests and evidence. No sour
 6. An exhaustive command-policy record over `SimulationCommand['type']` makes new command kinds choose their effect family at compile time, preventing a new unconditional complement from silently marking refused future commands.
 
 Before accepting implementation, run genuine success controls for each remaining outcome family, including actual changed regime, alert acknowledgement, guard claim release and repeated refusal/no-op after an already accepted newer action. These must still prevent reaching older templates. Existing five reversal controls remain intact. Mutate the actual shared producer toward premature marking and toward never marking successful changes, observe both directions red, then restore source bytes exactly and run bounded neighboring history/domain tests. No workflow, timeout, V9 or new copy is proposed.
+
+## First coherent source checkpoint
+
+The coordinator approved the reviewed typed-dispatch design within the existing #1996/ADR0104 rule, including the DismissAlert exception and targeted canonical regime comparison. Implementation touches only SessionCommands. The inner route returns a transient effect; exactly one outer writer records changed/acknowledgement. After the fifteen domain branches narrow the protocol union, the four remaining construction/history branches end in a `never` assignment, so a future unhandled command variant fails TypeScript rather than taking an unconditional fallback. Public command/wire/save APIs are unchanged.
+
+Initial fixed22/22 GREEN2.58s (`fixed.txt`); application TypeScript exits0. Complete actual success/history coverage of all nineteen types, the two real producer negatives, exact restoration, neighboring/build/docs gates remain pending at this source checkpoint. No full acceptance claim yet.
