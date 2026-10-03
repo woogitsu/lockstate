@@ -1,0 +1,21 @@
+Subject: 0f3157e498, common-room-upholstered-native-preparation
+Application/browser types: node_modules/.bin/tsc.cmd -b --pretty false
+exit_code: 0
+Tools types: node_modules/.bin/tsc.cmd -b tsconfig.tools.json --pretty false
+exit_code: 0
+Whitespace: git -c core.longpaths=true diff --check
+exit_code: 0
+
+Actual Vitest output:
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-upholstered-native-prep-20261003
+ Test Files  2 passed (2)
+      Tests  7 passed (7)
+   Start at  11:13:23
+   Duration  1.50s (transform 35ms, setup 0ms, import 71ms, tests 1.36s, environment 0ms)
+
+Executed files:
+tests/foundation/research-index-contract.test.ts
+tests/foundation/browser-suite-partition-contract.test.ts
+maxWorkers: 2
+Native/browser/server/build: not executed in this preparation.
+q1 per-fixture ROI and selective Common Room consumer negative: pending coordinator run.

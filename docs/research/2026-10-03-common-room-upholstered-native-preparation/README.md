@@ -65,8 +65,10 @@ and17px native right-button lowering to select local60°/elevation40°.
 
 ## Evidence limits
 
-Application/browser types passed during preparation. Full types, index and
-partition checks are recorded separately. No browser/server was launched and
+Application/browser and tools TypeScript both exit0 on the pushed preparation
+`0f3157e498`. Research index and browser suite partition contracts pass7/7
+(two files, maxWorkers2); the new case is collected by the built-client gate
+and excluded from the source gate. `git diff --check` exits0. No browser/server was launched and
 no native result is claimed. Both cases use the existing60s/10s budgets and
 the existing20s read-only snapshot timeout. The weakest claim is90° visual
 usefulness and per-fixture consumer coverage: actual measured disjoint regions
