@@ -1,0 +1,1 @@
+﻿{"command":"node node_modules/typescript/bin/tsc -p tsconfig.json --pretty false","exitCode":0,"diagnostics":[],"note":"No output was emitted; the first explicit add named an absent empty log and failed without committing anything."}
