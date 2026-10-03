@@ -1,0 +1,44 @@
+{
+  "actualSourceExportsOnlyNotNative": true,
+  "angles": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "changedPixels": 24,
+      "RGBDifferenceBoundsPx": [
+        122,
+        169,
+        133,
+        173
+      ]
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "changedPixels": 12,
+      "RGBDifferenceBoundsPx": [
+        105,
+        163,
+        112,
+        168
+      ]
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "changedPixels": 0,
+      "RGBDifferenceBoundsPx": null
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "changedPixels": 18,
+      "RGBDifferenceBoundsPx": [
+        144,
+        160,
+        152,
+        169
+      ]
+    }
+  ]
+}

@@ -100,6 +100,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| 2026-10-03 | [Laundry washer physical service-grip connections](2026-10-03-laundry-washer-physical-connections/README.md) | Original80parts/5graphs retained; two real grip mounts/four triangle-interior witnesses; canonical/native pending. |
 | 2026-10-03 | [Canteen dining table physical rail connections](2026-10-03-canteen-dining-table-physical-joints/README.md) | Original62 parts/10 graphs retained; three real rail-to-post arms, six triangle-interior witnesses;72repeat/23realcontrols GREEN; native pending. |
 | [2026-10-03 combined Cell Utility and World camera](./2026-10-03-cell-utility-integrated/README.md) | Do actual authored fixtures retain owners through Load and does the zoomed whole-plan ghost match actual placement? | Six model native cases and two corrected World100/200 cases GREEN on the same frozen built source; original eight-case and observer failures retained, native CSS rounding confirmed without lowering precision. Full hosted CI remains separate. |
 | [2026-10-02 dedicated Cell toilet](./2026-10-02-cell-toilet-detail-audit/README.md) | Do retained Cell fixtures and outward service details render at both actual room orientations? | Original nineteen meshes and twenty-five new details; corrected outward valve,72 reproducible frames, actual consumer negatives and restored three-case Build/Load proof. Combined V8 integration is verified separately. |
