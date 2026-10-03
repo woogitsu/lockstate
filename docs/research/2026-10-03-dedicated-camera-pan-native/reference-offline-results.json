@@ -1,0 +1,870 @@
+{
+  "kind": "reference arithmetic only, not native acceptance",
+  "passed": 48,
+  "cases": [
+    {
+      "mode": "world",
+      "zoom": 0.5,
+      "logicalCssRatio": 1,
+      "direction": "right",
+      "step": {
+        "x": 256,
+        "y": 0
+      },
+      "projected": {
+        "x": 128,
+        "y": 0
+      },
+      "wanted": {
+        "x": 128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 0.5,
+      "logicalCssRatio": 1,
+      "direction": "left",
+      "step": {
+        "x": -256,
+        "y": 0
+      },
+      "projected": {
+        "x": -128,
+        "y": 0
+      },
+      "wanted": {
+        "x": -128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 0.5,
+      "logicalCssRatio": 1,
+      "direction": "down",
+      "step": {
+        "x": 0,
+        "y": 256
+      },
+      "projected": {
+        "x": 0,
+        "y": 128
+      },
+      "wanted": {
+        "x": 0,
+        "y": 128
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 0.5,
+      "logicalCssRatio": 1,
+      "direction": "up",
+      "step": {
+        "x": 0,
+        "y": -256
+      },
+      "projected": {
+        "x": 0,
+        "y": -128
+      },
+      "wanted": {
+        "x": 0,
+        "y": -128
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 0.5,
+      "logicalCssRatio": 2,
+      "direction": "right",
+      "step": {
+        "x": 512,
+        "y": 0
+      },
+      "projected": {
+        "x": 128,
+        "y": 0
+      },
+      "wanted": {
+        "x": 128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 0.5,
+      "logicalCssRatio": 2,
+      "direction": "left",
+      "step": {
+        "x": -512,
+        "y": 0
+      },
+      "projected": {
+        "x": -128,
+        "y": 0
+      },
+      "wanted": {
+        "x": -128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 0.5,
+      "logicalCssRatio": 2,
+      "direction": "down",
+      "step": {
+        "x": 0,
+        "y": 512
+      },
+      "projected": {
+        "x": 0,
+        "y": 128
+      },
+      "wanted": {
+        "x": 0,
+        "y": 128
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 0.5,
+      "logicalCssRatio": 2,
+      "direction": "up",
+      "step": {
+        "x": 0,
+        "y": -512
+      },
+      "projected": {
+        "x": 0,
+        "y": -128
+      },
+      "wanted": {
+        "x": 0,
+        "y": -128
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 1.25,
+      "logicalCssRatio": 1,
+      "direction": "right",
+      "step": {
+        "x": 102.4,
+        "y": 0
+      },
+      "projected": {
+        "x": 128,
+        "y": 0
+      },
+      "wanted": {
+        "x": 128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 1.25,
+      "logicalCssRatio": 1,
+      "direction": "left",
+      "step": {
+        "x": -102.4,
+        "y": 0
+      },
+      "projected": {
+        "x": -128,
+        "y": 0
+      },
+      "wanted": {
+        "x": -128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 1.25,
+      "logicalCssRatio": 1,
+      "direction": "down",
+      "step": {
+        "x": 0,
+        "y": 102.4
+      },
+      "projected": {
+        "x": 0,
+        "y": 128
+      },
+      "wanted": {
+        "x": 0,
+        "y": 128
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 1.25,
+      "logicalCssRatio": 1,
+      "direction": "up",
+      "step": {
+        "x": 0,
+        "y": -102.4
+      },
+      "projected": {
+        "x": 0,
+        "y": -128
+      },
+      "wanted": {
+        "x": 0,
+        "y": -128
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 1.25,
+      "logicalCssRatio": 2,
+      "direction": "right",
+      "step": {
+        "x": 204.8,
+        "y": 0
+      },
+      "projected": {
+        "x": 128,
+        "y": 0
+      },
+      "wanted": {
+        "x": 128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 1.25,
+      "logicalCssRatio": 2,
+      "direction": "left",
+      "step": {
+        "x": -204.8,
+        "y": 0
+      },
+      "projected": {
+        "x": -128,
+        "y": 0
+      },
+      "wanted": {
+        "x": -128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 1.25,
+      "logicalCssRatio": 2,
+      "direction": "down",
+      "step": {
+        "x": 0,
+        "y": 204.8
+      },
+      "projected": {
+        "x": 0,
+        "y": 128
+      },
+      "wanted": {
+        "x": 0,
+        "y": 128
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 1.25,
+      "logicalCssRatio": 2,
+      "direction": "up",
+      "step": {
+        "x": 0,
+        "y": -204.8
+      },
+      "projected": {
+        "x": 0,
+        "y": -128
+      },
+      "wanted": {
+        "x": 0,
+        "y": -128
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 3,
+      "logicalCssRatio": 1,
+      "direction": "right",
+      "step": {
+        "x": 42.666666666666664,
+        "y": 0
+      },
+      "projected": {
+        "x": 128,
+        "y": 0
+      },
+      "wanted": {
+        "x": 128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 3,
+      "logicalCssRatio": 1,
+      "direction": "left",
+      "step": {
+        "x": -42.666666666666664,
+        "y": 0
+      },
+      "projected": {
+        "x": -128,
+        "y": 0
+      },
+      "wanted": {
+        "x": -128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 3,
+      "logicalCssRatio": 1,
+      "direction": "down",
+      "step": {
+        "x": 0,
+        "y": 42.666666666666664
+      },
+      "projected": {
+        "x": 0,
+        "y": 128
+      },
+      "wanted": {
+        "x": 0,
+        "y": 128
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 3,
+      "logicalCssRatio": 1,
+      "direction": "up",
+      "step": {
+        "x": 0,
+        "y": -42.666666666666664
+      },
+      "projected": {
+        "x": 0,
+        "y": -128
+      },
+      "wanted": {
+        "x": 0,
+        "y": -128
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 3,
+      "logicalCssRatio": 2,
+      "direction": "right",
+      "step": {
+        "x": 85.33333333333333,
+        "y": 0
+      },
+      "projected": {
+        "x": 128,
+        "y": 0
+      },
+      "wanted": {
+        "x": 128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 3,
+      "logicalCssRatio": 2,
+      "direction": "left",
+      "step": {
+        "x": -85.33333333333333,
+        "y": 0
+      },
+      "projected": {
+        "x": -128,
+        "y": 0
+      },
+      "wanted": {
+        "x": -128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 3,
+      "logicalCssRatio": 2,
+      "direction": "down",
+      "step": {
+        "x": 0,
+        "y": 85.33333333333333
+      },
+      "projected": {
+        "x": 0,
+        "y": 128
+      },
+      "wanted": {
+        "x": 0,
+        "y": 128
+      }
+    },
+    {
+      "mode": "world",
+      "zoom": 3,
+      "logicalCssRatio": 2,
+      "direction": "up",
+      "step": {
+        "x": 0,
+        "y": -85.33333333333333
+      },
+      "projected": {
+        "x": 0,
+        "y": -128
+      },
+      "wanted": {
+        "x": 0,
+        "y": -128
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 0.5,
+      "logicalCssRatio": 1,
+      "direction": "right",
+      "step": {
+        "x": 181.01933598375618,
+        "y": 181.01933598375615
+      },
+      "projected": {
+        "x": 128,
+        "y": 0
+      },
+      "wanted": {
+        "x": 128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 0.5,
+      "logicalCssRatio": 1,
+      "direction": "left",
+      "step": {
+        "x": -181.01933598375618,
+        "y": -181.01933598375615
+      },
+      "projected": {
+        "x": -128,
+        "y": 0
+      },
+      "wanted": {
+        "x": -128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 0.5,
+      "logicalCssRatio": 1,
+      "direction": "down",
+      "step": {
+        "x": -256,
+        "y": 256.00000000000006
+      },
+      "projected": {
+        "x": 0,
+        "y": 128
+      },
+      "wanted": {
+        "x": 0,
+        "y": 128
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 0.5,
+      "logicalCssRatio": 1,
+      "direction": "up",
+      "step": {
+        "x": 256,
+        "y": -256.00000000000006
+      },
+      "projected": {
+        "x": 0,
+        "y": -128
+      },
+      "wanted": {
+        "x": 0,
+        "y": -128
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 0.5,
+      "logicalCssRatio": 2,
+      "direction": "right",
+      "step": {
+        "x": 362.03867196751236,
+        "y": 362.0386719675123
+      },
+      "projected": {
+        "x": 128,
+        "y": 0
+      },
+      "wanted": {
+        "x": 128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 0.5,
+      "logicalCssRatio": 2,
+      "direction": "left",
+      "step": {
+        "x": -362.03867196751236,
+        "y": -362.0386719675123
+      },
+      "projected": {
+        "x": -128,
+        "y": 0
+      },
+      "wanted": {
+        "x": -128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 0.5,
+      "logicalCssRatio": 2,
+      "direction": "down",
+      "step": {
+        "x": -512,
+        "y": 512.0000000000001
+      },
+      "projected": {
+        "x": 0,
+        "y": 128
+      },
+      "wanted": {
+        "x": 0,
+        "y": 128
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 0.5,
+      "logicalCssRatio": 2,
+      "direction": "up",
+      "step": {
+        "x": 512,
+        "y": -512.0000000000001
+      },
+      "projected": {
+        "x": 0,
+        "y": -128
+      },
+      "wanted": {
+        "x": 0,
+        "y": -128
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 1.25,
+      "logicalCssRatio": 1,
+      "direction": "right",
+      "step": {
+        "x": 72.40773439350248,
+        "y": 72.40773439350247
+      },
+      "projected": {
+        "x": 128,
+        "y": 0
+      },
+      "wanted": {
+        "x": 128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 1.25,
+      "logicalCssRatio": 1,
+      "direction": "left",
+      "step": {
+        "x": -72.40773439350248,
+        "y": -72.40773439350247
+      },
+      "projected": {
+        "x": -128,
+        "y": 0
+      },
+      "wanted": {
+        "x": -128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 1.25,
+      "logicalCssRatio": 1,
+      "direction": "down",
+      "step": {
+        "x": -102.4,
+        "y": 102.40000000000002
+      },
+      "projected": {
+        "x": 0,
+        "y": 127.99999999999999
+      },
+      "wanted": {
+        "x": 0,
+        "y": 128
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 1.25,
+      "logicalCssRatio": 1,
+      "direction": "up",
+      "step": {
+        "x": 102.4,
+        "y": -102.40000000000002
+      },
+      "projected": {
+        "x": 0,
+        "y": -127.99999999999999
+      },
+      "wanted": {
+        "x": 0,
+        "y": -128
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 1.25,
+      "logicalCssRatio": 2,
+      "direction": "right",
+      "step": {
+        "x": 144.81546878700496,
+        "y": 144.81546878700493
+      },
+      "projected": {
+        "x": 128,
+        "y": 0
+      },
+      "wanted": {
+        "x": 128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 1.25,
+      "logicalCssRatio": 2,
+      "direction": "left",
+      "step": {
+        "x": -144.81546878700496,
+        "y": -144.81546878700493
+      },
+      "projected": {
+        "x": -128,
+        "y": 0
+      },
+      "wanted": {
+        "x": -128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 1.25,
+      "logicalCssRatio": 2,
+      "direction": "down",
+      "step": {
+        "x": -204.8,
+        "y": 204.80000000000004
+      },
+      "projected": {
+        "x": 0,
+        "y": 127.99999999999999
+      },
+      "wanted": {
+        "x": 0,
+        "y": 128
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 1.25,
+      "logicalCssRatio": 2,
+      "direction": "up",
+      "step": {
+        "x": 204.8,
+        "y": -204.80000000000004
+      },
+      "projected": {
+        "x": 0,
+        "y": -127.99999999999999
+      },
+      "wanted": {
+        "x": 0,
+        "y": -128
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 3,
+      "logicalCssRatio": 1,
+      "direction": "right",
+      "step": {
+        "x": 30.16988933062603,
+        "y": 30.169889330626024
+      },
+      "projected": {
+        "x": 128,
+        "y": 0
+      },
+      "wanted": {
+        "x": 128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 3,
+      "logicalCssRatio": 1,
+      "direction": "left",
+      "step": {
+        "x": -30.16988933062603,
+        "y": -30.169889330626024
+      },
+      "projected": {
+        "x": -128,
+        "y": 0
+      },
+      "wanted": {
+        "x": -128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 3,
+      "logicalCssRatio": 1,
+      "direction": "down",
+      "step": {
+        "x": -42.66666666666667,
+        "y": 42.66666666666668
+      },
+      "projected": {
+        "x": 0,
+        "y": 128.00000000000003
+      },
+      "wanted": {
+        "x": 0,
+        "y": 128
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 3,
+      "logicalCssRatio": 1,
+      "direction": "up",
+      "step": {
+        "x": 42.66666666666667,
+        "y": -42.66666666666668
+      },
+      "projected": {
+        "x": 0,
+        "y": -128.00000000000003
+      },
+      "wanted": {
+        "x": 0,
+        "y": -128
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 3,
+      "logicalCssRatio": 2,
+      "direction": "right",
+      "step": {
+        "x": 60.33977866125206,
+        "y": 60.33977866125205
+      },
+      "projected": {
+        "x": 128,
+        "y": 0
+      },
+      "wanted": {
+        "x": 128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 3,
+      "logicalCssRatio": 2,
+      "direction": "left",
+      "step": {
+        "x": -60.33977866125206,
+        "y": -60.33977866125205
+      },
+      "projected": {
+        "x": -128,
+        "y": 0
+      },
+      "wanted": {
+        "x": -128,
+        "y": 0
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 3,
+      "logicalCssRatio": 2,
+      "direction": "down",
+      "step": {
+        "x": -85.33333333333334,
+        "y": 85.33333333333336
+      },
+      "projected": {
+        "x": 0,
+        "y": 128.00000000000003
+      },
+      "wanted": {
+        "x": 0,
+        "y": 128
+      }
+    },
+    {
+      "mode": "oblique",
+      "zoom": 3,
+      "logicalCssRatio": 2,
+      "direction": "up",
+      "step": {
+        "x": 85.33333333333334,
+        "y": -85.33333333333336
+      },
+      "projected": {
+        "x": 0,
+        "y": -128.00000000000003
+      },
+      "wanted": {
+        "x": 0,
+        "y": -128
+      }
+    }
+  ]
+}

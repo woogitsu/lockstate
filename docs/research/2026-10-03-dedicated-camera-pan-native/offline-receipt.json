@@ -1,0 +1,71 @@
+[
+  {
+    "name": "existing-actual-pan-consumers",
+    "exitCode": 0,
+    "elapsedSeconds": 2.12,
+    "command": [
+      "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/unit/camera-pan-ports.test.ts",
+      "tests/unit/ui-camera-pan-control.test.ts",
+      "--maxWorkers=2"
+    ]
+  },
+  {
+    "name": "production-build",
+    "exitCode": 0,
+    "elapsedSeconds": 9.895,
+    "command": [
+      "pnpm.cmd",
+      "--config.verify-deps-before-run=false",
+      "build"
+    ]
+  },
+  {
+    "name": "strict-fixture-typescript",
+    "exitCode": 0,
+    "elapsedSeconds": 0.122,
+    "command": [
+      "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "node_modules/typescript/bin/tsc",
+      "--ignoreConfig",
+      "--noEmit",
+      "--strict",
+      "--skipLibCheck",
+      "--target",
+      "ES2022",
+      "--module",
+      "ESNext",
+      "--moduleResolution",
+      "bundler",
+      "--types",
+      "node",
+      "--resolveJsonModule",
+      "tests/browser/dedicated-camera-pan-player.spec.ts"
+    ]
+  },
+  {
+    "name": "prepared-four-case-collection",
+    "exitCode": 0,
+    "elapsedSeconds": 0.725,
+    "command": [
+      "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "node_modules/@playwright/test/cli.js",
+      "test",
+      "--list",
+      "--config",
+      "tests/browser/playwright.config.ts",
+      "dedicated-camera-pan-player.spec.ts"
+    ]
+  },
+  {
+    "name": "reference-offline-arithmetic",
+    "exitCode": 0,
+    "elapsedSeconds": 0.058,
+    "command": [
+      "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "docs/research/2026-10-03-dedicated-camera-pan-native/reference-offline-audit.cjs"
+    ]
+  }
+]
