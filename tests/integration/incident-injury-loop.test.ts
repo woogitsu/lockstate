@@ -294,7 +294,7 @@ describe('an incident injures somebody, the infirmary treats them, and the flag 
       ...(bundle.identity === undefined ? {} : { identity: bundle.identity }),
     });
     expect(envelope.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
-    expect(SAVE_SCHEMA_VERSION).toBe(9); // V7 travel, V8 object ownership, V9 construction history; none changes injury state.
+    expect(SAVE_SCHEMA_VERSION).toBe(10); // V7 travel, V8 object ownership, V9 construction history, V10 exact counters; none changes injury state.
 
     const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
     expect(decoded).toMatchObject({ ok: true, migrated: false });

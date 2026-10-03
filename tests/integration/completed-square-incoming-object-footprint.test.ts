@@ -58,7 +58,7 @@ it.each(poses.flatMap(pose => (['PlaceObject', 'PlaceBuildOrder'] as const).flat
       }).toEqual({ ...before, construction: { ...before.construction,
         // V9 retains the single planned -> failed transition of an ordinary
         // submitted order; PlaceObject's earlier refusal submits no order.
-        orderRevisions: { ...before.construction.orderRevisions, ...(type === 'PlaceBuildOrder' ? { 'later-bed': 1 } : {}) },
+        orderRevisions: { ...before.construction.orderRevisions, ...(type === 'PlaceBuildOrder' ? { 'later-bed': '1' } : {}) },
       } });
       expect(runtime.construction.allOrders().filter(order => order.id !== 'later-bed').map(order => [order.id, runtime.construction.revisionOf(order.id)])).toEqual(revisions);
       // Load the refused state and ensure the unchanged paid room can continue.

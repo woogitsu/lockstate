@@ -1,0 +1,7 @@
+const fs=require('node:fs');
+const buffer=fs.readFileSync('C:/Users/matma/AppData/Local/Temp/lockstate-v10-complete-suite-original.txt');
+const raw=buffer.toString(buffer[0]===255&&buffer[1]===254?'utf16le':'utf8');
+const groups=raw.split(/(?=^ FAIL )/m), rows=[];
+for(const g of groups){if(!g.startsWith(' FAIL '))continue;const file=g.match(/^ FAIL  (\S+\.test\.ts)/)?.[1];const error=g.match(/^(?:AssertionError|Error|SnapshotRefusedError|TypeError|ZodError):.*(?:\n(?! ❯| FAIL |$).*){0,5}/m)?.[0];const line=g.match(/❯ (tests\/[^\s]+:\d+:\d+)/)?.[1];if(error)rows.push({file,error,line});}
+fs.writeFileSync('C:/Users/matma/AppData/Local/Temp/lockstate-v10-suite-failure-summary.json',JSON.stringify(rows,null,2));
+process.stdout.write(rows.map((r,i)=>`${i} ${r.file} ${r.line}\n${r.error.slice(0,520)}`).join('\n\n'));

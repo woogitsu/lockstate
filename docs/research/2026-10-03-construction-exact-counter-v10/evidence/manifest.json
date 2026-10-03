@@ -15,9 +15,19 @@
         "sha256":  "a41dfb5bb318a9fcb431f48d04dfb3bf883d0065570729209138e655fb103ccd"
     },
     {
+        "file":  "executed-consumer-corrections.cjs.txt",
+        "bytes":  2172,
+        "sha256":  "6fd2149ed09fa66a51c3a1574924c5658c4d54390f47188a518809efa7c865ed"
+    },
+    {
         "file":  "executed-controls.cjs.txt",
         "bytes":  3128,
         "sha256":  "6b98b8199de2d89f248adff877501a635e193aa7776925beb6edbfd1bb1aa635"
+    },
+    {
+        "file":  "executed-suite-summary.cjs.txt",
+        "bytes":  827,
+        "sha256":  "9fac13ad1877b187f3ba3fa47141f1b55be51142d347a213d64b584619f3d541"
     },
     {
         "file":  "focused-files.json",
@@ -70,6 +80,31 @@
         "sha256":  "a80c283b31029146a4c49af428f3489225b256029fabafc0242b33f94e6806ff"
     },
     {
+        "file":  "lockstate-v10-complete-suite-original.txt",
+        "bytes":  284564,
+        "sha256":  "cc23d635ee193dcab28092f77a1a5ab7a7a5d66a5e793aeab0b18e4f1c6c8386"
+    },
+    {
+        "file":  "lockstate-v10-consumer-app-types.txt",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+        "file":  "lockstate-v10-consumer-tools-types.txt",
+        "bytes":  0,
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+        "file":  "lockstate-v10-current-consumer-files.json",
+        "bytes":  1885,
+        "sha256":  "f123138ccfb30d104211d937a1b615de500cfa858651fe92af8f097265c4b340"
+    },
+    {
+        "file":  "lockstate-v10-current-consumers-focused.txt",
+        "bytes":  512,
+        "sha256":  "98a56a8fed299b8376f9e2016a78d2b43908bce74ebdea528f0c78a99b77295b"
+    },
+    {
         "file":  "lockstate-v10-docs-corrected.txt",
         "bytes":  4762,
         "sha256":  "302bca759ed70b0880a17b8be99781600ea85549a653eed6f2dd8acbf95fd869"
@@ -98,6 +133,16 @@
         "file":  "lockstate-v10-rich-migration-first.txt",
         "bytes":  3364,
         "sha256":  "e7df0d8fc8af6d8b64bc79c43b57d36f8436e18ca74b285466a6710f1c21e8e3"
+    },
+    {
+        "file":  "lockstate-v10-suite-failure-summary.json",
+        "bytes":  22020,
+        "sha256":  "98c3477d1c9ed0b35bac3d1130b15b8f604a4a84ace28c83d7652b120ec17d09"
+    },
+    {
+        "file":  "lockstate-v10-suite-hydration.txt",
+        "bytes":  142,
+        "sha256":  "e11596d42c8538f80f9b7e5a3eaba394c40cacff2b1ab8d5506e369aee148b1b"
     },
     {
         "file":  "lockstate-v10-tools-types-final.txt",

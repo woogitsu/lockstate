@@ -114,7 +114,7 @@ it.each(blockers)('keeps actual lower-cell access after $stage, square=$square m
   expect(wall).toMatchObject({ state: 'failed', failReason: 'unbuildable' });
   const { orders: _orders, ...afterHistory } = runtime.construction.snapshot();
   expect(afterHistory).toEqual({ ...history,
-    orderRevisions: { ...history.orderRevisions, 'doorway-barrier': 1 },
+    orderRevisions: { ...history.orderRevisions, 'doorway-barrier': '1' },
   });
   for (const order of originalOrders) expect(runtime.construction.getOrder(order.id)).toEqual(order);
   expect(runtime.treasury.snapshot()).toEqual(funds);

@@ -102,3 +102,32 @@ restoration receipts identify the actual bytes. Citation-probe setup errors
 (the installed TypeScript7 package has no legacy transpileModule entry) are
 recorded as environment/tooling errors, followed by the successful Node
 type-stripping read-only probe, without repository/source mutation.
+
+## Complete-suite current consumer follow-up
+
+One original complete suite ran at published `7b20accb8d03d38281b8026b2cca5b7d74f31b89`:
+248 RED /8362 GREEN /8 existing skips,115.61s. Existing cached CI-required
+Blender/angled LFS objects were hydrated before execution (9772 objects,247MB).
+The complete raw outcome is retained without dropping failed groups.
+
+Measured current consumers in30 files retained old current-save9 pins, explicit
+numeric failed-order revision1, and one current snapshot3 wrapper. They now
+require current-save10, exact text revision `1`, and the actual current snapshot
+domain constant. Full world/history/treasury/owner/route/refusal comparisons,
+historical envelope contents, frozen migration targets and all budgets remain
+unchanged. Actual historical V1–V7 data cases still decode/migrate their original
+formats; only their current output pin and descriptive title changed.
+
+The original run also had19 deploy-secret and one worker-telemetry failures:
+default Windows `bash` selected WSL with no installed distro. Using the tests'
+existing `LOCKSTATE_BASH` port with installed Git Bash fixes execution without
+changing tests or production. One citation failure came from this checkout's
+main-only origin fetch specification; three exact already-published branch refs
+were fetched, rather than weakening the published-commit guard. The separate
+ADR0031 citation remains inherited and root-owned.
+
+Affected30 files plus the three actual environment/citation consumers passed
+497 tests/33 files,16.65s; standard application/tools types exit0. Production,
+protocol, schema, UI, native fixtures, workflows and test configuration have no
+changes in this follow-up. Final complete result is recorded after its bounded
+verification, without a browser/server/build/native claim.

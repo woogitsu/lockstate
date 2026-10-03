@@ -81,7 +81,7 @@ it.each(poses.flatMap(pose => [false, true].flatMap(saved => [false, true].map(l
   const { kernel: _afterKernel, ...afterState } = captureSessionSnapshot(runtime);
   expect({ ...afterState, construction: { ...afterState.construction, orders: afterState.construction.orders.filter(row => row.id !== order.id) } }).toEqual({
     ...beforeState, construction: { ...beforeState.construction,
-      orderRevisions: { ...beforeState.construction.orderRevisions, 'independent-object': 1 },
+      orderRevisions: { ...beforeState.construction.orderRevisions, 'independent-object': '1' },
     },
   });
 });

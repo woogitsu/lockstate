@@ -1,0 +1,412 @@
+[
+  {
+    "file": "tests/determinism/clock-transport.test.ts",
+    "error": "Error: The worker refused the scenario snapshot: Cannot restore snapshot \"simulation-save-payload\" v3; this build under",
+    "line": "tests/determinism/clock-transport.test.ts:166:22"
+  },
+  {
+    "file": "tests/determinism/clock-transport.test.ts",
+    "error": "Error: The worker refused the scenario snapshot: Cannot restore snapshot \"simulation-save-payload\" v3; this build under",
+    "line": "tests/determinism/clock-transport.test.ts:203:18"
+  },
+  {
+    "file": "tests/determinism/clock-transport.test.ts",
+    "error": "Error: The worker refused the scenario snapshot: Cannot restore snapshot \"simulation-save-payload\" v3; this build under",
+    "line": "tests/determinism/clock-transport.test.ts:222:20"
+  },
+  {
+    "file": "tests/determinism/clock-transport.test.ts",
+    "error": "Error: The worker refused the scenario snapshot: Cannot restore snapshot \"simulation-save-payload\" v3; this build under",
+    "line": "tests/determinism/clock-transport.test.ts:248:21"
+  },
+  {
+    "file": "tests/foundation/deploy-secret-gate-contract.test.ts",
+    "error": "AssertionError: P\u0000o\u0000d\u0000s\u0000y\u0000s\u0000t\u0000e\u0000m\u0000 \u0000W\u0000i\u0000n\u0000d\u0000o\u0000w\u0000s\u0000 \u0000d\u0000l\u0000a\u0000 \u0000s\u0000y\u0000s\u0000t\u0000e\u0000m\u0000u\u0000 \u0000L\u0000i\u0000n\u0000u\u0000x\u0000 \u0000n\u0000i\u0000e\u0000 \u0000m\u0000a\u0000 \u0000z\u0000a\u0000i\u0000n\u0000s\u0000t\u0000a\u0000l\u0000o",
+    "line": "tests/foundation/deploy-secret-gate-contract.test.ts:93:42"
+  },
+  {
+    "file": "tests/foundation/deploy-secret-gate-contract.test.ts",
+    "error": "AssertionError: P\u0000o\u0000d\u0000s\u0000y\u0000s\u0000t\u0000e\u0000m\u0000 \u0000W\u0000i\u0000n\u0000d\u0000o\u0000w\u0000s\u0000 \u0000d\u0000l\u0000a\u0000 \u0000s\u0000y\u0000s\u0000t\u0000e\u0000m\u0000u\u0000 \u0000L\u0000i\u0000n\u0000u\u0000x\u0000 \u0000n\u0000i\u0000e\u0000 \u0000m\u0000a\u0000 \u0000z\u0000a\u0000i\u0000n\u0000s\u0000t\u0000a\u0000l\u0000o",
+    "line": "tests/foundation/deploy-secret-gate-contract.test.ts:102:42"
+  },
+  {
+    "file": "tests/foundation/deploy-secret-gate-contract.test.ts",
+    "error": "AssertionError: expected 'P\\u0000o\\u0000d\\u0000s\\u0000y\\u0000s\\…' to contain '::error::'",
+    "line": "tests/foundation/deploy-secret-gate-contract.test.ts:107:5"
+  },
+  {
+    "file": "tests/foundation/deploy-secret-gate-contract.test.ts",
+    "error": "AssertionError: expected 'P\\u0000o\\u0000d\\u0000s\\u0000y\\u0000s\\…' to contain '::error::'",
+    "line": "tests/foundation/deploy-secret-gate-contract.test.ts:124:7"
+  },
+  {
+    "file": "tests/foundation/deploy-secret-gate-contract.test.ts",
+    "error": "AssertionError: expected 'P\\u0000o\\u0000d\\u0000s\\u0000y\\u0000s\\…' to contain '::error::'",
+    "line": "tests/foundation/deploy-secret-gate-contract.test.ts:137:5"
+  },
+  {
+    "file": "tests/foundation/deploy-secret-gate-contract.test.ts",
+    "error": "AssertionError: P\u0000o\u0000d\u0000s\u0000y\u0000s\u0000t\u0000e\u0000m\u0000 \u0000W\u0000i\u0000n\u0000d\u0000o\u0000w\u0000s\u0000 \u0000d\u0000l\u0000a\u0000 \u0000s\u0000y\u0000s\u0000t\u0000e\u0000m\u0000u\u0000 \u0000L\u0000i\u0000n\u0000u\u0000x\u0000 \u0000n\u0000i\u0000e\u0000 \u0000m\u0000a\u0000 \u0000z\u0000a\u0000i\u0000n\u0000s\u0000t\u0000a\u0000l\u0000o",
+    "line": "tests/foundation/deploy-secret-gate-contract.test.ts:150:42"
+  },
+  {
+    "file": "tests/foundation/deploy-secret-gate-contract.test.ts",
+    "error": "AssertionError: expected 'P\\u0000o\\u0000d\\u0000s\\u0000y\\u0000s\\…' to contain 'Required secret VITE_SUPABASE_URL is …'",
+    "line": "tests/foundation/deploy-secret-gate-contract.test.ts:157:28"
+  },
+  {
+    "file": "tests/foundation/deploy-secret-gate-contract.test.ts",
+    "error": "AssertionError: P\u0000o\u0000d\u0000s\u0000y\u0000s\u0000t\u0000e\u0000m\u0000 \u0000W\u0000i\u0000n\u0000d\u0000o\u0000w\u0000s\u0000 \u0000d\u0000l\u0000a\u0000 \u0000s\u0000y\u0000s\u0000t\u0000e\u0000m\u0000u\u0000 \u0000L\u0000i\u0000n\u0000u\u0000x\u0000 \u0000n\u0000i\u0000e\u0000 \u0000m\u0000a\u0000 \u0000z\u0000a\u0000i\u0000n\u0000s\u0000t\u0000a\u0000l\u0000o",
+    "line": "tests/foundation/deploy-secret-gate-contract.test.ts:192:42"
+  },
+  {
+    "file": "tests/foundation/deploy-secret-gate-contract.test.ts",
+    "error": "AssertionError: expected 'P\\u0000o\\u0000d\\u0000s\\u0000y\\u0000s\\…' to contain '::error::'",
+    "line": "tests/foundation/deploy-secret-gate-contract.test.ts:204:5"
+  },
+  {
+    "file": "tests/foundation/deploy-secret-gate-contract.test.ts",
+    "error": "AssertionError: expected 'P\\u0000o\\u0000d\\u0000s\\u0000y\\u0000s\\…' to contain '::error::'",
+    "line": "tests/foundation/deploy-secret-gate-contract.test.ts:212:5"
+  },
+  {
+    "file": "tests/foundation/deploy-secret-gate-contract.test.ts",
+    "error": "AssertionError: expected 'P\\u0000o\\u0000d\\u0000s\\u0000y\\u0000s\\…' to contain 'the literal service_role'",
+    "line": "tests/foundation/deploy-secret-gate-contract.test.ts:222:27"
+  },
+  {
+    "file": "tests/foundation/deploy-secret-gate-contract.test.ts",
+    "error": "AssertionError: expected 'P\\u0000o\\u0000d\\u0000s\\u0000y\\u0000s\\…' to contain 'a PEM private key block'",
+    "line": "tests/foundation/deploy-secret-gate-contract.test.ts:230:27"
+  },
+  {
+    "file": "tests/foundation/deploy-secret-gate-contract.test.ts",
+    "error": "AssertionError: expected 'P\\u0000o\\u0000d\\u0000s\\u0000y\\u0000s\\…' to contain '::error::'",
+    "line": "tests/foundation/deploy-secret-gate-contract.test.ts:237:5"
+  },
+  {
+    "file": "tests/foundation/deploy-secret-gate-contract.test.ts",
+    "error": "AssertionError: expected 'P\\u0000o\\u0000d\\u0000s\\u0000y\\u0000s\\…' to contain 'found no build output'",
+    "line": "tests/foundation/deploy-secret-gate-contract.test.ts:247:28"
+  },
+  {
+    "file": "tests/foundation/deploy-secret-gate-contract.test.ts",
+    "error": "AssertionError: P\u0000o\u0000d\u0000s\u0000y\u0000s\u0000t\u0000e\u0000m\u0000 \u0000W\u0000i\u0000n\u0000d\u0000o\u0000w\u0000s\u0000 \u0000d\u0000l\u0000a\u0000 \u0000s\u0000y\u0000s\u0000t\u0000e\u0000m\u0000u\u0000 \u0000L\u0000i\u0000n\u0000u\u0000x\u0000 \u0000n\u0000i\u0000e\u0000 \u0000m\u0000a\u0000 \u0000z\u0000a\u0000i\u0000n\u0000s\u0000t\u0000a\u0000l\u0000o",
+    "line": "tests/foundation/deploy-secret-gate-contract.test.ts:258:42"
+  },
+  {
+    "file": "tests/foundation/deploy-secret-gate-contract.test.ts",
+    "error": "AssertionError: expected 1 to be 2 // Object.is equality",
+    "line": "tests/foundation/deploy-secret-gate-contract.test.ts:266:27"
+  },
+  {
+    "file": "tests/foundation/documentation-anchor-quotation-contract.test.ts",
+    "error": "AssertionError: these documents cite code by a line number nothing can check: expected [ Array(1) ] to deeply equal []",
+    "line": "tests/foundation/documentation-anchor-quotation-contract.test.ts:984:82"
+  },
+  {
+    "file": "tests/foundation/documentation-commit-citation-contract.test.ts",
+    "error": "AssertionError: these cite a commit that exists on this disk and on no ref this repository publishes, so nobody else ca",
+    "line": "tests/foundation/documentation-commit-citation-contract.test.ts:748:7"
+  },
+  {
+    "file": "tests/migrations/save-v4-to-v5.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/migrations/save-v4-to-v5.test.ts:277:35"
+  },
+  {
+    "file": "tests/migrations/save-v7-to-v8-object-ownership.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/migrations/save-v7-to-v8-object-ownership.test.ts:34:44"
+  },
+  {
+    "file": "tests/integration/completed-square-incoming-object-footprint.test.ts",
+    "error": "AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }",
+    "line": "tests/integration/completed-square-incoming-object-footprint.test.ts:58:10"
+  },
+  {
+    "file": "tests/integration/completed-template-door-furniture.test.ts",
+    "error": "AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }",
+    "line": "tests/integration/completed-template-door-furniture.test.ts:78:86"
+  },
+  {
+    "file": "tests/integration/completed-template-door-furniture.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/completed-template-door-furniture.test.ts:59:17"
+  },
+  {
+    "file": "tests/integration/completed-template-door-furniture.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/completed-template-door-furniture.test.ts:43:35"
+  },
+  {
+    "file": "tests/integration/completed-template-door-furniture.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/completed-template-door-furniture.test.ts:99:24"
+  },
+  {
+    "file": "tests/integration/construction-placement-order.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/construction-placement-order.test.ts:211:22"
+  },
+  {
+    "file": "tests/integration/construction-placement-order.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/construction-placement-order.test.ts:240:22"
+  },
+  {
+    "file": "tests/integration/construction-placement-order.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/construction-placement-order.test.ts:277:22"
+  },
+  {
+    "file": "tests/integration/construction-placement-order.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/construction-placement-order.test.ts:311:22"
+  },
+  {
+    "file": "tests/integration/disconnected-first-shower-selection.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/disconnected-first-shower-selection.test.ts:78:25"
+  },
+  {
+    "file": "tests/integration/economy-payroll-save.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/economy-payroll-save.test.ts:427:33"
+  },
+  {
+    "file": "tests/integration/economy-state-income-persistence.test.ts",
+    "error": "AssertionError: a bump needs its own reason; the income line is not one: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/economy-state-income-persistence.test.ts:275:26"
+  },
+  {
+    "file": "tests/integration/economy-state-income-persistence.test.ts",
+    "error": "AssertionError: a bump needs its own reason; the income line is not one: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/economy-state-income-persistence.test.ts:285:28"
+  },
+  {
+    "file": "tests/integration/economy-state-income-persistence.test.ts",
+    "error": "AssertionError: a bump needs its own reason; the income line is not one: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/economy-state-income-persistence.test.ts:301:26"
+  },
+  {
+    "file": "tests/integration/economy-state-income-persistence.test.ts",
+    "error": "AssertionError: a bump needs its own reason; the income line is not one: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/economy-state-income-persistence.test.ts:334:26"
+  },
+  {
+    "file": "tests/integration/economy-state-income-persistence.test.ts",
+    "error": "AssertionError: a bump needs its own reason; the income line is not one: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/economy-state-income-persistence.test.ts:351:26"
+  },
+  {
+    "file": "tests/integration/economy-state-income-persistence.test.ts",
+    "error": "AssertionError: a bump needs its own reason; the income line is not one: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/economy-state-income-persistence.test.ts:370:20"
+  },
+  {
+    "file": "tests/integration/generic-object-template-approach.test.ts",
+    "error": "AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }",
+    "line": "tests/integration/generic-object-template-approach.test.ts:82:150"
+  },
+  {
+    "file": "tests/integration/incident-injury-loop.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/incident-injury-loop.test.ts:297:33"
+  },
+  {
+    "file": "tests/integration/individual-object-preflight-publication.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/individual-object-preflight-publication.test.ts:65:38"
+  },
+  {
+    "file": "tests/integration/individual-object-rotation-command.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/individual-object-rotation-command.test.ts:73:3"
+  },
+  {
+    "file": "tests/integration/later-usable-shower-selection.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/later-usable-shower-selection.test.ts:68:25"
+  },
+  {
+    "file": "tests/integration/laundry-linen-rack-public-consumer.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/laundry-linen-rack-public-consumer.test.ts:87:38"
+  },
+  {
+    "file": "tests/integration/native-classroom-desk-preparation.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/native-classroom-desk-preparation.test.ts:91:38"
+  },
+  {
+    "file": "tests/integration/native-garbage-room-preparation.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/native-garbage-room-preparation.test.ts:61:38"
+  },
+  {
+    "file": "tests/integration/native-reception-room-preparation.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/native-reception-room-preparation.test.ts:61:38"
+  },
+  {
+    "file": "tests/integration/native-staff-room-padded-chair-preparation.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/native-staff-room-padded-chair-preparation.test.ts:50:38"
+  },
+  {
+    "file": "tests/integration/pending-square-wall-incoming-object.test.ts",
+    "error": "AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }",
+    "line": "tests/integration/pending-square-wall-incoming-object.test.ts:65:98"
+  },
+  {
+    "file": "tests/integration/pending-square-wall-incoming-object.test.ts",
+    "error": "AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }",
+    "line": "tests/integration/pending-square-wall-incoming-object.test.ts:93:91"
+  },
+  {
+    "file": "tests/integration/pending-square-wall-incoming-object.test.ts",
+    "error": "AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }",
+    "line": "tests/integration/pending-square-wall-incoming-object.test.ts:144:98"
+  },
+  {
+    "file": "tests/integration/pending-template-incoming-object-footprint.test.ts",
+    "error": "AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed: 73, …(5) }",
+    "line": "tests/integration/pending-template-incoming-object-footprint.test.ts:76:56"
+  },
+  {
+    "file": "tests/integration/riot-regime-loop.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/riot-regime-loop.test.ts:530:33"
+  },
+  {
+    "file": "tests/integration/room-template-blocked-anchor-fallback.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/room-template-blocked-anchor-fallback.test.ts:56:15"
+  },
+  {
+    "file": "tests/integration/room-template-completed-row-access.test.ts",
+    "error": "AssertionError: expected { …(6) } to deeply equal { …(6) }",
+    "line": "tests/integration/room-template-completed-row-access.test.ts:116:24"
+  },
+  {
+    "file": "tests/integration/room-template-door-square-run.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/room-template-door-square-run.test.ts:134:15"
+  },
+  {
+    "file": "tests/integration/room-template-door-square-run.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/room-template-door-square-run.test.ts:86:19"
+  },
+  {
+    "file": "tests/integration/room-template-door-square-run.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/room-template-door-square-run.test.ts:146:19"
+  },
+  {
+    "file": "tests/integration/room-template-later-wall-approach.test.ts",
+    "error": "AssertionError: expected { …(6) } to deeply equal { …(6) }",
+    "line": "tests/integration/room-template-later-wall-approach.test.ts:79:26"
+  },
+  {
+    "file": "tests/integration/room-template-later-wall-approach.test.ts",
+    "error": "AssertionError: expected { …(4) } to deeply equal { …(4) }",
+    "line": "tests/integration/room-template-later-wall-approach.test.ts:79:26"
+  },
+  {
+    "file": "tests/integration/room-template-rebuilt-render-identity.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/room-template-rebuilt-render-identity.test.ts:89:27"
+  },
+  {
+    "file": "tests/integration/room-template-rebuilt-render-identity.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/room-template-rebuilt-render-identity.test.ts:108:13"
+  },
+  {
+    "file": "tests/integration/room-template-rebuilt-render-identity.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/room-template-rebuilt-render-identity.test.ts:165:13"
+  },
+  {
+    "file": "tests/integration/room-template-rebuilt-render-identity.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/room-template-rebuilt-render-identity.test.ts:181:19"
+  },
+  {
+    "file": "tests/integration/square-wall-object-footprint.test.ts",
+    "error": "AssertionError: expected { …(6) } to deeply equal { …(6) }",
+    "line": "tests/integration/square-wall-object-footprint.test.ts:89:3"
+  },
+  {
+    "file": "tests/integration/square-wall-object-footprint.test.ts",
+    "error": "AssertionError: expected { …(6) } to deeply equal { …(6) }",
+    "line": "tests/integration/square-wall-object-footprint.test.ts:89:3"
+  },
+  {
+    "file": "tests/integration/square-wall-object-footprint.test.ts",
+    "error": "AssertionError: expected { …(6) } to deeply equal { …(6) }",
+    "line": "tests/integration/square-wall-object-footprint.test.ts:89:3"
+  },
+  {
+    "file": "tests/integration/square-wall-object-footprint.test.ts",
+    "error": "AssertionError: expected { …(4) } to deeply equal { …(4) }",
+    "line": "tests/integration/square-wall-object-footprint.test.ts:89:3"
+  },
+  {
+    "file": "tests/integration/square-wall-object-footprint.test.ts",
+    "error": "AssertionError: expected { …(4) } to deeply equal { …(4) }",
+    "line": "tests/integration/square-wall-object-footprint.test.ts:89:3"
+  },
+  {
+    "file": "tests/integration/square-wall-object-footprint.test.ts",
+    "error": "AssertionError: expected { …(6) } to deeply equal { …(6) }",
+    "line": "tests/integration/square-wall-object-footprint.test.ts:117:5"
+  },
+  {
+    "file": "tests/integration/template-storage-anchor-delivery.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/template-storage-anchor-delivery.test.ts:79:25"
+  },
+  {
+    "file": "tests/integration/template-storage-anchor-delivery.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/template-storage-anchor-delivery.test.ts:116:23"
+  },
+  {
+    "file": "tests/integration/template-storage-anchor-delivery.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/integration/template-storage-anchor-delivery.test.ts:140:25"
+  },
+  {
+    "file": "tests/unit/ui-room-template-session-preflight.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/unit/ui-room-template-session-preflight.test.ts:76:13"
+  },
+  {
+    "file": "tests/unit/ui-room-template-session-preflight.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/unit/ui-room-template-session-preflight.test.ts:120:13"
+  },
+  {
+    "file": "tests/unit/ui-room-template-session-preflight.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/unit/ui-room-template-session-preflight.test.ts:134:13"
+  },
+  {
+    "file": "tests/unit/ui-room-template-session-preflight.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/unit/ui-room-template-session-preflight.test.ts:160:13"
+  },
+  {
+    "file": "tests/unit/ui-room-template-session-preflight.test.ts",
+    "error": "AssertionError: expected 10 to be 9 // Object.is equality",
+    "line": "tests/unit/ui-room-template-session-preflight.test.ts:187:13"
+  },
+  {
+    "file": "tests/unit/worker-telemetry-ingest.test.ts",
+    "error": "AssertionError: check-deploy-secrets.sh rejected src/worker:",
+    "line": "tests/unit/worker-telemetry-ingest.test.ts:785:7"
+  }
+]

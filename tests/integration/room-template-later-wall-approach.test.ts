@@ -77,7 +77,7 @@ it.each(cases)('preserves $stage Cell against later walls, mirror=$mirrorX turn=
     // placement. It must receive no funding and enter no reversible history.
     const { orders: _orders, ...afterHistory } = runtime.construction.snapshot();
     expect(afterHistory).toEqual({ ...history,
-      orderRevisions: { ...history.orderRevisions, [orderId]: 1 },
+      orderRevisions: { ...history.orderRevisions, [orderId]: '1' },
     });
     for (const order of originalOrders) expect(runtime.construction.getOrder(order.id)).toEqual(order);
     expect(runtime.treasury.snapshot()).toEqual(money);

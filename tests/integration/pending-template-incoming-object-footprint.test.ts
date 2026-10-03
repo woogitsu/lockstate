@@ -75,7 +75,7 @@ it.each(cases)('pending plan protects incoming $axis far square: q=$quarterTurns
       // All original counters, paid plan, materials, history and geometry stay.
       expect(gameplay(runtime, 'independent-fixture')).toEqual({
         ...before, construction: { ...before.construction,
-          orderRevisions: { ...before.construction.orderRevisions, 'independent-fixture': 1 },
+          orderRevisions: { ...before.construction.orderRevisions, 'independent-fixture': '1' },
         },
       });
       expect(runtime.treasury.balanceMinorUnits).toBe(funds);

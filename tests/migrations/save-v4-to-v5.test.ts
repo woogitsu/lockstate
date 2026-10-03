@@ -274,7 +274,7 @@ describe('save-schema V4 -> V5 migration', () => {
       expect(result).toMatchObject({ ok: true, migrated: true });
       if (!result.ok) return;
       expect(result.value.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
-      expect(SAVE_SCHEMA_VERSION).toBe(9); // V9 preserves construction marker/counters (#1985/#2021).
+      expect(SAVE_SCHEMA_VERSION).toBe(10); // V9 preserves marker/counters; V10 makes counters exact (#2025).
     }
   });
 
