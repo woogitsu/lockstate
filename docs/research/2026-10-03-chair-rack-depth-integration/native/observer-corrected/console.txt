@@ -1,0 +1,37 @@
+node : [2m[WebServer] [22m(node:33628) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:12 char:1
++ node --experimental-transform-types --disable-warning=ExperimentalWar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 6 tests using 1 worker
+
+(node:25356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:25356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\generic-wooden-rack-player-build.spec.ts:218:1 › player creates storage and delivery capacity before generic rack (43.4s)
+  ok 2 tests\browser\generic-wooden-rack-player-build.spec.ts:281:3 › player reaches default generic racks at quarterTurns0 and retains both authored rack palettes and native anchors after Save/Load (53.7s)
+  ok 3 tests\browser\generic-wooden-rack-player-build.spec.ts:281:3 › player reaches default generic racks at quarterTurns1 and retains both authored rack palettes and native anchors after Save/Load (41.8s)
+  ok 4 tests\browser\wooden-chair-player-build.spec.ts:166:1 › player creates storage and delivery capacity before Staff Room (43.5s)
+  ok 5 tests\browser\wooden-chair-player-build.spec.ts:229:3 › player builds Staff Room at quarterTurns0 and retains both authored chair palettes and anchors after Save/Load (42.4s)
+  ok 6 tests\browser\wooden-chair-player-build.spec.ts:229:3 › player builds Staff Room at quarterTurns1 and retains both authored chair palettes and anchors after Save/Load (40.6s)
+
+  6 passed (4.5m)

@@ -1,0 +1,52 @@
+{
+  "observer-corrected": {
+    "startTime": "2026-10-03T03:21:15.637Z",
+    "duration": 268754.05100000004,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0,
+    "results": {
+      "expected": 6
+    },
+    "captureFiles": 33
+  },
+  "q0-negative": {
+    "startTime": "2026-10-03T03:28:20.829Z",
+    "duration": 308704.19899999996,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 5,
+    "flaky": 0,
+    "results": {
+      "expected": 3,
+      "unexpected": 5
+    },
+    "captureFiles": 36
+  },
+  "q1-negative": {
+    "startTime": "2026-10-03T03:33:30.219Z",
+    "duration": 257336.608,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0,
+    "results": {
+      "expected": 3,
+      "unexpected": 3
+    },
+    "captureFiles": 34
+  },
+  "exact-restored": {
+    "startTime": "2026-10-03T03:37:59.360Z",
+    "duration": 428808.875,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0,
+    "results": {
+      "expected": 11
+    },
+    "captureFiles": 49
+  }
+}

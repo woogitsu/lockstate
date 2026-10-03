@@ -164,8 +164,13 @@ for (const yaw of [0, 180]) test(`actual loaded guard stays behind pending whole
   let release!: () => void;
   const released = new Promise<void>(resolve => { release = resolve; });
   let held = false, completed = false;
+  let routeSettled: Promise<void> = Promise.resolve();
   const matcher = '**' + frame.image;
-  await page.route(matcher, async route => { held = true; await released; await route.continue(); });
+  await page.route(matcher, route => {
+    held = true;
+    routeSettled = (async () => { await released; await route.continue(); })();
+    return routeSettled;
+  });
   page.on('requestfinished', request => { if (new URL(request.url()).pathname === frame.image) completed = true; });
   try {
     // -45°→0° or -45°→-180°, always real buttons. Only final wall PNG is held.
@@ -200,6 +205,9 @@ for (const yaw of [0, 180]) test(`actual loaded guard stays behind pending whole
     expect(await page.evaluate(() => (window as unknown as { pendingWallProbe: Probe }).pendingWallProbe.canvasClicks.every(click => click.trusted))).toBe(true);
   } finally {
     release();
+    // A failed depth assertion also releases the genuine held request. Wait
+    // for its handler before unroute can auto-continue it a second time.
+    await routeSettled;
     await page.unroute(matcher);
   }
 });

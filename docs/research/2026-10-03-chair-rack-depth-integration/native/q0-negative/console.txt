@@ -1,0 +1,359 @@
+node : [2m[WebServer] [22m(node:22084) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:42 char:2
++  node --experimental-transform-types --disable-warning=ExperimentalWa ...
++  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 8 tests using 1 worker
+
+(node:15772) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15772) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\generic-wooden-rack-player-build.spec.ts:218:1 › player creates storage and delivery capacity before generic rack (43.1s)
+  x  2 tests\browser\generic-wooden-rack-player-build.spec.ts:281:3 › player reaches default generic racks at quarterTurns0 and retains both authored rack palettes and native anchors after Save/Load (53.0s)
+(node:42992) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:42992) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 tests\browser\oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw0 (18.9s)
+(node:16784) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:16784) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 tests\browser\oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw180 (21.6s)
+(node:39144) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39144) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 5 tests\browser\shower-head-player-build.spec.ts:163:1 › player creates storage and delivery capacity before Shower Room (42.6s)
+  x  6 tests\browser\shower-head-player-build.spec.ts:226:3 › player builds Shower Room at quarterTurns0 and retains authored nozzle palette after Save/Load (37.3s)
+(node:56068) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56068) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 7 tests\browser\wooden-chair-player-build.spec.ts:166:1 › player creates storage and delivery capacity before Staff Room (43.9s)
+  x  8 tests\browser\wooden-chair-player-build.spec.ts:229:3 › player builds Staff Room at quarterTurns0 and retains both authored chair palettes and anchors after Save/Load (41.7s)
+
+
+  1) tests\browser\generic-wooden-rack-player-build.spec.ts:281:3 › player reaches default generic racks at quarterTurns0 and retains both authored rack palettes and native anchors after Save/Load 
+
+    Error: rack1 authored timber after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m0[39m
+
+      249 |   }, null, 2));
+      250 |   beforePixels.forEach((count, index) => expect.soft(count, `rack${index + 1} authored timber after construction`)
+    > 251 |     .toBeGreaterThan(quarterTurns === 0 ? 200 : 70));
+          |      ^
+      252 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      253 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      254 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\generic-wooden-rack-player-build.spec.ts:251:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\generic-wooden-rack-player-build.spec.ts:250:16
+
+    Error: rack2 authored timber after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m0[39m
+
+      249 |   }, null, 2));
+      250 |   beforePixels.forEach((count, index) => expect.soft(count, `rack${index + 1} authored timber after construction`)
+    > 251 |     .toBeGreaterThan(quarterTurns === 0 ? 200 : 70));
+          |      ^
+      252 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      253 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      254 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\generic-wooden-rack-player-build.spec.ts:251:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\generic-wooden-rack-player-build.spec.ts:250:16
+
+    Error: rack1 authored timber after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m0[39m
+
+      266 |   const afterPixels = await rackPixels(page, loaded, quarterTurns);
+      267 |   afterPixels.forEach((count, index) => expect.soft(count, `rack${index + 1} authored timber after Load`)
+    > 268 |     .toBeGreaterThan(quarterTurns === 0 ? 200 : 70));
+          |      ^
+      269 |   expect(afterPixels).toEqual(beforePixels);
+      270 |   const evidencePath = info.outputPath('generic-wooden-rack-worker-and-save-evidence.json');
+      271 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\generic-wooden-rack-player-build.spec.ts:268:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\generic-wooden-rack-player-build.spec.ts:267:15
+
+    Error: rack2 authored timber after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m0[39m
+
+      266 |   const afterPixels = await rackPixels(page, loaded, quarterTurns);
+      267 |   afterPixels.forEach((count, index) => expect.soft(count, `rack${index + 1} authored timber after Load`)
+    > 268 |     .toBeGreaterThan(quarterTurns === 0 ? 200 : 70));
+          |      ^
+      269 |   expect(afterPixels).toEqual(beforePixels);
+      270 |   const evidencePath = info.outputPath('generic-wooden-rack-worker-and-save-evidence.json');
+      271 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\generic-wooden-rack-player-build.spec.ts:268:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\generic-wooden-rack-player-build.spec.ts:267:15
+
+    attachment #1: generic-wooden-rack-worker-and-save-evidence (application/json) ─────────────────
+    ..\..\..\AppData\Local\Temp\lockstate-crs-depth-control-q0-negative-20261003\generic-wooden-rack-player-2cd86-ive-anchors-after-Save-Load\attachments\generic-wooden-rack-worker-and-save-evidence-edeac5940da572c5edbb440614a7eb0aaac155b9.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-crs-depth-control-q0-negative-20261003\generic-wooden-rack-player-2cd86-ive-anchors-after-Save-Load\error-context.md
+
+  2) tests\browser\oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw0 
+
+    Error: route.continue: Route is already handled!
+
+      166 |   let held = false, completed = false;
+      167 |   const matcher = '**' + frame.image;
+    > 168 |   await page.route(matcher, async route => { held = true; await released; await route.continue(); });
+          |                                                                                               ^
+      169 |   page.on('requestfinished', request => { if (new URL(request.url()).pathname === frame.image) completed = true; });
+      170 |   try {
+      171 |     // -45°→0° or -45°→-180°, always real buttons. Only final wall PNG is held.
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\oblique-pending-wall-player.spec.ts:168:95
+
+    Error: actual foreground fallback wall must cover rear guard lower torso
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m0[39m
+    Received: [31m56[39m
+
+      180 |     await info.attach('pending-wall-canvas', { body: pendingPng, contentType: 'image/png' });
+      181 |     await info.attach('pending-depth-before-assertions', { body: Buffer.from(JSON.stringify({ yaw, target, pending, frame, held, completed })), contentType: 'application/json' });
+    > 182 |     expect(pending.bodies[rear]!.body, 'actual foreground fallback wall must cover rear guard lower torso').toBe(0);
+          |                                                                                                             ^
+      183 |     expect(pending.bodies[front]!.body, 'front guard must remain visible in same pending frame').toBeGreaterThan(10);
+      184 |     expect(pending.masonry, 'held frame must still use brown fallback, not cached loaded masonry').toBe(0);
+      185 |     release();
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\oblique-pending-wall-player.spec.ts:182:109
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-crs-depth-control-q0-negative-20261003\oblique-pending-wall-playe-d9d22-g-whole-square-wall-at-yaw0\error-context.md
+
+  3) tests\browser\oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw180 
+
+    Error: route.continue: Route is already handled!
+
+      166 |   let held = false, completed = false;
+      167 |   const matcher = '**' + frame.image;
+    > 168 |   await page.route(matcher, async route => { held = true; await released; await route.continue(); });
+          |                                                                                               ^
+      169 |   page.on('requestfinished', request => { if (new URL(request.url()).pathname === frame.image) completed = true; });
+      170 |   try {
+      171 |     // -45°→0° or -45°→-180°, always real buttons. Only final wall PNG is held.
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\oblique-pending-wall-player.spec.ts:168:95
+
+    Error: actual foreground fallback wall must cover rear guard lower torso
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m0[39m
+    Received: [31m56[39m
+
+      180 |     await info.attach('pending-wall-canvas', { body: pendingPng, contentType: 'image/png' });
+      181 |     await info.attach('pending-depth-before-assertions', { body: Buffer.from(JSON.stringify({ yaw, target, pending, frame, held, completed })), contentType: 'application/json' });
+    > 182 |     expect(pending.bodies[rear]!.body, 'actual foreground fallback wall must cover rear guard lower torso').toBe(0);
+          |                                                                                                             ^
+      183 |     expect(pending.bodies[front]!.body, 'front guard must remain visible in same pending frame').toBeGreaterThan(10);
+      184 |     expect(pending.masonry, 'held frame must still use brown fallback, not cached loaded masonry').toBe(0);
+      185 |     release();
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\oblique-pending-wall-player.spec.ts:182:109
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-crs-depth-control-q0-negative-20261003\oblique-pending-wall-playe-c21f3-whole-square-wall-at-yaw180\error-context.md
+
+  4) tests\browser\shower-head-player-build.spec.ts:226:3 › player builds Shower Room at quarterTurns0 and retains authored nozzle palette after Save/Load 
+
+    Error: fixture1 authored nozzle assembly after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m50[39m
+    Received:   [31m0[39m
+
+      185 |   // authored fragment has28 pixels; every other measured region has86 or93.
+      186 |   beforePixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored nozzle assembly after construction`)
+    > 187 |     .toBeGreaterThan(quarterTurns === 1 && index === 1 ? 20 : 50));
+          |      ^
+      188 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      189 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      190 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\shower-head-player-build.spec.ts:187:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\shower-head-player-build.spec.ts:186:16
+
+    Error: fixture2 authored nozzle assembly after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m50[39m
+    Received:   [31m0[39m
+
+      185 |   // authored fragment has28 pixels; every other measured region has86 or93.
+      186 |   beforePixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored nozzle assembly after construction`)
+    > 187 |     .toBeGreaterThan(quarterTurns === 1 && index === 1 ? 20 : 50));
+          |      ^
+      188 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      189 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      190 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\shower-head-player-build.spec.ts:187:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\shower-head-player-build.spec.ts:186:16
+
+    Error: fixture1 authored nozzle assembly after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m50[39m
+    Received:   [31m0[39m
+
+      201 |   const afterPixels = await nozzlePixels(page, loaded, quarterTurns);
+      202 |   afterPixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored nozzle assembly after Load`)
+    > 203 |     .toBeGreaterThan(quarterTurns === 1 && index === 1 ? 20 : 50));
+          |      ^
+      204 |   expect(afterPixels).toEqual(beforePixels);
+      205 |   const evidencePath = info.outputPath('shower-worker-and-pixel-evidence.json');
+      206 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\shower-head-player-build.spec.ts:203:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\shower-head-player-build.spec.ts:202:15
+
+    Error: fixture2 authored nozzle assembly after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m50[39m
+    Received:   [31m0[39m
+
+      201 |   const afterPixels = await nozzlePixels(page, loaded, quarterTurns);
+      202 |   afterPixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored nozzle assembly after Load`)
+    > 203 |     .toBeGreaterThan(quarterTurns === 1 && index === 1 ? 20 : 50));
+          |      ^
+      204 |   expect(afterPixels).toEqual(beforePixels);
+      205 |   const evidencePath = info.outputPath('shower-worker-and-pixel-evidence.json');
+      206 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\shower-head-player-build.spec.ts:203:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\shower-head-player-build.spec.ts:202:15
+
+    attachment #1: shower-worker-and-pixel-evidence (application/json) ─────────────────────────────
+    ..\..\..\AppData\Local\Temp\lockstate-crs-depth-control-q0-negative-20261003\shower-head-player-build-p-de007-zle-palette-after-Save-Load\attachments\shower-worker-and-pixel-evidence-879b79fe0de84efa6cc222c2077c61382aff166e.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-crs-depth-control-q0-negative-20261003\shower-head-player-build-p-de007-zle-palette-after-Save-Load\error-context.md
+
+  5) tests\browser\wooden-chair-player-build.spec.ts:229:3 › player builds Staff Room at quarterTurns0 and retains both authored chair palettes and anchors after Save/Load 
+
+    Error: chair1 authored timber after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m40[39m
+    Received:   [31m0[39m
+
+      189 |   }, null, 2));
+      190 |   beforePixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored timber after construction`)
+    > 191 |     .toBeGreaterThan(40));
+          |      ^
+      192 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      193 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      194 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\wooden-chair-player-build.spec.ts:191:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\wooden-chair-player-build.spec.ts:190:16
+
+    Error: chair2 authored timber after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m40[39m
+    Received:   [31m0[39m
+
+      189 |   }, null, 2));
+      190 |   beforePixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored timber after construction`)
+    > 191 |     .toBeGreaterThan(40));
+          |      ^
+      192 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      193 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      194 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\wooden-chair-player-build.spec.ts:191:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\wooden-chair-player-build.spec.ts:190:16
+
+    Error: chair1 authored timber after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m40[39m
+    Received:   [31m0[39m
+
+      205 |   const afterPixels = await timberPixels(page, loaded, quarterTurns);
+      206 |   afterPixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored timber after Load`)
+    > 207 |     .toBeGreaterThan(40));
+          |      ^
+      208 |   expect(afterPixels).toEqual(beforePixels);
+      209 |   const evidencePath = info.outputPath('wooden-chair-worker-and-save-evidence.json');
+      210 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\wooden-chair-player-build.spec.ts:207:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\wooden-chair-player-build.spec.ts:206:15
+
+    Error: chair2 authored timber after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m40[39m
+    Received:   [31m0[39m
+
+      205 |   const afterPixels = await timberPixels(page, loaded, quarterTurns);
+      206 |   afterPixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored timber after Load`)
+    > 207 |     .toBeGreaterThan(40));
+          |      ^
+      208 |   expect(afterPixels).toEqual(beforePixels);
+      209 |   const evidencePath = info.outputPath('wooden-chair-worker-and-save-evidence.json');
+      210 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\wooden-chair-player-build.spec.ts:207:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-chair-rack-depth-integration-20261003\tests\browser\wooden-chair-player-build.spec.ts:206:15
+
+    attachment #1: wooden-chair-worker-and-save-evidence (application/json) ────────────────────────
+    ..\..\..\AppData\Local\Temp\lockstate-crs-depth-control-q0-negative-20261003\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\attachments\wooden-chair-worker-and-save-evidence-0ecc9e558244a221bb4867904063892114458338.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-crs-depth-control-q0-negative-20261003\wooden-chair-player-build--e8d16-and-anchors-after-Save-Load\error-context.md
+
+  5 failed
+    tests\browser\generic-wooden-rack-player-build.spec.ts:281:3 › player reaches default generic racks at quarterTurns0 and retains both authored rack palettes and native anchors after Save/Load 
+    tests\browser\oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw0 
+    tests\browser\oblique-pending-wall-player.spec.ts:141:29 › actual loaded guard stays behind pending whole-square wall at yaw180 
+    tests\browser\shower-head-player-build.spec.ts:226:3 › player builds Shower Room at quarterTurns0 and retains authored nozzle palette after Save/Load 
+    tests\browser\wooden-chair-player-build.spec.ts:229:3 › player builds Staff Room at quarterTurns0 and retains both authored chair palettes and anchors after Save/Load 
+  3 passed (5.1m)
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+
