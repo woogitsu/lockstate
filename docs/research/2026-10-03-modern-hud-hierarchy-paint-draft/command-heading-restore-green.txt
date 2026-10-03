@@ -1,0 +1,245 @@
+{
+  "base": "9f709f293c47228166a09f550ef9867006d7bec6",
+  "kind": "read-only actual-source AST and contrast proof, not native geometry",
+  "changedSources": [
+    "src/ui/hud/hud.css",
+    "src/ui/primitives/primitives.css",
+    "src/ui/tokens.css"
+  ],
+  "preservation": [
+    {
+      "file": "src/ui/tokens.css",
+      "nonpaintDeclarations": 267,
+      "preserved": true
+    },
+    {
+      "file": "src/ui/hud/hud.css",
+      "nonpaintDeclarations": 1445,
+      "preserved": true
+    },
+    {
+      "file": "src/ui/primitives/primitives.css",
+      "nonpaintDeclarations": 254,
+      "preserved": true
+    },
+    {
+      "file": "src/ui/brand.css",
+      "nonpaintDeclarations": 26,
+      "preserved": true
+    },
+    {
+      "file": "src/styles.css",
+      "nonpaintDeclarations": 224,
+      "preserved": true
+    }
+  ],
+  "allOriginalTokensPreserved": true,
+  "contrast": [
+    {
+      "theme": "light",
+      "foreground": "--text-heading",
+      "background": "--surface-commandbar",
+      "ratio": 12.899711177722596,
+      "required": 4.5
+    },
+    {
+      "theme": "light",
+      "foreground": "--text-body",
+      "background": "--surface-commandbar",
+      "ratio": 12.138355252636666,
+      "required": 4.5
+    },
+    {
+      "theme": "light",
+      "foreground": "--text-subtle",
+      "background": "--surface-commandbar",
+      "ratio": 7.8606833835138294,
+      "required": 4.5
+    },
+    {
+      "theme": "light",
+      "foreground": "--text-muted",
+      "background": "--surface-commandbar",
+      "ratio": 5.28330235865287,
+      "required": 4.5
+    },
+    {
+      "theme": "light",
+      "foreground": "--text-subtle",
+      "background": "--surface-control",
+      "ratio": 7.080399746073879,
+      "required": 4.5
+    },
+    {
+      "theme": "light",
+      "foreground": "--text-subtle",
+      "background": "--surface-overlay",
+      "ratio": 8.055213457375423,
+      "required": 4.5
+    },
+    {
+      "theme": "light",
+      "foreground": "--text-subtle",
+      "background": "--surface-active",
+      "ratio": 5.79434998807002,
+      "required": 4.5
+    },
+    {
+      "theme": "light",
+      "foreground": "--badge-neutral-fg",
+      "background": "--badge-neutral-bg over commandbar",
+      "ratio": 5.386634556544317,
+      "required": 4.5
+    },
+    {
+      "theme": "light",
+      "foreground": "--accent-contrast",
+      "background": "--accent-deep",
+      "ratio": 5.51140123259054,
+      "required": 4.5
+    },
+    {
+      "theme": "light",
+      "foreground": "--accent-contrast",
+      "background": "--accent",
+      "ratio": 9.440246463872251,
+      "required": 4.5
+    },
+    {
+      "theme": "light",
+      "foreground": "--accent",
+      "background": "--accent-soft",
+      "ratio": 6.568560828650222,
+      "required": 4.5
+    },
+    {
+      "theme": "light",
+      "foreground": "--accent",
+      "background": "--surface-commandbar",
+      "ratio": 9.26480593529643,
+      "required": 3
+    },
+    {
+      "theme": "light",
+      "foreground": "resting secondary --text-body",
+      "background": "--surface-panel",
+      "ratio": 12.005450698249838,
+      "required": 4.5
+    },
+    {
+      "theme": "light",
+      "foreground": "resting secondary --text-body",
+      "background": "--surface-raised",
+      "ratio": 13.05398523215589,
+      "required": 4.5
+    },
+    {
+      "theme": "dark",
+      "foreground": "--text-heading",
+      "background": "--surface-commandbar",
+      "ratio": 15.309991333750814,
+      "required": 4.5
+    },
+    {
+      "theme": "dark",
+      "foreground": "--text-body",
+      "background": "--surface-commandbar",
+      "ratio": 14.40637787649019,
+      "required": 4.5
+    },
+    {
+      "theme": "dark",
+      "foreground": "--text-subtle",
+      "background": "--surface-commandbar",
+      "ratio": 9.329433257915984,
+      "required": 4.5
+    },
+    {
+      "theme": "dark",
+      "foreground": "--text-muted",
+      "background": "--surface-commandbar",
+      "ratio": 6.270474757934935,
+      "required": 4.5
+    },
+    {
+      "theme": "dark",
+      "foreground": "--text-subtle",
+      "background": "--surface-control",
+      "ratio": 7.080399746073879,
+      "required": 4.5
+    },
+    {
+      "theme": "dark",
+      "foreground": "--text-subtle",
+      "background": "--surface-overlay",
+      "ratio": 8.055213457375423,
+      "required": 4.5
+    },
+    {
+      "theme": "dark",
+      "foreground": "--text-subtle",
+      "background": "--surface-active",
+      "ratio": 5.79434998807002,
+      "required": 4.5
+    },
+    {
+      "theme": "dark",
+      "foreground": "--badge-neutral-fg",
+      "background": "--badge-neutral-bg over commandbar",
+      "ratio": 6.5005229453316575,
+      "required": 4.5
+    },
+    {
+      "theme": "dark",
+      "foreground": "--accent-contrast",
+      "background": "--accent-deep",
+      "ratio": 5.51140123259054,
+      "required": 4.5
+    },
+    {
+      "theme": "dark",
+      "foreground": "--accent-contrast",
+      "background": "--accent",
+      "ratio": 9.440246463872251,
+      "required": 4.5
+    },
+    {
+      "theme": "dark",
+      "foreground": "--accent",
+      "background": "--accent-soft",
+      "ratio": 6.568560828650222,
+      "required": 4.5
+    },
+    {
+      "theme": "dark",
+      "foreground": "--accent",
+      "background": "--surface-commandbar",
+      "ratio": 10.995912747506457,
+      "required": 3
+    },
+    {
+      "theme": "dark",
+      "foreground": "resting secondary --text-body",
+      "background": "--surface-panel",
+      "ratio": 13.492088471739809,
+      "required": 4.5
+    },
+    {
+      "theme": "dark",
+      "foreground": "resting secondary --text-body",
+      "background": "--surface-raised",
+      "ratio": 12.438745820307407,
+      "required": 4.5
+    }
+  ],
+  "minimumTextContrast": 5.28330235865287,
+  "originalReferenceScreenshot": {
+    "path": "docs/research/2026-10-03-approved-camera-view-disclosure/native/original-modern-pl/006-actual-ui100-active-status-all-camera.png",
+    "sha256": "61a64a49ead81f80e9479147443ed9e019b9639da0ae486c533babd1ba83f2de",
+    "visibleBuild": "94b923a",
+    "newDraftAcceptance": false
+  },
+  "browserExecuted": false,
+  "buildExecuted": false,
+  "visualAcceptance": "pending"
+}
