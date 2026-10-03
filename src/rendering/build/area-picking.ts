@@ -200,6 +200,8 @@ export interface RoomToolPort {
  * actually left was this interface and one preview call.
  */
 export interface ObjectToolPort {
+  /** Current actual worker admission; undefined while unresolved or stale. */
+  previewVerdict?(): 'allowed' | 'blocked' | undefined;
   /** True while world pointer input places or removes an object instead of panning. */
   isArmed(): boolean;
   /**

@@ -634,3 +634,6 @@ export const ROOM_CONDITION_MARK_INSET_PX = 3;
 
 /** The mark's alpha. Full: a warning that fades is a warning a player argues with. */
 export const ROOM_CONDITION_MARK_ALPHA = 1;
+
+/** The existing blocked room-plan ghost red, reused only for an actual blocked verdict. */
+export const BLOCKED_PLACEMENT_PREVIEW_TINT = 0xe55353;

@@ -158,6 +158,8 @@ export interface BuildPanelTarget {
   readonly squareRun?: boolean;
   readonly catalogueCostMinorUnits?: number;
   readonly definitionId?: string;
+  /** Actual worker footprint when an object aim has a current preflight. */
+  readonly objectFootprint?: { readonly width: number; readonly height: number };
 }
 
 export interface BuildPanelOptions {
@@ -656,6 +658,7 @@ export function formatBuildTargetText(t: Translate, target: BuildPanelTarget | u
   // reports for both of its modes (#550). It gets its own template rather than
   // the edge one with a blank `{edge}`: see `buildTargetTile`.
   if (target.edge === undefined) {
+    objectFootprint = target.objectFootprint ?? objectFootprint;
     if (objectFootprint !== undefined) return t(HUD_MESSAGE_KEY.roomsAreaValue, {
       width: formatNumber(objectFootprint.width), height: formatNumber(objectFootprint.height), x: target.x, y: target.y,
     });

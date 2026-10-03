@@ -59,6 +59,7 @@ import { installRoomTemplateWorldBridge } from './ui/room-template-world-bridge'
 import { TILE_SIZE_PX } from './rendering/tile-metrics';
 import { groundToScreen, screenToGround } from './rendering/camera/oblique-projection';
 import { createSimulationRoomTemplateQuote, createSimulationRoomTemplatePreflight } from './ui/simulation-room-template-port';
+import { createSimulationObjectPlacementPreflight, SimulationObjectPlacementPreviewRevision } from './ui/simulation-object-placement-port';
 import { ManageSavesPanel } from './ui/account/manage-saves-panel';
 import {
   EMPTY_HUD_VIEW_MODEL,
@@ -122,6 +123,7 @@ import { RoomTool } from './ui/room-tool';
 import { OBJECT_CATEGORY_NAME_KEYS, defaultObjectRegistry } from './content/object-catalog';
 import { FIRST_CELL_ROOM_ID, defaultRoomContentRegistry } from './content/room-catalog';
 import { PLANNED_OBJECT_TINT, zoningTint } from './rendering/world/appearance';
+import { BLOCKED_PLACEMENT_PREVIEW_TINT } from './rendering/world/appearance';
 import {
   BUILDABLE_REGISTRY,
   buildableObjectCategory,
@@ -405,7 +407,11 @@ const roomTool = commandSender === undefined ? undefined : new RoomTool();
  * `CATEGORY_RANK` already ranks `object` rows second in that catalogue. Which
  * of the two tools a row arms is decided in the `arm-build-tool` branch below.
  */
-const objectTool = commandSender === undefined ? undefined : new ObjectTool();
+const objectPreviewRevision = simulation === undefined ? undefined
+  : new SimulationObjectPlacementPreviewRevision(simulation, () => objectTool?.setArmed(false), () => objectTool?.refreshPreview());
+const objectTool = commandSender === undefined ? undefined : new ObjectTool(simulation === undefined || objectPreviewRevision === undefined
+  ? undefined : { preflight: createSimulationObjectPlacementPreflight(simulation), worldRevision: () => objectPreviewRevision.revision,
+    onPreviewChanged: () => worldScene.refreshObjectToolVerdict() });
 const roomTemplatePreflight = simulation === undefined || commandSender === undefined
   ? undefined
   : createSimulationRoomTemplatePreflight(simulation);
@@ -678,7 +684,8 @@ const createTopDownWorldScene = (): WorldScene => new WorldScene({
   // for the reason `roomTint` is one -- the player can change the selected row
   // without disarming -- and one colour for every object rather than a table:
   // `PLANNED_OBJECT_TINT` says what it is and why it is not the room's.
-  ...(objectTool === undefined ? {} : { objectTool, objectTint: (): number => PLANNED_OBJECT_TINT }),
+  ...(objectTool === undefined ? {} : { objectTool, objectTint: (): number =>
+    objectTool.previewVerdict() === 'blocked' ? BLOCKED_PLACEMENT_PREVIEW_TINT : PLANNED_OBJECT_TINT }),
   /*
    * The word written across a room's floor (the owner's ruling of 2026-09-06:
    * *"Nazwa tekstem na mapie"*).
@@ -4597,6 +4604,7 @@ async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle)
         // case, a plan armed against the outgoing worker must not retain its
         // fitted camera origin or submit into a replacement session.
         roomTemplateTool?.standDown();
+        objectTool?.setArmed(false);
         worldScene.cancelConstructionGesture();
         // This page keeps one renderer and one feed across prisons. Wait for
         // the replacement worker's first snapshot before centering its map;
