@@ -8,7 +8,7 @@ does not claim that the global object mapping was missing.
 
 ## Genuine source and retained assembly
 
-Pinned Blender 5.2.1 LTS (`9e2066aef7ef`) saved
+Pinned Blender 5.2.1 LTS (Blender build ID: 9e2066aef7ef, not a repository commit) saved
 `assets/source/blender/fixture.garbage-room.waste-bin.blend`, SHA256
 `5d9cafee94af08098b045e389b642ec655536fe0cc8aae8b5e026822f7d984cc`.
 All twelve original bin parts, raw vertices/topology, modifiers and **all five

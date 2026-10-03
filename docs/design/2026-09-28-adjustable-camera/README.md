@@ -1557,3 +1557,22 @@ All six exact main CI jobs succeeded for the approved sharding merge b01e26fcff4
 The [combined Common Room/room-use branch](../../research/2026-10-03-common-room-connectivity-integration/README.md) now passes7/7 genuine compiled FullHD showcase cases: public capacity purchase, rotated four-cell wing, Kitchen, Shower, Canteen, Yard, then three actual camera poses and whole paused Save/Load. The scene has180completed orders,10rooms,22fixtures and four cell places; it remains unpopulated. Root opened all three fresh frames. Original observer failures and exact executed fixtures remain published alongside the corrected7GREEN. The Common Room per-fixture consumer controls remain next; real source query fixes #2013/#2014/#2016 are integrated.
 
 Continuous genuine Blender modeling stays a primary goal: a dedicated Garbage Room refuse trolley with the retained complete bin assembly, four casters/brakes and connected push frame is saved and exported in72canonical poses. Source semantic/dispatch/hash-valid PNG negatives and exact restoration are published; actual registry/context integration and native q0/q1 acceptance remain pending. Next art work addresses the Classroom room context. Independent HUD work repairs clipped cost quotes and prepares a reviewable camera/minimap allocation decision; renderer work removes demonstrably redundant unchanged-minimap pixel projections. Three agents continue disjoint art, HUD and gameplay/rendering tasks while root integrates their results. Every coherent checkpoint is pushed; hosted exact-head green, mergeability and serial main gates remain mandatory.
+
+### 2026-10-03 actual Garbage Room and combined gate repair
+
+The two dedicated Garbage Room trolleys now pass three real compiled public-UI
+cases: actual capacity/purchase, both template orientations, source PNG decoding,
+exact ownership and whole paused Save/Load. Both fresh FullHD scenes were opened;
+the original Load observer failure remains published. This acceptance predates
+the final demanded-image loader and does not claim its native performance gate.
+Classroom teacher desks are integrated and their actual public recipe is ready.
+Reception armchairs retain their original physical parts and have 72 genuine
+Blender renders; a dedicated Reception-only context mapping is being integrated.
+
+The full combined local verification found concrete source and Windows task
+environment failures. [Original output and scoped repairs](../../research/2026-10-03-integrated-verification-repairs/README.md)
+remain published, including numeric component seed order, explicit Blender
+version checks, tooling type coverage and truthful room-metric expectations.
+Three agents continue Reception integration, native demanded-image profiling and
+tooling/gate repairs while root integrates results. Camera-controls allocation
+still awaits the previously displayed owner choice; unrelated work proceeds.

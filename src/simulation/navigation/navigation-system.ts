@@ -360,7 +360,7 @@ export class NavigationSystem implements SystemRegistration {
     if (from === to) return true;
     if (this.physicalComponentGraph !== graph) {
       const components = new Map<RegionId, RegionId>();
-      for (const seed of graph.regionTiles.keys()) {
+      for (const seed of [...graph.regionTiles.keys()].sort((a, b) => a - b)) {
         if (components.has(seed)) continue;
         components.set(seed, seed);
         const pending = [seed];
