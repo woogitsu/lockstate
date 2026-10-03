@@ -12,9 +12,9 @@ SourceSHA1aa9169f65ea498fd1bfe6a2ee600f058c41f1a76685a0109a17da92db398ad5 remain
 
 ## Meaningful proof obtained
 
-- Actual Blender5.2.1CPU1: `-b -t1 --python docs/research/2026-10-04-cell-toilet-native-material-observer/read-only-projection.py`; saved-source guards and evaluated ray/material evidence, no render/save.
--264/267 alpha255 source samples produce66/64 exactRGB keys; no color tolerance or native-trained range.
--432 full source negative floor/wall/desk/cot frames, three real retained default/historical toilet bodies and original Cell floor have zero teal matches for both variants; compound100/8 gates reject. Hardware alone is NOT a unique identity discriminator: broad source hardware colors overlap Staff desk pixels, and thin wheel-only exact colors recognize only1 native pixel. Original independent hardware gate retained as root approved.
+- Actual Blender5.2.1CPU1: `-b -t 1 --python docs/research/2026-10-04-cell-toilet-native-material-observer/read-only-projection.py`; saved-source guards and evaluated ray/material evidence, no render/save.
+- 264/267 alpha255 source samples produce66/64 exactRGB keys; no color tolerance or native-trained range.
+- 432 full source negative floor/wall/desk/cot frames, three real retained default/historical toilet bodies and original Cell floor have zero teal matches for both variants; compound100/8 gates reject. Hardware alone is NOT a unique identity discriminator: broad source hardware colors overlap Staff desk pixels, and thin wheel-only exact colors recognize only1 native pixel. Original independent hardware gate retained as root approved.
 - Real helper legacy mutation: two RED. Material predicate omission: nine RED. Exact-byte restoration:31 GREEN across four focused/neighbor suites.
 - `node node_modules/typescript/bin/tsc --noEmit -p tsconfig.json` and `-p tsconfig.tools.json`: both exit0.
 
