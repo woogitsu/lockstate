@@ -1,4 +1,5 @@
 import { projectRoomTemplateCost } from '../presentation/room-template-cost';
+import { BUILD_QUEUE_SCHEMA_VERSION } from '../presentation/construction-projection';
 import { projectObjectPlacementPreflight } from '../presentation/object-placement-preflight';
 import type { JsonValue } from '../../shared/json';
 import {
@@ -236,6 +237,7 @@ export const PROJECTION_CATALOG: Readonly<Record<ProjectionId, ProjectionCatalog
    */
   'hud/build-queue': {
     ...hud(`${HUD_VIEW_MODEL_SCHEMA_ID}.build-queue`),
+    schemaVersion: BUILD_QUEUE_SCHEMA_VERSION,
     paged: true,
     target: 'none',
     project: (runtime, _tick, request) => {

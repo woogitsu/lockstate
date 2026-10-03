@@ -939,7 +939,7 @@ export function packCommand(command: SimulationCommand): VersionedPayload {
 
   return {
     schemaId: 'lockstate.simulation.command',
-    schemaVersion: 1,
+    schemaVersion: parsed.type === 'CancelBuildOrder' ? 2 : 1,
     transport: 'structured-clone',
     data: commandJson(parsed),
   };
@@ -947,6 +947,10 @@ export function packCommand(command: SimulationCommand): VersionedPayload {
 
 export function unpackCommand(payload: VersionedPayload): SimulationCommand | null {
   if (payload.schemaId !== 'lockstate.simulation.command') return null;
+  if (payload.schemaVersion !== 1 && payload.schemaVersion !== 2) return null;
   const result = simulationCommandSchema.safeParse(payload.data);
+  // V1 numeric cancellation tokens are upgraded only by the save migration.
+  // Do not silently reinterpret an old live request under the V2 contract.
+  if (result.success && result.data.type === 'CancelBuildOrder' && payload.schemaVersion !== 2) return null;
   return result.success ? result.data : null;
 }
