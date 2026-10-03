@@ -13,6 +13,8 @@ Read-only source diagnosis on published `a44c3f82d147130229e2f8d94cacab2362f7166
 
 `baseline.txt`:2 RED/2 no-refusal legal GREEN,4.91s. The controls actually Undo the independent wall and retain all completed template physical owners, occupancy1, metadata and funds. No injected world/job/resident/treasury/order state. No renderer or browser was run.
 
-## Proposed narrow source scope
+## Narrow source scope
 
 Only SessionCommands admission of the manual UnzoneRoom action marker: use the existing success-marked set and mark its existing successful removal branch. Refusal itself, copy, zoning selection, genuine resident relocation, successful-change semantics, V8 schema, prices and history format stay as currently approved. Source lease, producer negative/exact restoration and neighboring gates are pending.
+
+The parent granted exactly that source lease. The first fixed checkpoint adds UnzoneRoom to the existing success-marked command set and marks only the existing non-refused unzone branch. Expanded six cases pass in3.37s (`fixed.txt`), including two actual successful removals of an unoccupied completed template, live/V8. Those successful removals still prevent Undo from reaching the earlier independent wall; the wall, physical objects, funds and post-removal world/history remain unchanged by refused Undo. No successful removal is mistaken for an attempt.
