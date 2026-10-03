@@ -3006,6 +3006,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
 
         case 'arm-build-tool': {
           roomTemplateTool?.standDown();
+          if (!intent.armed) worldScene.cancelConstructionGesture();
           /*
            * Also chrome, but it has a second half outside the HUD: it decides
            * whether a click on the *world* builds or moves the camera -- and,
@@ -3060,6 +3061,7 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
 
         case 'arm-room-tool':
           roomTemplateTool?.standDown();
+          if (!intent.armed) worldScene.cancelConstructionGesture();
           // The same, one tool over. Arming the room tool does *not* disarm the
           // build tool here, and it does not need to: the two panels are on
           // different tabs and `setVisible(false)` disarms the panel's tool as
