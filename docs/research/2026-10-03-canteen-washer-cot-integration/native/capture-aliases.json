@@ -868,5 +868,78 @@
     "sourceSha256": "71affc956fed895f4999613ff4253d532a6a6601d945a12f50cb49a4e3f668d1",
     "archivedBytes": 69000,
     "archivedSha256": "71affc956fed895f4999613ff4253d532a6a6601d945a12f50cb49a4e3f668d1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-edge-corrected-20261003.json",
+    "archived": "history-quote-original/report.json",
+    "sourceBytes": 12679,
+    "sourceSha256": "1008d34173b92ab4727e0b6ec5ab53c2f0f9db6872c3c113622aff9ef8453ffd",
+    "archivedBytes": 12679,
+    "archivedSha256": "1008d34173b92ab4727e0b6ec5ab53c2f0f9db6872c3c113622aff9ef8453ffd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-edge-corrected-20261003.txt",
+    "archived": "history-quote-original/console.txt",
+    "sourceBytes": 9346,
+    "sourceSha256": "1c7ba470364e30956d723cd56bacac3db684dd7a58565e2836bc90be784084d1",
+    "archivedBytes": 4686,
+    "archivedSha256": "b23d7d0de71c71330cb8a40c8850bde25e464a0640cfc49425a39547d32bcfb5",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-edge-corrected-20261003\\.last-run.json",
+    "archived": "history-quote-original/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "4e05237be5bd7e4dd431f3e5ce8d8206497654f185928ced24145948ae8fa131",
+    "archivedBytes": 96,
+    "archivedSha256": "4e05237be5bd7e4dd431f3e5ce8d8206497654f185928ced24145948ae8fa131"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-edge-corrected-20261003\\room-template-history-verd-aa149-ationary-Cell-history-cases\\actual-saved-capacity-fullhd.png",
+    "archived": "history-quote-original/002-actual-saved-capacity-fullhd.png",
+    "sourceBytes": 1586378,
+    "sourceSha256": "da1884e57fd0d37e675aa899b08279774d9d36833c56e730716824394bdd0697",
+    "archivedBytes": 1586378,
+    "archivedSha256": "da1884e57fd0d37e675aa899b08279774d9d36833c56e730716824394bdd0697"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-edge-corrected-20261003\\room-template-history-verd-aa149-ationary-Cell-history-cases\\actual-saved-capacity-snapshot.json",
+    "archived": "history-quote-original/003-actual-saved-capacity-snapshot.json",
+    "sourceBytes": 42677,
+    "sourceSha256": "9d9a3e22389baa71c4af007aad0917ab5dd2f080b726c86a3eb8a9cdb1c9e9ef",
+    "archivedBytes": 42677,
+    "archivedSha256": "9d9a3e22389baa71c4af007aad0917ab5dd2f080b726c86a3eb8a9cdb1c9e9ef"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-edge-corrected-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\actual-completed-cell-snapshot.json",
+    "archived": "history-quote-original/004-actual-completed-cell-snapshot.json",
+    "sourceBytes": 57653,
+    "sourceSha256": "54efd0983ce445ec4d11f17e86911fb159e49c746cb821956ce7a71bcfe94f6b",
+    "archivedBytes": 57653,
+    "archivedSha256": "54efd0983ce445ec4d11f17e86911fb159e49c746cb821956ce7a71bcfe94f6b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-edge-corrected-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\error-context.md",
+    "archived": "history-quote-original/005-error-context.md",
+    "sourceBytes": 13987,
+    "sourceSha256": "4319338124692981f196f94a6c32cadd197545a70e5fa677c59b838bf67d8913",
+    "archivedBytes": 13987,
+    "archivedSha256": "4319338124692981f196f94a6c32cadd197545a70e5fa677c59b838bf67d8913"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-edge-corrected-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\failed-actual-fullhd.png",
+    "archived": "history-quote-original/006-failed-actual-fullhd.png",
+    "sourceBytes": 280671,
+    "sourceSha256": "65c659b8596b41c5683c5049d408e897aa599b97f152e3226962fef552148bde",
+    "archivedBytes": 280671,
+    "archivedSha256": "65c659b8596b41c5683c5049d408e897aa599b97f152e3226962fef552148bde"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-edge-corrected-20261003\\room-template-history-verd-f1488-leted-Undo-and-pending-Redo\\failed-actual-worker-and-input.json",
+    "archived": "history-quote-original/007-failed-actual-worker-and-input.json",
+    "sourceBytes": 73632,
+    "sourceSha256": "23ac062db56d47df64d6e8560a31246c0e4fe7bda152e052039ec538c2ee278f",
+    "archivedBytes": 73632,
+    "archivedSha256": "23ac062db56d47df64d6e8560a31246c0e4fe7bda152e052039ec538c2ee278f"
   }
 ]

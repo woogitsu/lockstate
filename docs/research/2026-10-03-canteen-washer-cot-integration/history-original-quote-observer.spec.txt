@@ -160,13 +160,6 @@ function assertWholeQ1Footprint(view: Awaited<ReturnType<typeof viewIdentity>>):
 async function assertNoPointerSince(page: Page, start: number): Promise<void> {
   expect((await inputs(page)).slice(start).filter(input => input.type.startsWith('pointer'))).toEqual([]);
 }
-async function displayedQuote(page: Page): Promise<string[]> {
-  const sections = (await page.locator('.room-template-world-ghost').getByRole('status').innerText()).split(' | ');
-  expect(sections).toHaveLength(3); // Map hint, changing verdict, complete materials quote.
-  const quote = sections[2]!.split(' \u00b7 ');
-  expect(quote).toEqual(['Brick × 35', 'Wood Plank × 2', 'Materials catalogue value: 1,530']);
-  return quote;
-}
 
 let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
 let capacitySnapshot: SessionSnapshotBundle | undefined;
@@ -259,7 +252,7 @@ for (const mode of ['world', 'oblique'] as const) test(`${mode} FullHD: stationa
   const first = (await replies(page)).at(-1)!;
   expect(first.target).toMatchObject({kind:'room-template',templateId:'cell-basic',origin,quarterTurns:1}); expect(first.target.mirrorX ?? false).toBe(false); expect(first.verdict).toMatchObject({ok:false});
   expect(await page.evaluate(() => (Reflect.get(window,'historyVerdictProbe') as Probe).quotes.filter(q => q.templateId === 'cell-basic').at(-1)!.quote)).toEqual(expectedQuote);
-  const quote = await displayedQuote(page);
+  const quote = (await ghost.getByRole('status').innerText()).split(' \u00b7 ').slice(1); expect(quote).toHaveLength(3);
   expect((await inputs(page)).filter(i=>i.type==='pointermove').at(-1)).toMatchObject({trusted:true,canvas:true,x:point.x,y:point.y});
   await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
   const identity = await viewIdentity(page); assertWholeQ1Footprint(identity); const eventCount = (await inputs(page)).length; const queryCount = (await replies(page)).length;
@@ -276,7 +269,7 @@ for (const mode of ['world', 'oblique'] as const) test(`${mode} FullHD: stationa
   const undoQueries = (await replies(page)).slice(queryCount);
   expect(undoQueries.some(q => q.target.templateId === 'cell-basic' && q.target.quarterTurns === 1 && q.target.origin.x === 20 && q.target.origin.y === 5 && q.verdict.ok)).toBe(true);
   expect(await viewIdentity(page)).toEqual(identity); await assertNoPointerSince(page,eventCount);
-  expect(await displayedQuote(page)).toEqual(quote);
+  expect((await ghost.getByRole('status').innerText()).split(' \u00b7 ').slice(1)).toEqual(quote);
   expect(await submitted(page)).toEqual([...expectedCommands,{type:'Undo'}]);
   await page.screenshot({path:info.outputPath('stationary-undo-clear.png')});
   const undoQueryCount = (await replies(page)).length;
@@ -290,7 +283,7 @@ for (const mode of ['world', 'oblique'] as const) test(`${mode} FullHD: stationa
   const redoQueries = (await replies(page)).slice(undoQueryCount);
   expect(redoQueries.some(q => q.target.templateId === 'cell-basic' && q.target.quarterTurns === 1 && q.target.origin.x === 20 && q.target.origin.y === 5 && !q.verdict.ok && q.verdict.reason === 'structure-occupied')).toBe(true);
   expect(await viewIdentity(page)).toEqual(identity); await assertNoPointerSince(page,eventCount);
-  expect(await displayedQuote(page)).toEqual(quote);
+  expect((await ghost.getByRole('status').innerText()).split(' \u00b7 ').slice(1)).toEqual(quote);
   expect(await submitted(page)).toEqual([...expectedCommands,{type:'Undo'},{type:'Redo'}]);
   await expect.poll(() => currentClock(page)).toEqual({mode:'paused'});
   const keys=(await inputs(page)).slice(eventCount).filter(e => e.type.startsWith('key'));
