@@ -1,0 +1,55 @@
+[
+  {
+    "name": "strict-fixed-source-consumers",
+    "exitCode": 0,
+    "elapsedSeconds": 0.356,
+    "command": [
+      "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "node_modules/typescript/bin/tsc",
+      "--ignoreConfig",
+      "--noEmit",
+      "--strict",
+      "--skipLibCheck",
+      "--target",
+      "ES2022",
+      "--module",
+      "ESNext",
+      "--moduleResolution",
+      "bundler",
+      "--types",
+      "node",
+      "--resolveJsonModule",
+      "tests/unit/oblique-pending-wall-depth.test.ts",
+      "tests/browser/oblique-art-runtime.ts",
+      "tests/browser/oblique-preset-art-qa.ts"
+    ]
+  },
+  {
+    "name": "bounded-neighbouring-scene-controls",
+    "exitCode": 0,
+    "elapsedSeconds": 2.561,
+    "command": [
+      "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/unit/oblique-pending-wall-depth.test.ts",
+      "tests/unit/oblique-world-projection.test.ts",
+      "tests/unit/oblique-geometry.test.ts",
+      "tests/unit/oblique-actor-projection.test.ts",
+      "tests/unit/camera-pan-ports.test.ts",
+      "tests/unit/ui-camera-pan-control.test.ts",
+      "tests/unit/oblique-camera-gameout.test.ts",
+      "--maxWorkers=2"
+    ]
+  },
+  {
+    "name": "fixed-production-build",
+    "exitCode": 0,
+    "elapsedSeconds": 14.703,
+    "command": [
+      "pnpm.cmd",
+      "--config.verify-deps-before-run=false",
+      "build"
+    ]
+  }
+]

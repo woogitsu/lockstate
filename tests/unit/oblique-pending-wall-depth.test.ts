@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { stripTypeScriptTypes } from 'node:module';
 import { afterEach, expect, it, vi } from 'vitest';
 import { ObliqueWorldScene } from '../../src/rendering/scene/oblique-world-scene';
 import { parseObliqueModuleCatalog } from '../../src/rendering/assets/oblique-module-catalog';
@@ -10,10 +11,11 @@ import { WorldRenderView } from '../../src/rendering/world/world-view';
 
 const state = vi.hoisted(() => ({ wallReady: false, actorReady: false,
   handlers: new Map<string, (...args: unknown[]) => void>(), completed: undefined as (() => void) | undefined,
-  queued: [] as string[], graphics: [] as Array<{ depth: number; destroyed: boolean; polygons: Array<Array<{x:number;y:number}>> }>, images: [] as Array<{ depth: number; texture: { key: string }; destroyed: boolean }> }));
+  shutdown: undefined as (() => void) | undefined, queued: [] as string[], graphics: [] as Array<{ depth: number; destroyed: boolean; polygons: Array<Array<{x:number;y:number}>> }>, images: [] as Array<{ depth: number; texture: { key: string }; destroyed: boolean }> }));
 vi.mock('phaser', () => {
   class Graphic {
     depth = 0; destroyed = false; constructor() { state.graphics.push(this); } polygons: Array<Array<{ x: number; y: number }>> = []; path: Array<{ x: number; y: number }> = [];
+    get commandBuffer() { return this.polygons.flat(); }
     setScrollFactor() { return this; } setDepth(depth: number) { this.depth = depth; return this; }
     clear() { this.polygons = []; return this; } fillStyle() { return this; } lineStyle() { return this; }
     beginPath() { this.path = []; } moveTo(x: number, y: number) { this.path.push({ x, y }); }
@@ -35,11 +37,11 @@ vi.mock('phaser', () => {
     readonly load = { image: (key: string) => state.queued.push(key), once: (_event: string, callback: () => void) => { state.completed = callback; }, start() {} };
     readonly input = { mouse: { disableContextMenu() {} }, addPointer() {}, manager: { isOver: false },
       on: (event: string, handler: (...args: unknown[]) => void) => state.handlers.set(event, handler) };
-    readonly events = { once() {} }; readonly game = { canvas: new EventTarget(), renderer: { type: 2 } };
+    readonly events = { once: (_event: string, callback: () => void) => { state.shutdown = callback; } }; readonly game = { canvas: new EventTarget(), renderer: { type: 2 } };
   }
   return { default: { Scene, WEBGL: 2, Scenes: { Events: { SHUTDOWN: 'shutdown' } }, Loader: { Events: { COMPLETE: 'complete' } } } };
 });
-afterEach(() => { state.handlers.clear(); state.images.length = 0; state.graphics.length = 0; state.queued.length = 0; state.completed = undefined; vi.unstubAllGlobals(); });
+afterEach(() => { state.handlers.clear(); state.images.length = 0; state.graphics.length = 0; state.queued.length = 0; state.completed = undefined; state.shutdown = undefined; vi.unstubAllGlobals(); });
 const catalogs = ['oblique-square-brick-full-wall', 'oblique-actor-prisoner'].map(name => parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL(`../../public/game-content/${name}.v1.json`, import.meta.url), 'utf8'))));
 const poses = [{ yaw: 0, elevation: 45 }, { yaw: 180, elevation: 65 }];
 const controls = [
@@ -50,17 +52,17 @@ const controls = [
   { label: 'in front of partially loaded wall', behind: false, wall: false, actor: true },
   { label: 'in front of fully loaded wall', behind: false, wall: true, actor: true },
 ];
-function snapshot(actorY: number): RenderFrame {
+function snapshot(actorY: number, wall = true): RenderFrame {
   const world = new SparseWorld(16); const chunk = { x: chunkCoordinate(0), y: chunkCoordinate(0) };
-  world.load(chunk); world.setOwned(chunk, true); world.setSquareStructure({ x: tileCoordinate(5), y: tileCoordinate(5) }, 1);
+  world.load(chunk); world.setOwned(chunk, true); if (wall) world.setSquareStructure({ x: tileCoordinate(5), y: tileCoordinate(5) }, 1);
   return { revision: 1, world: WorldRenderView.fromSnapshot(world.snapshot()), structures: [], rooms: [], roomConditions: [],
     actors: [{ id: 1, assetId: 'actor.prisoner', tileX: 5, tileY: actorY, deltaX: 0, deltaY: 0 }] };
 }
 async function prepare(yaw: number, elevation: number, behind: boolean) {
   vi.stubGlobal('window', new EventTarget()); vi.stubGlobal('document', { activeElement: null });
   const actorY = (yaw === 0) === behind ? 4.3 : 5.7;
-  const frame = snapshot(actorY); const picks: Array<{ x: number; y: number }> = [];
-  const scene = new ObliqueWorldScene({ feed: { readFrame: () => frame }, keyValueStore: { getItem: () => null, setItem: () => undefined },
+  const frame = snapshot(actorY); let current = frame; const picks: Array<{ x: number; y: number }> = [];
+  const scene = new ObliqueWorldScene({ feed: { readFrame: () => current }, keyValueStore: { getItem: () => null, setItem: () => undefined },
     catalogs: new Map(catalogs.map(catalog => [catalog.assetId, catalog])), onTileSelected: (x, y) => picks.push({ x, y }) });
   // The display/loader plumbing is observed; all scene projection, sorting,
   // texture selection, paintAsset, fallback drawing and pointer handlers run.
@@ -68,7 +70,7 @@ async function prepare(yaw: number, elevation: number, behind: boolean) {
   Reflect.set(scene, 'loadCatalogTextures', async () => undefined); Reflect.set(scene, 'loadFloorTextures', async () => undefined);
   scene.create(); await scene.ready(); scene.update(0, 0);
   scene.restoreCameraView({ centre: { x: 5.5 * 64, y: 5.5 * 64 }, zoom: 1.6, yawRadians: yaw * Math.PI / 180, elevationRadians: elevation * Math.PI / 180 });
-  return { scene, frame, picks, actorY };
+  return { scene, frame, picks, actorY, publish: (next: RenderFrame) => { current = next; } };
 }
 function depths(scene: ObliqueWorldScene) {
   const actorImage = state.images.find(image => !image.destroyed && image.texture.key.startsWith('oblique:actor.prisoner.base:'));
@@ -131,4 +133,59 @@ it.each(poses)('actual loader completion restores correct PNG ordering yaw$yaw e
   state.wallReady = true; expect(state.completed).toBeDefined(); state.completed!();
   const loaded = depths(scene);
   expect(loaded.wallMode).toBe('PNG'); expect(loaded.actor).toBeLessThan(loaded.wall);
+});
+
+it('reuses one fallback wall while actors cross depth, then destroys a removed wall', async () => {
+  state.wallReady = false; state.actorReady = true;
+  const { scene, frame, publish } = await prepare(0, 45, true);
+  const original = state.graphics.find(graphic => !graphic.destroyed && graphic.polygons.length === 5)!;
+  const count = state.graphics.length;
+  for (let index=0;index<16;index++) {
+    const behind = index%2===0;
+    publish({ ...frame, actors: [{ ...frame.actors[0]!, tileY: behind ? 4.3 : 5.7 }] });
+    scene.update(index+1,0);
+    expect(state.graphics.length, 'actor-only repaint must not allocate a new fallback Graphics').toBe(count);
+    expect(state.graphics.filter(graphic => !graphic.destroyed && graphic.polygons.length===5)).toEqual([original]);
+    const actual = depths(scene);
+    if (behind) expect(actual.actor).toBeLessThan(actual.wall); else expect(actual.actor).toBeGreaterThan(actual.wall);
+  }
+  publish({ ...snapshot(4.3,false), revision:2 }); scene.update(30,0);
+  expect(original.destroyed, 'withdrawn wall display object is destroyed').toBe(true);
+  expect((Reflect.get(scene,'fallbackSolidGraphics') as Map<string,unknown>).size).toBe(0);
+});
+it('destroys a replaced fallback after real texture completion and releases shutdown references', async () => {
+  state.wallReady = false; state.actorReady = true;
+  const { scene } = await prepare(0,45,true);
+  const original = state.graphics.find(graphic => !graphic.destroyed && graphic.polygons.length===5)!;
+  state.wallReady = true; state.completed!();
+  expect(original.destroyed, 'authored PNG replaces and destroys the fallback').toBe(true);
+  expect((Reflect.get(scene,'fallbackSolidGraphics') as Map<string,unknown>).size).toBe(0);
+  state.wallReady = false;
+  // A fresh pose uses the normal missing-texture branch, without waiting for
+  // or fabricating a loader reply. Shutdown must release its retained map.
+  scene.setPoseRadians(Math.PI,Math.PI/4);
+  const current = state.graphics.find(graphic => !graphic.destroyed && graphic.polygons.length===5)!;
+  expect(current).toBeDefined(); expect(state.shutdown).toBeDefined(); state.shutdown!();
+  expect(current.destroyed).toBe(true);
+  expect((Reflect.get(scene,'fallbackSolidGraphics') as Map<string,unknown>).size).toBe(0);
+});
+
+it('both actual browser harness readers count the per-solid fallback commands', async () => {
+  state.wallReady = false; state.actorReady = true;
+  const { scene } = await prepare(0,45,true);
+  const runtime = readFileSync(new URL('../browser/oblique-art-runtime.ts',import.meta.url),'utf8');
+  const runtimeMatches = [...runtime.matchAll(/fallbackCommands: \(\) => \{([^]*?)\r?\n  \},/gu)];
+  expect(runtimeMatches).toHaveLength(1);
+  const runtimeFunction = stripTypeScriptTypes(`function observe(scene: unknown) {${runtimeMatches[0]![1]}}`);
+  const readRuntime = new Function('scene',`return (${runtimeFunction})(scene);`) as (scene:unknown)=>number;
+  const preset = readFileSync(new URL('../browser/oblique-preset-art-qa.ts',import.meta.url),'utf8');
+  const presetMatches = [...preset.matchAll(/^ {6}fallbackCommands: ([^]*?),\r?\n {4}\};/gmu)];
+  expect(presetMatches).toHaveLength(1);
+  const presetFunction = stripTypeScriptTypes(`function observe(privateScene: unknown) {return ${presetMatches[0]![1]};}`);
+  const readPreset = new Function('scene',`return (${presetFunction})(scene);`) as (scene:unknown)=>number;
+  // Twenty recorded vertices in the actual five drawn fallback faces, rather
+  // than a nominal counter. The old shared-only readers incorrectly yield0.
+  expect(readRuntime(scene)).toBe(20); expect(readPreset(scene)).toBe(20);
+  state.wallReady = true; state.completed!();
+  expect(readRuntime(scene)).toBe(0); expect(readPreset(scene)).toBe(0);
 });

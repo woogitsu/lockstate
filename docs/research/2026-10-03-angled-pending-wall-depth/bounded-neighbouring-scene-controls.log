@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-angled-cutaway-occupancy-audit-20261003
+
+
+ Test Files  7 passed (7)
+      Tests  99 passed (99)
+   Start at  04:26:40
+   Duration  2.06s (transform 1.14s, setup 0ms, import 2.83s, tests 123ms, environment 0ms)
+
