@@ -1,0 +1,2111 @@
+{
+  "result": "actual required-fixture removal/rebuild/UndoRedo/V8 measurement",
+  "results": [
+    {
+      "quarterTurns": 1,
+      "mirrorX": false,
+      "case": "object.bed",
+      "pressed": {
+        "x": 9,
+        "y": 21
+      },
+      "originalOwner": "room-template-000000000004-2-object-000",
+      "before": {
+        "tick": 7391,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 1,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.bed",
+          "minQuantity": 1,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.bed.name"
+        },
+        "availableForUse": "room.cell:6:21",
+        "objects": [
+          {
+            "placedObjectId": "object:9:21",
+            "objectId": "object.bed",
+            "anchorTile": {
+              "x": 9,
+              "y": 21
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000004-2-object-000"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "removed": {
+        "tick": 7391,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 0,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.bed",
+          "minQuantity": 1,
+          "satisfyingQuantity": 0,
+          "objectNameKey": "object.bed.name"
+        },
+        "objects": [],
+        "accommodation": "room.cell:6:21"
+      },
+      "removedLiveActions": [
+        {
+          "id": "action.sleep",
+          "target": "room.cell:6:21",
+          "position": {
+            "x": 6,
+            "y": 21
+          }
+        }
+      ],
+      "removedLoaded": {
+        "tick": 8891,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 0,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.bed",
+          "minQuantity": 1,
+          "satisfyingQuantity": 0,
+          "objectNameKey": "object.bed.name"
+        },
+        "objects": [],
+        "accommodation": "room.cell:6:21"
+      },
+      "removedLoadedActions": [
+        {
+          "id": "action.sleep",
+          "target": "room.cell:6:21",
+          "position": {
+            "x": 6,
+            "y": 21
+          }
+        }
+      ],
+      "normalRebuildAnchor": {
+        "x": 6,
+        "y": 21
+      },
+      "newOwner": "actual-rebuild-1-bed-wooden",
+      "rebuilt": {
+        "tick": 10811,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 1,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.bed",
+          "minQuantity": 1,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.bed.name"
+        },
+        "availableForUse": "room.cell:6:21",
+        "objects": [
+          {
+            "placedObjectId": "object:6:21",
+            "objectId": "object.bed",
+            "anchorTile": {
+              "x": 6,
+              "y": 21
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-1-bed-wooden"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "rebuiltLoaded": {
+        "tick": 10811,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 1,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.bed",
+          "minQuantity": 1,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.bed.name"
+        },
+        "availableForUse": "room.cell:6:21",
+        "objects": [
+          {
+            "placedObjectId": "object:6:21",
+            "objectId": "object.bed",
+            "anchorTile": {
+              "x": 6,
+              "y": 21
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-1-bed-wooden"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "undone": {
+        "tick": 10811,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 0,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.bed",
+          "minQuantity": 1,
+          "satisfyingQuantity": 0,
+          "objectNameKey": "object.bed.name"
+        },
+        "objects": [],
+        "accommodation": "room.cell:6:21"
+      },
+      "redone": {
+        "tick": 10971,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 1,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.bed",
+          "minQuantity": 1,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.bed.name"
+        },
+        "availableForUse": "room.cell:6:21",
+        "objects": [
+          {
+            "placedObjectId": "object:6:21",
+            "objectId": "object.bed",
+            "anchorTile": {
+              "x": 6,
+              "y": 21
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-1-bed-wooden"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      }
+    },
+    {
+      "quarterTurns": 1,
+      "mirrorX": false,
+      "case": "object.toilet",
+      "pressed": {
+        "x": 7,
+        "y": 22
+      },
+      "originalOwner": "room-template-000000000004-2-object-001",
+      "before": {
+        "tick": 7391,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 1,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.toilet",
+          "minQuantity": 1,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.toilet.name"
+        },
+        "availableForUse": "room.cell:6:21",
+        "objects": [
+          {
+            "placedObjectId": "object:7:22",
+            "objectId": "object.toilet",
+            "anchorTile": {
+              "x": 7,
+              "y": 22
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000004-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "removed": {
+        "tick": 7391,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 0,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.toilet",
+          "minQuantity": 1,
+          "satisfyingQuantity": 0,
+          "objectNameKey": "object.toilet.name"
+        },
+        "objects": [],
+        "accommodation": "room.cell:6:21"
+      },
+      "removedLiveActions": [
+        {
+          "id": "action.use-toilet",
+          "target": "room.cell:6:21",
+          "position": {
+            "x": 6,
+            "y": 21
+          }
+        }
+      ],
+      "removedLoaded": {
+        "tick": 8891,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 0,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.toilet",
+          "minQuantity": 1,
+          "satisfyingQuantity": 0,
+          "objectNameKey": "object.toilet.name"
+        },
+        "objects": [],
+        "accommodation": "room.cell:6:21"
+      },
+      "removedLoadedActions": [
+        {
+          "id": "action.use-toilet",
+          "target": "room.cell:6:21",
+          "position": {
+            "x": 6,
+            "y": 21
+          }
+        }
+      ],
+      "normalRebuildAnchor": {
+        "x": 6,
+        "y": 21
+      },
+      "newOwner": "actual-rebuild-1-toilet-brick",
+      "rebuilt": {
+        "tick": 10791,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 1,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.toilet",
+          "minQuantity": 1,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.toilet.name"
+        },
+        "availableForUse": "room.cell:6:21",
+        "objects": [
+          {
+            "placedObjectId": "object:6:21",
+            "objectId": "object.toilet",
+            "anchorTile": {
+              "x": 6,
+              "y": 21
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-1-toilet-brick"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "rebuiltLoaded": {
+        "tick": 10791,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 1,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.toilet",
+          "minQuantity": 1,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.toilet.name"
+        },
+        "availableForUse": "room.cell:6:21",
+        "objects": [
+          {
+            "placedObjectId": "object:6:21",
+            "objectId": "object.toilet",
+            "anchorTile": {
+              "x": 6,
+              "y": 21
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-1-toilet-brick"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "undone": {
+        "tick": 10791,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 0,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.toilet",
+          "minQuantity": 1,
+          "satisfyingQuantity": 0,
+          "objectNameKey": "object.toilet.name"
+        },
+        "objects": [],
+        "accommodation": "room.cell:6:21"
+      },
+      "redone": {
+        "tick": 10951,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 1,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.toilet",
+          "minQuantity": 1,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.toilet.name"
+        },
+        "availableForUse": "room.cell:6:21",
+        "objects": [
+          {
+            "placedObjectId": "object:6:21",
+            "objectId": "object.toilet",
+            "anchorTile": {
+              "x": 6,
+              "y": 21
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-1-toilet-brick"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      }
+    },
+    {
+      "quarterTurns": 1,
+      "mirrorX": false,
+      "case": "object.dining-table",
+      "pressed": {
+        "x": 25,
+        "y": 8
+      },
+      "originalOwner": "room-template-000000000002-2-object-000",
+      "before": {
+        "tick": 7391,
+        "instanceId": "room.canteen:21:6",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 6,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.dining-table",
+          "minQuantity": 2,
+          "satisfyingQuantity": 2,
+          "objectNameKey": "object.dining-table.name"
+        },
+        "availableForUse": "room.canteen:21:6",
+        "objects": [
+          {
+            "placedObjectId": "object:25:6",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 25,
+              "y": 6
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          {
+            "placedObjectId": "object:25:9",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 25,
+              "y": 9
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000002-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "removed": {
+        "tick": 7391,
+        "instanceId": "room.canteen:21:6",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 3,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.dining-table",
+          "minQuantity": 2,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.dining-table.name"
+        },
+        "availableForUse": "room.canteen:21:6",
+        "objects": [
+          {
+            "placedObjectId": "object:25:9",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 25,
+              "y": 9
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000002-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "removedLiveActions": [
+        {
+          "id": "action.eat-meal",
+          "target": "room.canteen:21:6",
+          "position": {
+            "x": 21,
+            "y": 6
+          }
+        }
+      ],
+      "removedLoaded": {
+        "tick": 8891,
+        "instanceId": "room.canteen:21:6",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 3,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.dining-table",
+          "minQuantity": 2,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.dining-table.name"
+        },
+        "availableForUse": "room.canteen:21:6",
+        "objects": [
+          {
+            "placedObjectId": "object:25:9",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 25,
+              "y": 9
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000002-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "removedLoadedActions": [
+        {
+          "id": "action.eat-meal",
+          "target": "room.canteen:21:6",
+          "position": {
+            "x": 21,
+            "y": 6
+          }
+        }
+      ],
+      "normalRebuildAnchor": {
+        "x": 23,
+        "y": 6
+      },
+      "additionalOptionalRemoval": {
+        "originalNoNormalFootprint": true,
+        "objectId": "object.bench",
+        "anchor": {
+          "x": 24,
+          "y": 6
+        },
+        "owner": "room-template-000000000002-2-object-002"
+      },
+      "newOwner": "actual-rebuild-1-dining-table-wooden",
+      "rebuilt": {
+        "tick": 10811,
+        "instanceId": "room.canteen:21:6",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 6,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.dining-table",
+          "minQuantity": 2,
+          "satisfyingQuantity": 2,
+          "objectNameKey": "object.dining-table.name"
+        },
+        "availableForUse": "room.canteen:21:6",
+        "objects": [
+          {
+            "placedObjectId": "object:23:6",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 23,
+              "y": 6
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-1-dining-table-wooden"
+          },
+          {
+            "placedObjectId": "object:25:9",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 25,
+              "y": 9
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000002-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "rebuiltLoaded": {
+        "tick": 10811,
+        "instanceId": "room.canteen:21:6",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 6,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.dining-table",
+          "minQuantity": 2,
+          "satisfyingQuantity": 2,
+          "objectNameKey": "object.dining-table.name"
+        },
+        "availableForUse": "room.canteen:21:6",
+        "objects": [
+          {
+            "placedObjectId": "object:23:6",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 23,
+              "y": 6
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-1-dining-table-wooden"
+          },
+          {
+            "placedObjectId": "object:25:9",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 25,
+              "y": 9
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000002-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "undone": {
+        "tick": 10811,
+        "instanceId": "room.canteen:21:6",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 3,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.dining-table",
+          "minQuantity": 2,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.dining-table.name"
+        },
+        "availableForUse": "room.canteen:21:6",
+        "objects": [
+          {
+            "placedObjectId": "object:25:9",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 25,
+              "y": 9
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000002-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "redone": {
+        "tick": 10911,
+        "instanceId": "room.canteen:21:6",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 6,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.dining-table",
+          "minQuantity": 2,
+          "satisfyingQuantity": 2,
+          "objectNameKey": "object.dining-table.name"
+        },
+        "availableForUse": "room.canteen:21:6",
+        "objects": [
+          {
+            "placedObjectId": "object:23:6",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 23,
+              "y": 6
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-1-dining-table-wooden"
+          },
+          {
+            "placedObjectId": "object:25:9",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 25,
+              "y": 9
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000002-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      }
+    },
+    {
+      "quarterTurns": 1,
+      "mirrorX": false,
+      "case": "object.washing-machine",
+      "pressed": {
+        "x": 24,
+        "y": 18
+      },
+      "originalOwner": "room-template-000000000003-2-object-000",
+      "before": {
+        "tick": 7391,
+        "instanceId": "room.laundry:21:17",
+        "anchorTile": {
+          "x": 21,
+          "y": 17
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 4,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.washing-machine",
+          "minQuantity": 2,
+          "satisfyingQuantity": 2,
+          "objectNameKey": "object.washing-machine.name"
+        },
+        "availableForUse": "room.laundry:21:17",
+        "objects": [
+          {
+            "placedObjectId": "object:24:17",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 24,
+              "y": 17
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000003-2-object-000"
+          },
+          {
+            "placedObjectId": "object:24:19",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 24,
+              "y": 19
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000003-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "removed": {
+        "tick": 7391,
+        "instanceId": "room.laundry:21:17",
+        "anchorTile": {
+          "x": 21,
+          "y": 17
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 2,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.washing-machine",
+          "minQuantity": 2,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.washing-machine.name"
+        },
+        "availableForUse": "room.laundry:21:17",
+        "objects": [
+          {
+            "placedObjectId": "object:24:19",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 24,
+              "y": 19
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000003-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "removedLiveActions": [
+        {
+          "id": "action.laundry-work",
+          "target": "room.laundry:21:17",
+          "position": {
+            "x": 21,
+            "y": 17
+          }
+        }
+      ],
+      "removedLoaded": {
+        "tick": 8891,
+        "instanceId": "room.laundry:21:17",
+        "anchorTile": {
+          "x": 21,
+          "y": 17
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 2,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.washing-machine",
+          "minQuantity": 2,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.washing-machine.name"
+        },
+        "availableForUse": "room.laundry:21:17",
+        "objects": [
+          {
+            "placedObjectId": "object:24:19",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 24,
+              "y": 19
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000003-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "removedLoadedActions": [
+        {
+          "id": "action.laundry-work",
+          "target": "room.laundry:21:17",
+          "position": {
+            "x": 21,
+            "y": 17
+          }
+        }
+      ],
+      "normalRebuildAnchor": {
+        "x": 21,
+        "y": 17
+      },
+      "newOwner": "actual-rebuild-1-washing-machine-brick",
+      "rebuilt": {
+        "tick": 10881,
+        "instanceId": "room.laundry:21:17",
+        "anchorTile": {
+          "x": 21,
+          "y": 17
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 4,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.washing-machine",
+          "minQuantity": 2,
+          "satisfyingQuantity": 2,
+          "objectNameKey": "object.washing-machine.name"
+        },
+        "availableForUse": "room.laundry:21:17",
+        "objects": [
+          {
+            "placedObjectId": "object:21:17",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 21,
+              "y": 17
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-1-washing-machine-brick"
+          },
+          {
+            "placedObjectId": "object:24:19",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 24,
+              "y": 19
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000003-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "rebuiltLoaded": {
+        "tick": 10881,
+        "instanceId": "room.laundry:21:17",
+        "anchorTile": {
+          "x": 21,
+          "y": 17
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 4,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.washing-machine",
+          "minQuantity": 2,
+          "satisfyingQuantity": 2,
+          "objectNameKey": "object.washing-machine.name"
+        },
+        "availableForUse": "room.laundry:21:17",
+        "objects": [
+          {
+            "placedObjectId": "object:21:17",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 21,
+              "y": 17
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-1-washing-machine-brick"
+          },
+          {
+            "placedObjectId": "object:24:19",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 24,
+              "y": 19
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000003-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "undone": {
+        "tick": 10881,
+        "instanceId": "room.laundry:21:17",
+        "anchorTile": {
+          "x": 21,
+          "y": 17
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 2,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.washing-machine",
+          "minQuantity": 2,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.washing-machine.name"
+        },
+        "availableForUse": "room.laundry:21:17",
+        "objects": [
+          {
+            "placedObjectId": "object:24:19",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 24,
+              "y": 19
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000003-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "redone": {
+        "tick": 11011,
+        "instanceId": "room.laundry:21:17",
+        "anchorTile": {
+          "x": 21,
+          "y": 17
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 4,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.washing-machine",
+          "minQuantity": 2,
+          "satisfyingQuantity": 2,
+          "objectNameKey": "object.washing-machine.name"
+        },
+        "availableForUse": "room.laundry:21:17",
+        "objects": [
+          {
+            "placedObjectId": "object:21:17",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 21,
+              "y": 17
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-1-washing-machine-brick"
+          },
+          {
+            "placedObjectId": "object:24:19",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 24,
+              "y": 19
+            },
+            "orientation": 1,
+            "sourceOrderId": "room-template-000000000003-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      }
+    },
+    {
+      "quarterTurns": 3,
+      "mirrorX": true,
+      "case": "object.bed",
+      "pressed": {
+        "x": 7,
+        "y": 21
+      },
+      "originalOwner": "room-template-000000000004-2-object-000",
+      "before": {
+        "tick": 7391,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 1,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.bed",
+          "minQuantity": 1,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.bed.name"
+        },
+        "availableForUse": "room.cell:6:21",
+        "objects": [
+          {
+            "placedObjectId": "object:6:21",
+            "objectId": "object.bed",
+            "anchorTile": {
+              "x": 6,
+              "y": 21
+            },
+            "orientation": 3,
+            "sourceOrderId": "room-template-000000000004-2-object-000"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "removed": {
+        "tick": 7391,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 0,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.bed",
+          "minQuantity": 1,
+          "satisfyingQuantity": 0,
+          "objectNameKey": "object.bed.name"
+        },
+        "objects": [],
+        "accommodation": "room.cell:6:21"
+      },
+      "removedLiveActions": [
+        {
+          "id": "action.sleep",
+          "target": "room.cell:6:21",
+          "position": {
+            "x": 6,
+            "y": 21
+          }
+        }
+      ],
+      "removedLoaded": {
+        "tick": 8891,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 0,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.bed",
+          "minQuantity": 1,
+          "satisfyingQuantity": 0,
+          "objectNameKey": "object.bed.name"
+        },
+        "objects": [],
+        "accommodation": "room.cell:6:21"
+      },
+      "removedLoadedActions": [
+        {
+          "id": "action.sleep",
+          "target": "room.cell:6:21",
+          "position": {
+            "x": 6,
+            "y": 21
+          }
+        }
+      ],
+      "normalRebuildAnchor": {
+        "x": 6,
+        "y": 21
+      },
+      "newOwner": "actual-rebuild-3-bed-wooden",
+      "rebuilt": {
+        "tick": 10791,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 1,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.bed",
+          "minQuantity": 1,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.bed.name"
+        },
+        "availableForUse": "room.cell:6:21",
+        "objects": [
+          {
+            "placedObjectId": "object:6:21",
+            "objectId": "object.bed",
+            "anchorTile": {
+              "x": 6,
+              "y": 21
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-3-bed-wooden"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "rebuiltLoaded": {
+        "tick": 10791,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 1,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.bed",
+          "minQuantity": 1,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.bed.name"
+        },
+        "availableForUse": "room.cell:6:21",
+        "objects": [
+          {
+            "placedObjectId": "object:6:21",
+            "objectId": "object.bed",
+            "anchorTile": {
+              "x": 6,
+              "y": 21
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-3-bed-wooden"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "undone": {
+        "tick": 10791,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 0,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.bed",
+          "minQuantity": 1,
+          "satisfyingQuantity": 0,
+          "objectNameKey": "object.bed.name"
+        },
+        "objects": [],
+        "accommodation": "room.cell:6:21"
+      },
+      "redone": {
+        "tick": 10951,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 1,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.bed",
+          "minQuantity": 1,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.bed.name"
+        },
+        "availableForUse": "room.cell:6:21",
+        "objects": [
+          {
+            "placedObjectId": "object:6:21",
+            "objectId": "object.bed",
+            "anchorTile": {
+              "x": 6,
+              "y": 21
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-3-bed-wooden"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      }
+    },
+    {
+      "quarterTurns": 3,
+      "mirrorX": true,
+      "case": "object.toilet",
+      "pressed": {
+        "x": 9,
+        "y": 22
+      },
+      "originalOwner": "room-template-000000000004-2-object-001",
+      "before": {
+        "tick": 7391,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 1,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.toilet",
+          "minQuantity": 1,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.toilet.name"
+        },
+        "availableForUse": "room.cell:6:21",
+        "objects": [
+          {
+            "placedObjectId": "object:9:22",
+            "objectId": "object.toilet",
+            "anchorTile": {
+              "x": 9,
+              "y": 22
+            },
+            "orientation": 3,
+            "sourceOrderId": "room-template-000000000004-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "removed": {
+        "tick": 7391,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 0,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.toilet",
+          "minQuantity": 1,
+          "satisfyingQuantity": 0,
+          "objectNameKey": "object.toilet.name"
+        },
+        "objects": [],
+        "accommodation": "room.cell:6:21"
+      },
+      "removedLiveActions": [
+        {
+          "id": "action.use-toilet",
+          "target": "room.cell:6:21",
+          "position": {
+            "x": 6,
+            "y": 21
+          }
+        }
+      ],
+      "removedLoaded": {
+        "tick": 8891,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 0,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.toilet",
+          "minQuantity": 1,
+          "satisfyingQuantity": 0,
+          "objectNameKey": "object.toilet.name"
+        },
+        "objects": [],
+        "accommodation": "room.cell:6:21"
+      },
+      "removedLoadedActions": [
+        {
+          "id": "action.use-toilet",
+          "target": "room.cell:6:21",
+          "position": {
+            "x": 6,
+            "y": 21
+          }
+        }
+      ],
+      "normalRebuildAnchor": {
+        "x": 8,
+        "y": 21
+      },
+      "newOwner": "actual-rebuild-3-toilet-brick",
+      "rebuilt": {
+        "tick": 10811,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 1,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.toilet",
+          "minQuantity": 1,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.toilet.name"
+        },
+        "availableForUse": "room.cell:6:21",
+        "objects": [
+          {
+            "placedObjectId": "object:8:21",
+            "objectId": "object.toilet",
+            "anchorTile": {
+              "x": 8,
+              "y": 21
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-3-toilet-brick"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "rebuiltLoaded": {
+        "tick": 10811,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 1,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.toilet",
+          "minQuantity": 1,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.toilet.name"
+        },
+        "availableForUse": "room.cell:6:21",
+        "objects": [
+          {
+            "placedObjectId": "object:8:21",
+            "objectId": "object.toilet",
+            "anchorTile": {
+              "x": 8,
+              "y": 21
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-3-toilet-brick"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "undone": {
+        "tick": 10811,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 0,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.toilet",
+          "minQuantity": 1,
+          "satisfyingQuantity": 0,
+          "objectNameKey": "object.toilet.name"
+        },
+        "objects": [],
+        "accommodation": "room.cell:6:21"
+      },
+      "redone": {
+        "tick": 10971,
+        "instanceId": "room.cell:6:21",
+        "anchorTile": {
+          "x": 6,
+          "y": 21
+        },
+        "residentCapacity": 1,
+        "capabilityCapacity": 1,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.toilet",
+          "minQuantity": 1,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.toilet.name"
+        },
+        "availableForUse": "room.cell:6:21",
+        "objects": [
+          {
+            "placedObjectId": "object:8:21",
+            "objectId": "object.toilet",
+            "anchorTile": {
+              "x": 8,
+              "y": 21
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-3-toilet-brick"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      }
+    },
+    {
+      "quarterTurns": 3,
+      "mirrorX": true,
+      "case": "object.dining-table",
+      "pressed": {
+        "x": 22,
+        "y": 8
+      },
+      "originalOwner": "room-template-000000000002-2-object-000",
+      "before": {
+        "tick": 7391,
+        "instanceId": "room.canteen:21:6",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 6,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.dining-table",
+          "minQuantity": 2,
+          "satisfyingQuantity": 2,
+          "objectNameKey": "object.dining-table.name"
+        },
+        "availableForUse": "room.canteen:21:6",
+        "objects": [
+          {
+            "placedObjectId": "object:21:6",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 21,
+              "y": 6
+            },
+            "orientation": 3,
+            "sourceOrderId": "room-template-000000000002-2-object-000"
+          },
+          {
+            "placedObjectId": "object:21:9",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 21,
+              "y": 9
+            },
+            "orientation": 3,
+            "sourceOrderId": "room-template-000000000002-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "removed": {
+        "tick": 7391,
+        "instanceId": "room.canteen:21:6",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 3,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.dining-table",
+          "minQuantity": 2,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.dining-table.name"
+        },
+        "availableForUse": "room.canteen:21:6",
+        "objects": [
+          {
+            "placedObjectId": "object:21:9",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 21,
+              "y": 9
+            },
+            "orientation": 3,
+            "sourceOrderId": "room-template-000000000002-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "removedLiveActions": [
+        {
+          "id": "action.eat-meal",
+          "target": "room.canteen:21:6",
+          "position": {
+            "x": 21,
+            "y": 6
+          }
+        }
+      ],
+      "removedLoaded": {
+        "tick": 8891,
+        "instanceId": "room.canteen:21:6",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 3,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.dining-table",
+          "minQuantity": 2,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.dining-table.name"
+        },
+        "availableForUse": "room.canteen:21:6",
+        "objects": [
+          {
+            "placedObjectId": "object:21:9",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 21,
+              "y": 9
+            },
+            "orientation": 3,
+            "sourceOrderId": "room-template-000000000002-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "removedLoadedActions": [
+        {
+          "id": "action.eat-meal",
+          "target": "room.canteen:21:6",
+          "position": {
+            "x": 21,
+            "y": 6
+          }
+        }
+      ],
+      "normalRebuildAnchor": {
+        "x": 21,
+        "y": 6
+      },
+      "additionalOptionalRemoval": {
+        "originalNoNormalFootprint": true,
+        "objectId": "object.bench",
+        "anchor": {
+          "x": 23,
+          "y": 6
+        },
+        "owner": "room-template-000000000002-2-object-002"
+      },
+      "newOwner": "actual-rebuild-3-dining-table-wooden",
+      "rebuilt": {
+        "tick": 10831,
+        "instanceId": "room.canteen:21:6",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 6,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.dining-table",
+          "minQuantity": 2,
+          "satisfyingQuantity": 2,
+          "objectNameKey": "object.dining-table.name"
+        },
+        "availableForUse": "room.canteen:21:6",
+        "objects": [
+          {
+            "placedObjectId": "object:21:6",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 21,
+              "y": 6
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-3-dining-table-wooden"
+          },
+          {
+            "placedObjectId": "object:21:9",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 21,
+              "y": 9
+            },
+            "orientation": 3,
+            "sourceOrderId": "room-template-000000000002-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "rebuiltLoaded": {
+        "tick": 10831,
+        "instanceId": "room.canteen:21:6",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 6,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.dining-table",
+          "minQuantity": 2,
+          "satisfyingQuantity": 2,
+          "objectNameKey": "object.dining-table.name"
+        },
+        "availableForUse": "room.canteen:21:6",
+        "objects": [
+          {
+            "placedObjectId": "object:21:6",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 21,
+              "y": 6
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-3-dining-table-wooden"
+          },
+          {
+            "placedObjectId": "object:21:9",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 21,
+              "y": 9
+            },
+            "orientation": 3,
+            "sourceOrderId": "room-template-000000000002-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "undone": {
+        "tick": 10831,
+        "instanceId": "room.canteen:21:6",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 3,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.dining-table",
+          "minQuantity": 2,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.dining-table.name"
+        },
+        "availableForUse": "room.canteen:21:6",
+        "objects": [
+          {
+            "placedObjectId": "object:21:9",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 21,
+              "y": 9
+            },
+            "orientation": 3,
+            "sourceOrderId": "room-template-000000000002-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "redone": {
+        "tick": 10931,
+        "instanceId": "room.canteen:21:6",
+        "anchorTile": {
+          "x": 21,
+          "y": 6
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 6,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.dining-table",
+          "minQuantity": 2,
+          "satisfyingQuantity": 2,
+          "objectNameKey": "object.dining-table.name"
+        },
+        "availableForUse": "room.canteen:21:6",
+        "objects": [
+          {
+            "placedObjectId": "object:21:6",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 21,
+              "y": 6
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-3-dining-table-wooden"
+          },
+          {
+            "placedObjectId": "object:21:9",
+            "objectId": "object.dining-table",
+            "anchorTile": {
+              "x": 21,
+              "y": 9
+            },
+            "orientation": 3,
+            "sourceOrderId": "room-template-000000000002-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      }
+    },
+    {
+      "quarterTurns": 3,
+      "mirrorX": true,
+      "case": "object.washing-machine",
+      "pressed": {
+        "x": 21,
+        "y": 18
+      },
+      "originalOwner": "room-template-000000000003-2-object-000",
+      "before": {
+        "tick": 7391,
+        "instanceId": "room.laundry:21:17",
+        "anchorTile": {
+          "x": 21,
+          "y": 17
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 4,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.washing-machine",
+          "minQuantity": 2,
+          "satisfyingQuantity": 2,
+          "objectNameKey": "object.washing-machine.name"
+        },
+        "availableForUse": "room.laundry:21:17",
+        "objects": [
+          {
+            "placedObjectId": "object:21:17",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 21,
+              "y": 17
+            },
+            "orientation": 3,
+            "sourceOrderId": "room-template-000000000003-2-object-000"
+          },
+          {
+            "placedObjectId": "object:21:19",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 21,
+              "y": 19
+            },
+            "orientation": 3,
+            "sourceOrderId": "room-template-000000000003-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "removed": {
+        "tick": 7391,
+        "instanceId": "room.laundry:21:17",
+        "anchorTile": {
+          "x": 21,
+          "y": 17
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 2,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.washing-machine",
+          "minQuantity": 2,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.washing-machine.name"
+        },
+        "availableForUse": "room.laundry:21:17",
+        "objects": [
+          {
+            "placedObjectId": "object:21:19",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 21,
+              "y": 19
+            },
+            "orientation": 3,
+            "sourceOrderId": "room-template-000000000003-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "removedLiveActions": [
+        {
+          "id": "action.laundry-work",
+          "target": "room.laundry:21:17",
+          "position": {
+            "x": 21,
+            "y": 17
+          }
+        }
+      ],
+      "removedLoaded": {
+        "tick": 8891,
+        "instanceId": "room.laundry:21:17",
+        "anchorTile": {
+          "x": 21,
+          "y": 17
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 2,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.washing-machine",
+          "minQuantity": 2,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.washing-machine.name"
+        },
+        "availableForUse": "room.laundry:21:17",
+        "objects": [
+          {
+            "placedObjectId": "object:21:19",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 21,
+              "y": 19
+            },
+            "orientation": 3,
+            "sourceOrderId": "room-template-000000000003-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "removedLoadedActions": [
+        {
+          "id": "action.laundry-work",
+          "target": "room.laundry:21:17",
+          "position": {
+            "x": 21,
+            "y": 17
+          }
+        }
+      ],
+      "normalRebuildAnchor": {
+        "x": 21,
+        "y": 17
+      },
+      "newOwner": "actual-rebuild-3-washing-machine-brick",
+      "rebuilt": {
+        "tick": 10761,
+        "instanceId": "room.laundry:21:17",
+        "anchorTile": {
+          "x": 21,
+          "y": 17
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 4,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.washing-machine",
+          "minQuantity": 2,
+          "satisfyingQuantity": 2,
+          "objectNameKey": "object.washing-machine.name"
+        },
+        "availableForUse": "room.laundry:21:17",
+        "objects": [
+          {
+            "placedObjectId": "object:21:17",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 21,
+              "y": 17
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-3-washing-machine-brick"
+          },
+          {
+            "placedObjectId": "object:21:19",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 21,
+              "y": 19
+            },
+            "orientation": 3,
+            "sourceOrderId": "room-template-000000000003-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "rebuiltLoaded": {
+        "tick": 10761,
+        "instanceId": "room.laundry:21:17",
+        "anchorTile": {
+          "x": 21,
+          "y": 17
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 4,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.washing-machine",
+          "minQuantity": 2,
+          "satisfyingQuantity": 2,
+          "objectNameKey": "object.washing-machine.name"
+        },
+        "availableForUse": "room.laundry:21:17",
+        "objects": [
+          {
+            "placedObjectId": "object:21:17",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 21,
+              "y": 17
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-3-washing-machine-brick"
+          },
+          {
+            "placedObjectId": "object:21:19",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 21,
+              "y": 19
+            },
+            "orientation": 3,
+            "sourceOrderId": "room-template-000000000003-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "undone": {
+        "tick": 10761,
+        "instanceId": "room.laundry:21:17",
+        "anchorTile": {
+          "x": 21,
+          "y": 17
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 2,
+        "requirement": {
+          "type": "object",
+          "status": "missing-capability",
+          "objectId": "object.washing-machine",
+          "minQuantity": 2,
+          "satisfyingQuantity": 1,
+          "objectNameKey": "object.washing-machine.name"
+        },
+        "availableForUse": "room.laundry:21:17",
+        "objects": [
+          {
+            "placedObjectId": "object:21:19",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 21,
+              "y": 19
+            },
+            "orientation": 3,
+            "sourceOrderId": "room-template-000000000003-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      },
+      "redone": {
+        "tick": 10891,
+        "instanceId": "room.laundry:21:17",
+        "anchorTile": {
+          "x": 21,
+          "y": 17
+        },
+        "residentCapacity": 0,
+        "capabilityCapacity": 4,
+        "requirement": {
+          "type": "object",
+          "status": "satisfied-by-capability",
+          "objectId": "object.washing-machine",
+          "minQuantity": 2,
+          "satisfyingQuantity": 2,
+          "objectNameKey": "object.washing-machine.name"
+        },
+        "availableForUse": "room.laundry:21:17",
+        "objects": [
+          {
+            "placedObjectId": "object:21:17",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 21,
+              "y": 17
+            },
+            "orientation": 0,
+            "sourceOrderId": "actual-rebuild-3-washing-machine-brick"
+          },
+          {
+            "placedObjectId": "object:21:19",
+            "objectId": "object.washing-machine",
+            "anchorTile": {
+              "x": 21,
+              "y": 19
+            },
+            "orientation": 3,
+            "sourceOrderId": "room-template-000000000003-2-object-001"
+          }
+        ],
+        "accommodation": "room.cell:6:21"
+      }
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+[
+    {
+        "path":  ".gitattributes",
+        "bytes":  12,
+        "sha256":  "fd13dad2ecae9b5cdde18e56b396b87ce73a5e3d9c05455bb00a1afc2c424106"
+    },
+    {
+        "path":  "final-measurement.txt",
+        "bytes":  5966,
+        "sha256":  "c2a55f728c7b724124c3c76ce83fdf221cbfb31406290f916edd0cb8edfd84ec"
+    },
+    {
+        "path":  "initial-demolish-edge-fixture.cjs.txt",
+        "bytes":  13347,
+        "sha256":  "e067d2222c37aaae4962f59114063b5e19d483d728a7feb4082c5ba1da6370b3"
+    },
+    {
+        "path":  "initial-demolish-edge-fixture.txt",
+        "bytes":  5980,
+        "sha256":  "7495f1c7533ea2e070be1fb2f5015ae14bfc8d633a0672ccf6e91686347dd586"
+    },
+    {
+        "path":  "initial-measurement.txt",
+        "bytes":  5118,
+        "sha256":  "db6be996776c28e97d953c0cd9e13e9fa66c776d60862467278c7d472f939697"
+    },
+    {
+        "path":  "initial-run-required-fixture-measurement.cjs.txt",
+        "bytes":  12369,
+        "sha256":  "2868631d61aa0d5a9c3e235af72fb2de0f957e923dc4e2ae8a497815754e4601"
+    },
+    {
+        "path":  "make-required-probe.cjs.txt",
+        "bytes":  9349,
+        "sha256":  "5f6e40270c6a640abf3f6bac3d8098ab576a7b5305828a1139e3858a1750745d"
+    },
+    {
+        "path":  "measured-results.json",
+        "bytes":  58622,
+        "sha256":  "957ab65db47de35142ff0d8ad84415cefb208d561358a90bf45a4a4b6350cdb2"
+    },
+    {
+        "path":  "no-normal-canteen-fit.cjs.txt",
+        "bytes":  12370,
+        "sha256":  "bdaf5b9aa5831e29d9f644628e71af0725eb576e03503a0a4b9248170bf5f6c3"
+    },
+    {
+        "path":  "no-normal-canteen-fit.txt",
+        "bytes":  4128,
+        "sha256":  "5d071f9564600b74031b779c4ff192ec4162a41d7dfdcc189fc766d538a7d13c"
+    },
+    {
+        "path":  "README.md",
+        "bytes":  6667,
+        "sha256":  "57dc3384e55edd8048eff0959602732a0b840c9db33bbe176928a933a6f8aedd"
+    },
+    {
+        "path":  "run-required-fixture-measurement.cjs.txt",
+        "bytes":  13376,
+        "sha256":  "88ed22c506cca5e5343f02de9220ccac1bb1956420ac5d2a0563ff88dcef474f"
+    }
+]
