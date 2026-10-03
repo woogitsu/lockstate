@@ -1,0 +1,42 @@
+﻿[
+    {
+        "sha256":  "5d7aa9667348abb32a1fd0eba2a8bf016a9f9f232a0169322b3cf4caf02347e1",
+        "file":  "actual-consumer-negative.txt",
+        "bytes":  1828
+    },
+    {
+        "sha256":  "e80dbe81de562e1b6557ce61aeef9850372be2bcd3840d084e790ca9f35b7370",
+        "file":  "baseline.txt",
+        "bytes":  4140
+    },
+    {
+        "sha256":  "cdfa0f917673c013c33e57ba4d878cf412413199707cc84d2672c5815e68d33b",
+        "file":  "exact-restored.txt",
+        "bytes":  268
+    },
+    {
+        "sha256":  "c241df0a11207a1e193053ba2ac33d8fefca578bddeed9afb956f20f534b018e",
+        "file":  "executed-consumer-negative.cjs.txt",
+        "bytes":  1919
+    },
+    {
+        "sha256":  "daa203348c47020c1d53a62d90ca060433b2235eb9a2f6c878eec3687403bdfe",
+        "file":  "fixed.txt",
+        "bytes":  554
+    },
+    {
+        "sha256":  "854b105ee897ec46f5d8233d75a0d5201bfcd42ebb87274937522ce18ddca0f3",
+        "file":  "mutation-receipt.json",
+        "bytes":  485
+    },
+    {
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "file":  "types-app.txt",
+        "bytes":  0
+    },
+    {
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "file":  "types-tools.txt",
+        "bytes":  0
+    }
+]
