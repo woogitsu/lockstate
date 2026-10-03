@@ -1,0 +1,25 @@
+00:01.125  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-next-default-model-source-audit-20261003\assets\source\blender\furniture.corridor.bench.angled-detail.blend"
+00:01.188  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-next-default-model-source-audit-20261003\assets\source\blender\furniture.corridor.bench.angled-detail.blend"
+00:01.266  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-next-default-model-source-audit-20261003\assets\source\blender\furniture.corridor.bench.angled-detail.blend"
+00:01.344  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-next-default-model-source-audit-20261003\assets\source\blender\furniture.corridor.bench.angled-detail.blend"
+00:01.563  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-next-default-model-source-audit-20261003\assets\source\blender\furniture.corridor.bench.angled-detail.blend"
+00:01.641  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-next-default-model-source-audit-20261003\assets\source\blender\furniture.corridor.bench.angled-detail.blend"
+00:01.703  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-next-default-model-source-audit-20261003\assets\source\blender\furniture.corridor.bench.angled-detail.blend"
+00:01.719  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-next-default-model-source-audit-20261003\assets\source\blender\furniture.corridor.bench.angled-detail.blend"
+00:01.734  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-next-default-model-source-audit-20261003\assets\source\blender\furniture.corridor.bench.angled-detail.blend"
+00:01.922  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-next-default-model-source-audit-20261003\assets\source\blender\furniture.corridor.bench.angled-detail.blend"
+00:01.938  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-next-default-model-source-audit-20261003\assets\source\blender\furniture.corridor.bench.angled-detail.blend"
+00:02.141  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-next-default-model-source-audit-20261003\assets\source\blender\furniture.corridor.bench.angled-detail.blend"
+00:02.203  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-next-default-model-source-audit-20261003\assets\source\blender\furniture.corridor.bench.angled-detail.blend"
+00:02.391  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-next-default-model-source-audit-20261003\assets\source\blender\furniture.corridor.bench.angled-detail.blend"
+00:03.000  render           | Saved: 'C:\Users\matma\Documents\Rozwój gier\lockstate-next-default-model-source-audit-20261003\assets\intermediate\bench-contact-audit\actual-invalid-contact-dispatch-consumer-removed.png'
+00:03.078  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-next-default-model-source-audit-20261003\assets\source\blender\furniture.corridor.bench.angled-detail.blend"
+KITCHEN_BOUNDS furniture.corridor.bench.variants [0.03200053423643112, 0.025000154972076416, 0.0] [1.9679994583129883, 0.9749998450279236, 0.8865000009536743]
+KITCHEN_BOUNDS furniture.corridor.bench.variants [0.03200053423643112, 0.025000154972076416, 0.0] [1.9679994583129883, 0.9749998450279236, 0.8865000009536743]
+Info: Saved as "furniture.corridor.bench.angled-detail.blend"
+KITCHEN_BOUNDS furniture.corridor.bench.variants [0.03200053423643112, 0.025000154972076416, 0.0] [1.9679994583129883, 0.9749998450279236, 0.8865000009536743]
+KITCHEN_BOUNDS furniture.corridor.bench.variants [0.03200053423643112, 0.025000154972076416, 0.0] [1.9679994583129883, 0.9749998450279236, 0.8865000009536743]
+BENCH_ACTUAL_PRODUCER_CONTROLS 14 EXACT_RESTORE_FINAL72_GREEN
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
