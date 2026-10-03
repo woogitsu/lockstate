@@ -1,0 +1,82 @@
+{
+  "nativeRevision": "21dba6ee55823ff1283c0b47254ff8d01e2a6ca9",
+  "actualNativePrefix": "lockstate-modern-integrated-21d-toilet-native-20261004",
+  "nativeStatus": {
+    "capacity": "GREEN",
+    "q0": "soft palette RED, public owners/wholeV10SaveLoad/canonicalHTTPBlob/detail pose reached",
+    "q1": "not run"
+  },
+  "sourceSha256": "1aa9169f65ea498fd1bfe6a2ee600f058c41f1a76685a0109a17da92db398ad5",
+  "originalRects": {
+    "0": [
+      [
+        936,
+        678,
+        53,
+        29
+      ],
+      [
+        983,
+        707,
+        16,
+        17
+      ]
+    ],
+    "1": [
+      [
+        993,
+        440,
+        44,
+        26
+      ],
+      [
+        1040,
+        458,
+        17,
+        18
+      ]
+    ]
+  },
+  "originalFloors": [
+    100,
+    8
+  ],
+  "q0SourcePose": [
+    15,
+    40
+  ],
+  "q1PlannedSourcePose": [
+    -15,
+    40
+  ],
+  "actualPhotos": [
+    {
+      "actualPhoto": "immutable21d-q0-completed-fullhd.png",
+      "sha256": "e9781afef1b24bd5aa5031bcf77f2396c1a3fdaefc73dd07f21e2b324fa5f8c7",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "originalPixels": [
+        0,
+        22
+      ],
+      "sourceTealPixels": 327
+    },
+    {
+      "actualPhoto": "immutable21d-q0-loaded-fullhd.png",
+      "sha256": "bd9de6f541b14649451d18e5a733fef4185019d1138cde10a718bac6a3845e24",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "originalPixels": [
+        0,
+        22
+      ],
+      "sourceTealPixels": 327
+    }
+  ],
+  "hardwareUniqueSourceIsolationClaimed": false,
+  "nativeRerunPerformed": false
+}
