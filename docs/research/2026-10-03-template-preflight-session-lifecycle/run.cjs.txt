@@ -1,0 +1,7 @@
+const fs = require('node:fs');
+const { spawnSync } = require('node:child_process');
+const result = spawnSync(process.execPath, ['node_modules/vitest/vitest.mjs', 'run', 'tests/unit/template-session-preflight-diagnostic.test.ts', '--maxWorkers=2'], { encoding: 'utf8' });
+const output = result.stdout + result.stderr;
+fs.writeFileSync(process.argv[2], output);
+process.stdout.write(output);
+process.exit(result.status ?? 1);
