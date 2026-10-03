@@ -1,0 +1,20 @@
+{
+  "controls": [
+    {
+      "control": "wrong-source-in-canonical-dispatch",
+      "rejectedActualLoadedScene": true,
+      "error": "EXPECTED_REAL_SOURCE_REJECTION Cell cot retained/authored mesh set changed"
+    },
+    {
+      "control": "wrong-target-in-canonical-dispatch",
+      "rejectedActualLoadedScene": true,
+      "error": "EXPECTED_REAL_SOURCE_REJECTION Cell cot accepted target changed"
+    },
+    {
+      "control": "wrong-camera-span-in-canonical-dispatch",
+      "rejectedActualLoadedScene": true,
+      "error": "EXPECTED_REAL_SOURCE_REJECTION Cell cot actual camera span differs from64pixels per tile"
+    }
+  ],
+  "canonicalWrapperBytesExactlyRestored": true
+}

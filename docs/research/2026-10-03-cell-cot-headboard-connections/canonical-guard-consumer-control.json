@@ -1,0 +1,10 @@
+{
+  "actualSourceProducer": "deleted actual upright0 from saved .blend; recomputed provenance hash to reach structural gate",
+  "correctCanonicalGuardRejectsMalformedSavedSource": true,
+  "onlyCanonicalDetailGuardRemovedExitCode": 1,
+  "expectedFailure": "canonical configure accepts malformed physical source without guard",
+  "exactRestoredGuardRejectsMalformedSource": true,
+  "sourceProvenanceCanonicalWrapperBytesExactlyRestored": true,
+  "finalActual72CameraVerifyExitCode": 0,
+  "sourceSha256": "ca8ed38a7250dd941b542a93b6e371ccdd692f6a0829d3646401d53d43a561ef"
+}

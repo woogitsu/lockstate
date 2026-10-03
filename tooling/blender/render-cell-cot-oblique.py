@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import math
 import struct
@@ -17,7 +18,7 @@ import pipeline_common
 
 pipeline_common.require_blender_version()
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = ROOT / "assets/source/blender/furniture.cell.cot.single.blend"
+SOURCE = ROOT / "assets/source/blender/furniture.cell.cot.single.angled-detail.blend"
 OUTPUT = ROOT / "public/assets/environment/oblique"
 PREVIEW = ROOT / "assets/intermediate/cell-cot-preview"
 MANIFEST = ROOT / "public/game-content/oblique-furniture.cell-cot.v1.json"
@@ -109,6 +110,14 @@ def normalize_and_check_border(path: Path) -> None:
     )
 
 
+def load_detail_guard():
+    spec = importlib.util.spec_from_file_location('cot_canonical_detail_guard', Path(__file__).with_name('render-cell-cot-detail-oblique.py'))
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def configure() -> tuple[bpy.types.Scene, bpy.types.Object]:
     if not SOURCE.is_file():
         raise FileNotFoundError(f"Generate the authored .blend first: {SOURCE}")
@@ -129,6 +138,9 @@ def configure() -> tuple[bpy.types.Scene, bpy.types.Object]:
     camera_data.type = "ORTHO"
     camera_data.ortho_scale = ORTHO_SCALE_TILES
     scene.camera = camera
+    if SOURCE.name == 'furniture.cell.cot.single.angled-detail.blend':
+        detail = load_detail_guard()
+        detail.verify_source(scene, camera)
     return scene, camera
 
 
@@ -142,6 +154,8 @@ def point_camera(camera: bpy.types.Object, yaw: int, elevation: int) -> None:
     ))
     camera.location = TARGET + direction
     camera.rotation_euler = (TARGET - camera.location).to_track_quat("-Z", "Y").to_euler()
+    if SOURCE.name == 'furniture.cell.cot.single.angled-detail.blend':
+        load_detail_guard().verify_camera(camera, yaw, elevation)
 
 
 def main() -> None:
@@ -174,7 +188,7 @@ def main() -> None:
     manifest = {
         "schemaVersion": 1,
         "assetId": ASSET_ID,
-        "source": "assets/source/blender/furniture.cell.cot.single.blend",
+        "source": SOURCE.relative_to(ROOT).as_posix(),
         "sourceSha256": hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
         "resolutionPx": [RESOLUTION_PX, RESOLUTION_PX],
         "nominalPixelsPerTile": int(NOMINAL_PIXELS_PER_TILE),
@@ -190,4 +204,11 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    if '--verify' in sys.argv:
+        _, camera = configure()
+        for yaw in YAW:
+            for elevation in ELEVATION:
+                point_camera(camera, yaw, elevation)
+        print('CANONICAL_CELL_COT_DETAIL_VERIFY72 cameras/four occupied orientations', flush=True)
+    else:
+        main()
