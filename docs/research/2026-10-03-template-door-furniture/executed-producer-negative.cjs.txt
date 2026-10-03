@@ -1,0 +1,40 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const crypto = require('node:crypto');
+const { spawnSync } = require('node:child_process');
+const file = path.resolve('src/simulation/construction/room-template-coordinator.ts');
+const record = path.resolve('docs/research/2026-10-03-template-door-furniture');
+const original = fs.readFileSync(file);
+const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
+const run = label => {
+  const result = spawnSync(process.execPath, ['node_modules/vitest/vitest.mjs', 'run',
+    'tests/integration/completed-template-door-furniture.test.ts', '--maxWorkers=2'],
+  { cwd: process.cwd(), maxBuffer: 8 * 1024 * 1024 });
+  fs.writeFileSync(path.join(record, label + '.stdout.txt'), result.stdout || '');
+  fs.writeFileSync(path.join(record, label + '.stderr.txt'), result.stderr || '');
+  return { exit: result.status, error: result.error?.message,
+    output: String(result.stdout) + String(result.stderr) };
+};
+let negative;
+let mutatedHash;
+try {
+  const fixed = original.toString('utf8');
+  const condition = 'this.hasCompletedDoorApproach(tile.x, tile.y, dx, dy) ||\r\n      this.hasCompletedDoorApproach(tile.x - dx, tile.y - dy, dx, dy)';
+  if (fixed.split(condition).length !== 2) throw new Error('Exact production condition not unique');
+  const mutated = fixed.replace(condition, 'this.hasCompletedDoorApproach(tile.x, tile.y, dx, dy)');
+  fs.writeFileSync(file, mutated);
+  mutatedHash = hash(fs.readFileSync(file));
+  negative = run('producer-omission');
+} finally {
+  fs.writeFileSync(file, original);
+}
+if (!fs.readFileSync(file).equals(original)) throw new Error('Production bytes not restored');
+const restored = run('producer-restored');
+const receipt = { source: path.relative(process.cwd(), file), fixedSubject: '12421a08f10ef49d9f7bb7e6f7640b1cc5f3d5dc',
+  beforeSha256: hash(original), mutatedSha256: mutatedHash, restoredSha256: hash(fs.readFileSync(file)),
+  exactBytesRestored: fs.readFileSync(file).equals(original), negativeExit: negative?.exit,
+  restoredExit: restored.exit, expectedNegative: '4 failed | 6 passed', expectedRestored: '10 passed' };
+fs.writeFileSync(path.join(record, 'producer-restoration.json'), JSON.stringify(receipt, null, 2) + '\n');
+console.log(JSON.stringify(receipt));
+if (negative?.exit !== 1 || !negative.output.includes('4 failed | 6 passed') || restored.exit !== 0 ||
+    !restored.output.includes('10 passed')) process.exitCode = 1;

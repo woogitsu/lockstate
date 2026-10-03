@@ -1,0 +1,29 @@
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/completed-template-door-furniture.test.ts > completed template door vs independent furniture: q=1 mirror=false saved=false legal=false
+ FAIL  tests/integration/completed-template-door-furniture.test.ts > completed template door vs independent furniture: q=1 mirror=false saved=true legal=false
+ FAIL  tests/integration/completed-template-door-furniture.test.ts > completed template door vs independent furniture: q=3 mirror=true saved=false legal=false
+ FAIL  tests/integration/completed-template-door-furniture.test.ts > completed template door vs independent furniture: q=3 mirror=true saved=true legal=false
+AssertionError: expected { id: 'later-toilet', …(7) } to match object { state: 'failed', …(1) }
+(9 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "failReason": "unbuildable",
+-   "state": "failed",
++   "state": "completed",
+  }
+
+ ❯ tests/integration/completed-template-door-furniture.test.ts:73:19
+     71|         doorOccupied: runtime.placedObjects.isTileOccupied(testCase.do…
+     72|     }
+     73|     expect(order).toMatchObject({ state: 'failed', failReason: 'unbuil…
+       |                   ^
+     74|     expect(runtime.treasury.snapshot()).toEqual(funds);
+     75|     const { kernel: _beforeKernel, ...beforeState } = before;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+

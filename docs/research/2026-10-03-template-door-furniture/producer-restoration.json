@@ -1,0 +1,12 @@
+{
+  "source": "src\\simulation\\construction\\room-template-coordinator.ts",
+  "fixedSubject": "12421a08f10ef49d9f7bb7e6f7640b1cc5f3d5dc",
+  "beforeSha256": "88470ac79c6d4b9eac227260386069ee0520263f706b7e7fc191b100b57c574c",
+  "mutatedSha256": "75b7b3537a1da708b9120b1737d79b0c6e590157eb1824f637c1ec245cfe46df",
+  "restoredSha256": "88470ac79c6d4b9eac227260386069ee0520263f706b7e7fc191b100b57c574c",
+  "exactBytesRestored": true,
+  "negativeExit": 1,
+  "restoredExit": 0,
+  "expectedNegative": "4 failed | 6 passed",
+  "expectedRestored": "10 passed"
+}
