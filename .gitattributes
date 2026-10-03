@@ -51,3 +51,6 @@ docs/research/2026-10-03-reception-armchair-native-preparation/native/**/*.png f
 
 docs/research/2026-10-03-combined-student-rotation-minimap/native/** -text
 docs/research/2026-10-03-combined-student-rotation-minimap/native/**/*.png filter=lfs diff=lfs merge=lfs -text
+# Actual combined-product evidence: preserve logs; archive screenshots in LFS.
+docs/research/2026-10-03-authoritative-object-model-integration/native/** -text
+docs/research/2026-10-03-authoritative-object-model-integration/native/**/*.png filter=lfs diff=lfs merge=lfs -text

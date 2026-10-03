@@ -1,0 +1,52 @@
+[
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-authoritative-object-model-verify-20261003.txt",
+    "archived": "original-combined-verify/console.txt",
+    "sourceBytes": 67272,
+    "sourceSha256": "38748953e78b1931a102f00fcb3f69f4feb0262613fce24a422ae013400f45ee",
+    "archivedBytes": 34921,
+    "archivedSha256": "b7be704da6f51e0398e6bcd33294598c1230d1f81022b52a389b94e2c6ca2c15",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-placement-integration-native-20261003.json",
+    "archived": "placement-four-green/report.json",
+    "sourceBytes": 7764,
+    "sourceSha256": "5422be64c8b3c5749edb47654f7a87fd3ac804c27a5180a80152540479c4dd6c",
+    "archivedBytes": 7764,
+    "archivedSha256": "5422be64c8b3c5749edb47654f7a87fd3ac804c27a5180a80152540479c4dd6c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-placement-integration-native-20261003.txt",
+    "archived": "placement-four-green/console.txt",
+    "sourceBytes": 4642,
+    "sourceSha256": "b688ef5c53bfaa598446584f4e7a24109cf97cd960c63b7c80dbe7fe023ecadc",
+    "archivedBytes": 2332,
+    "archivedSha256": "72f28f8b98819a0a1fd0b2a532249957bf62bee32cef95eb3ec995e20fe361e6",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-placement-integration-native-20261003\\.last-run.json",
+    "archived": "placement-four-green/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-placement-integration-native-20261003\\yard-bench-player-build-pl-e93fb-hrough-Save-Load-at-Full-HD\\yard-bench-completed.png",
+    "archived": "placement-four-green/002-yard-bench-completed.png",
+    "sourceBytes": 1739961,
+    "sourceSha256": "722e9c4d3fa35a7393722ad43f1bddc75fd7e4e4cef96e59830d8617ba097ff2",
+    "archivedBytes": 1739961,
+    "archivedSha256": "722e9c4d3fa35a7393722ad43f1bddc75fd7e4e4cef96e59830d8617ba097ff2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-placement-integration-native-20261003\\yard-bench-player-build-pl-e93fb-hrough-Save-Load-at-Full-HD\\yard-bench-loaded.png",
+    "archived": "placement-four-green/003-yard-bench-loaded.png",
+    "sourceBytes": 1714033,
+    "sourceSha256": "60107845706dc79627ba826bb2ff4ea7c00ef9e6a289267d72b497ffe1c7b056",
+    "archivedBytes": 1714033,
+    "archivedSha256": "60107845706dc79627ba826bb2ff4ea7c00ef9e6a289267d72b497ffe1c7b056"
+  }
+]

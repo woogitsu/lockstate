@@ -44,6 +44,29 @@ desk/chair observer are now imported. Their actual native runs and the fresh
 full combined verification remain the next gates. No native result is inferred
 from their collection/type/build preparation.
 
+## Original combined gate and correction
+
+The first full verification at f80088fc60 executed **55 failing / 8386 passing /
+2 skipped** cases (9 failing files). Its original terminal output is retained in
+`native/original-combined-verify/console.txt`; the capture manifest records the
+original UTF16LE bytes and the explicit UTF8 archive conversion. Build was not
+reached in that run. The four earlier built-client passes are independently
+archived under `native/placement-four-green` and do not overwrite that failure.
+
+Forty-seven failures came from three existing VM fixtures missing the newly
+referenced optional ObjectTool binding. The fixture repair retains the actual
+main callbacks and asserts retained arming/definition/footprint. Two UI inventory
+tests now enumerate the new port and its three explicitly type-only contracts.
+Current documentation anchors were opened and corrected; the Reception desk
+expectation now names its new dedicated model. The unchanged tooling coverage
+rule requires a directory include rather than a wildcard, while the archived
+executed control is retained byte-for-byte as `.cjs.txt` evidence. Published
+source citations were fetched onto their actual origin tracking refs.
+
+None of these corrections changes gameplay, verification thresholds, browser
+timeouts or retry rules. Fresh full verification and the two new native recipes
+remain pending until their own actual terminal outcomes are archived.
+
 ## Consolidated delivery
 
 Independent read-only review verifies that current main6d25ebd and the earlier
