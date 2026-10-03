@@ -1,0 +1,8 @@
+﻿const fs=require('node:fs'),cp=require('node:child_process'),crypto=require('node:crypto');
+const cwd=process.argv[2],scratch=process.argv[3],file=cwd+'/src/ui/hud/hud.ts';
+const before=fs.readFileSync(file),hash=x=>crypto.createHash('sha256').update(x).digest('hex');
+const original='if (minimapPlaceholder.textContent !== placeholderText) minimapPlaceholder.textContent = placeholderText;';
+const text=before.toString(); if(text.split(original).length!==2)throw Error('Unique guard absent');
+cp.execFileSync('git',['checkout','--detach','529ec9fd023a8f1140722f032f511e981cef69e5'],{cwd});
+let result;try {fs.writeFileSync(file,text.replace(original,'minimapPlaceholder.textContent = placeholderText;')); result=cp.spawnSync(process.execPath,['node_modules/vitest/vitest.mjs','run','tests/unit/hud-minimap-publication-identity.test.ts','--maxWorkers=2'],{cwd,encoding:'utf8'}); fs.writeFileSync(scratch+'/unit-negative.txt',result.stdout+result.stderr);if(result.status!==1)throw Error('Expected actual source negative RED');}
+finally {fs.writeFileSync(file,before);if(!fs.readFileSync(file).equals(before))throw Error('Exact bytes differ');cp.execFileSync('git',['checkout','codex/oblique-steady-projection-audit-20261003'],{cwd});fs.writeFileSync(scratch+'/source-restoration.json',JSON.stringify({sha256:hash(before),afterSha256:hash(fs.readFileSync(file)),mutation:'unconditional actual HUD textContent assignment',status:result?.status,exactBytes:fs.readFileSync(file).equals(before)},null,2));}
