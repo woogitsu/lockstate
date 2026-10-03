@@ -88,3 +88,18 @@ Expanded frozen6fb2 subject:8GREEN/2observerRED in3.1min. Both Kitchenq0/q1, thr
 Corrected actual built-client route10/10 GREEN in3.1min. Source/fixture subject29e0fba12d; the positive production client6fb2 differs only in test/docs commits. Actual Kitchenq0/q1 original Stove/Fridge palette thresholds, exact allthree completed sourceOrderIds, and whole paused SaveLoad data pass. Both template New/Load pending operations re-arm before the original15sdeadline, create exactly18 independently enumerated new orders, ignore replay of the exact old reply and persist the wholeV8 bundle. Both ordinary World New/Load and allthree physical mouse-chord controls pass. Both actual low-angle Kitchen images opened; original observer errors remain archived.
 
 Actual frozen29e0 controls remove both default model mappings, primary-release ownership, abandoned busy reset, and the availability-boundary construction cancellation. Nativeq0 subject8RED/1legal in170.88s; separately observedq1 model omission1RED/1legal in88.11s. Every source file is restored byte-for-byte in finally; actual baseline/restored worker hash agrees. Restored10/10 GREEN. Original raw reports, snapshots, screenshots, exact mutation, scripts and hashes are in native; terminal-summary.json records precise durations and counts. These local results do not imply full hosted green, mergeability or deployment.
+
+## Predecessor merge and documentation gate
+
+PR2005 had three exact documentation/byte-attribute conflicts with published
+Bookshelf base3c0e528d76, so GitHub could not start pull-request CI. The ancestry
+merge preserves the complete current tree: every incoming index row exists,
+Book material audit differs only in upstream-ID wording and native byte rules
+remain a superset including Kitchen. No src or native-fixture diff.
+First post-merge documentation run21GREEN/2RED retained: the newly integrated
+ordinary session row sat beyond the single index table, and the historical
+0d08 source ref had not been explicitly fetched. Move only that row into the
+existing table and fetch its actual published fc30 branch; guards/budgets stay
+unchanged. The following exact publication remains subject to full hosted CI.
+
+After exact scoped row move and published-ref fetch, the same three documentation suites23/23 GREEN in14.34s. Merge repair changes no verified production source or native fixture.

@@ -1512,3 +1512,16 @@ connections, prepare genuine Canteen native hardware capture, and audit camera
 changes during held template construction. Canteen/Washer source72poses and
 contacts are published; native integration follows Kitchen. This is ongoing
 local integration, not exact hosted green or a production release.
+
+## Kitchen player integration accepted locally - 2026-10-03
+
+[Actual player proof](../../research/2026-10-03-kitchen-construction-session-integration/README.md)
+is published in PR2005:10GREEN, actual producer omissions8RED+explicitq1
+1RED and exact source/worker restoration10GREEN. Initial observer failures
+are preserved. Fridge/Stove Build and whole pausedSaveLoad work in both
+orientations; New/Load rejects old held construction and pending requests.
+Root now integrates actual connected Canteen, Washer and CellCot sources with
+existing owners/palette gates and genuine decoded-loader evidence. Three
+agents model the visibly missing rear Guard belt, correct an actual terminal
+predecessor CI contract failure, and audit held-plan rotation/mirror ownership.
+Do not mistake local acceptance for full exact-head hosted green/deployment.
