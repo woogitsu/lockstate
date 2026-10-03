@@ -59,11 +59,13 @@ describe('source-authored Staff charcoal gradient discriminator',()=> {
   it('retains every original independent per-chair rectangle',()=> {
     expect(STAFF_CHAIR_MATERIAL_RECTS).toEqual({0:[[770,490,100,115],[940,440,100,115]],1:[[825,390,95,100],[885,500,100,105]]});
   });
-  it('rejects whole wall bodies including footing, door bodies and the actual Staff woven floor',()=> {
-    for(const manifest of ['oblique-square-brick-full-wall.v1.json','oblique-wall-cutaway.v1.json','oblique-wall-west.v1.json','oblique-wall-west-cutaway.v1.json','oblique-cell-door-open.v1.json','oblique-cell-door-north-cutaway.v1.json','oblique-cell-door-west-full.v1.json','oblique-cell-door-west-cutaway.v1.json']) {
-      const actual=frames(`/game-content/${manifest}`);expect(actual).toHaveLength(72);
-      for(const frame of actual)expect(score(frame),`${frame.image} is not a chair pad`).toBeLessThanOrEqual(40);
-    }
+  // Each independently authored family retains all72 hash/pixel checks and
+  // the original5000ms case budget; a576-PNG aggregate is not one operation.
+  it.each(['oblique-square-brick-full-wall.v1.json','oblique-wall-cutaway.v1.json','oblique-wall-west.v1.json','oblique-wall-west-cutaway.v1.json','oblique-cell-door-open.v1.json','oblique-cell-door-north-cutaway.v1.json','oblique-cell-door-west-full.v1.json','oblique-cell-door-west-cutaway.v1.json'])('rejects every whole source body including footing in %s', manifest=> {
+    const actual=frames(`/game-content/${manifest}`);expect(actual).toHaveLength(72);
+    for(const frame of actual)expect(score(frame),`${frame.image} is not a chair pad`).toBeLessThanOrEqual(40);
+  });
+  it('rejects the actual Staff woven floor',()=> {
     const bitmap=decodeStaffMaterialPng(publicBytes('/game-content/source-art/rendered.floor.staff-room.woven-vinyl.8a17ffe2678c.png'));
     expect(staffPadSurfacePixels(bitmap,[0,0,bitmap.width,bitmap.height])).toBeLessThanOrEqual(40);
   });
