@@ -1,0 +1,1140 @@
+{
+  "kernel": 5,
+  "distinctSourceGradientColorsRequired": 3,
+  "paletteColors": 55,
+  "positiveSource": [
+    {
+      "yaw": 0,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 0,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 0,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 0,
+      "elevation": 50,
+      "count": 114
+    },
+    {
+      "yaw": 0,
+      "elevation": 60,
+      "count": 145
+    },
+    {
+      "yaw": 0,
+      "elevation": 70,
+      "count": 70
+    },
+    {
+      "yaw": 30,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 30,
+      "elevation": 30,
+      "count": 3
+    },
+    {
+      "yaw": 30,
+      "elevation": 40,
+      "count": 23
+    },
+    {
+      "yaw": 30,
+      "elevation": 50,
+      "count": 88
+    },
+    {
+      "yaw": 30,
+      "elevation": 60,
+      "count": 131
+    },
+    {
+      "yaw": 30,
+      "elevation": 70,
+      "count": 36
+    },
+    {
+      "yaw": 60,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 60,
+      "elevation": 30,
+      "count": 60
+    },
+    {
+      "yaw": 60,
+      "elevation": 40,
+      "count": 156
+    },
+    {
+      "yaw": 60,
+      "elevation": 50,
+      "count": 137
+    },
+    {
+      "yaw": 60,
+      "elevation": 60,
+      "count": 71
+    },
+    {
+      "yaw": 60,
+      "elevation": 70,
+      "count": 28
+    },
+    {
+      "yaw": 90,
+      "elevation": 20,
+      "count": 2
+    },
+    {
+      "yaw": 90,
+      "elevation": 30,
+      "count": 72
+    },
+    {
+      "yaw": 90,
+      "elevation": 40,
+      "count": 94
+    },
+    {
+      "yaw": 90,
+      "elevation": 50,
+      "count": 73
+    },
+    {
+      "yaw": 90,
+      "elevation": 60,
+      "count": 47
+    },
+    {
+      "yaw": 90,
+      "elevation": 70,
+      "count": 28
+    },
+    {
+      "yaw": 120,
+      "elevation": 20,
+      "count": 3
+    },
+    {
+      "yaw": 120,
+      "elevation": 30,
+      "count": 39
+    },
+    {
+      "yaw": 120,
+      "elevation": 40,
+      "count": 79
+    },
+    {
+      "yaw": 120,
+      "elevation": 50,
+      "count": 147
+    },
+    {
+      "yaw": 120,
+      "elevation": 60,
+      "count": 107
+    },
+    {
+      "yaw": 120,
+      "elevation": 70,
+      "count": 70
+    },
+    {
+      "yaw": 150,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 150,
+      "elevation": 30,
+      "count": 4
+    },
+    {
+      "yaw": 150,
+      "elevation": 40,
+      "count": 49
+    },
+    {
+      "yaw": 150,
+      "elevation": 50,
+      "count": 147
+    },
+    {
+      "yaw": 150,
+      "elevation": 60,
+      "count": 70
+    },
+    {
+      "yaw": 150,
+      "elevation": 70,
+      "count": 75
+    },
+    {
+      "yaw": 180,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 180,
+      "elevation": 30,
+      "count": 28
+    },
+    {
+      "yaw": 180,
+      "elevation": 40,
+      "count": 132
+    },
+    {
+      "yaw": 180,
+      "elevation": 50,
+      "count": 184
+    },
+    {
+      "yaw": 180,
+      "elevation": 60,
+      "count": 82
+    },
+    {
+      "yaw": 180,
+      "elevation": 70,
+      "count": 94
+    },
+    {
+      "yaw": 210,
+      "elevation": 20,
+      "count": 1
+    },
+    {
+      "yaw": 210,
+      "elevation": 30,
+      "count": 51
+    },
+    {
+      "yaw": 210,
+      "elevation": 40,
+      "count": 146
+    },
+    {
+      "yaw": 210,
+      "elevation": 50,
+      "count": 110
+    },
+    {
+      "yaw": 210,
+      "elevation": 60,
+      "count": 87
+    },
+    {
+      "yaw": 210,
+      "elevation": 70,
+      "count": 46
+    },
+    {
+      "yaw": 240,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 240,
+      "elevation": 30,
+      "count": 34
+    },
+    {
+      "yaw": 240,
+      "elevation": 40,
+      "count": 145
+    },
+    {
+      "yaw": 240,
+      "elevation": 50,
+      "count": 91
+    },
+    {
+      "yaw": 240,
+      "elevation": 60,
+      "count": 139
+    },
+    {
+      "yaw": 240,
+      "elevation": 70,
+      "count": 45
+    },
+    {
+      "yaw": 270,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 270,
+      "elevation": 30,
+      "count": 23
+    },
+    {
+      "yaw": 270,
+      "elevation": 40,
+      "count": 117
+    },
+    {
+      "yaw": 270,
+      "elevation": 50,
+      "count": 156
+    },
+    {
+      "yaw": 270,
+      "elevation": 60,
+      "count": 124
+    },
+    {
+      "yaw": 270,
+      "elevation": 70,
+      "count": 74
+    },
+    {
+      "yaw": 300,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 300,
+      "elevation": 30,
+      "count": 4
+    },
+    {
+      "yaw": 300,
+      "elevation": 40,
+      "count": 180
+    },
+    {
+      "yaw": 300,
+      "elevation": 50,
+      "count": 198
+    },
+    {
+      "yaw": 300,
+      "elevation": 60,
+      "count": 155
+    },
+    {
+      "yaw": 300,
+      "elevation": 70,
+      "count": 49
+    },
+    {
+      "yaw": 330,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 330,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 330,
+      "elevation": 40,
+      "count": 8
+    },
+    {
+      "yaw": 330,
+      "elevation": 50,
+      "count": 127
+    },
+    {
+      "yaw": 330,
+      "elevation": 60,
+      "count": 225
+    },
+    {
+      "yaw": 330,
+      "elevation": 70,
+      "count": 98
+    }
+  ],
+  "defaultChair": [
+    {
+      "yaw": 0,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 0,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 0,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 0,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 0,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 0,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 30,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 30,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 30,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 30,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 30,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 30,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 60,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 60,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 60,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 60,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 60,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 60,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 90,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 90,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 90,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 90,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 90,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 90,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 120,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 120,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 120,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 120,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 120,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 120,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 150,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 150,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 150,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 150,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 150,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 150,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 180,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 180,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 180,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 180,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 180,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 180,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 210,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 210,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 210,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 210,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 210,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 210,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 240,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 240,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 240,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 240,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 240,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 240,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 270,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 270,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 270,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 270,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 270,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 270,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 300,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 300,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 300,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 300,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 300,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 300,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 330,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 330,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 330,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 330,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 330,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 330,
+      "elevation": 70,
+      "count": 0
+    }
+  ],
+  "defaultDesk": [
+    {
+      "yaw": 0,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 0,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 0,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 0,
+      "elevation": 50,
+      "count": 5
+    },
+    {
+      "yaw": 0,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 0,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 30,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 30,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 30,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 30,
+      "elevation": 50,
+      "count": 11
+    },
+    {
+      "yaw": 30,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 30,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 60,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 60,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 60,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 60,
+      "elevation": 50,
+      "count": 23
+    },
+    {
+      "yaw": 60,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 60,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 90,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 90,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 90,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 90,
+      "elevation": 50,
+      "count": 5
+    },
+    {
+      "yaw": 90,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 90,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 120,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 120,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 120,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 120,
+      "elevation": 50,
+      "count": 5
+    },
+    {
+      "yaw": 120,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 120,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 150,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 150,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 150,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 150,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 150,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 150,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 180,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 180,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 180,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 180,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 180,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 180,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 210,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 210,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 210,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 210,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 210,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 210,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 240,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 240,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 240,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 240,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 240,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 240,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 270,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 270,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 270,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 270,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 270,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 270,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 300,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 300,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 300,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 300,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 300,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 300,
+      "elevation": 70,
+      "count": 0
+    },
+    {
+      "yaw": 330,
+      "elevation": 20,
+      "count": 0
+    },
+    {
+      "yaw": 330,
+      "elevation": 30,
+      "count": 0
+    },
+    {
+      "yaw": 330,
+      "elevation": 40,
+      "count": 0
+    },
+    {
+      "yaw": 330,
+      "elevation": 50,
+      "count": 0
+    },
+    {
+      "yaw": 330,
+      "elevation": 60,
+      "count": 0
+    },
+    {
+      "yaw": 330,
+      "elevation": 70,
+      "count": 0
+    }
+  ],
+  "actualRootQ0Photos": [
+    {
+      "path": "C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/assets/intermediate/staff-room-padded-chair-native/wooden-chair-player-build--e8d16-and-anchors-after-Save-Load/wooden-chair-worker-completed-fullhd.png",
+      "regions": [
+        {
+          "rect": [
+            770,
+            490,
+            100,
+            115
+          ],
+          "count": 296
+        },
+        {
+          "rect": [
+            940,
+            440,
+            100,
+            115
+          ],
+          "count": 219
+        }
+      ]
+    },
+    {
+      "path": "C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/assets/intermediate/staff-room-padded-chair-native/wooden-chair-player-build--e8d16-and-anchors-after-Save-Load/wooden-chair-loaded-fullhd.png",
+      "regions": [
+        {
+          "rect": [
+            770,
+            490,
+            100,
+            115
+          ],
+          "count": 296
+        },
+        {
+          "rect": [
+            940,
+            440,
+            100,
+            115
+          ],
+          "count": 219
+        }
+      ]
+    }
+  ],
+  "nativeBrowserRun": false
+}

@@ -5,6 +5,7 @@ import { assertOwnedObjectOrders, recordOwnedObjectSnapshot, type ExpectedOwnedO
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 import { observeStaffChairNetwork, captureStaffWholePaused, recordStaffCanonicalAfterLoad, recordStaffNetworkFailure } from './staff-room-padded-chair/native-evidence';
+import { staffChairPadMaterialPixels } from './staff-room-padded-chair/material-observer';
 
 interface ProbeWindow extends Window {
   askWorker?: (kind: string, payload: unknown) => Promise<unknown>;
@@ -191,7 +192,7 @@ test(`player builds Staff Room at quarterTurns${quarterTurns} and retains both a
   const completedWhole = staffNative === undefined ? undefined : await captureStaffWholePaused(page, info.outputPath('staff-chair-whole-paused-completed.json'));
   if (completedWhole !== undefined) expect(completedWhole).toEqual(completedData);
   const beforeTimberPixels = await chairMaterialPixels(page, completed, quarterTurns, [150, 115, 75]);
-  const beforePixels = await chairMaterialPixels(page, completed, quarterTurns, [38, 41, 44]);
+  const beforePixels = staffChairPadMaterialPixels(completed, quarterTurns);
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
     quarterTurns, actualBefore, beforePixels, beforeTimberPixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
@@ -213,7 +214,7 @@ test(`player builds Staff Room at quarterTurns${quarterTurns} and retains both a
   const loadedWhole = staffNative === undefined ? undefined : await captureStaffWholePaused(page, info.outputPath('staff-chair-whole-paused-loaded.json'));
   if (loadedWhole !== undefined) expect(loadedWhole).toEqual(completedWhole);
   const afterTimberPixels = await chairMaterialPixels(page, loaded, quarterTurns, [150, 115, 75]);
-  const afterPixels = await chairMaterialPixels(page, loaded, quarterTurns, [38, 41, 44]);
+  const afterPixels = staffChairPadMaterialPixels(loaded, quarterTurns);
   afterPixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored Staff pad after Load`)
     .toBeGreaterThan(40));
   expect(afterPixels).toEqual(beforePixels);
