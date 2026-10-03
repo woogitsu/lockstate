@@ -1,0 +1,26 @@
+{
+  "controls": [
+    {
+      "control": "actual-source-producer-omits-rear-band",
+      "producerExitCode": 1,
+      "error": "ValueError: Real rear guard belt band omitted",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-reverses-rear-band",
+      "producerExitCode": 1,
+      "error": "ValueError: Actual rear belt topology invalid",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-short-band-cannot-reach-sidebands",
+      "producerExitCode": 1,
+      "error": "ValueError: Cot mounting shoe lacks real triangle-interior contact: physical-guard.rear duty belt band / Duty belt side.-1",
+      "rejectedBeforeSourceSave": true
+    }
+  ],
+  "sourceProvenanceBuilderExactlyRestored": true,
+  "originalSourceBytesUnchanged": true,
+  "exactRestoredProductionVerifyExitCode": 0,
+  "sourceSha256": "b1f402e1096c49e1ea65c2e7727df2b6c498a77d09fc485679f1dcf72c95b456"
+}
