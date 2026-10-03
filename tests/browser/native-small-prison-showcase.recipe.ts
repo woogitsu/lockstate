@@ -84,12 +84,15 @@ async function saveActualStage(page: Page): Promise<void> {
 const stages = [
   { title: '01 public Storage Room and Delivery Bay capacity', ordinals: [0, 1] },
   { title: '02 horizontal four-cell wing and two-tile corridor', ordinals: [2] },
-  { title: '03 completed Kitchen and Shower room', ordinals: [3, 4] },
+  // The prior paired journey used59.5s of60s. Keep one room per stage so its
+  // real construction and complete Load verification each have bounded room.
+  { title: '03 completed Kitchen', ordinals: [3] },
+  { title: '04 completed Shower room', ordinals: [4] },
   // The real combined Canteen+Yard journey completed every order and saved,
   // but its context serialization reached60s. Give each room its own journey
   // and real Load boundary, keeping the existing60s/expect10s budgets.
-  { title: '04 completed Canteen', ordinals: [5] },
-  { title: '05 completed outdoor Yard', ordinals: [6] },
+  { title: '05 completed Canteen', ordinals: [5] },
+  { title: '06 completed outdoor Yard', ordinals: [6] },
 ] as const;
 
 for (const [stage, recipe] of stages.entries()) {
@@ -127,7 +130,7 @@ for (const [stage, recipe] of stages.entries()) {
   });
 }
 
-test('06 same completed prison at three public camera poses and whole paused Save/Load', async ({ page }, info) => {
+test('07 same completed prison at three public camera poses and whole paused Save/Load', async ({ page }, info) => {
   await openActualSession(page, false);
   const before = await showcaseSnapshot(page, info.outputPath('whole-paused-before-camera-and-save.json'));
   assertShowcaseStage(before, 6);
