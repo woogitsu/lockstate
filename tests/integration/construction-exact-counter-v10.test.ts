@@ -44,7 +44,10 @@ function importV9(runtime: Runtime, key: string, queued = false) {
     Object.entries(input.payload.construction.orderRevisions as Record<string, string>).map(([id, token]) => [id, Number(token)]));
   input.payload.construction.orderRevisions[key] = Number.MAX_SAFE_INTEGER;
   for (const command of input.payload.kernel.commands) {
-    if (command.payload?.data?.type === 'CancelBuildOrder') command.payload.data.expectedRevision = Number(command.payload.data.expectedRevision);
+    if (command.payload?.data?.type === 'CancelBuildOrder') {
+      command.payload.schemaVersion = 1;
+      command.payload.data.expectedRevision = Number(command.payload.data.expectedRevision);
+    }
   }
   input.checksum = computeSaveChecksum(input.payload);
   const untouched = JSON.stringify(input);

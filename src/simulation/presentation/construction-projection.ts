@@ -7,14 +7,15 @@ import {
 } from '../construction/build-order';
 import type { MaterialsProcurementReport } from '../construction/materials-procurement';
 import {
-  HUD_VIEW_MODEL_SCHEMA_VERSION,
   pageOf,
   toTileViewModel,
-  type HudViewModelSchemaVersion,
   type PageRequest,
   type TileViewModel,
   type ViewModelPage,
 } from './view-model';
+
+/** Only the build queue changes token representation; other HUD domains remain V1. */
+export const BUILD_QUEUE_SCHEMA_VERSION = 2 as const;
 
 /**
  * What is still waiting to be built.
@@ -269,7 +270,7 @@ export interface BuildQueueOrderViewModel {
 }
 
 export interface BuildQueueViewModel {
-  readonly schemaVersion: HudViewModelSchemaVersion;
+  readonly schemaVersion: typeof BUILD_QUEUE_SCHEMA_VERSION;
   readonly orders: ViewModelPage<BuildQueueOrderViewModel>;
   /**
    * How many of the orders in `total` the crew has actually started, which is
@@ -389,7 +390,7 @@ export function projectBuildQueue(
   }));
 
   return {
-    schemaVersion: HUD_VIEW_MODEL_SCHEMA_VERSION,
+    schemaVersion: BUILD_QUEUE_SCHEMA_VERSION,
     orders: { total: page.total, offset: page.offset, limit: page.limit, rows },
     started: pending.reduce((count, order) => (order.state === 'in-progress' ? count + 1 : count), 0),
     materialsFunding: {
