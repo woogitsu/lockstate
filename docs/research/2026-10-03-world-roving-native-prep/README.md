@@ -19,3 +19,5 @@ Each original assertion remains strict. JSON observations and screenshots are wr
 Weakest claim: selectors and public flow are prepared from existing genuine Oblique recipes and current production source; this World native recipe has not executed. No new duplicate Issue or deployment claim.
 
 Preparation verification: strict own TypeScript exit 0, canonical research index 5/5 GREEN, explicit `--list` collection 1 case/1 file exit 0. Initial collection correctly refused a missing production artifact; after a real isolated Cloudflare production build (exit 0/output verifier GREEN), collection succeeded. Neither collection nor build launched a browser/server. Raw collection/build logs are retained here; native acceptance is still pending.
+
+Published [World parity comment on existing #1943](https://github.com/woogitsu/lockstate/issues/1943#issuecomment-5969105627) and read it back through the GitHub API: the stored body matches `issue-comment.md` after newline normalization. Receipt is retained next to this record. Existing closed state was preserved; the comment explicitly distinguishes source RED/GREEN from pending native acceptance.
