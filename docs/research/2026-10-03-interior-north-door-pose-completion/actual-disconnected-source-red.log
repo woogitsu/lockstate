@@ -1,0 +1,19 @@
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-interior-north-door-oblique.py:124: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  world.use_nodes = True
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-interior-north-door-oblique.py", line 363, in <module>
+    if __name__ == "__main__":main()
+                              ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-interior-north-door-oblique.py", line 351, in main
+    verify_assembly()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-interior-north-door-oblique.py", line 234, in verify_assembly
+    contacts = source_contacts(bpy.context.scene, PAIRS)
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-interior-north-door-oblique.py", line 191, in source_contacts
+    raise ValueError(f'North door retained hinge actual contact disconnected: {first} / {second}')
+ValueError: North door retained hinge actual contact disconnected: Hinge barrel 0.38 / door metal reveal -1
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-interior-north-door-oblique.py', exiting.

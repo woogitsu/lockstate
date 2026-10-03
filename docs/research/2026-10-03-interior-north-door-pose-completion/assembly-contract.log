@@ -1,0 +1,31 @@
+blender.exe : C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\re
+nder-interior-north-door-oblique.py:124: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+At line:164 char:1
++ & 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe' --bac ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:\Users\matma\... in Blender 6.0:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+  world.use_nodes = True
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-i
+nterior-north-door-oblique.py", line 325, in <module>
+    if __name__ == "__main__":main()
+                              ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-i
+nterior-north-door-oblique.py", line 315, in main
+    verify_assembly()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-i
+nterior-north-door-oblique.py", line 234, in verify_assembly
+    contacts = source_contacts(bpy.context.scene, PAIRS)
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-i
+nterior-north-door-oblique.py", line 161, in source_contacts
+    value = bpy.data.objects[name].evaluated_get(graph)
+            ~~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'bpy_prop_collection[key]: key "Hinge barrel0.38" not found'
+
+Error: script failed, file: 'tooling/blender/render-interior-north-door-oblique.py', exiting.
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit

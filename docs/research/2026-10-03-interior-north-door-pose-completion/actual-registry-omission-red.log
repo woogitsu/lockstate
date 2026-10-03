@@ -1,0 +1,41 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-structural-component-art-audit-20261003
+
+x·xxxx
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 1 passed (6)
+   Start at  17:33:03
+   Duration  733ms (transform 193ms, setup 0ms, import 565ms, tests 23ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+$ vitest run "tests/unit/oblique-interior-north-door-pose-completion.test.ts" "--reporter=dot"
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-interior-north-door-pose-completion.test.ts > retained interior door descriptor reaches actual back-facing edge consumers > north preserves source, complete signed pose grid and all delivered PNG hashes
+Error: Accepted door alias absent from actual registry
+ ❯ tests/unit/oblique-interior-north-door-pose-completion.test.ts:24:23
+     22|     const assetId = edge === 'north' ? 'door.interior.open.full' : 'do…
+     23|     const entry = registry.entries.find(value => value.assetId === ass…
+     24|     if (!entry) throw new Error('Accepted door alias absent from actua…
+       |                       ^
+     25|     const catalog = parseObliqueModuleCatalog(json(`public${entry.mani…
+     26|     expect(catalog.assetId).toBe(assetId);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  tests/unit/oblique-interior-north-door-pose-completion.test.ts > retained interior door descriptor reaches actual back-facing edge consumers > camera 45 selects authored 45 for BOTH actual north/west doors without altering picking
+ FAIL  tests/unit/oblique-interior-north-door-pose-completion.test.ts > retained interior door descriptor reaches actual back-facing edge consumers > camera 135 selects authored 135 for BOTH actual north/west doors without altering picking
+ FAIL  tests/unit/oblique-interior-north-door-pose-completion.test.ts > retained interior door descriptor reaches actual back-facing edge consumers > camera 225 selects authored -135 for BOTH actual north/west doors without altering picking
+ FAIL  tests/unit/oblique-interior-north-door-pose-completion.test.ts > retained interior door descriptor reaches actual back-facing edge consumers > camera 315 selects authored -45 for BOTH actual north/west doors without altering picking
+Error: Actual selected door has no registry entry
+ ❯ tests/unit/oblique-interior-north-door-pose-completion.test.ts:69:25
+     67|       expect(item.assetId).toBe(assetId);
+     68|       const entry = registry.entries.find(value => value.assetId === i…
+     69|       if (!entry) throw new Error('Actual selected door has no registr…
+       |                         ^
+     70|       const catalog = parseObliqueModuleCatalog(json(`public${entry.ma…
+     71|       const selected = selectObliqueModuleFrame(catalog, pose);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯

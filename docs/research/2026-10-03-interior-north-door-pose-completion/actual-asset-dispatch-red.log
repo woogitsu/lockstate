@@ -1,0 +1,15 @@
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-interior-north-door-oblique.py", line 363, in <module>
+    if __name__ == "__main__":main()
+                              ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-interior-north-door-oblique.py", line 341, in main
+    validate_dispatch()
+    ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-interior-north-door-oblique.py", line 212, in validate_dispatch
+    raise ValueError("North door source/camera/asset dispatch changed")
+ValueError: North door source/camera/asset dispatch changed
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-structural-component-art-audit-20261003\tooling\blender\render-interior-north-door-oblique.py', exiting.
