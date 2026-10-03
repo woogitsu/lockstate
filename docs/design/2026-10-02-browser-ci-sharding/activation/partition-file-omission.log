@@ -1,0 +1,166 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/browser-ci-sharding-activation-20261003
+
+ ❯ tests/foundation/browser-ci-sharding-contract.test.ts (7 tests | 1 failed) 473ms
+     × actual promoted producer exactly matches both previously collected whole-file partitions 13ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/browser-ci-sharding-contract.test.ts > owner-approved browser CI sharding contract (#1983) > actual promoted producer exactly matches both previously collected whole-file partitions
+AssertionError: expected [ 'actor-crowding.spec.ts', …(83) ] to deeply equal [ 'actor-crowding.spec.ts', …(78) ]
+
+- Expected
++ Received
+
+  [
+    "actor-crowding.spec.ts",
+-   "actor-guard-rendering.spec.ts",
+-   "actor-motion.spec.ts",
+-   "app-shell.spec.ts",
++   "angled-ground-band-audit.spec.ts",
+    "build-deliveries-outside-the-fold.spec.ts",
++   "build-object-occupied-dimensions.spec.ts",
++   "build-object-thumbnails.spec.ts",
+    "build-target-readability.spec.ts",
+-   "classroom-chair-player-build.spec.ts",
+-   "exercise-station-player-build.spec.ts",
++   "camera-coordinates.spec.ts",
++   "cell-cot-player-build.spec.ts",
++   "common-room-bench-player-build.spec.ts",
++   "compact-camera-pose-controls.spec.ts",
++   "empty-world-prompt-1534.spec.ts",
++   "first-square-clock-hint.spec.ts",
+    "fullhd-build-rail-hierarchy.spec.ts",
+-   "fullhd-zoom-navigation-drawer.spec.ts",
+-   "hud-camera-pose-controls.spec.ts",
++   "hud-minimap-navigates.spec.ts",
+    "hud-minimap-renders.spec.ts",
+-   "hud-side-rail-collapse-fullhd.spec.ts",
+-   "hud-zoom-control.spec.ts",
+-   "kitchen-fixtures-player-build.spec.ts",
+-   "lifecycle-save-epoch.spec.ts",
++   "laundry-fixtures-player-build.spec.ts",
+    "lifecycle-save.spec.ts",
+-   "loading-dock-door-player-build.spec.ts",
+-   "native-modal-camera-context.spec.ts",
++   "live-view-keyboard-focus.spec.ts",
++   "local-save-migration.spec.ts",
++   "local-save-quota.spec.ts",
++   "locale-delivery.spec.ts",
+    "oblique-actor-depth-probe.spec.ts",
+    "oblique-art-runtime.spec.ts",
+-   "oblique-camera-cancel.spec.ts",
+-   "oblique-camera-new-prison-frame.spec.ts",
++   "oblique-camera-load-gesture.spec.ts",
+    "oblique-held-build-pose.spec.ts",
+    "oblique-hud-roving-camera.spec.ts",
+-   "oblique-low-angle-picking.spec.ts",
+-   "oblique-mixed-buttons.spec.ts",
+-   "oblique-paused-save-facing.spec.ts",
+-   "oblique-room-object-load-gesture.spec.ts",
+-   "oblique-room-template-picking.spec.ts",
+-   "oblique-two-finger-build-pan.spec.ts",
++   "oblique-middle-pan.spec.ts",
++   "oblique-preset-art-qa.spec.ts",
++   "oblique-production.spec.ts",
++   "oblique-room-preview-session-boundary.spec.ts",
++   "oblique-wheel-anchor.spec.ts",
++   "oblique-world-harness.spec.ts",
+    "operations-reachability.spec.ts",
+-   "playtest-harness-arm-buildable.spec.ts",
+-   "room-plan-quote-visibility.spec.ts",
+-   "room-template-cancel-cycle.spec.ts",
+-   "room-template-invalid-coordinates-quote.spec.ts",
+-   "room-template-mirror-footprint.spec.ts",
+-   "room-template-paused-cancel-retry.spec.ts",
+-   "room-template-pending-square-reservation.spec.ts",
++   "resize-separator.spec.ts",
++   "room-label.spec.ts",
++   "room-plan-layout-escape.spec.ts",
++   "room-preview-fit-production.spec.ts",
++   "room-row-stationary-camera.spec.ts",
++   "room-template-cards.spec.ts",
++   "room-template-legend.spec.ts",
++   "room-template-nested-claim.spec.ts",
++   "room-template-pending-reopen.spec.ts",
++   "room-template-polish-focus.spec.ts",
+    "room-template-preview.spec.ts",
+-   "room-template-quote.spec.ts",
+-   "room-template-rotation-ui.spec.ts",
+-   "staff-room-desk-player-build.spec.ts",
+-   "template-keyboard-rearm.spec.ts",
+-   "template-placement-status-revision.spec.ts",
++   "room-template-world-mouse.spec.ts",
++   "security-console-player-build.spec.ts",
++   "storage-room-rack-player-build.spec.ts",
++   "template-delivery-bootstrap-player.spec.ts",
++   "template-tooltip-clearance.spec.ts",
++   "toilet-dense-player-build.spec.ts",
+    "ui-200-percent-zoom-sweep-ratchet.spec.ts",
+    "ui-alert-dismiss-on-a-phone.spec.ts",
+    "ui-alert-dismiss.spec.ts",
++   "ui-alert-row-press-becomes-an-intent.spec.ts",
+    "ui-alert-row-presses-to-its-place.spec.ts",
+-   "ui-build-arm-label-fit.spec.ts",
++   "ui-build-catalogue-price.spec.ts",
+    "ui-build-order-note.spec.ts",
+-   "ui-build-queue-reach.spec.ts",
++   "ui-build-queue.spec.ts",
+    "ui-build-where-readout.spec.ts",
++   "ui-buy-button-affordability.spec.ts",
+    "ui-clock-paused-readout.spec.ts",
+    "ui-earned-withheld.spec.ts",
+    "ui-escape-sentence-survival.spec.ts",
+    "ui-held-guards.spec.ts",
+    "ui-hud-chrome-under-page-zoom.spec.ts",
+-   "ui-hud-fullhd-build-catalogue.spec.ts",
+-   "ui-hud-fullhd-enlarged.spec.ts",
+-   "ui-hud-fullhd-inspector.spec.ts",
+-   "ui-hud-fullhd-overview-income-note.spec.ts",
++   "ui-hud-fullhd-build-minimap.spec.ts",
+    "ui-hud-fullhd-preferences.spec.ts",
++   "ui-language-picker.spec.ts",
++   "ui-overdraft-badge.spec.ts",
+    "ui-pending-deliveries.spec.ts",
+-   "ui-rail-aside-content-floor.spec.ts",
++   "ui-pooled-rows-aim.spec.ts",
++   "ui-prisoners-without-bed.spec.ts",
+    "ui-refusal-band-route-retire.spec.ts",
++   "ui-refusal-band-tick-retire.spec.ts",
+    "ui-roster-empty-sentence.spec.ts",
+    "ui-roster-guidance.spec.ts",
+    "ui-roster-row-scales.spec.ts",
+-   "ui-staff-coverage-reserve.spec.ts",
++   "ui-security-section.spec.ts",
+    "ui-staff-dismiss.spec.ts",
+    "ui-staff-payroll-reachable.spec.ts",
+-   "ui-staff-wage.spec.ts",
+-   "ui-strip-badged-width.spec.ts",
+-   "ui-theme.spec.ts",
+-   "world-scene-input.spec.ts",
+-   "world-scene-touch.spec.ts",
+-   "yard-bench-player-build.spec.ts",
+-   "yard-waste-bin-player-build.spec.ts",
++   "unplaced-surfaces.spec.ts",
++   "utility-panel-visual.spec.ts",
++   "world-scene-drag-under-the-hud.spec.ts",
++   "yard-mouse-history.spec.ts",
+  ]
+
+ ❯ tests/foundation/browser-ci-sharding-contract.test.ts:111:52
+    109|     const all = report('source-all'); const bins = partition(all, weig…
+    110|     expect(bins).toHaveLength(2);
+    111|     bins.forEach((bin, index) => expect(bin.files).toEqual(files(repor…
+       |                                                    ^
+    112|     expect(bins.flatMap(bin => bin.files).sort()).toEqual(files(all));
+    113|     expect(new Set(bins.flatMap(bin => bin.files)).size).toBe(files(al…
+ ❯ tests/foundation/browser-ci-sharding-contract.test.ts:111:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  10:03:04
+   Duration  730ms (transform 32ms, setup 0ms, import 119ms, tests 473ms, environment 0ms)
+
