@@ -44,7 +44,7 @@ async function recordToiletSnapshot(page: Page, path: string): Promise<ToiletSna
   const reply=await page.evaluate(async ()=>(window as ProbeWindow).askWorker!('simulation/request-snapshot',{reason:'consistency-check'}));
   await writeFile(path,JSON.stringify(reply,null,2));
   const snapshot=(reply as {payload:{snapshot:{schemaVersion:number;data:ToiletSnapshotData}}}).payload.snapshot;
-  expect(snapshot.schemaVersion).toBe(3);
+  expect(snapshot.schemaVersion).toBe(4);
   return snapshot.data;
 }
 
