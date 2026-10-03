@@ -15,4 +15,14 @@ All four original samples and both actual reopened after pictures were opened. T
 
 Saved source assets/source/blender/furniture.canteen.dining-table.soft-light.blend SHA2564f92eb8cebdb7f5d343f5ca49869c317535867932f05ab805bbd33b60144728f.
 Source60/e40 body035429e3f5027d77cec5224b1a8edd9ef19a2ad07ab3b315327599486006b2c0; source300/e40 body52b7a3854df2e27210552fe8896bcc56b2012d4d392d9e3dff2c9b42e4a22e8d.
-647 original source/frame/registry/catalog/template/renderer/UI/browser files remain exact. First coherent source/sample checkpoint; full72/repeats/production controls/current typed consumer follow. Root native/public delivery/Blob/V10/scene appearance acceptance pending. No native/playability claim from source pictures.
+647 original source/frame/registry/catalog/template/renderer/UI/browser files remain exact. First coherent source/sample checkpoint24607e9721aea2e7986ba102e47d2089e9d542e9 was published before the complete matrix. Root native/public delivery/Blob/V10/scene appearance acceptance pending. No native/playability claim from source pictures.
+
+## Completed source/export proof
+
+72 actual Cycles poses114.38849859999027s, one CPU thread. Four independently rendered30/120/210/300e40 bodies are byte exact in6.394178099988494s. Current60/300 fullmatrix bodies equal the inspected reopened saved-source samples. All historical72 body hashes remain. Both original canonical export entrypoints select the new source; shared Kitchen producer/profiles/models are untouched.
+
+Six genuine REDs: actual saved rail/post triangle-contact loss, producer dispatch omission, valid SHA/filename/body PNG with opaque border, old Workbench descriptor consumed by actual typed renderer, registry omission and original canonical callback omission. Every restore is GREEN;729 protected source/frame/catalog/template/renderer/UI/browser files restore byte exactly. The two historical live-source guards failed before updating only their selected source pins; all old geometry/material/triangle/normal/degenerate surface guards remain.12 focused suites86GREEN/1existing optional generic Blender-PATHskip; both strict TypeScript projects0. Pinned real Blender controls ran independently.
+
+Actual typed Canteen8x8 template at(4,4), sequence2, room interior(5,5)6x6, both owners `room-template-000000000002-2-object-000` and `...001`: q0 anchors(5,5)/(8,5), orientation0/3x2; q1(9,5)/(9,8), orientation1/2x3. World60/e40 versus-30/e40 each select exact source60/e40 body over their entire occupied footprint. Both table owners and all four original bench definitions remain. This is real template/render source consumption, not native purchase/SaveLoad acceptance.
+
+No browser/server/build/native helper/config/renderer/UI/schema/save/palette/alias/gameplay changes. Root must still inspect the genuinely delivered art in the composed Canteen and public HTTP/Blob/V10 route. No pixel thresholds or new ROIs were invented.

@@ -1,0 +1,54 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-table-cycles-20261004
+
+x·x
+node :
+At line:3 char:1
++ node node_modules/vitest/vitest.mjs run tests/unit/oblique-canteen-di ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-canteen-dining-table-detail-integrity.test.ts > preserves original Canteen dining table geome
+try/materials/modifiers and publishes actual actual two-sided rail-to-post connections
+AssertionError: expected 'assets/source/blender/furniture.cante…' to be 'assets/source/blender/furniture.cante…' // Obj
+ect.is equality
+
+Expected: "assets/source/blender/furniture.canteen.dining-table.angled-detail.blend"
+Received: "assets/source/blender/furniture.canteen.dining-table.soft-light.blend"
+
+ ❯ tests/unit/oblique-canteen-dining-table-detail-integrity.test.ts:79:26
+     77|   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(ne…
+     78|   expect(catalog.assetId).toBe('furniture.dining.table.wooden');
+     79|   expect(catalog.source).toBe(provenance.source);
+       |                          ^
+     80|   expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+     81|   expect(catalog.resolutionPx).toEqual([256, 256]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/oblique-canteen-dining-table-integrity.test.ts > retains the original authored dining mesh set and ex
+ports the authoritative3x2 footprint
+AssertionError: expected 'assets/source/blender/furniture.cante…' to be 'assets/source/blender/furniture.cante…' // Obj
+ect.is equality
+
+Expected: "assets/source/blender/furniture.canteen.dining-table.angled-detail.blend"
+Received: "assets/source/blender/furniture.canteen.dining-table.soft-light.blend"
+
+ ❯ tests/unit/oblique-canteen-dining-table-integrity.test.ts:43:26
+     41|   expect(physical.originalSource).toBe(provenance.source);
+     42|   expect(physical.originalSourceSha256).toBe(provenance.sourceSha256);
+     43|   expect(catalog.source).toBe(physical.source);
+       |                          ^
+     44|   expect(catalog.sourceSha256).toBe(physical.sourceSha256);
+     45|   expect(catalog.cameraTargetTiles).toEqual([footprint.width / 2, foot…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 1 passed (3)
+   Start at  00:52:05
+   Duration  319ms (transform 122ms, setup 0ms, import 329ms, tests 47ms, environment 0ms)

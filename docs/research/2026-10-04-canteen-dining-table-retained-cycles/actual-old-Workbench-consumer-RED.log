@@ -1,0 +1,31 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-table-cycles-20261004
+
+xxxx
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  00:52:24
+   Duration  654ms (transform 172ms, setup 0ms, import 517ms, tests 19ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-canteen-dining-table-modern-consumer.test.ts > selects genuine saved modern Canteen dining table q0 owner0 over its whole unchanged template footprint
+ FAIL  tests/unit/oblique-canteen-dining-table-modern-consumer.test.ts > selects genuine saved modern Canteen dining table q0 owner1 over its whole unchanged template footprint
+ FAIL  tests/unit/oblique-canteen-dining-table-modern-consumer.test.ts > selects genuine saved modern Canteen dining table q1 owner0 over its whole unchanged template footprint
+ FAIL  tests/unit/oblique-canteen-dining-table-modern-consumer.test.ts > selects genuine saved modern Canteen dining table q1 owner1 over its whole unchanged template footprint
+AssertionError: expected 'assets/source/blender/furniture.cante…' to be 'assets/source/blender/furniture.cante…' // Object.is equality
+
+Expected: "assets/source/blender/furniture.canteen.dining-table.soft-light.blend"
+Received: "assets/source/blender/furniture.canteen.dining-table.angled-detail.blend"
+
+ ❯ tests/unit/oblique-canteen-dining-table-modern-consumer.test.ts:41:26
+     39|   expect(registry.entries.filter(row=>row.assetId===solid.assetId)).to…
+     40|   const catalog=parseObliqueModuleCatalog(JSON.parse(readFileSync(new …
+     41|   expect(catalog.source).toBe('assets/source/blender/furniture.canteen…
+       |                          ^
+     42|   expect(catalog.sourceSha256).toBe('4f92eb8cebdb7f5d343f5ca49869c3175…
+     43|   const selected=selectObliqueModuleFrame(catalog,{yawRadians:solid.as…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
