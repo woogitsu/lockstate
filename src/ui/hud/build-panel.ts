@@ -192,7 +192,7 @@ export interface BuildPanelOptions {
    * anything -- it knows that a row it drew named an order at a revision and
    * that the player pressed that row.
    */
-  readonly onCancelOrder: (orderId: string, revision: number) => void;
+  readonly onCancelOrder: (orderId: string, revision: string) => void;
   /**
    * Cancel **one** purchase whose delivery has not landed, named by its own id
    * (#285).
@@ -2671,7 +2671,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
      * previous one, so a press reads the pairing this row is showing right
      * now rather than one captured earlier and possibly re-pointed since.
      */
-    revision: number;
+    revision: string;
     /** When this place was last emptied. `assignPooledRows` reads it; see `BUILD_QUEUE_ROW_SETTLE_MS`. */
     freedAtMs: number | undefined;
   }
@@ -2740,7 +2740,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
         },
       }),
       orderId: undefined,
-      revision: 0,
+      revision: '0',
       freedAtMs: undefined,
     };
     row.element.append(
@@ -3038,7 +3038,7 @@ export function createBuildPanel(options: BuildPanelOptions): BuildPanel {
          */
         if (row.orderId !== undefined) row.freedAtMs = nowMs;
         row.orderId = undefined;
-        row.revision = 0;
+        row.revision = '0';
         row.element.hidden = false;
         row.label.textContent = '';
         row.state.textContent = '';

@@ -1,3 +1,4 @@
+import { isOrderRevision } from '../construction/order-revision';
 import { z } from 'zod';
 import type { JsonValue } from '../../shared/json';
 import { BUILD_EDGES } from '../construction/build-order';
@@ -75,7 +76,7 @@ export const cancelBuildOrderSchema = z.object({
    * command's lead can cost (Context §3). The handler refuses rather than
    * cancelling on a mismatch, leaving the order untouched.
    */
-  expectedRevision: z.number().int().nonnegative(),
+  expectedRevision: z.string().refine(isOrderRevision),
 }).strict();
 
 export const zoneRoomSchema = z.object({
