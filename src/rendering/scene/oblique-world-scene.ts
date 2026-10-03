@@ -100,6 +100,9 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private readonly loadingAssetTextureKeys = new Set<string>();
   private readonly failedAssetTextureKeys = new Set<string>();
   private assetTextureLoaderRunning = false;
+  private textureLoaderStopped = false;
+  private textureLoadGeneration = 0;
+  private textureWaiters: Array<{ readonly keys: readonly string[]; readonly resolve: () => void }> = [];
   private assetImages: Phaser.GameObjects.Image[] = [];
   private readonly solidImages = new Map<string, Phaser.GameObjects.Image>();
   private readonly fallbackSolidGraphics = new Map<string, Phaser.GameObjects.Graphics>();
@@ -186,6 +189,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
   }
 
   public create(): void {
+    this.textureLoaderStopped = false;
+    this.textureLoadGeneration += 1;
     this.cameras.main.setBackgroundColor(VOID_COLOR);
     this.groundGraphics = this.add.graphics().setScrollFactor(0).setDepth(0);
     this.groundOverlayGraphics = this.add.graphics().setScrollFactor(0).setDepth(0.2);
@@ -383,6 +388,12 @@ export class ObliqueWorldScene extends Phaser.Scene {
       if (event.button === 1) event.preventDefault();
     };
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.textureLoaderStopped = true;
+      this.textureLoadGeneration += 1;
+      this.queuedAssetTextures.clear();
+      this.loadingAssetTextureKeys.clear();
+      this.assetTextureLoaderRunning = false;
+      for (const waiter of this.textureWaiters.splice(0)) waiter.resolve();
       this.actorImagePool.clear();
       for (const graphics of this.fallbackSolidGraphics.values()) graphics.destroy();
       this.fallbackSolidGraphics.clear();
@@ -406,7 +417,9 @@ export class ObliqueWorldScene extends Phaser.Scene {
     window.addEventListener('keyup', keyUp);
     window.addEventListener('focusin', disarmRovingArrows);
     window.addEventListener('blur', cancelOnBlur);
-    void this.loadCatalogTextures().then(() => this.loadFloorTextures()).finally(() => this.resolveReady());
+    // Catalogs remain eagerly verified; raised PNGs are selected from actual
+    // projected items. An empty prison needs floor readiness, not every model.
+    void this.loadFloorTextures().finally(() => this.resolveReady());
   }
 
   private worldPointOf(pointer: Phaser.Input.Pointer): WorldPoint {
@@ -711,8 +724,10 @@ export class ObliqueWorldScene extends Phaser.Scene {
   /** Reuse the existing Blender material catalogue; absent art keeps the
    * ordinary ground fill. Separate texture keys cannot replace object poses. */
   private async loadFloorTextures(): Promise<void> {
+    const generation = this.textureLoadGeneration;
     let catalog: RenderedArtCatalog;
     try { catalog = await RenderedArtCatalog.load(); } catch { return; }
+    if (this.textureLoaderStopped || generation !== this.textureLoadGeneration) return;
     const pending = new Map<string, string>();
     for (const [id, definition] of Object.entries(ENVIRONMENT_SPRITES)) {
       if ((!id.startsWith('env.floor.') && !id.startsWith('env.terrain.')) || definition.kind !== 'rendered-art') continue;
@@ -721,12 +736,15 @@ export class ObliqueWorldScene extends Phaser.Scene {
       if (!this.textures.exists(key)) pending.set(key, catalog.imageUrl(definition.renderedArtId));
     }
     if (pending.size > 0) {
-      for (const [key, url] of pending) this.load.image(key, url);
       await new Promise<void>((resolve) => {
-        this.load.once(Phaser.Loader.Events.COMPLETE, () => resolve());
-        this.load.start();
+        this.textureWaiters.push({ keys: [...pending.keys()], resolve });
+        for (const [key, url] of pending) {
+          if (!this.loadingAssetTextureKeys.has(key)) this.queuedAssetTextures.set(key, url);
+        }
+        this.flushAssetTextureQueue();
       });
     }
+    if (this.textureLoaderStopped || generation !== this.textureLoadGeneration) return;
     this.lastPaintedPoseRevision = -1;
     this.repaint();
   }
@@ -825,6 +843,7 @@ export class ObliqueWorldScene extends Phaser.Scene {
 
   /** Keep each visible object on the catalog frame nearest the current camera pose. */
   private selectPoseTextures(projection: ObliqueWorldProjection): void {
+    if (this.textureLoaderStopped) return;
     this.actorTextureKeys.clear();
     this.assetTextureKeys.clear();
     for (const item of projection.raised) {
@@ -849,7 +868,8 @@ export class ObliqueWorldScene extends Phaser.Scene {
   }
 
   private flushAssetTextureQueue(): void {
-    if (this.assetTextureLoaderRunning || this.queuedAssetTextures.size === 0) return;
+    if (this.textureLoaderStopped || this.assetTextureLoaderRunning || this.queuedAssetTextures.size === 0) return;
+    const generation = this.textureLoadGeneration;
     const batch = [...this.queuedAssetTextures];
     this.queuedAssetTextures.clear();
     this.assetTextureLoaderRunning = true;
@@ -858,11 +878,17 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.load.image(key, url);
     }
     this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+      if (this.textureLoaderStopped || generation !== this.textureLoadGeneration) return;
       for (const [key] of batch) {
         this.loadingAssetTextureKeys.delete(key);
         if (!this.textures.exists(key)) this.failedAssetTextureKeys.add(key);
       }
       this.assetTextureLoaderRunning = false;
+      this.textureWaiters = this.textureWaiters.filter(waiter => {
+        if (waiter.keys.some(key => this.loadingAssetTextureKeys.has(key) || this.queuedAssetTextures.has(key))) return true;
+        waiter.resolve();
+        return false;
+      });
       this.lastPaintedPoseRevision = -1;
       this.repaint();
       this.flushAssetTextureQueue();
@@ -894,23 +920,6 @@ export class ObliqueWorldScene extends Phaser.Scene {
     image.setAlpha(item.kind === 'actor' ? 1 : item.alpha);
     if (item.kind !== 'actor') this.assetImages.push(image);
     return image;
-  }
-
-  private async loadCatalogTextures(): Promise<void> {
-    if (this.catalogs.size === 0) return;
-    const pending: { assetId: string; key: string; url: string }[] = [];
-    for (const [assetId, catalog] of this.catalogs) {
-      const frame = selectObliqueModuleFrame(catalog, this.pose);
-      const key = `oblique:${assetId}:${frame.yawDegrees}:${frame.elevationDegrees}`;
-      pending.push({ assetId, key, url: frame.image });
-      this.load.image(key, frame.image);
-    }
-    await new Promise<void>((resolve) => {
-      this.load.once(Phaser.Loader.Events.COMPLETE, () => resolve());
-      this.load.start();
-    });
-    this.lastPaintedPoseRevision = -1;
-    this.repaint();
   }
 
   private actorsMoved(actors: readonly RenderActor[]): boolean {

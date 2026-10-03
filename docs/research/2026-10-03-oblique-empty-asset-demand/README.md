@@ -19,3 +19,9 @@ Coverage will exercise the actual scene loader producer with observed Phaser por
 ## Deduplication and boundaries
 
 Fresh issue searches for texture/preload/on-demand found no specific existing eager empty-scene image report. Actor-depth #1913, facing #1927 and the broader asset pipeline #32 describe different defects. Original avoidable request count is preserved before implementation. No production fix, mutation proof or native acceptance is claimed in this initial diagnostic checkpoint.
+
+## First coherent implementation checkpoint
+
+Actual empty-boot regression before production edits: 1 RED (six other selected-out tests), because unrelated model PNGs were queued before any frame. Initial fixture named a nonexistent cot manifest and failed at import; that is retained as a fixture error, not production RED. Initial fixed test expected a pending square wall PNG, but the current projection intentionally gives that wall its existing fallback; retained as a fixture assumption error (1 RED / 6 GREEN). The corrected coverage checks actual pending cot frames and retains the square-wall fallback contract.
+
+Current implementation: 8 lifecycle tests GREEN; application and tools strict types both exit 0. Eager descriptor/skin validation is untouched. Floor and raised images now share serialized loader batches; floor key completion controls readiness; demanded orientation/skin and late shutdown completion guards remain explicit. Production-negative/exact-restoration proof and bounded neighbors are still pending this first source checkpoint.
