@@ -84,7 +84,7 @@ function inverse(point: { x: number; y: number }, pose: ObliqueWorldScene['camer
 function originAt(point: { x: number; y: number }, pose: ObliqueWorldScene['cameraPose']) {
   const p = inverse(point, pose); return { x: Math.floor(p.x / 64), y: Math.floor(p.y / 64) };
 }
-async function setup(mirrored: boolean) {
+async function setup(mirrored: boolean, measuredCameraA = false) {
   const frames: FrameRequestCallback[] = [], layers: ElementStub[] = [];
   const canvas = new ElementStub(); canvas.parentElement = { append: layer => layers.push(layer) };
   vi.stubGlobal('window', new EventTarget());
@@ -100,9 +100,15 @@ async function setup(mirrored: boolean) {
   tool.select('cell-basic', mirrored, 1); tool.arm();
   let uiScale = 1;
   const box = (left: number, top: number, width: number, height: number) => ({ getBoundingClientRect: () => ({ left, right: left + width, top, bottom: top + height }) });
-  const root = { querySelector: (selector: string) => selector === 'canvas' ? canvas : selector === '.hud__tabs' ? box(0, 130 * uiScale, 350 * uiScale, 200)
+  const ordinaryRoot = { querySelector: (selector: string) => selector === 'canvas' ? canvas : selector === '.hud__tabs' ? box(0, 130 * uiScale, 350 * uiScale, 200)
     : selector === '.hud__corner' ? box(0, 0, 350 * uiScale, 130 * uiScale) : selector === '.hud__rail' ? box(1920 - 250 * uiScale, 130 * uiScale, 250 * uiScale, 900)
     : selector === '.hud-strip' ? box(0, 0, 1920, 130 * uiScale) : undefined };
+  const geometry = JSON.parse(readFileSync(new URL('../../docs/research/2026-10-04-camera-a-template-safe-area/actual-85f-ui200-geometry.json', import.meta.url), 'utf8')) as Record<string, { left: number; top: number; right: number; bottom: number; width: number; height: number }>;
+  const measuredNames: Record<string, string> = { '.hud__tabs': 'tabs', '.hud__corner': 'corner', '.hud__rail': 'rail', '.hud-strip': 'strip', '.hud-camera-panel': 'panel', '.hud__refusal': 'band' };
+  let cameraOpen = true;
+  const root = measuredCameraA ? { querySelector: (selector: string) => selector === 'canvas' ? canvas
+    : measuredNames[selector] === undefined ? undefined : { getBoundingClientRect: () => selector === '.hud-camera-panel' && !cameraOpen
+      ? { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 } : geometry[measuredNames[selector]!]! } } : ordinaryRoot;
   const main = new Function('worldScene', 'roomTemplateTool', 'appRoot', 'WorldScene', 'ObliqueWorldScene', 'RoomTemplatePreviewFitController', 'installRoomTemplateWorldBridge',
     'screenToGround', 'groundToScreen', 'computeObliqueFit', 'renderFeed', 'TILE_SIZE_PX', 'objectFootprintOf', 'localizer', 'formatRoomTemplateQuote',
     `let reinstallPlanGhost = () => {}; let withdrawPlanGhost = () => {}; ${installBody} return { withdraw: () => withdrawPlanGhost() };`)
@@ -117,16 +123,62 @@ async function setup(mirrored: boolean) {
     return new Function('worldScene', 'ObliqueWorldScene', 'rendererChanging', 'liveRendererSelection', `return (${stripTypeScriptTypes(body)});`)
       (scene, ObliqueWorldScene, false, { current: { scene } }) as (...args: unknown[]) => void;
   };
-  const point = { x: 900, y: 460 }, initialPose = scene.cameraPose;
+  const point = measuredCameraA ? { x: 1000, y: 1000 } : { x: 900, y: 460 }, initialPose = scene.cameraPose;
   const initialOrigin = originAt(point, initialPose);
   const paint = async () => { for (const frame of frames.splice(0)) frame(0); await new Promise<void>(resolve => setImmediate(resolve)); };
   dispatch(canvas, 'pointermove', point); dispatch(canvas, 'pointerdown', point); await paint();
   expect(actors.held).toHaveLength(1);
   expect(actors.held[0]!.payload).toMatchObject({ view: { data: { ok: true } } });
-  expect(scene.cameraPose).toEqual(initialPose); // Initial whole footprint is visible: no fit lock.
+  if (!measuredCameraA) expect(scene.cameraPose).toEqual(initialPose); // Initial whole footprint is visible: no fit lock.
   return { canvas, scene, actors, tool, point, initialOrigin, paint, layer: () => layers.at(-1)!, setUiScale: () => { uiScale = 2; },
-    zoom: callback('onCameraZoom'), pose: callback('onCameraPoseStep'), dispose: main.withdraw };
+    zoom: callback('onCameraZoom'), pose: callback('onCameraPoseStep'), setCameraOpen: (open: boolean) => { cameraOpen = open; }, geometry, dispose: main.withdraw };
 }
+
+it('actual 85f CameraA geometry: whole mirrored q1 floor fits outside open controls and retains accepted anchor on pose/release', async () => {
+  const h = await setup(true, true);
+  try {
+    h.actors.release(); await h.paint(); await h.paint();
+    const panel = h.geometry['panel']!, band = h.geometry['band']!;
+    const assertExposed = () => {
+      expect(h.layer().dataset.ready).toBe('clear');
+      const polygons = h.layer().children[0]!.children;
+      expect(polygons).toHaveLength(28);
+      const centers = polygons.map(polygon => {
+        const points = polygon.attributes.get('points')!.split(' ').map(p => p.split(',').map(Number));
+        for (const p of points) {
+          expect(p[0]).toBeGreaterThanOrEqual(855.34375 - 0.01); expect(p[0]).toBeLessThanOrEqual(1184 + 0.01);
+          expect(p[1]).toBeGreaterThanOrEqual(band.bottom + 8 - 0.01); expect(p[1]).toBeLessThanOrEqual(1072 + 0.01);
+        }
+        return { x: points.reduce((sum, p) => sum + p[0]!, 0) / 4, y: points.reduce((sum, p) => sum + p[1]!, 0) / 4 };
+      });
+      const covered = centers.filter(p => p.x > panel.left && p.x < panel.right && p.y > panel.top && p.y < panel.bottom);
+      console.log('ACTUAL_85F_CAMERA_A_FIT', JSON.stringify({ origin: h.initialOrigin, cells: polygons.length, coveredCenters: covered.length, pose: h.scene.cameraPose }));
+      expect(covered, 'visible CameraA must not cover fitted floor centers').toHaveLength(0);
+      // Independent rectangle separation also rejects a floor edge crossing the
+      // panel even if no corner or cell center happens to land inside it.
+      for (const polygon of polygons) {
+        const points = polygon.attributes.get('points')!.split(' ').map(p => p.split(',').map(Number));
+        const left = Math.min(...points.map(p => p[0]!)), right = Math.max(...points.map(p => p[0]!));
+        const top = Math.min(...points.map(p => p[1]!)), bottom = Math.max(...points.map(p => p[1]!));
+        expect(right <= panel.left || left >= panel.right || bottom <= panel.top || top >= panel.bottom).toBe(true);
+      }
+    };
+    assertExposed();
+    expect(h.initialOrigin).toEqual({ x: 15, y: 16 });
+    expect(await h.tool.quote()).toEqual({ orderCount: 20, materials: [{ itemId: 'item.brick', quantity: 35 }, { itemId: 'item.wood-plank', quantity: 2 }], catalogueCostMinorUnits: 1530 });
+    h.setCameraOpen(false); await h.paint();
+    h.setCameraOpen(true); h.pose('yaw', 1); await h.paint(); await h.paint();
+    assertExposed();
+    const requests = h.actors.sent.filter(m => m.kind === 'simulation/request-projection' && m.payload.projectionId === 'world/room-template-preflight');
+    expect(requests.at(-1)?.payload).toMatchObject({ target: { origin: { x: 15, y: 16 }, mirrorX: true, quarterTurns: 1 } });
+    expect(h.actors.sent.filter(m => m.kind === 'simulation/submit-command')).toHaveLength(0);
+    dispatch(h.canvas, 'pointerup', h.point); await h.paint(); await h.paint();
+    const commands = h.actors.sent.filter(m => m.kind === 'simulation/submit-command');
+    expect(commands).toHaveLength(1);
+    expect(commands[0]!.payload).toMatchObject({ command: { data: { type: 'PlaceRoomTemplate', origin: { x: 15, y: 16 }, mirrorX: true, quarterTurns: 1 } } });
+    expect(h.tool.isArmed()).toBe(false);
+  } finally { h.dispose(); }
+});
 
 for (const change of ['pose', 'zoom', 'resize', 'ui-scale'] as const) for (const mirrored of [false, true]) {
   it(`actual angled ${change}/${mirrored ? 'mirrored' : 'normal'}: pending old preflight, stationary primary release retains displayed footprint/quote`, async () => {
