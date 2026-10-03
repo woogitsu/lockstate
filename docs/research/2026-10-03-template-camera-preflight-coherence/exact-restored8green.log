@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-camera-revision-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  06:52:29
+   Duration  3.17s (transform 1.11s, setup 0ms, import 2.96s, tests 74ms, environment 0ms)
+

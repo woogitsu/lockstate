@@ -511,3 +511,5 @@ and it stopped one step short of its own consequence.
   three layers deeper.
 
 | [2026-10-03 ordinary Build session ownership](./2026-10-03-ordinary-build-session-ownership/README.md) | Can a World primary construction press survive actual worker New/Load into a replacement session? | Existing #1949 World extension:6 original RED/24 legal controls after explicit #2004 dependency; one common construction-only cancellation, omission6 RED, exact restored30 GREEN and66 neighboring source tests. Wall actual order, Bed transmission and Rooms report-only remain distinct; two native World Wall New/Load cases prepared, strict/list pass, execution pending root. |
+
+| [2026-10-03 template camera preflight coherence](./2026-10-03-template-camera-preflight-coherence/README.md) | Does a held rotated/mirrored plan retain its complete footprint, real cost and purchase origin after camera/viewport changes? | Current source8 GREEN; actual bridge refresh omission2 RED/6 unchanged-tile legal controls; exact restored8 and46 neighbors, strict types0. Real callbacks/worker, no producer fix/new Issue/native claim. |

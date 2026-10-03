@@ -1,0 +1,9 @@
+{
+  "source": "src/ui/room-template-world-bridge.ts",
+  "originalSha256": "1dc6e7483c0331863383b82fe13b2f634a06287bfab2aa613a0b61ea95c6b5a0",
+  "negativeExit": 1,
+  "exactRestore": true,
+  "restoredExit": 0,
+  "neighborsExit": 0,
+  "strictExit": 0
+}
