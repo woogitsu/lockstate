@@ -60,9 +60,9 @@
         "bytes":  273
     },
     {
-        "sha256":  "6deacf3c9fe153e8bbc554fc1e4504da8042fc68813fcfe76c9133e6d5552012",
+        "sha256":  "668ef56eda917bde9ad4364bb999b9a83b96daae502e6106289408502d4ed603",
         "file":  "README.md",
-        "bytes":  5349
+        "bytes":  5646
     },
     {
         "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -70,8 +70,8 @@
         "bytes":  0
     },
     {
-        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "sha256":  "61dd18d18dacad13ba2a871331371ef9e7184d39c9a136b967c83893324d05b9",
         "file":  "terminal-receipt.json",
-        "bytes":  0
+        "bytes":  1231
     }
 ]

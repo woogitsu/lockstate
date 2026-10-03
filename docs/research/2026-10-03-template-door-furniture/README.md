@@ -43,4 +43,6 @@ The final neighboring run is **266 GREEN / 5 files, 10.24s** (`neighbors.txt`):
 
 Application/test strict TypeScript exits 0. Research index, documentation source anchors and quotation contracts finish **20 GREEN / 3 files, 4.06s**. The own index row preserves all existing rows; no source-coordinate correction, citation budget or guard change was necessary. `terminal-receipt.json` records the commands/outcomes; `local-evidence-hashes.json` records local captured bytes (Git text normalization can change their checkout line endings).
 
+The first receipt-generation shell command used an invalid boolean literal and published an empty receipt at `c05140d1ee`; the next evidence-only checkpoint corrects that JSON and updates its hash. Raw test logs, source, measured results and the exact producer-restoration receipt are unchanged.
+
 Expected refused purchases create only the normal failed order row; treasury, physical objects/owners, history, material delivery/allocation, zoning and the remaining snapshot remain unchanged. Successful independent exterior purchases retain their own real Undo/Redo and V8 Load. Ordinary doors are not newly protected. This is an existing paid-template entry rule applied to physical furniture; no new navigation collision policy, per-seat target, format, message, tariff or player UI is introduced.
