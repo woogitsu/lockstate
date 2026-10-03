@@ -4,7 +4,7 @@ Date2026-10-03. Own isolated source subject `66fb8df81ce4311437e58191edc11bb8983
 
 ## Actual old provenance and mapping
 
-The three original supplied terminal logs contain68failed cases: source1=35, source2=22, artifact=11. Full title/first-error/current-disposition inventory is retained in `all68-original-failures-current-source-mapping.json`; exact original raw-byte log hashes/lengths are in `original-log-provenance.json`. Source1 explicitly checked out PR1899 merge subject `9c3f7fae6de7b3b66ea10795026550c804886928`, merging head `7fb5d2fc8245013948d314d28f20f5cabac3668f` into main `6d25ebd896c76fb09c2d387185eb1bd8b2a48b8d`. These are old terminal logs, not current release results.
+The three original supplied terminal logs contain68failed cases: source1=35, source2=22, artifact=11. Full title/first-error/current-disposition inventory is retained in `all68-original-failures-current-source-mapping.json`; exact original raw-byte log hashes/lengths are in `original-log-provenance.json`. Source1 explicitly checked out the transient CI ref `refs/pull/1899/merge at 9c3f7fae6de7b3b66ea10795026550c804886928`, merging published branch head `7fb5d2fc8245013948d314d28f20f5cabac3668f` into main `6d25ebd896c76fb09c2d387185eb1bd8b2a48b8d`. The temporary merge ref is retained as raw log provenance; it is not an ordinary branch/tag citation available in a full clone. These are old terminal logs, not current release results.
 
 | Actual old cluster | Current observation / next step |
 | --- | --- |

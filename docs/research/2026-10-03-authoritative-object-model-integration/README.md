@@ -56,7 +56,8 @@ desk/chair observer now execute on the real compiled
   and whole paused V8 Save/Load. Both real demanded descriptor/PNG responses and
   successful actual loader Blob decodes verify the new Reception registration
   desk and retained waiting armchairs. Desk source60/e40 SHA256 begins
-  `bac55a0b3bac`; full hashes and actual responses are in the native receipts.
+  `bac55a0b3bacc977eeca707eaf444e58f8661171391a8d1c1d430e521204febe`;
+  the exact body and actual responses are in the native receipts.
 
 Raw results, paired FullHD screenshots, commands, actual worker replies and
 whole snapshots are preserved under `native/ordinary-object-green` and

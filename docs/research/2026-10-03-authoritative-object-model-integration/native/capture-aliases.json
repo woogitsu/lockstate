@@ -606,5 +606,14 @@
     "sourceSha256": "6aa4638ae1b07b435c28174ed24e9f658a588b249153e86288b969af8292c7fc",
     "archivedBytes": 304004,
     "archivedSha256": "6aa4638ae1b07b435c28174ed24e9f658a588b249153e86288b969af8292c7fc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-complete-angled-integration-final-verify-20261003.txt",
+    "archived": "original-final-combined-verify/console.txt",
+    "sourceBytes": 6590,
+    "sourceSha256": "307d1bb6c7f109b8cb7c4e96cf85ddc41c18a8f9c0a53a0237a51b1ad9fc7452",
+    "archivedBytes": 3433,
+    "archivedSha256": "94d4efbefe12542360d21d22ce986a007644a32c3dff4fa828b4789229df28fe",
+    "conversion": "UTF16LE console to UTF8"
   }
 ]

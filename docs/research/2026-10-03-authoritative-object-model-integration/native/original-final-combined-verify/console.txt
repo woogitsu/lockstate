@@ -1,0 +1,70 @@
+pnpm : $ pnpm typecheck && pnpm test && node scripts/cloudflare-task.mjs build production
+At line:2 char:320
++ ... 61003.txt'; pnpm --config.verify-deps-before-run=false verify *> $log ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ pnpm typechec...uild production:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+$ tsc -b --pretty false && tsc -b tsconfig.tools.json --pretty false
+$ vitest run
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-integration-20261003
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts (8 tests | 2 failed) 25ms
+     × resolves every cited commit 4ms
+     × cites only commits this repository publishes, so CI reads the same history a reader can 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-commit-citation-contract.test.ts > a commit sha cited in prose names a commit tha
+t exists > resolves every cited commit
+AssertionError: these cite a commit that does not exist in this repository. A sha is how a claim about a tree stops exp
+iring, so a sha that names nothing is a claim that can never be checked -- and `git cat-file -e <sha>^{commit}` before 
+writing one is two seconds. If a citation is real but unreachable from any published branch or tag, it belongs in UNPUB
+LISHED_BY_ORIGIN with the reason, not here: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-authoritative-object-model-integration/README.md:59 -> bac55a0b3bac",
++ ]
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts:726:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/foundation/documentation-commit-citation-contract.test.ts > a commit sha cited in prose names a commit tha
+t exists > cites only commits this repository publishes, so CI reads the same history a reader can
+AssertionError: these cite a commit that exists on this disk and on no ref this repository publishes, so nobody else ca
+n check them and CI cannot either: `fetch-depth: 0` fetches all history for every published branch and tag and nothing 
+more. The usual cause is a sha read out of an agent's own worktree before the coordinator cherry-picked it, which rewri
+tes it -- `git branch -r --contains <sha>` tells you. Cite the commit as published, or record it in UNPUBLISHED_BY_ORIG
+IN with what it is and why the anchor cannot move: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-old-browser-door-chooser-consumer/README.md:7 -> 9c3f7fae6de7b3b66ea10795026550c804886928
+",
++   "docs/research/2026-10-03-old-browser-door-chooser-consumer/README.md:7 -> 7fb5d2fc8245013948d314d28f20f5cabac3668f
+",
++ ]
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts:748:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 707 passed (708)
+      Tests  2 failed | 8446 passed | 2 skipped (8450)
+   Start at  18:01:55
+   Duration  49.75s (transform 38.02s, setup 0ms, import 242.17s, tests 411.88s, environment 87ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+[ELIFECYCLE] Command failed with exit code 1.
