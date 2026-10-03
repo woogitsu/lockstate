@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-Offline source/export verified. Canonical72/repeat/25actual controls GREEN; app/tools TypeScript and prepared production build next. Parent owns genuine native Cell Build/SaveLoad; no browser/server.
+Offline source/export verified. Canonical72/repeat/25actual controls GREEN; app/tools TypeScript and prepared production build GREEN. Parent owns genuine native Cell Build/SaveLoad; no browser/server.
 
 Existing `object.bed` / `bed-wooden` default `furniture.cell.cot.single`, actual1x2 (`src/content/object-catalog.ts:97`, mappingline7). Actual `cell-basic` local(1,1) and `cell-large` placements at(1,1)/(4,1), `src/content/room-template-catalog.ts:40-48`; solitary and generated Cell row also retain same currentbed. Current published cotbranchfff718e27b52605afaafc153a8e21b50a0ec9f79 and toiletphysical235f79c44f122adc3b8b4ecaa54d3288ae698620 inspected. Original inventoried cot23parts/9 complete stored graphs (8used+unusedMaterial), toilet44parts/8graphs with already authored supply couplings/valve/hinges/lid seams. Toilet untouched. No new alias or identity.
 
@@ -31,3 +31,7 @@ Four focused suites (`oblique-cell-cot-art`, detail-integrity, existing consumer
 Existing `tests/browser/cell-cot-player-build.spec.ts:98` creates StorageRoom(5,5) and DeliveryBay(12,5), waits for real construction, pauses and saves genuine IndexedDB. Its second case places actual `cell-basic` at(20,5), completes through workers, checks bed anchor(21,6), actual command trace, ochre blanket pixels and Save/Load. This older q0 test does not independently prove the new graphite uprights or q1 ownership.
 
 Existing rotated Cell route in `dedicated-cell-toilet-player-build.spec.ts` uses the same genuine capacity save, production Cell template and quarterTurns0/1. For the current 4x7 template, original bed local(1,1) size1x2 becomes q1 local(4,1) size2x1, hence anchors q0(21,6), q1(24,6). Parent should assert a unique completed `bed-wooden` source order/placed owner/orientation, paused whole-worker equality through Save/Load, and actual camera views exposing the new headboard supports. World literal/schema and persisted codec must be read from actual snapshots/envelope; no synthetic owners or shortened completion. No native spec/matcher or gameplay changes were made here.
+
+## Final prepared client checkpoint
+
+Source/export commit `4d11cb4e44c3004cc48ea56082356f94aa43104a`; app and tools TypeScript exit0, four focused files10PASS/1optional PATH skip, full production build exit0. Actual prepared worker `worker-Cmz38VjB.js`,438431bytes,SHA256 `9c5c838f3a681d0a83763719290f20c3cb222d566e1ae2ed0bfa9213f85481d0`. `prepared-build-receipt.json` records exact source/descriptor/worker identities and browserStarted=false/serverStarted=false. All mutations are terminal and restored; scratch `.blend1` backup is retained only in ignored own intermediate directory. This is offline readiness, not native/hosted acceptance.
