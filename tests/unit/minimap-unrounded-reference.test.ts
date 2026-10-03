@@ -22,20 +22,38 @@ if (writes.length !== 1) throw Error('Expected one actual HUD viewport assignmen
 const write = new Function('view', 'minimapViewport', `const { x, y, width, height } = view.viewport;${writes[0]![1]}`) as (view: { viewport: { x: number; y: number; width: number; height: number } }, node: { style: object }) => void;
 
 function install() {
-  // The exact diagnostic tie is supplied as the known six-digit example;
-  // this destination is not a claimed general Chromium serializer.
-  class StyleStub { values: Record<string, string> = {}; writes: string[] = []; }
-  for (const field of ['left', 'top', 'width', 'height']) Object.defineProperty(StyleStub.prototype, field, {
-    configurable: true, get(this: StyleStub) { return this.values[field] ?? ''; },
-    set(this: StyleStub, value: string) { this.writes.push(`${field}:${value}`); this.values[field] = value === '10.15625%' ? '10.1562%' : value.endsWith('%') ? `${Number(parseFloat(value).toPrecision(6))}%` : value; },
-  });
-  const style = new StyleStub();
-  const observed = {};
-  vi.stubGlobal('CSSStyleDeclaration', StyleStub); vi.stubGlobal('window', observed);
-  vi.stubGlobal('document', { querySelector: () => ({ style }) });
+  // Actual Chromium inventory: these are configurable own DATA properties,
+  // with no CSSStyleDeclaration prototype accessors. The native destination
+  // below models exotic writes; the observer cannot depend on mocked setters.
+  class StyleStub {
+    left = ''; top = ''; width = ''; height = ''; writes: string[] = [];
+    constructor() {
+      return new Proxy(this, { set(target, key, value) {
+        if (['left','top','width','height'].includes(String(key)) && typeof value === 'string') {
+          target.writes.push(`${String(key)}:${value}`);
+          value = value === '10.15625%' ? '10.1562%' : value.endsWith('%') ? `${Number(parseFloat(value).toPrecision(6))}%` : value;
+        }
+        return Reflect.set(target, key, value, target);
+      } });
+    }
+  }
+  class ElementStub {
+    getterCalls = 0; nativeStyle = new StyleStub();
+    classList = { contains: (name: string) => this.viewport && name === 'hud-minimap__viewport' };
+    constructor(readonly viewport = true) {}
+    get style() { this.getterCalls++; return this.nativeStyle; }
+  }
+  const node = new ElementStub(), other = new ElementStub(false), observed = {};
+  const native = node.nativeStyle;
+  Object.defineProperty(native, 'getPropertyValue', { configurable: true, value: function(this: StyleStub, key: string) {
+    if (this !== native) throw Error('Illegal native receiver'); return Reflect.get(native, key);
+  } });
+  vi.stubGlobal('HTMLElement', ElementStub); vi.stubGlobal('CSSStyleDeclaration', StyleStub); vi.stubGlobal('window', observed);
+  vi.stubGlobal('document', { querySelector: () => node });
   observeUnroundedMinimapViewport();
-  return { style, read: () => (Reflect.get(observed, 'unroundedMinimapViewport') as () => MinimapViewportPercent)() };
+  return { style: node.style, native, node, other, read: () => (Reflect.get(observed, 'unroundedMinimapViewport') as () => MinimapViewportPercent)() };
 }
+
 afterEach(() => vi.unstubAllGlobals());
 
 for (const zoom of [1, 1.25]) for (const cssRatio of [1, 2]) for (const offset of [0, 140]) {
@@ -79,4 +97,19 @@ it('refuses an absent channel instead of guessing a camera origin', () => {
 it('refuses overwritten non-percent values instead of retaining stale percent observations', () => {
   const h = install(); write({ viewport: { x: 0.1, y: 0.1, width: 0.5, height: 0.5 } }, { style: h.style });
   Reflect.set(h.style, 'top', '3px'); expect(h.read).toThrow('No complete existing minimap viewport assignment observed');
+});
+
+it('supports actual own-data-property CSSOM shape and a stable narrow style proxy', () => {
+  const h = install();
+  expect(Object.getOwnPropertyDescriptor(Object.getPrototypeOf(h.native), 'top')).toBeUndefined();
+  expect(Object.getOwnPropertyDescriptor(h.native, 'top')).toMatchObject({ value: '', configurable: true });
+  expect(h.node.style).toBe(h.style); expect(h.node.style).not.toBe(h.native);
+  expect(h.other.style).toBe(h.other.nativeStyle);
+  const before = h.node.getterCalls; void h.node.style; expect(h.node.getterCalls).toBe(before + 1);
+});
+it('forwards original writes once and binds native CSSOM methods to their original receiver', () => {
+  const h = install(); Reflect.set(h.style, 'top', '10.15625%');
+  expect(h.native.writes).toEqual(['top:10.15625%']); expect(h.native.top).toBe('10.1562%');
+  const method = Reflect.get(h.style, 'getPropertyValue') as (key: string) => string;
+  expect(method('top')).toBe('10.1562%'); expect(Reflect.get(h.style, 'getPropertyValue')).toBe(method);
 });
