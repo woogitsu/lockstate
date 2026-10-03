@@ -1,0 +1,30 @@
+{
+    "mainCiRun":  37112225597,
+    "observedAtUtc":  "2026-10-03T09:50:43.5519838Z",
+    "unrelatedPushWorkflowRun":  37112250138,
+    "mainRef":  "6d25ebd896c76fb09c2d387185eb1bd8b2a48b8d",
+    "mainCiSubject":  "b01e26fcff4189988b40741679a1b793c25f0c18",
+    "mainCiStatus":  "in_progress at bounded lookup",
+    "rootOwnedRepairRemoteNotVerified":  true,
+    "workflowEdited":  false,
+    "worktreeBase":  "ce7fa461b9572d14c1b8c49c347b34757d967254",
+    "rootOwnedRepairAncestor1899":  true,
+    "pr1898Merge":  "48da4ac330b43b8e2a8612d8dff160f2d380f05d",
+    "ciActivationMerge":  "b01e26fcff4189988b40741679a1b793c25f0c18",
+    "pr1972":  "41998ff60f013c099a2337dcd64172aa0ab12c34",
+    "rootOwnedRepairLocalHead":  "873093cae87312d2fb76f9c540f61374bbef2c8d",
+    "rootOwnedRepairRef":  "codex/integrate-first-ci-repair-20261002",
+    "pr1899":  "3eeeddc2d276714fee6a7c8420270b78d2e49b3c",
+    "ciPollLoop":  false,
+    "browserLaunched":  false,
+    "readOnly":  true,
+    "verifiedAncestry":  {
+                             "activationInto1899":  false,
+                             "pr1899Into1972":  true,
+                             "activationInto1972":  false,
+                             "activationIntoMain":  true,
+                             "pr1898IntoMain":  true
+                         },
+    "ciActivationHead":  "4ce977d097ec4f67590a7112d7c19261f205b38e",
+    "foreignBranchEdited":  false
+}
