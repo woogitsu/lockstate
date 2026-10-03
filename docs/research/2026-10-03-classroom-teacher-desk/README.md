@@ -30,7 +30,7 @@ The four actual original/new views were opened and visually inspected. The image
 2. Removed the actual standalone producer's model dispatch tuple. Real production preview failed on dedicated dispatch before rendering.
 3. Re-encoded a valid RGBA PNG with an opaque top-left border pixel; updated both descriptor hash and hash-bearing filename. The actual dedicated test passed file/hash loading and failed on the decoded transparent border.
 
-Each control reached exit1. Source, provenance, producer, descriptor and all 72 own exports were restored exactly; original office source/descriptor/72 exports, shared exporter, registry and mapping remained byte-identical. Fresh actual producer verification and two dedicated unit tests passed. Receipt and RED/GREEN logs are saved beside this report. No shared code change is part of this branch.
+Each control reached exit1. Source, provenance, producer, descriptor and all 72 own exports were restored exactly; original office source/descriptor/72 exports, shared exporter, registry and mapping remained byte-identical. Fresh actual producer verification, two dedicated unit tests and full TypeScript typecheck passed. Receipt and RED/GREEN logs are saved beside this report. No shared code change is part of this branch.
 
 ## Exact integration handoff — pending root/native
 
@@ -60,3 +60,5 @@ Use the installed Blender with `--background --factory-startup --threads 1 --pyt
 - Python `tooling/research/prove-classroom-teacher-desk-controls.py` repeats real mutations and restoration; focused test is `tests/unit/oblique-classroom-teacher-desk-art.test.ts`.
 
 Reauthoring can change Blender source file serialization metadata; the committed source identity is the explicit hash above. Any intentional reauthor must refresh its own provenance/descriptor/hash pin through the genuine pipeline.
+
+Final integrity and one ready-to-observe yaw60/elevation40 frame are pinned in `final-source-render-integrity.json`. Descriptor and provenance text-body hashes describe the recorded local UTF-8 files; Git line-ending normalization may change their byte digests on another checkout. Source and normalized PNG hashes are binary identities.
