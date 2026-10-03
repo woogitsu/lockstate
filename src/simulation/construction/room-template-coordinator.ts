@@ -201,6 +201,9 @@ export class RoomTemplateCoordinator implements SystemRegistration {
       const x = order.location.x - (order.footprint === 'square' ? 0 : Math.max(dx, 0));
       const y = order.location.y - (order.footprint === 'square' ? 0 : Math.max(dy, 0));
       if (this.hasCompletedDoorApproach(x, y, dx, dy)) return true;
+      // A whole square also occupies the door between approach and interior.
+      // Reuse the same completed template ownership; ordinary edges stay legal.
+      if (order.footprint === 'square' && this.hasCompletedDoorApproach(x - dx, y - dy, dx, dy)) return true;
     }
     return false;
   }

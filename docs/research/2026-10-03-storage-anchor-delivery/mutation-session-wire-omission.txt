@@ -1,0 +1,81 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-storage-anchor-audit-20261003
+
+ ❯ tests/integration/template-storage-anchor-delivery.test.ts (10 tests | 6 failed) 1912ms
+   × delivers a real purchase with storage wall offset0 / V8false 223ms
+   × delivers a real purchase with storage wall offset0 / V8true 213ms
+   × physically carries to the next eligible Storage after blocked first anchor / V8false 204ms
+   × physically carries to the next eligible Storage after blocked first anchor / V8true 208ms
+   × rejects an invalid fixed Bay anchor while retaining the relocated dock / wall offset0 / V8false 160ms
+   × rejects an invalid fixed Bay anchor while retaining the relocated dock / wall offset0 / V8true 175ms
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 4 passed (10)
+   Start at  09:26:45
+   Duration  4.09s (transform 763ms, setup 0ms, import 2.06s, tests 1.91s, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/template-storage-anchor-delivery.test.ts > delivers a real purchase with storage wall offset0 / V8false
+ FAIL  tests/integration/template-storage-anchor-delivery.test.ts > delivers a real purchase with storage wall offset0 / V8true
+AssertionError: expected +0 to be 3 // Object.is equality
+
+- Expected
++ Received
+
+- 3
++ 0
+
+ ❯ tests/integration/template-storage-anchor-delivery.test.ts:93:49
+     91|     // Genuine carried or fallback goods must reach the exact containe…
+     92|     // construction material provider consumes; a completed procuremen…
+     93|     expect(stock.quantityOf('item.wood-plank')).toBe(3);
+       |                                                 ^
+     94|     expect(runtime.jobs.getSnapshot().some(job => job.state === 'faile…
+     95|     if (offset === 1) expect(runtime.jobs.getSnapshot()).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  tests/integration/template-storage-anchor-delivery.test.ts > physically carries to the next eligible Storage after blocked first anchor / V8false
+ FAIL  tests/integration/template-storage-anchor-delivery.test.ts > physically carries to the next eligible Storage after blocked first anchor / V8true
+AssertionError: expected +0 to be 3 // Object.is equality
+
+- Expected
++ Received
+
+- 3
++ 0
+
+ ❯ buyAndWait tests/integration/template-storage-anchor-delivery.test.ts:48:105
+     46|   expect(runtime.treasury.snapshot().balanceMinorUnits).toBe(balance -…
+     47|   for (let tick = 0; tick < 6_000; tick += 1) runtime.kernel.step();
+     48|   expect(runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_I…
+       |                                                                                                         ^
+     49|   expect(runtime.jobs.getSnapshot().some(job => job.state === 'failed'…
+     50| }
+ ❯ tests/integration/template-storage-anchor-delivery.test.ts:117:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  tests/integration/template-storage-anchor-delivery.test.ts > rejects an invalid fixed Bay anchor while retaining the relocated dock / wall offset0 / V8false
+ FAIL  tests/integration/template-storage-anchor-delivery.test.ts > rejects an invalid fixed Bay anchor while retaining the relocated dock / wall offset0 / V8true
+AssertionError: expected +0 to be 3 // Object.is equality
+
+- Expected
++ Received
+
+- 3
++ 0
+
+ ❯ buyAndWait tests/integration/template-storage-anchor-delivery.test.ts:48:105
+     46|   expect(runtime.treasury.snapshot().balanceMinorUnits).toBe(balance -…
+     47|   for (let tick = 0; tick < 6_000; tick += 1) runtime.kernel.step();
+     48|   expect(runtime.containers.require(CONSTRUCTION_MATERIALS_CONTAINER_I…
+       |                                                                                                         ^
+     49|   expect(runtime.jobs.getSnapshot().some(job => job.state === 'failed'…
+     50| }
+ ❯ tests/integration/template-storage-anchor-delivery.test.ts:145:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+

@@ -1,0 +1,87 @@
+[
+    {
+        "path":  ".gitattributes",
+        "bytes":  12,
+        "sha256":  "fd13dad2ecae9b5cdde18e56b396b87ce73a5e3d9c05455bb00a1afc2c424106"
+    },
+    {
+        "path":  "bounded-action-navigation.txt",
+        "bytes":  562,
+        "sha256":  "e2639abe91bdd387c43225dc2bbe99bccfc51c84b3c28255b4e8471bb8d73488"
+    },
+    {
+        "path":  "bounded-meal-neighbors.txt",
+        "bytes":  562,
+        "sha256":  "ee07f8111971dfd553713c24c4d34df6f0cca93a9e06dc158f4479774c906e91"
+    },
+    {
+        "path":  "docs-final.txt",
+        "bytes":  560,
+        "sha256":  "b4503e3792294566952f17119d62539a760ff5c00ab584857cba269e76495df8"
+    },
+    {
+        "path":  "exact-restored.txt",
+        "bytes":  270,
+        "sha256":  "c77e5ca792f0ec5f31f4fb330d2141fefa30bff155fd2c3043b18e8d3dfc1596"
+    },
+    {
+        "path":  "fixed-anchor-0-0.json",
+        "bytes":  16717,
+        "sha256":  "ea880c5cbe864dd559623b14cd00bab541bcbc2f1caaea0b7085c48a4465a476"
+    },
+    {
+        "path":  "fixed-anchor-0-0.txt",
+        "bytes":  46948,
+        "sha256":  "bcff5b7fa855284041541d7e921361f40f78a7b70d029b8b34a1c94a3846b523"
+    },
+    {
+        "path":  "fixed-anchor-0-1.json",
+        "bytes":  16712,
+        "sha256":  "23c77c18cffdfb270d4d0c2c53841e573c11a1a5b1e3765a0a824be2864d4583"
+    },
+    {
+        "path":  "fixed-anchor-0-1.txt",
+        "bytes":  46928,
+        "sha256":  "1aa2a87c40003775f865a3e536a111471fdaa0474c8d93de906a40682830e604"
+    },
+    {
+        "path":  "fixed-rotated-interaction.txt",
+        "bytes":  128748,
+        "sha256":  "8319cf5628e37c3c3c73c5db75b3b97ac56214d9f3510fef1beb751bbe2fcf36"
+    },
+    {
+        "path":  "fixed-rotated-results.json",
+        "bytes":  46139,
+        "sha256":  "07dedc30b0ef6263c5498f923801af0a8151da473412ee98104adaca0e2d2515"
+    },
+    {
+        "path":  "mutate-anchor-condition.cjs.txt",
+        "bytes":  1895,
+        "sha256":  "269138f324a93e20291cd9ec436757d6ec34be5a17a40c6e0ed9f6986c11e690"
+    },
+    {
+        "path":  "producer-negative.txt",
+        "bytes":  1485,
+        "sha256":  "c23d97cb247d9e1f8090fc244d63946c9d0f655c84898f52ba3f40e09e3a3080"
+    },
+    {
+        "path":  "producer-restoration.json",
+        "bytes":  304,
+        "sha256":  "62b91467a4b69f5339bb21fce5eb79d1cb60f80858bc6a5c933e7d1f71cb14e3"
+    },
+    {
+        "path":  "README.md",
+        "bytes":  5705,
+        "sha256":  "8eb930158cff38aef1abc3727674641f7f97558ea94df9200c43380b2a48ac01"
+    },
+    {
+        "path":  "typed-baseline.txt",
+        "bytes":  3478,
+        "sha256":  "2563cc0f4e62742d0d679de6818b1d2703c422470479315244c546e64cc54c1c"
+    },
+    {
+        "path":  "typed-fixed.txt",
+        "bytes":  558,
+        "sha256":  "5007adcb7e1c93dda8891b28db6ec277eee1ddfd9bf42f2f5834f2a4815441b9"
+    }
+]

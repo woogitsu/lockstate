@@ -1,0 +1,17 @@
+const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const root=process.cwd(),scratch=path.join(process.env.TEMP,'lockstate-square-run-audit-20261003'),relative='src/simulation/construction/room-template-coordinator.ts',file=path.join(root,relative);
+const branch='codex/square-build-run-claims-audit-20261003',checkpoint='c1f0244fe8b38600c0f516279f4ddbee56e6108c';
+const original=fs.readFileSync(file),hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+const line="      if (order.footprint === 'square' && this.hasCompletedDoorApproach(x - dx, y - dy, dx, dy)) return true;";
+const source=original.toString('utf8');assert.equal(source.split(line).length,2);
+function git(args){const p=cp.spawnSync('git',args,{cwd:root});assert.equal(p.status,0,Buffer.concat([p.stdout,p.stderr]).toString());return p.stdout.toString().trim();}
+function test(label){const p=cp.spawnSync(process.execPath,['node_modules/vitest/vitest.mjs','run','tests/integration/room-template-door-square-run.test.ts','--maxWorkers=2'],{cwd:root});fs.writeFileSync(path.join(scratch,label+'.txt'),Buffer.concat([p.stdout,p.stderr]));return p.status;}
+let negative;
+git(['switch','--detach',checkpoint]);assert.equal(git(['rev-parse','HEAD']),checkpoint);
+try { fs.writeFileSync(file,source.replace(line,'')); negative=test('producer-negative'); }
+finally { fs.writeFileSync(file,original);assert.equal(hash(fs.readFileSync(file)),hash(original));git(['switch',branch]); }
+const restored=test('exact-restored');
+const diff=cp.spawnSync('git',['diff','--exit-code',checkpoint,'--',relative],{cwd:root});
+const receipt={checkpoint,branch,producer:'only square door-tile helper condition omitted',negativeExitCode:negative,restoredExitCode:restored,sourceSHA256Before:hash(original),sourceSHA256After:hash(fs.readFileSync(file)),sourceDiffExitCode:diff.status,detachedDuringMutation:true,branchRestored:git(['branch','--show-current'])};
+fs.writeFileSync(path.join(scratch,'mutation-restoration.json'),JSON.stringify(receipt,null,2));console.log(JSON.stringify(receipt));
+assert.equal(negative,1);assert.equal(restored,0);assert.equal(diff.status,0);

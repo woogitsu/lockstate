@@ -1,6 +1,8 @@
+// Pending native acceptance of the connected Bench source; historical crops/colour/minima retained.
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
-import { installTee, sentCommands } from './playtest-harness';
+import { installTee, sentCommands, currentClock } from './playtest-harness';
+import { assertBenchProducer, observeBenchNetwork, type BenchSnapshotData } from './wooden-bench-crossrails-evidence';
 
 interface ProbeWindow extends Window {
   askWorker?: (kind: string, payload: unknown) => Promise<unknown>;
@@ -34,6 +36,14 @@ async function installWorkerProbe(page: Page): Promise<void> {
       worker.postMessage({ protocolVersion: 1, messageId, kind, payload });
     });
   });
+}
+
+async function recordBenchSnapshot(page: Page, path: string): Promise<BenchSnapshotData> {
+  const reply = await page.evaluate(async () => (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' }));
+  await writeFile(path, JSON.stringify(reply, null, 2));
+  const snapshot = (reply as { payload: { snapshot: { schemaVersion: number; data: BenchSnapshotData } } }).payload.snapshot;
+  expect(snapshot.schemaVersion).toBe(3);
+  return snapshot.data;
 }
 
 async function fixtureAnchors(page: Page): Promise<string[]> {
@@ -75,9 +85,11 @@ const test = base.extend({
   storageState: async ({}, use) => { await use(routeStorage ?? { cookies: [], origins: [] }); },
 });
 test.describe.configure({ mode: 'serial' });
+const networkCaptures = new WeakMap<Page, ReturnType<typeof observeBenchNetwork>>();
 
 test.afterEach(async ({ page }, info) => {
   if (info.status === info.expectedStatus) return;
+  await networkCaptures.get(page)?.raw(info.outputPath('failed-bench-raw-network-provenance.json'));
   const snapshot = await page.evaluate(async () => (window as ProbeWindow).askWorker
     ? (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' })
     : null);
@@ -111,7 +123,8 @@ async function finishQueuedConstruction(page: Page): Promise<void> {
   }
 }
 
-test('player creates storage and delivery capacity before Holding Cell', async ({ page }) => {
+test('player creates storage and delivery capacity before Holding Cell', async ({ page }, info) => {
+  await installWorkerProbe(page);
   await installTee(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto('/?renderer=oblique');
@@ -132,12 +145,16 @@ test('player creates storage and delivery capacity before Holding Cell', async (
     { type: 'PlaceRoomTemplate', templateId: 'storage-room-basic', origin: { x: 5, y: 5 } },
     { type: 'PlaceRoomTemplate', templateId: 'delivery-bay-basic', origin: { x: 12, y: 5 } },
   ]);
+  const capacity = await recordBenchSnapshot(page, info.outputPath('capacity-completed-worker-snapshot.json'));
+  assertBenchProducer(capacity, 0, false);
   routeStorage = await page.context().storageState({ indexedDB: true });
 });
 
 for (const quarterTurns of [0, 1] as const) {
 test(`player builds Holding Cell at quarterTurns${quarterTurns} and retains authored timber palette after Save/Load`, async ({ page }, info) => {
   expect(routeStorage, 'this case consumes the first stage actual IndexedDB save').toBeDefined();
+  const network = observeBenchNetwork(page);
+  networkCaptures.set(page,network);
   await installWorkerProbe(page);
   await installTee(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
@@ -145,6 +162,8 @@ test(`player builds Holding Cell at quarterTurns${quarterTurns} and retains auth
   await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
   await expect(page.locator('[data-metric="rooms"] .ui-stat__value')).toHaveText('2');
+  const capacity = await recordBenchSnapshot(page, info.outputPath('capacity-loaded-worker-snapshot.json'));
+  assertBenchProducer(capacity, 0, false);
   await placePlan(page, 'Holding Cell', 20, quarterTurns);
   await page.getByRole('button', { name: 'Fast forward', exact: true }).click();
   await page.getByRole('button', { name: 'Fast forward', exact: true }).click();
@@ -169,6 +188,9 @@ test(`player builds Holding Cell at quarterTurns${quarterTurns} and retains auth
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
   await page.mouse.move(1300, 700);
   const completed = await page.screenshot({ path: info.outputPath('wooden-bench-worker-completed-fullhd.png') });
+  await expect.poll(() => currentClock(page)).toMatchObject({ mode: 'paused' });
+  const completedData = await recordBenchSnapshot(page, info.outputPath('bench-completed-whole-paused-worker-snapshot.json'));
+  assertBenchProducer(completedData, quarterTurns);
   const beforePixels = await timberPixels(page, completed, quarterTurns);
   await writeFile(info.outputPath('worker-and-completed-pixel-evidence.json'), JSON.stringify({
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
@@ -185,16 +207,44 @@ test(`player builds Holding Cell at quarterTurns${quarterTurns} and retains auth
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('wooden-bench-loaded-fullhd.png') });
+  await expect.poll(() => currentClock(page)).toMatchObject({ mode: 'paused' });
+  const loadedData = await recordBenchSnapshot(page, info.outputPath('bench-loaded-whole-paused-worker-snapshot.json'));
+  assertBenchProducer(loadedData, quarterTurns);
+  expect(loadedData).toEqual(completedData);
   const afterPixels = await timberPixels(page, loaded, quarterTurns);
   afterPixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored timber assembly after Load`)
     .toBeGreaterThan(300));
   expect(afterPixels).toEqual(beforePixels);
   const evidencePath = info.outputPath('wooden-bench-worker-and-pixel-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
-    quarterTurns, actualBefore, actualAfter, beforePixels, afterPixels,
+    quarterTurns, actualBefore, actualAfter, beforePixels, afterPixels, completedData, loadedData,
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   await info.attach('wooden-bench-worker-and-pixel-evidence', { path: evidencePath, contentType: 'application/json' });
+
+  // Separate public detail view AFTER unchanged legacy crops and Save/Load checks.
+  // q0: -45 +7*15 =60; q1: -45 +1*15 +90*objectOrientation =60 local.
+  // Native right-button drag17px lowers45deg by17*.005 radians to40.129859deg,
+  // safely selecting elevation40 rather than relying on a35/45deg tie.
+  for (let step=0; step < (quarterTurns === 0 ? 7 : 1); step++) {
+    await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
+  }
+  await page.mouse.move(1200,650);
+  await page.mouse.down({button:'right'});
+  await page.mouse.move(1200,667,{steps:3});
+  await page.mouse.up({button:'right'});
+  await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
+  const networkEvidence = await network.evidence(info,quarterTurns);
+  await page.mouse.move(1300,700);
+  await page.screenshot({path:info.outputPath('bench-connected-rails-local60-elev40-loaded-fullhd.png')});
+  const detailData = await recordBenchSnapshot(page,info.outputPath('bench-detail-whole-paused-worker-snapshot.json'));
+  expect(detailData).toEqual(loadedData);
+  await writeFile(info.outputPath('bench-detail-pending-native-recipe.json'),JSON.stringify({
+    quarterTurns,cameraRightButtons:quarterTurns===0?7:1,rightButtonDragFrom:[1200,650],rightButtonDragTo:[1200,667],
+    expectedGlobalYawDegrees:quarterTurns===0?60:-30,expectedLocalObjectYawDegrees:60,
+    expectedGlobalElevationDegrees:45-17*.005*180/Math.PI,selectedSourcePose:[60,40],
+    networkEvidence,hardwareRoiMeasured:false,sourcePreviewSubstitutedForNative:false,
+  },null,2));
 
 });
 }

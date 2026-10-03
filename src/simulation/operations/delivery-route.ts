@@ -180,13 +180,16 @@ export class DeliveryBayCarryRoute implements DeliveryCarryRoute {
     private readonly storageContainerId: string,
     /** A furnished route cannot move goods while the prison has no living carrier. */
     private readonly hasLivingPrisoner: () => boolean,
+    /** Existing fixed room anchors must be valid navigation destinations. */
+    private readonly isEligibleEndpoint: (tile: TilePosition) => boolean = () => true,
   ) {}
 
   /** The bay a delivery lands in, with its container created on first use. */
   private bay(): { readonly containerId: string; readonly tile: TilePosition } | undefined {
     const instance = this.roomInstances
       .allByRoomCatalogId(DELIVERY_BAY_ROOM_CATALOG_ID)
-      .find((candidate) => candidate.objectCapabilities.includes(DELIVERY_BAY_CAPABILITY));
+      .find((candidate) => candidate.objectCapabilities.includes(DELIVERY_BAY_CAPABILITY)
+        && this.isEligibleEndpoint(candidate.anchorTile));
     if (instance === undefined) return undefined;
     const containerId = deliveryBayContainerId(instance.instanceId);
     if (this.containers.getById(containerId) === undefined) this.containers.register(new Container(containerId));
@@ -197,7 +200,8 @@ export class DeliveryBayCarryRoute implements DeliveryCarryRoute {
   private storeroom(): { readonly containerId: string; readonly tile: TilePosition } | undefined {
     const instance = this.roomInstances
       .allByRoomCatalogId(STORAGE_ROOM_ROOM_CATALOG_ID)
-      .find((candidate) => candidate.objectCapabilities.includes(STORAGE_ROOM_CAPABILITY));
+      .find((candidate) => candidate.objectCapabilities.includes(STORAGE_ROOM_CAPABILITY)
+        && this.isEligibleEndpoint(candidate.anchorTile));
     if (instance === undefined) return undefined;
     return { containerId: this.storageContainerId, tile: instance.anchorTile };
   }

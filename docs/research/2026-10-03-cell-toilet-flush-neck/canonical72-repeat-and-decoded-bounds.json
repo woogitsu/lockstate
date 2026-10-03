@@ -1,0 +1,946 @@
+{
+  "actualCanonicalFilesRepeatedByteExact": 73,
+  "frames": [
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 20,
+      "actualFileSha256": "d970cc8fbd3f69b7a5f77b049674fd2378ccb36e911a6f7cd6b16606baeb14a0",
+      "actualAlphaBounds": [
+        234,
+        214,
+        284,
+        298
+      ],
+      "transparentMarginPx": 214,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 30,
+      "actualFileSha256": "32ffba342f83865e86dad28f611cfcf4db41c600943abf255aa229a38158050f",
+      "actualAlphaBounds": [
+        234,
+        211,
+        284,
+        300
+      ],
+      "transparentMarginPx": 211,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 40,
+      "actualFileSha256": "73c345d7905c402d17f2c75d9ad48e012867766785ef440ca3fcdd385f01987d",
+      "actualAlphaBounds": [
+        234,
+        210,
+        284,
+        300
+      ],
+      "transparentMarginPx": 210,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 50,
+      "actualFileSha256": "5af1a1115f824085cdcaec0bbf9b02042bc6e1ccbfe96bfdfe1f441745d2e5ba",
+      "actualAlphaBounds": [
+        234,
+        211,
+        284,
+        299
+      ],
+      "transparentMarginPx": 211,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 60,
+      "actualFileSha256": "9e564ab342e6cf5aa8054ab9d8d46af1929a6208900a5d81bab6bceea102a756",
+      "actualAlphaBounds": [
+        234,
+        212,
+        284,
+        297
+      ],
+      "transparentMarginPx": 212,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": -165,
+      "elevationDegrees": 70,
+      "actualFileSha256": "f438b8c22bb1bc9eb3d392c522b8cdec5aeaea7f85b6289dc9dabcf777299f83",
+      "actualAlphaBounds": [
+        234,
+        215,
+        284,
+        293
+      ],
+      "transparentMarginPx": 215,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 20,
+      "actualFileSha256": "8fdafb06760f9b5e1b729ef1da4fde418a5d430cc4e1274d82f81dd55943ff3d",
+      "actualAlphaBounds": [
+        229,
+        213,
+        290,
+        298
+      ],
+      "transparentMarginPx": 213,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 30,
+      "actualFileSha256": "bfa51960c784264fb45c233d8e49b134a2a0e8ae7f150b7d96f2fc0385479bb6",
+      "actualAlphaBounds": [
+        229,
+        210,
+        290,
+        299
+      ],
+      "transparentMarginPx": 210,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 40,
+      "actualFileSha256": "41e60f30135c709402782c201fe7c7abb8165a9847c3feb21ed226086b82bd97",
+      "actualAlphaBounds": [
+        229,
+        209,
+        290,
+        299
+      ],
+      "transparentMarginPx": 209,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 50,
+      "actualFileSha256": "e6df8984bb73bf0a80c92e12dfafe81dcbd0b7731142256df02aab2e7883549b",
+      "actualAlphaBounds": [
+        229,
+        209,
+        290,
+        298
+      ],
+      "transparentMarginPx": 209,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 60,
+      "actualFileSha256": "3ed6e41365ad09c665ce263a8d24f020287c2bcf11b96aece7674d5e97462c60",
+      "actualAlphaBounds": [
+        229,
+        210,
+        290,
+        296
+      ],
+      "transparentMarginPx": 210,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 70,
+      "actualFileSha256": "8204cca0c560111ea949ebb2fc41b52765d1f8472f973f428a09834c5f75e139",
+      "actualAlphaBounds": [
+        229,
+        213,
+        290,
+        293
+      ],
+      "transparentMarginPx": 213,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 20,
+      "actualFileSha256": "1986834d4abd87f8a2b535fd9b061c6a53f711f0993f07838590ac6e9e53046e",
+      "actualAlphaBounds": [
+        226,
+        215,
+        288,
+        296
+      ],
+      "transparentMarginPx": 215,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 30,
+      "actualFileSha256": "e1062bdb0d5900f5b967f835f179e662172f2be3fb5a65083180fe7c5503947d",
+      "actualAlphaBounds": [
+        226,
+        213,
+        288,
+        296
+      ],
+      "transparentMarginPx": 213,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 40,
+      "actualFileSha256": "34ea02205c06fd96c8db2981bf91a4ce9e9e5ee333011b66ebdcfd984ff26fcf",
+      "actualAlphaBounds": [
+        226,
+        213,
+        288,
+        295
+      ],
+      "transparentMarginPx": 213,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 50,
+      "actualFileSha256": "e37b957e3343299b55a23546edd02beec3f1e64aece7536919cf9bc5f61515a3",
+      "actualAlphaBounds": [
+        226,
+        214,
+        288,
+        293
+      ],
+      "transparentMarginPx": 214,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 60,
+      "actualFileSha256": "cdd5571a8037980da3206dc93dd83034c59cb11a0034e515000b77a2708b7af0",
+      "actualAlphaBounds": [
+        226,
+        216,
+        288,
+        290
+      ],
+      "transparentMarginPx": 216,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -105,
+      "elevationDegrees": 70,
+      "actualFileSha256": "cfa6b32c806504472bfbe3a697a2800db60d98da9436399da8926adefd8e7290",
+      "actualAlphaBounds": [
+        226,
+        219,
+        288,
+        286
+      ],
+      "transparentMarginPx": 219,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 20,
+      "actualFileSha256": "fe726dca646c1c54af1cf8e857edd19637e8ea10f1950e8ac1da30e889789b16",
+      "actualAlphaBounds": [
+        226,
+        218,
+        288,
+        294
+      ],
+      "transparentMarginPx": 218,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 30,
+      "actualFileSha256": "b68534b99371637036717f97b906b01c3fea50eb7724a9d7cae70e59ec9c56e8",
+      "actualAlphaBounds": [
+        226,
+        218,
+        288,
+        294
+      ],
+      "transparentMarginPx": 218,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 40,
+      "actualFileSha256": "ee3a71b205631d0555cc459e63cb3d45d9b5810cba1521234e1cc5160aec7783",
+      "actualAlphaBounds": [
+        226,
+        219,
+        288,
+        292
+      ],
+      "transparentMarginPx": 219,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 50,
+      "actualFileSha256": "5d23f8179b40b344b0570984fa42ef9a4f010f0ce34753f0d065d626ca8d77ab",
+      "actualAlphaBounds": [
+        226,
+        221,
+        288,
+        290
+      ],
+      "transparentMarginPx": 221,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 60,
+      "actualFileSha256": "d7f29a7f7cb261eca0b3fbec4f8f599c7adfded474cc8dbdb121460727faecb7",
+      "actualAlphaBounds": [
+        226,
+        224,
+        288,
+        286
+      ],
+      "transparentMarginPx": 224,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": -75,
+      "elevationDegrees": 70,
+      "actualFileSha256": "5ce6df4c6b552f5d76fa4d979a47608856c2ce9ca6e6972b10ad7655042ff22f",
+      "actualAlphaBounds": [
+        226,
+        228,
+        288,
+        282
+      ],
+      "transparentMarginPx": 224,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 20,
+      "actualFileSha256": "a6821850349bcccf0b8f7c765d43ec16c680b16bed83b1ecd74055e26cf748e0",
+      "actualAlphaBounds": [
+        229,
+        222,
+        293,
+        294
+      ],
+      "transparentMarginPx": 218,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 30,
+      "actualFileSha256": "06a4e78edfea763b6b67fd12da00785ba974a3cf791f1e14dbd014abf9a87440",
+      "actualAlphaBounds": [
+        229,
+        223,
+        293,
+        294
+      ],
+      "transparentMarginPx": 218,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 40,
+      "actualFileSha256": "b3fe27fabbbfcbb68426c616196e2b221f0b67107b6f1312c170b150ab710b49",
+      "actualAlphaBounds": [
+        229,
+        226,
+        293,
+        292
+      ],
+      "transparentMarginPx": 219,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 50,
+      "actualFileSha256": "9045cc95b1421f09110b7efc0dac173f584f747344bb257080b78b4a5b5a2c4c",
+      "actualAlphaBounds": [
+        229,
+        227,
+        293,
+        290
+      ],
+      "transparentMarginPx": 219,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 60,
+      "actualFileSha256": "25449763fd71367949518a86453ddf8723f63ca7e657e5b55a14caa56111a2a2",
+      "actualAlphaBounds": [
+        229,
+        226,
+        293,
+        287
+      ],
+      "transparentMarginPx": 219,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 70,
+      "actualFileSha256": "0562889bbce66afa28828fd6d522eeb86882796771fb2c54879691a8c56aa2ee",
+      "actualAlphaBounds": [
+        229,
+        227,
+        293,
+        284
+      ],
+      "transparentMarginPx": 219,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 20,
+      "actualFileSha256": "6b4ad485d3f85b81dc1b52ba1d93d9804aeba85fd420bb18eb236de5a11ee20a",
+      "actualAlphaBounds": [
+        234,
+        225,
+        289,
+        295
+      ],
+      "transparentMarginPx": 217,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 30,
+      "actualFileSha256": "f7b592265f89eab6a77b5c3152009d2e896245206cbff97353148d5182fec985",
+      "actualAlphaBounds": [
+        234,
+        228,
+        289,
+        295
+      ],
+      "transparentMarginPx": 217,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 40,
+      "actualFileSha256": "16b615e04332b85033c449d7213b1532ba002a4c600b22f5a7d0648ea8ff2696",
+      "actualAlphaBounds": [
+        234,
+        226,
+        289,
+        294
+      ],
+      "transparentMarginPx": 218,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 50,
+      "actualFileSha256": "e9d8728f187d81e40cf0cc5a345e4acf6403758eae3ad1b646b904de85f20a58",
+      "actualAlphaBounds": [
+        234,
+        224,
+        289,
+        292
+      ],
+      "transparentMarginPx": 220,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 60,
+      "actualFileSha256": "38f0a9bc84de390f239e3bacc55f1993bc6456083aed9f98811cff025bb6a584",
+      "actualAlphaBounds": [
+        234,
+        223,
+        289,
+        289
+      ],
+      "transparentMarginPx": 223,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": -15,
+      "elevationDegrees": 70,
+      "actualFileSha256": "f4d382795bca21d95a01d86eec6a9c154a81f9cac9e55c34e9c7e5ea37dff33d",
+      "actualAlphaBounds": [
+        234,
+        223,
+        289,
+        285
+      ],
+      "transparentMarginPx": 223,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 20,
+      "actualFileSha256": "d9fe2a8019f2ebbc00fea3bb83daf220e6dce6f79c1d89dfdf875e143d8546a4",
+      "actualAlphaBounds": [
+        228,
+        225,
+        278,
+        299
+      ],
+      "transparentMarginPx": 213,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 30,
+      "actualFileSha256": "a09c8cd718d33fc0f3adf326ee3fec17f4387f9486c5b68f943917b96b05106f",
+      "actualAlphaBounds": [
+        228,
+        228,
+        278,
+        301
+      ],
+      "transparentMarginPx": 211,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 40,
+      "actualFileSha256": "4c25174a20fe377731896d78083fcb7a35173890ec5b4b18fddd4e91ea647697",
+      "actualAlphaBounds": [
+        228,
+        226,
+        278,
+        302
+      ],
+      "transparentMarginPx": 210,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 50,
+      "actualFileSha256": "55c8e8f901830754f0bcde1c174b2ae5741b258d59d839361b68704d05797b84",
+      "actualAlphaBounds": [
+        228,
+        224,
+        278,
+        301
+      ],
+      "transparentMarginPx": 211,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 60,
+      "actualFileSha256": "060ede38bfeb115f2745326db7ebb4ca40ba4208414d548608e9c5b0fd7fc4c0",
+      "actualAlphaBounds": [
+        228,
+        223,
+        278,
+        299
+      ],
+      "transparentMarginPx": 213,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": 15,
+      "elevationDegrees": 70,
+      "actualFileSha256": "a5e8233277032fd7d08b43753d6d13f445dcf60c275ce1b6f0c7c418b4022358",
+      "actualAlphaBounds": [
+        228,
+        223,
+        278,
+        296
+      ],
+      "transparentMarginPx": 216,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 20,
+      "actualFileSha256": "3079eceba0fd15a3b1f7bc3fcd378d9ac41ca48af2d8f57ceca8d9168fdf77d9",
+      "actualAlphaBounds": [
+        222,
+        222,
+        283,
+        300
+      ],
+      "transparentMarginPx": 212,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 30,
+      "actualFileSha256": "27cac6d07f504e7f1e23b1e7ea67074b8b19a88f83bb89c4ec4dd4e65b972643",
+      "actualAlphaBounds": [
+        222,
+        223,
+        283,
+        303
+      ],
+      "transparentMarginPx": 209,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 40,
+      "actualFileSha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932",
+      "actualAlphaBounds": [
+        222,
+        226,
+        283,
+        305
+      ],
+      "transparentMarginPx": 207,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 50,
+      "actualFileSha256": "f2bdcc419364917bd90f2831348478dc78742fc65844af84719ea29f4e4e9d41",
+      "actualAlphaBounds": [
+        222,
+        227,
+        283,
+        305
+      ],
+      "transparentMarginPx": 207,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 60,
+      "actualFileSha256": "48dd71468ad44c33ddb17903f15735a11230eff522da91834dc83022c464d0aa",
+      "actualAlphaBounds": [
+        222,
+        226,
+        283,
+        303
+      ],
+      "transparentMarginPx": 209,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 70,
+      "actualFileSha256": "800873c5995bac0f212164e71964ee2d5dabf742146c91726464b8e0aaee6bae",
+      "actualAlphaBounds": [
+        222,
+        227,
+        283,
+        301
+      ],
+      "transparentMarginPx": 211,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 20,
+      "actualFileSha256": "13093413838d26091d0237d6665936e6ffe108fedfad4571b8b6c93405ae7645",
+      "actualAlphaBounds": [
+        224,
+        218,
+        286,
+        299
+      ],
+      "transparentMarginPx": 213,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 30,
+      "actualFileSha256": "e65b02f907ceaa9365ca8ebdcc81373e97efd5c8b41146db15e09a74768c5b8f",
+      "actualAlphaBounds": [
+        224,
+        218,
+        286,
+        302
+      ],
+      "transparentMarginPx": 210,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 40,
+      "actualFileSha256": "03fae71daa6465a446d550ce7526ceb1332e39030f1009c1eedd0b0bbcf29338",
+      "actualAlphaBounds": [
+        224,
+        219,
+        286,
+        303
+      ],
+      "transparentMarginPx": 209,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 50,
+      "actualFileSha256": "854db201b9f6c44debc1d53117c28d25dde21550b4c1bf57ea6c8179c90da60a",
+      "actualAlphaBounds": [
+        224,
+        221,
+        286,
+        302
+      ],
+      "transparentMarginPx": 210,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 60,
+      "actualFileSha256": "93d769c35739accd88cb42bfe7a70cc2dd5c615f7f84491b6e24423db0787750",
+      "actualAlphaBounds": [
+        224,
+        224,
+        286,
+        301
+      ],
+      "transparentMarginPx": 211,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": 75,
+      "elevationDegrees": 70,
+      "actualFileSha256": "a4e6db82cf5cf206b33658d171344a873e45a84fd0bdd509f004a4a358250124",
+      "actualAlphaBounds": [
+        224,
+        228,
+        286,
+        298
+      ],
+      "transparentMarginPx": 214,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 20,
+      "actualFileSha256": "b31755be95b1faa7caded3d1ccc252250f8e48a72182d2d4ff0e436fde2db2b8",
+      "actualAlphaBounds": [
+        224,
+        215,
+        286,
+        296
+      ],
+      "transparentMarginPx": 215,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 30,
+      "actualFileSha256": "ce4f342742f76e484bdf541f27998a11baeffcbdb66bf4ddd2a8e2d1a0616afc",
+      "actualAlphaBounds": [
+        224,
+        213,
+        286,
+        297
+      ],
+      "transparentMarginPx": 213,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 40,
+      "actualFileSha256": "464da91239d967b3d43780bce2b422681cf3ca06a0085b8a1d38897fbceb42b1",
+      "actualAlphaBounds": [
+        224,
+        213,
+        286,
+        296
+      ],
+      "transparentMarginPx": 213,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 50,
+      "actualFileSha256": "f1be462d9543a4cb7496f2e81562e32b94d7869f7ce0f191249e4b2d2eb252af",
+      "actualAlphaBounds": [
+        224,
+        214,
+        286,
+        295
+      ],
+      "transparentMarginPx": 214,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 60,
+      "actualFileSha256": "f9ddf7e39d7072dc50afd4ca9a9850b662c451138b082e68b22bb5cb1018ea5e",
+      "actualAlphaBounds": [
+        224,
+        216,
+        286,
+        292
+      ],
+      "transparentMarginPx": 216,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 70,
+      "actualFileSha256": "8cc95640ee86086bc4c47fd576b42cd4bced6e64d496fb57ddf3a6bfbd0f6228",
+      "actualAlphaBounds": [
+        224,
+        219,
+        286,
+        288
+      ],
+      "transparentMarginPx": 219,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 20,
+      "actualFileSha256": "9a370432320bf5e2e6eee1f9953cf4e8375c218c9a86af57b253119db465b068",
+      "actualAlphaBounds": [
+        219,
+        213,
+        283,
+        298
+      ],
+      "transparentMarginPx": 213,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 30,
+      "actualFileSha256": "f6458a865f74866c1edcacf0be6ca7813477cd1ec704e8777038443a17f4a748",
+      "actualAlphaBounds": [
+        219,
+        210,
+        283,
+        299
+      ],
+      "transparentMarginPx": 210,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 40,
+      "actualFileSha256": "9fdeb6e1f492ad6f647dfbd3ee97a3bfb043d10013ece83b066a27e40b826d41",
+      "actualAlphaBounds": [
+        219,
+        209,
+        283,
+        299
+      ],
+      "transparentMarginPx": 209,
+      "changedFromOriginalCanonical": true
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 50,
+      "actualFileSha256": "7bba23ad30be5bc93cc32cf02e630512300aede2a6cfdc36b6076cc595935bbf",
+      "actualAlphaBounds": [
+        219,
+        209,
+        283,
+        298
+      ],
+      "transparentMarginPx": 209,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 60,
+      "actualFileSha256": "c53624c9dfa7bc26539623b6138f58f27c8498a05ceaa37ce5a0d927988404da",
+      "actualAlphaBounds": [
+        219,
+        210,
+        283,
+        296
+      ],
+      "transparentMarginPx": 210,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 70,
+      "actualFileSha256": "688e030a7567dc2cbd5ccc71880bdb2f616f16423a29e0877f83be5962152609",
+      "actualAlphaBounds": [
+        219,
+        213,
+        283,
+        293
+      ],
+      "transparentMarginPx": 213,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 20,
+      "actualFileSha256": "4e9559df74cd265b99de37535b189eeac56ee59af4e074c0cbfb4096c3afc852",
+      "actualAlphaBounds": [
+        223,
+        214,
+        278,
+        298
+      ],
+      "transparentMarginPx": 214,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 30,
+      "actualFileSha256": "4586eaac1fb57725c6fc302faef7494a831dbff3277ae14a619c5e25fa075184",
+      "actualAlphaBounds": [
+        223,
+        211,
+        278,
+        300
+      ],
+      "transparentMarginPx": 211,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 40,
+      "actualFileSha256": "f5f9a6ed3a4ce96aa14e9063f339fa449cb506a08a2315d3320d154b4d2bb244",
+      "actualAlphaBounds": [
+        223,
+        210,
+        278,
+        300
+      ],
+      "transparentMarginPx": 210,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 50,
+      "actualFileSha256": "157a46320089ebc5c21dabecc7800c3b284e5aea152b321e4e812af6b6ecc8f3",
+      "actualAlphaBounds": [
+        223,
+        211,
+        278,
+        299
+      ],
+      "transparentMarginPx": 211,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 60,
+      "actualFileSha256": "5da94b9135cf872be76d9cb6762c1ea5a8227880ca4bfe00e0b55b1fc4859b57",
+      "actualAlphaBounds": [
+        223,
+        212,
+        278,
+        297
+      ],
+      "transparentMarginPx": 212,
+      "changedFromOriginalCanonical": false
+    },
+    {
+      "yawDegrees": 165,
+      "elevationDegrees": 70,
+      "actualFileSha256": "344422eb9d916c708314b22f21713fadddbb99e07ead34db4b22d8a2b069ed60",
+      "actualAlphaBounds": [
+        223,
+        215,
+        278,
+        293
+      ],
+      "transparentMarginPx": 215,
+      "changedFromOriginalCanonical": false
+    }
+  ],
+  "minimumTransparentMarginPx": 207,
+  "changedFrames": 37,
+  "originalMetadataContractPreserved": true,
+  "browserStarted": false,
+  "nativeAcceptanceClaimed": false
+}

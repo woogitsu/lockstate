@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-next-default-model-source-audit-20261003
+
+
+ Test Files  5 passed (5)
+      Tests  19 passed | 1 skipped (20)
+   Start at  08:53:30
+   Duration  763ms (transform 543ms, setup 0ms, import 1.50s, tests 234ms, environment 1ms)
+

@@ -1,0 +1,41 @@
+[
+  {
+    "url": "http://127.0.0.1:5184/assets/worker-CI5uwrgr.js",
+    "decodedPath": "/assets/worker-CI5uwrgr.js",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "sha256": "3d2f98b8514d20492636e9e1579109557c39325ae6b37cbc314294172e92f07b",
+    "bytes": 442115
+  },
+  {
+    "url": "http://127.0.0.1:5184/game-content/oblique-canteen-bench.v1.json",
+    "decodedPath": "/game-content/oblique-canteen-bench.v1.json",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "sha256": "793f4908d0ea3f416fd063627a2ea3f8b3b1744397272f908b197ecdcde36c69",
+    "bytes": 20022
+  },
+  {
+    "url": "http://127.0.0.1:5184/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev40.788a2ecb837d.png",
+    "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev40.788a2ecb837d.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B300-elev40.788a2ecb837d.png"
+  },
+  {
+    "url": "http://127.0.0.1:5184/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B300-elev40.788a2ecb837d.png",
+    "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev40.788a2ecb837d.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "788a2ecb837d71162595e2b0b9701924fcb0f29fcf4a5c77d6c32dc21a7827e7",
+    "bytes": 8748
+  },
+  {
+    "url": "http://127.0.0.1:5184/assets/worker-CI5uwrgr.js",
+    "decodedPath": "/assets/worker-CI5uwrgr.js",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "sha256": "3d2f98b8514d20492636e9e1579109557c39325ae6b37cbc314294172e92f07b",
+    "bytes": 442115
+  }
+]

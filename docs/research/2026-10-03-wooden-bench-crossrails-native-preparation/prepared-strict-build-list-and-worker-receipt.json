@@ -1,0 +1,26 @@
+{
+  "kind": "pending-native-preparation",
+  "preparedSourceCommit": "43e2dfa3459728f5e524c491c7c227cd23b1f0a8",
+  "baseCommit": "371c964f6720f59f99f13d092441aabae25f1877",
+  "strictAppAndToolsTypeScriptExit": 0,
+  "productionBuildExit": 0,
+  "canonicalArtifactListExit": 0,
+  "collectedTestCount": 3,
+  "actualBrowserTestsExecuted": 0,
+  "workerFile": "dist/client/assets/worker-CcyrWrUf.js",
+  "workerBytes": 438431,
+  "workerSha256": "5935693a4ec8d7bb87081b65e8ef2cb0df99fe2c7f0d4a3035990d35bde5d427",
+  "oldCalibratedTimberPixelsFunctionExactPreserved": true,
+  "unchangedArtifactLimits": {
+    "testTimeoutMs": 60000,
+    "expectTimeoutMs": 10000,
+    "retries": 0,
+    "workers": 1
+  },
+  "modelsRenderersSchemasConfigsContextMappingsUnchanged": true,
+  "offlineProductionKernelOwnerCases": 2,
+  "browserStarted": false,
+  "serverStarted": false,
+  "nativeAcceptanceClaimed": false,
+  "hostedAcceptanceClaimed": false
+}

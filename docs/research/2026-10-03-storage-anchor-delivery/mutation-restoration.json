@@ -1,0 +1,31 @@
+{
+  "receipts": [
+    {
+      "label": "mutation-endpoint-omission",
+      "exit": 1,
+      "summary": "Tests  6 failed | 4 passed (10)"
+    },
+    {
+      "label": "mutation-session-wire-omission",
+      "exit": 1,
+      "summary": "Tests  6 failed | 4 passed (10)"
+    },
+    {
+      "label": "exact-restored",
+      "exit": 0,
+      "summary": "Tests  10 passed (10)"
+    }
+  ],
+  "hashes": [
+    {
+      "file": "src/simulation/operations/delivery-route.ts",
+      "before": "305a9c678f1bbfc9d1b5d4e40008a47cf5d036b42a8bb9bb8f12cd37b3557e69",
+      "restored": "305a9c678f1bbfc9d1b5d4e40008a47cf5d036b42a8bb9bb8f12cd37b3557e69"
+    },
+    {
+      "file": "src/simulation/runtime/new-session.ts",
+      "before": "a2b315c1184b0ac5afe3e64cce5b35d60a2f1fbeb8c7bfb3d89add2fb9dfa9e3",
+      "restored": "a2b315c1184b0ac5afe3e64cce5b35d60a2f1fbeb8c7bfb3d89add2fb9dfa9e3"
+    }
+  ]
+}

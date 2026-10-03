@@ -24,7 +24,7 @@ import pipeline_common  # noqa: E402
 
 ROOT = SCRIPT_DIR.parents[1]
 CATALOG = ROOT / "assets/source/blender/environment.mvp.catalog.blend"
-SOURCE = ROOT / "assets/source/blender/fixture.cell.toilet_sink.angled.blend"
+SOURCE = ROOT / "assets/source/blender/fixture.cell.toilet_sink.angled-connection.blend"
 PROVENANCE = SOURCE.with_suffix(".provenance.json")
 OUTPUT = ROOT / "public/assets/environment/oblique"
 PREVIEW_ONLY = '--preview' in sys.argv
@@ -78,6 +78,11 @@ def append_collection() -> bpy.types.Collection:
     bpy.context.view_layer.update()
     if sorted(obj.name for obj in collection.objects if obj.type == 'MESH') != sorted(expected_names):
         raise ValueError('Dedicated Cell toilet loaded authored mesh set changed')
+    if SOURCE.name == 'fixture.cell.toilet_sink.angled-connection.blend':
+        spec = importlib.util.spec_from_file_location('cell_toilet_transfer_guard', SCRIPT_DIR / 'render-cell-toilet-flush-neck-oblique.py')
+        guard = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(guard)
+        guard.verify_loaded(bpy.context.scene)
     wheel = collection.objects['angled-toilet.shutoff valve wheel']
     normal_matrix = wheel.matrix_world.to_3x3().inverted().transposed()
     for polygon in wheel.data.polygons:
@@ -131,7 +136,7 @@ def append_collection() -> bpy.types.Collection:
                 raise ValueError('Dedicated Cell toilet escapes an occupied quarter turn')
     if abs(TARGET.z - (minimum[2] + maximum[2]) / 2) > 1e-6:
         raise ValueError('Dedicated Cell toilet target differs from measured height')
-    print('CELL_TOILET_EVALUATED44', minimum, maximum, flush=True)
+    print('CELL_TOILET_EVALUATED', len(expected_names), minimum, maximum, flush=True)
     return collection
 
 
@@ -249,7 +254,7 @@ def main() -> None:
         "resolutionPx": [512, 512],
         "nominalPixelsPerTile": 64,
         "pivotPx": [256, 256],
-        "cameraTargetTiles": list(TARGET),
+        "cameraTargetTiles": [.5, .5, .5537500381469727],
         "projection": "orthographic",
         "yawDegrees": list(YAW),
         "elevationDegrees": list(ELEVATION),

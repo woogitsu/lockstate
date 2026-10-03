@@ -1,0 +1,35 @@
+{
+  "preparedSourceCommit": "eef94a1f64",
+  "preparedCanonicalExportCommit": "77ede09eb083475cf52971f337f3d1ee87fdb96d",
+  "appAndToolsTypescriptExitCode": 0,
+  "productionBuildExitCode": 0,
+  "focusedFiles": 4,
+  "focusedPassedTests": 9,
+  "optionalBlenderPathTestSkipped": 1,
+  "explicitPinnedBlenderActualOriginal72AndNewRepeated72Ran": true,
+  "all73CanonicalFilesStillByteExactAfterControlsAndPublicHydration": true,
+  "worker": {
+    "path": "dist/client/assets/worker-CzxL0SOa.js",
+    "bytes": 438431,
+    "sha256": "8b4bc5ef889a60b8f2a9c757c749aa6e67c3e1e2c8c7fdccbe6abf92eb5c492c",
+    "identityScope": "actual production build at77ede09e, not a hosted or running worker claim"
+  },
+  "sourceSha256": "ebc1570274663d22315eed0adfafe8886120bdbf9901dfa744edcde540428ff8",
+  "sourceVisibleCanonicalFrames": [
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/cell-toilet-yaw+45-elev40.fb4b086cfbce.png",
+      "sha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932"
+    },
+    {
+      "yawDegrees": 105,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/cell-toilet-yaw+105-elev40.464da91239d9.png",
+      "sha256": "464da91239d967b3d43780bce2b422681cf3ca06a0085b8a1d38897fbceb42b1"
+    }
+  ],
+  "browserStarted": false,
+  "serverStarted": false,
+  "nativeAcceptanceClaimed": false
+}

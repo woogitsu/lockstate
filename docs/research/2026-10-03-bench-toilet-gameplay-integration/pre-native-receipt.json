@@ -1,0 +1,20 @@
+{
+    "frozen":  "65e02bebc94272a16c62c7b242b82c6e7d6d4ee8",
+    "nativeWorkers":  1,
+    "strictFixtureTypesExit":  0,
+    "productionBuildExit":  0,
+    "combinedSourceTests":  63,
+    "compiled":  [
+                     {
+                         "name":  "index-DrM9ZtUm.js",
+                         "bytes":  1932422,
+                         "sha256":  "14a168ef525fd5777834828d95fa5a46fd20edee9c6782ff98984e3bf4b6aa70"
+                     },
+                     {
+                         "name":  "worker-CtiFkH2I.js",
+                         "bytes":  442115,
+                         "sha256":  "5a1aa21affdba3bade723df88766f9c123cbcf6953789600d8b146ff87d60186"
+                     }
+                 ],
+    "nativeExecuted":  false
+}

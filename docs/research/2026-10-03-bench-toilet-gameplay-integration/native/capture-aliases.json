@@ -1,0 +1,1825 @@
+[
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003.json",
+    "archived": "original/report.json",
+    "sourceBytes": 12894,
+    "sourceSha256": "6a9dc20890f85d78819aa6c75cb3d298ce176a27e1f0581537545c1b17ddffc8",
+    "archivedBytes": 12894,
+    "archivedSha256": "6a9dc20890f85d78819aa6c75cb3d298ce176a27e1f0581537545c1b17ddffc8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003.txt",
+    "archived": "original/console.txt",
+    "sourceBytes": 5224,
+    "sourceSha256": "29d7a134160c31299c5bc3c3be91eacc09af77db0f772aa8b8be365b7cc49e16",
+    "archivedBytes": 2625,
+    "archivedSha256": "1963a9d9b9d254004bc0d47f566785e0c2af09db5da3989ab1154a3af64b1e4d",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\.last-run.json",
+    "archived": "original/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\attachments\\dedicated-cell-toilet-worker-and-save-evidence-66f812bd08900aa5bb21c77431626b8bfd567190.json",
+    "archived": "original/002-dedicated-cell-toilet-worker-and-save-evidence-66f812bd08900aa5b.json",
+    "sourceBytes": 129657,
+    "sourceSha256": "5aa7e982b4d4aa35f4cc51d1468355e38e7713880f8252e9d6dc5a17906fc12b",
+    "archivedBytes": 129657,
+    "archivedSha256": "5aa7e982b4d4aa35f4cc51d1468355e38e7713880f8252e9d6dc5a17906fc12b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "original/003-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 54380,
+    "sourceSha256": "3558469950d25ce354c8db725d6943d65fb8fefcbdd260ddf6d35d93d1746b8a",
+    "archivedBytes": 54380,
+    "archivedSha256": "3558469950d25ce354c8db725d6943d65fb8fefcbdd260ddf6d35d93d1746b8a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "original/004-completed-worker-snapshot.json",
+    "sourceBytes": 74696,
+    "sourceSha256": "088e6ae88ba8c222f0883373e548b13c3cfe7d8a09d3a09190009f4966581257",
+    "archivedBytes": 74696,
+    "archivedSha256": "088e6ae88ba8c222f0883373e548b13c3cfe7d8a09d3a09190009f4966581257"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\dedicated-cell-toilet-loaded-fullhd.png",
+    "archived": "original/005-dedicated-cell-toilet-loaded-fullhd.png",
+    "sourceBytes": 1561544,
+    "sourceSha256": "97ac4f73a2905abc3a5207348b1356b1ae297083fe470818403b7f2195190ae4",
+    "archivedBytes": 1561544,
+    "archivedSha256": "97ac4f73a2905abc3a5207348b1356b1ae297083fe470818403b7f2195190ae4"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-and-save-evidence.json",
+    "archived": "original/006-dedicated-cell-toilet-worker-and-save-evidence.json",
+    "sourceBytes": 129657,
+    "sourceSha256": "5aa7e982b4d4aa35f4cc51d1468355e38e7713880f8252e9d6dc5a17906fc12b",
+    "archivedBytes": 129657,
+    "archivedSha256": "5aa7e982b4d4aa35f4cc51d1468355e38e7713880f8252e9d6dc5a17906fc12b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-completed-fullhd.png",
+    "archived": "original/007-dedicated-cell-toilet-worker-completed-fullhd.png",
+    "sourceBytes": 1590266,
+    "sourceSha256": "bf9f1ebd55e0cb5766ea2f11aa4851e4edeb3dff99ab3c7d5c9696d7f71fbd3b",
+    "archivedBytes": 1590266,
+    "archivedSha256": "bf9f1ebd55e0cb5766ea2f11aa4851e4edeb3dff99ab3c7d5c9696d7f71fbd3b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "original/008-loaded-worker-snapshot.json",
+    "sourceBytes": 74696,
+    "sourceSha256": "565cd21c9d7c779ee975a43ad149efa6ad93501b04f7be2ea5c799c2eb39eaf2",
+    "archivedBytes": 74696,
+    "archivedSha256": "565cd21c9d7c779ee975a43ad149efa6ad93501b04f7be2ea5c799c2eb39eaf2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-actual-network-and-htmlimage-evidence.json",
+    "archived": "original/009-toilet-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 24205,
+    "sourceSha256": "3942feccc5b63340f025ce1825f27fd3cc571ae84ed978059e72b6a3ab6eb248",
+    "archivedBytes": 24205,
+    "archivedSha256": "3942feccc5b63340f025ce1825f27fd3cc571ae84ed978059e72b6a3ab6eb248"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-actual200-exposed-frame.png",
+    "archived": "original/010-toilet-actual200-exposed-frame.png",
+    "sourceBytes": 14043,
+    "sourceSha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932",
+    "archivedBytes": 14043,
+    "archivedSha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-completed-whole-paused-worker-snapshot.json",
+    "archived": "original/011-toilet-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 74696,
+    "sourceSha256": "d0e209f95fe34cfcea039271164cd3d7ba5ccd87050d66cd5616334d7450e31b",
+    "archivedBytes": 74696,
+    "archivedSha256": "d0e209f95fe34cfcea039271164cd3d7ba5ccd87050d66cd5616334d7450e31b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-detail-pending-native-recipe.json",
+    "archived": "original/012-toilet-detail-pending-native-recipe.json",
+    "sourceBytes": 25933,
+    "sourceSha256": "eb3ac889ec12fbf1f93e2d447f4c4959ac40a76569e1ea906d839d6b918beb6c",
+    "archivedBytes": 25933,
+    "archivedSha256": "eb3ac889ec12fbf1f93e2d447f4c4959ac40a76569e1ea906d839d6b918beb6c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-detail-whole-paused-worker-snapshot.json",
+    "archived": "original/013-toilet-detail-whole-paused-worker-snapshot.json",
+    "sourceBytes": 74696,
+    "sourceSha256": "1d1cd5bd7e4a1991c90f5e445536f2fff11474be542d233e38f2717547257337",
+    "archivedBytes": 74696,
+    "archivedSha256": "1d1cd5bd7e4a1991c90f5e445536f2fff11474be542d233e38f2717547257337"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-loaded-whole-paused-worker-snapshot.json",
+    "archived": "original/014-toilet-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 74696,
+    "sourceSha256": "e70869815153b3b9bc32cb4f767cf6eb93895d627f3bbc4a69e351ac81e07132",
+    "archivedBytes": 74696,
+    "archivedSha256": "e70869815153b3b9bc32cb4f767cf6eb93895d627f3bbc4a69e351ac81e07132"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-raw-response-provenance.json",
+    "archived": "original/015-toilet-raw-response-provenance.json",
+    "sourceBytes": 4532,
+    "sourceSha256": "8efc328a6ab930e8342e8f5df32edaef6d00bccb20394641f157a5b083a702a6",
+    "archivedBytes": 4532,
+    "archivedSha256": "8efc328a6ab930e8342e8f5df32edaef6d00bccb20394641f157a5b083a702a6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-transfer-neck-local45-elev40-loaded-fullhd.png",
+    "archived": "original/016-toilet-transfer-neck-local45-elev40-loaded-fullhd.png",
+    "sourceBytes": 1492076,
+    "sourceSha256": "22ab0b1571411e2365ee53a10ca145e69d624d85141b984b7d833cbc6a7413cc",
+    "archivedBytes": 1492076,
+    "archivedSha256": "22ab0b1571411e2365ee53a10ca145e69d624d85141b984b7d833cbc6a7413cc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "original/017-worker-and-completed-save-evidence.json",
+    "sourceBytes": 289,
+    "sourceSha256": "51f638f07b2540ba96ba3a9641ef34ed7782c20078716f33323d9229c590cb59",
+    "archivedBytes": 289,
+    "archivedSha256": "51f638f07b2540ba96ba3a9641ef34ed7782c20078716f33323d9229c590cb59"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\attachments\\dedicated-cell-toilet-worker-and-save-evidence-c57fd2d3fcc2d61ee6403544acc69d30cd27d647.json",
+    "archived": "original/018-dedicated-cell-toilet-worker-and-save-evidence-c57fd2d3fcc2d61ee.json",
+    "sourceBytes": 127196,
+    "sourceSha256": "b8ec0f64d7b614d84bac9c05df80f0b20424a432d4a340c7a1952da1db32f234",
+    "archivedBytes": 127196,
+    "archivedSha256": "b8ec0f64d7b614d84bac9c05df80f0b20424a432d4a340c7a1952da1db32f234"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "original/019-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 54380,
+    "sourceSha256": "69bf4f7d26f5aac6e54234f887ffbf3378dfe732991caaff4abf5f12a68bce1d",
+    "archivedBytes": 54380,
+    "archivedSha256": "69bf4f7d26f5aac6e54234f887ffbf3378dfe732991caaff4abf5f12a68bce1d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "original/020-completed-worker-snapshot.json",
+    "sourceBytes": 73082,
+    "sourceSha256": "a4c7c2e72c7ad74a609202e93212257f7daa728098a358bf8d82c4373d39749f",
+    "archivedBytes": 73082,
+    "archivedSha256": "a4c7c2e72c7ad74a609202e93212257f7daa728098a358bf8d82c4373d39749f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\dedicated-cell-toilet-loaded-fullhd.png",
+    "archived": "original/021-dedicated-cell-toilet-loaded-fullhd.png",
+    "sourceBytes": 1478828,
+    "sourceSha256": "f164eb6321de8220a25e2de76fd44c75fc49b3d76cc8d4d8e8d27e54c6720a6d",
+    "archivedBytes": 1478828,
+    "archivedSha256": "f164eb6321de8220a25e2de76fd44c75fc49b3d76cc8d4d8e8d27e54c6720a6d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-and-save-evidence.json",
+    "archived": "original/022-dedicated-cell-toilet-worker-and-save-evidence.json",
+    "sourceBytes": 127196,
+    "sourceSha256": "b8ec0f64d7b614d84bac9c05df80f0b20424a432d4a340c7a1952da1db32f234",
+    "archivedBytes": 127196,
+    "archivedSha256": "b8ec0f64d7b614d84bac9c05df80f0b20424a432d4a340c7a1952da1db32f234"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-completed-fullhd.png",
+    "archived": "original/023-dedicated-cell-toilet-worker-completed-fullhd.png",
+    "sourceBytes": 1506729,
+    "sourceSha256": "91e0d82c8a9e3f6e78b8993f52937cc7202369379e193510d0b5d1adc7482294",
+    "archivedBytes": 1506729,
+    "archivedSha256": "91e0d82c8a9e3f6e78b8993f52937cc7202369379e193510d0b5d1adc7482294"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "original/024-loaded-worker-snapshot.json",
+    "sourceBytes": 73082,
+    "sourceSha256": "d60a21e4b3840816a3a5517b6a0f018e1933021c3675730367d012af570e5603",
+    "archivedBytes": 73082,
+    "archivedSha256": "d60a21e4b3840816a3a5517b6a0f018e1933021c3675730367d012af570e5603"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-actual-network-and-htmlimage-evidence.json",
+    "archived": "original/025-toilet-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 24205,
+    "sourceSha256": "0327301d6a147b7ab325aba71c116a2551fab4d9338c1836d6fccff1182d5e7c",
+    "archivedBytes": 24205,
+    "archivedSha256": "0327301d6a147b7ab325aba71c116a2551fab4d9338c1836d6fccff1182d5e7c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-actual200-exposed-frame.png",
+    "archived": "original/026-toilet-actual200-exposed-frame.png",
+    "sourceBytes": 14043,
+    "sourceSha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932",
+    "archivedBytes": 14043,
+    "archivedSha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-completed-whole-paused-worker-snapshot.json",
+    "archived": "original/027-toilet-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 73082,
+    "sourceSha256": "acc7786c6024baf5949f826293e432b685dafe142c61e52346cb5f73b11d9dfe",
+    "archivedBytes": 73082,
+    "archivedSha256": "acc7786c6024baf5949f826293e432b685dafe142c61e52346cb5f73b11d9dfe"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-detail-pending-native-recipe.json",
+    "archived": "original/028-toilet-detail-pending-native-recipe.json",
+    "sourceBytes": 25933,
+    "sourceSha256": "c6c675ff72e58f8d8692d87d73085f284dc78a12a38a0007c4c8f9c6e30ba1ca",
+    "archivedBytes": 25933,
+    "archivedSha256": "c6c675ff72e58f8d8692d87d73085f284dc78a12a38a0007c4c8f9c6e30ba1ca"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-detail-whole-paused-worker-snapshot.json",
+    "archived": "original/029-toilet-detail-whole-paused-worker-snapshot.json",
+    "sourceBytes": 73082,
+    "sourceSha256": "77b24fa2d565899e92b7934f1724cdbae8c06aecfaf0c86260b7e7a68a9a49c4",
+    "archivedBytes": 73082,
+    "archivedSha256": "77b24fa2d565899e92b7934f1724cdbae8c06aecfaf0c86260b7e7a68a9a49c4"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-loaded-whole-paused-worker-snapshot.json",
+    "archived": "original/030-toilet-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 73082,
+    "sourceSha256": "e92add942ca54e17511bfd9790d44c167d8626dd9a80c12abfdaf5cf28f9dc11",
+    "archivedBytes": 73082,
+    "archivedSha256": "e92add942ca54e17511bfd9790d44c167d8626dd9a80c12abfdaf5cf28f9dc11"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-raw-response-provenance.json",
+    "archived": "original/031-toilet-raw-response-provenance.json",
+    "sourceBytes": 4532,
+    "sourceSha256": "d722c3f3b0bc1747044614671ed40ac3ca10b0cc6b83505fa22f80fbcd992609",
+    "archivedBytes": 4532,
+    "archivedSha256": "d722c3f3b0bc1747044614671ed40ac3ca10b0cc6b83505fa22f80fbcd992609"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-transfer-neck-local45-elev40-loaded-fullhd.png",
+    "archived": "original/032-toilet-transfer-neck-local45-elev40-loaded-fullhd.png",
+    "sourceBytes": 1401991,
+    "sourceSha256": "d1a0c031f7cf4103119a61cb2faf6fbdf3dfbb215a20749d728568e17b3a7aa7",
+    "archivedBytes": 1401991,
+    "archivedSha256": "d1a0c031f7cf4103119a61cb2faf6fbdf3dfbb215a20749d728568e17b3a7aa7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "original/033-worker-and-completed-save-evidence.json",
+    "sourceBytes": 313,
+    "sourceSha256": "13bd0bc158b977bbce8b1394139960188b55a0b037e19b9fdbfcf6c7e01a8963",
+    "archivedBytes": 313,
+    "archivedSha256": "13bd0bc158b977bbce8b1394139960188b55a0b037e19b9fdbfcf6c7e01a8963"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\dedicated-cell-toilet-play-d5a09--capacity-before-Basic-cell\\capacity-completed-worker-snapshot.json",
+    "archived": "original/034-capacity-completed-worker-snapshot.json",
+    "sourceBytes": 54380,
+    "sourceSha256": "b0f300d4d319aade6a5cd2451dd5ed658a513624c58a8e46cb2724adc1d5d060",
+    "archivedBytes": 54380,
+    "archivedSha256": "b0f300d4d319aade6a5cd2451dd5ed658a513624c58a8e46cb2724adc1d5d060"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--9989a-apacity-before-Holding-Cell\\capacity-completed-worker-snapshot.json",
+    "archived": "original/035-capacity-completed-worker-snapshot.json",
+    "sourceBytes": 54388,
+    "sourceSha256": "c12e112f6cda09b9eec209f5ab22a317842058efd06c420e168a31e65f78dfa0",
+    "archivedBytes": 54388,
+    "archivedSha256": "c12e112f6cda09b9eec209f5ab22a317842058efd06c420e168a31e65f78dfa0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\attachments\\wooden-bench-worker-and-pixel-evidence-2b33ed8b7598adf78d1ca3a547f789f1c3ebb56e.json",
+    "archived": "original/036-wooden-bench-worker-and-pixel-evidence-2b33ed8b7598adf78d1ca3a54.json",
+    "sourceBytes": 130476,
+    "sourceSha256": "a5c1ed1e2506d98776f43cad21889a3c96fa3881530ac920626e64c7eaee6c0b",
+    "archivedBytes": 130476,
+    "archivedSha256": "a5c1ed1e2506d98776f43cad21889a3c96fa3881530ac920626e64c7eaee6c0b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-actual-network-and-htmlimage-evidence.json",
+    "archived": "original/037-bench-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 26973,
+    "sourceSha256": "e865213a2106219ed3db71ccf641bd18c775102aa2fab73e9537d691326945c1",
+    "archivedBytes": 26973,
+    "archivedSha256": "e865213a2106219ed3db71ccf641bd18c775102aa2fab73e9537d691326945c1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-actual200-exposed-frame.png",
+    "archived": "original/038-bench-actual200-exposed-frame.png",
+    "sourceBytes": 7973,
+    "sourceSha256": "845cd9e2698f21575a73b74f7087261bf9e303250b5ea90201441bc696b0e1da",
+    "archivedBytes": 7973,
+    "archivedSha256": "845cd9e2698f21575a73b74f7087261bf9e303250b5ea90201441bc696b0e1da"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-completed-whole-paused-worker-snapshot.json",
+    "archived": "original/039-bench-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75845,
+    "sourceSha256": "267ab3c242880ea3fe62577c7e14749903d25a108a1e87da61bf7a336db35752",
+    "archivedBytes": 75845,
+    "archivedSha256": "267ab3c242880ea3fe62577c7e14749903d25a108a1e87da61bf7a336db35752"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-connected-rails-local60-elev40-loaded-fullhd.png",
+    "archived": "original/040-bench-connected-rails-local60-elev40-loaded-fullhd.png",
+    "sourceBytes": 1597436,
+    "sourceSha256": "a27f8584d0981db72dad221af432212a7d3d1e55d38bae3be5328a338da78d27",
+    "archivedBytes": 1597436,
+    "archivedSha256": "a27f8584d0981db72dad221af432212a7d3d1e55d38bae3be5328a338da78d27"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-detail-pending-native-recipe.json",
+    "archived": "original/041-bench-detail-pending-native-recipe.json",
+    "sourceBytes": 28609,
+    "sourceSha256": "ce0a4eb1bc6cfae88d86d458d0df9ce8f7fafc98d174ac5aa9b3fca0c9747100",
+    "archivedBytes": 28609,
+    "archivedSha256": "ce0a4eb1bc6cfae88d86d458d0df9ce8f7fafc98d174ac5aa9b3fca0c9747100"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-detail-whole-paused-worker-snapshot.json",
+    "archived": "original/042-bench-detail-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75845,
+    "sourceSha256": "a061d6b645329912c5343643de920cea628ce0098579270923d7c0f79f00a6e3",
+    "archivedBytes": 75845,
+    "archivedSha256": "a061d6b645329912c5343643de920cea628ce0098579270923d7c0f79f00a6e3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-loaded-whole-paused-worker-snapshot.json",
+    "archived": "original/043-bench-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75845,
+    "sourceSha256": "7a18fe2681d94df5f4017931e70dfeb1cad746927e2c0e78a11413a49f8a0785",
+    "archivedBytes": 75845,
+    "archivedSha256": "7a18fe2681d94df5f4017931e70dfeb1cad746927e2c0e78a11413a49f8a0785"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-raw-response-provenance.json",
+    "archived": "original/044-bench-raw-response-provenance.json",
+    "sourceBytes": 5769,
+    "sourceSha256": "54a37f0b4686db61e2bfb9736c209f572adaf205061e6dd057bb5a5312517aa5",
+    "archivedBytes": 5769,
+    "archivedSha256": "54a37f0b4686db61e2bfb9736c209f572adaf205061e6dd057bb5a5312517aa5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "original/045-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 54388,
+    "sourceSha256": "69577039498022d5c0e946e2668007b6351282c0583a76632a7dfbe73ef50f29",
+    "archivedBytes": 54388,
+    "archivedSha256": "69577039498022d5c0e946e2668007b6351282c0583a76632a7dfbe73ef50f29"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\wooden-bench-loaded-fullhd.png",
+    "archived": "original/046-wooden-bench-loaded-fullhd.png",
+    "sourceBytes": 1478611,
+    "sourceSha256": "4951f7e075a05782f337b02d03f0cb354b8f505b8695cdd5b29a987f0fdbb2d0",
+    "archivedBytes": 1478611,
+    "archivedSha256": "4951f7e075a05782f337b02d03f0cb354b8f505b8695cdd5b29a987f0fdbb2d0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\wooden-bench-worker-and-pixel-evidence.json",
+    "archived": "original/047-wooden-bench-worker-and-pixel-evidence.json",
+    "sourceBytes": 130476,
+    "sourceSha256": "a5c1ed1e2506d98776f43cad21889a3c96fa3881530ac920626e64c7eaee6c0b",
+    "archivedBytes": 130476,
+    "archivedSha256": "a5c1ed1e2506d98776f43cad21889a3c96fa3881530ac920626e64c7eaee6c0b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\wooden-bench-worker-completed-fullhd.png",
+    "archived": "original/048-wooden-bench-worker-completed-fullhd.png",
+    "sourceBytes": 1509831,
+    "sourceSha256": "aab24315457c0901fa1a34b2bbdcd6f2aec61889dd085b87f528951263c15e9c",
+    "archivedBytes": 1509831,
+    "archivedSha256": "aab24315457c0901fa1a34b2bbdcd6f2aec61889dd085b87f528951263c15e9c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "original/049-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 335,
+    "sourceSha256": "d98cbb3f3cacb5c3e59bff1fa79f36afba568598694f56e5a9b9fb10571d124d",
+    "archivedBytes": 335,
+    "archivedSha256": "d98cbb3f3cacb5c3e59bff1fa79f36afba568598694f56e5a9b9fb10571d124d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\attachments\\wooden-bench-worker-and-pixel-evidence-31c1985e670a921d0a16d6d053b6bba85d2fad46.json",
+    "archived": "original/050-wooden-bench-worker-and-pixel-evidence-31c1985e670a921d0a16d6d05.json",
+    "sourceBytes": 130203,
+    "sourceSha256": "91150c3b71b70bc2fe8f900b0a26c4208c216d2155ea7cb9ec105ffcb07bf869",
+    "archivedBytes": 130203,
+    "archivedSha256": "91150c3b71b70bc2fe8f900b0a26c4208c216d2155ea7cb9ec105ffcb07bf869"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-actual-network-and-htmlimage-evidence.json",
+    "archived": "original/051-bench-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 25272,
+    "sourceSha256": "d47499c7986fb4ddb3372f927d3e52e5274a30e954fabf8f5d6bd451bce81e4c",
+    "archivedBytes": 25272,
+    "archivedSha256": "d47499c7986fb4ddb3372f927d3e52e5274a30e954fabf8f5d6bd451bce81e4c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-actual200-exposed-frame.png",
+    "archived": "original/052-bench-actual200-exposed-frame.png",
+    "sourceBytes": 7973,
+    "sourceSha256": "845cd9e2698f21575a73b74f7087261bf9e303250b5ea90201441bc696b0e1da",
+    "archivedBytes": 7973,
+    "archivedSha256": "845cd9e2698f21575a73b74f7087261bf9e303250b5ea90201441bc696b0e1da"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-completed-whole-paused-worker-snapshot.json",
+    "archived": "original/053-bench-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75644,
+    "sourceSha256": "163d0fe704610ad249c339ad2ddfa1ed76a285df1d31e0f862f7cb2a12bd4645",
+    "archivedBytes": 75644,
+    "archivedSha256": "163d0fe704610ad249c339ad2ddfa1ed76a285df1d31e0f862f7cb2a12bd4645"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-connected-rails-local60-elev40-loaded-fullhd.png",
+    "archived": "original/054-bench-connected-rails-local60-elev40-loaded-fullhd.png",
+    "sourceBytes": 1600578,
+    "sourceSha256": "312ce60d5860c8c798a27d6d6b272be4739b3eae33058fc096c98a75c1fd2a58",
+    "archivedBytes": 1600578,
+    "archivedSha256": "312ce60d5860c8c798a27d6d6b272be4739b3eae33058fc096c98a75c1fd2a58"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-detail-pending-native-recipe.json",
+    "archived": "original/055-bench-detail-pending-native-recipe.json",
+    "sourceBytes": 26849,
+    "sourceSha256": "f9d1a94e3d9d79bd5b0631dc04c8135391d623cb145b9c6a831ca92df01dde73",
+    "archivedBytes": 26849,
+    "archivedSha256": "f9d1a94e3d9d79bd5b0631dc04c8135391d623cb145b9c6a831ca92df01dde73"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-detail-whole-paused-worker-snapshot.json",
+    "archived": "original/056-bench-detail-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75644,
+    "sourceSha256": "b202f505a38843cf94b9654fa110fd3d45a3e3677d50c81d43d605c4c712f470",
+    "archivedBytes": 75644,
+    "archivedSha256": "b202f505a38843cf94b9654fa110fd3d45a3e3677d50c81d43d605c4c712f470"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-loaded-whole-paused-worker-snapshot.json",
+    "archived": "original/057-bench-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75644,
+    "sourceSha256": "b91050acbdcc7463d29731716170600d2b6b871622476cac5fa606bac068eafb",
+    "archivedBytes": 75644,
+    "archivedSha256": "b91050acbdcc7463d29731716170600d2b6b871622476cac5fa606bac068eafb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-raw-response-provenance.json",
+    "archived": "original/058-bench-raw-response-provenance.json",
+    "sourceBytes": 4128,
+    "sourceSha256": "2117f1fbe426961c1ca87ef363b85e82010b2718c8d8ffc9caf63163192d3a16",
+    "archivedBytes": 4128,
+    "archivedSha256": "2117f1fbe426961c1ca87ef363b85e82010b2718c8d8ffc9caf63163192d3a16"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "original/059-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 54388,
+    "sourceSha256": "a9a06eec1dc640cd2392126a0984e1c15d38859d3e10438856a667d41b226e68",
+    "archivedBytes": 54388,
+    "archivedSha256": "a9a06eec1dc640cd2392126a0984e1c15d38859d3e10438856a667d41b226e68"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\wooden-bench-loaded-fullhd.png",
+    "archived": "original/060-wooden-bench-loaded-fullhd.png",
+    "sourceBytes": 1487095,
+    "sourceSha256": "090c78bcfc6fa0b85c67ab950b3a4035f45dded6d9f030ef2a039ca3e8b94972",
+    "archivedBytes": 1487095,
+    "archivedSha256": "090c78bcfc6fa0b85c67ab950b3a4035f45dded6d9f030ef2a039ca3e8b94972"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\wooden-bench-worker-and-pixel-evidence.json",
+    "archived": "original/061-wooden-bench-worker-and-pixel-evidence.json",
+    "sourceBytes": 130203,
+    "sourceSha256": "91150c3b71b70bc2fe8f900b0a26c4208c216d2155ea7cb9ec105ffcb07bf869",
+    "archivedBytes": 130203,
+    "archivedSha256": "91150c3b71b70bc2fe8f900b0a26c4208c216d2155ea7cb9ec105ffcb07bf869"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\wooden-bench-worker-completed-fullhd.png",
+    "archived": "original/062-wooden-bench-worker-completed-fullhd.png",
+    "sourceBytes": 1519540,
+    "sourceSha256": "ae853dc9163a4994c7dba4834407f035319d3078894a3a3a2985d43143f263ae",
+    "archivedBytes": 1519540,
+    "archivedSha256": "ae853dc9163a4994c7dba4834407f035319d3078894a3a3a2985d43143f263ae"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-gameplay-native-original-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "original/063-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 360,
+    "sourceSha256": "544d1efb0b9274bd086f70860e6732098f980b2eed0e21f595d2b1aec2a6d9a1",
+    "archivedBytes": 360,
+    "archivedSha256": "544d1efb0b9274bd086f70860e6732098f980b2eed0e21f595d2b1aec2a6d9a1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-initial-20261003.json",
+    "archived": "numeric-original/report.json",
+    "sourceBytes": 71628,
+    "sourceSha256": "593002a6bee84f25c8a63165151579dd64e80fda46d52d97de1c33f198e4416a",
+    "archivedBytes": 71628,
+    "archivedSha256": "593002a6bee84f25c8a63165151579dd64e80fda46d52d97de1c33f198e4416a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-initial-20261003.txt",
+    "archived": "numeric-original/console.txt",
+    "sourceBytes": 14548,
+    "sourceSha256": "b1af23e2ec05e015d952a1c7cd0fce3ca6dfc8c6c1c5bc8cb71b72dd5efa7576",
+    "archivedBytes": 7319,
+    "archivedSha256": "6ca1b9435c121017e83199e9e8f2713f7c12fee32cc5a8b0b41782b467f0eb77",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-initial-20261003\\.last-run.json",
+    "archived": "numeric-original/001-.last-run.json",
+    "sourceBytes": 145,
+    "sourceSha256": "2e2f1089475978222b49d20907565327553a1102bf60d7bea9a15b9694908d2e",
+    "archivedBytes": 145,
+    "archivedSha256": "2e2f1089475978222b49d20907565327553a1102bf60d7bea9a15b9694908d2e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-initial-20261003\\room-template-numeric-held-82a3a--a-second-transaction-1908-\\error-context.md",
+    "archived": "numeric-original/002-error-context.md",
+    "sourceBytes": 13024,
+    "sourceSha256": "72c1f1549b9f4d3a3d6ee0144b86ca1ea3b13e52f9f7ecfa7f6134fb64f5f2f3",
+    "archivedBytes": 13024,
+    "archivedSha256": "72c1f1549b9f4d3a3d6ee0144b86ca1ea3b13e52f9f7ecfa7f6134fb64f5f2f3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-initial-20261003\\room-template-numeric-held-82a3a--a-second-transaction-1908-\\failed-numeric-held-primary.png",
+    "archived": "numeric-original/003-failed-numeric-held-primary.png",
+    "sourceBytes": 252641,
+    "sourceSha256": "0c70f5917db1a8d99bdb3847e70feadf1f3402cb122f424f09b948589fecdf1a",
+    "archivedBytes": 252641,
+    "archivedSha256": "0c70f5917db1a8d99bdb3847e70feadf1f3402cb122f424f09b948589fecdf1a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-initial-20261003\\room-template-numeric-held-d52d4--a-second-transaction-1908-\\error-context.md",
+    "archived": "numeric-original/004-error-context.md",
+    "sourceBytes": 13634,
+    "sourceSha256": "4123b786c327e928983fe2357a631890e9e22d9fc1bbf0a30edd37f590b5ca82",
+    "archivedBytes": 13634,
+    "archivedSha256": "4123b786c327e928983fe2357a631890e9e22d9fc1bbf0a30edd37f590b5ca82"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-initial-20261003\\room-template-numeric-held-d52d4--a-second-transaction-1908-\\failed-numeric-held-primary.png",
+    "archived": "numeric-original/005-failed-numeric-held-primary.png",
+    "sourceBytes": 1699539,
+    "sourceSha256": "e85ac23c6a565b95341e2f156a0ee509bf09797bae29a3ce7c697742da2de89c",
+    "archivedBytes": 1699539,
+    "archivedSha256": "e85ac23c6a565b95341e2f156a0ee509bf09797bae29a3ce7c697742da2de89c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-label-corrected-20261003.json",
+    "archived": "numeric-label-corrected/report.json",
+    "sourceBytes": 70397,
+    "sourceSha256": "9e976305c6172e5f7c6a985e265747f7c48c7f551d1cae7833a21f0b7f54c550",
+    "archivedBytes": 70397,
+    "archivedSha256": "9e976305c6172e5f7c6a985e265747f7c48c7f551d1cae7833a21f0b7f54c550"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-label-corrected-20261003.txt",
+    "archived": "numeric-label-corrected/console.txt",
+    "sourceBytes": 13700,
+    "sourceSha256": "6d43a17578fe329dfd97690a73c834078d7a341cbd53ff68a590f41d01cfe3e5",
+    "archivedBytes": 6865,
+    "archivedSha256": "0cf5a79fefe03701c05f5cb455d113d898b4e8a324e894bbc1bacc5f850ba209",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-label-corrected-20261003\\.last-run.json",
+    "archived": "numeric-label-corrected/001-.last-run.json",
+    "sourceBytes": 145,
+    "sourceSha256": "2e2f1089475978222b49d20907565327553a1102bf60d7bea9a15b9694908d2e",
+    "archivedBytes": 145,
+    "archivedSha256": "2e2f1089475978222b49d20907565327553a1102bf60d7bea9a15b9694908d2e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-label-corrected-20261003\\room-template-numeric-held-82a3a--a-second-transaction-1908-\\error-context.md",
+    "archived": "numeric-label-corrected/002-error-context.md",
+    "sourceBytes": 13024,
+    "sourceSha256": "357ab2dcf4e4dc269ded37346b255e8860263d8e0112dcfcf5f0d288a73ba73a",
+    "archivedBytes": 13024,
+    "archivedSha256": "357ab2dcf4e4dc269ded37346b255e8860263d8e0112dcfcf5f0d288a73ba73a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-label-corrected-20261003\\room-template-numeric-held-82a3a--a-second-transaction-1908-\\failed-numeric-held-primary.png",
+    "archived": "numeric-label-corrected/003-failed-numeric-held-primary.png",
+    "sourceBytes": 252736,
+    "sourceSha256": "1e7f2fc83f3a5262ea39c29a41d3390ef5459ce8c349c1b9426351085fcb9652",
+    "archivedBytes": 252736,
+    "archivedSha256": "1e7f2fc83f3a5262ea39c29a41d3390ef5459ce8c349c1b9426351085fcb9652"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-label-corrected-20261003\\room-template-numeric-held-d52d4--a-second-transaction-1908-\\error-context.md",
+    "archived": "numeric-label-corrected/004-error-context.md",
+    "sourceBytes": 13634,
+    "sourceSha256": "f829999e6fcc08c41f8b0f1030737c029e7e5332a26344dc82259a13f55441e9",
+    "archivedBytes": 13634,
+    "archivedSha256": "f829999e6fcc08c41f8b0f1030737c029e7e5332a26344dc82259a13f55441e9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-label-corrected-20261003\\room-template-numeric-held-d52d4--a-second-transaction-1908-\\failed-numeric-held-primary.png",
+    "archived": "numeric-label-corrected/005-failed-numeric-held-primary.png",
+    "sourceBytes": 1699524,
+    "sourceSha256": "03c074cda6ba0641a9ac699e58e2255c1ce22501141856ea871cbc50f8b7eba9",
+    "archivedBytes": 1699524,
+    "archivedSha256": "03c074cda6ba0641a9ac699e58e2255c1ce22501141856ea871cbc50f8b7eba9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-origin-corrected-20261003.json",
+    "archived": "numeric-corrected/report.json",
+    "sourceBytes": 191604,
+    "sourceSha256": "6446f07c3a358af8716c553a970e5738697693847bd42b7c894bbd4d07fb361e",
+    "archivedBytes": 191604,
+    "archivedSha256": "6446f07c3a358af8716c553a970e5738697693847bd42b7c894bbd4d07fb361e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-origin-corrected-20261003.txt",
+    "archived": "numeric-corrected/console.txt",
+    "sourceBytes": 4054,
+    "sourceSha256": "7da9fdc099198157782f9a8a12842ecc2d41638b80d272d59db703f8015c0a9f",
+    "archivedBytes": 2032,
+    "archivedSha256": "0dfd7f7fef6dea4b42db048e1dccdacad3bf772d3c5ea76cc5b6bdd52081639e",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-origin-corrected-20261003\\.last-run.json",
+    "archived": "numeric-corrected/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-origin-corrected-20261003\\room-template-numeric-held-82a3a--a-second-transaction-1908-\\numeric-accepted-primary-still-held.png",
+    "archived": "numeric-corrected/002-numeric-accepted-primary-still-held.png",
+    "sourceBytes": 239550,
+    "sourceSha256": "4c0bc283553a5c2ca04e8da58581364b8ff4b45c122140ef53a03cc951caba2c",
+    "archivedBytes": 239550,
+    "archivedSha256": "4c0bc283553a5c2ca04e8da58581364b8ff4b45c122140ef53a03cc951caba2c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-origin-corrected-20261003\\room-template-numeric-held-82a3a--a-second-transaction-1908-\\original-primary-released-one-pending-plan.png",
+    "archived": "numeric-corrected/003-original-primary-released-one-pending-plan.png",
+    "sourceBytes": 226049,
+    "sourceSha256": "b475ec7b6d938b3e12b245f12cec4ec16eb39037a899235d29577a6e3779206f",
+    "archivedBytes": 226049,
+    "archivedSha256": "b475ec7b6d938b3e12b245f12cec4ec16eb39037a899235d29577a6e3779206f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-origin-corrected-20261003\\room-template-numeric-held-d52d4--a-second-transaction-1908-\\numeric-accepted-primary-still-held.png",
+    "archived": "numeric-corrected/004-numeric-accepted-primary-still-held.png",
+    "sourceBytes": 670456,
+    "sourceSha256": "3cd8a700e303fb8adae546567d5ee866c9f418526a29a946539bff14fe7b2752",
+    "archivedBytes": 670456,
+    "archivedSha256": "3cd8a700e303fb8adae546567d5ee866c9f418526a29a946539bff14fe7b2752"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-numeric-native-origin-corrected-20261003\\room-template-numeric-held-d52d4--a-second-transaction-1908-\\original-primary-released-one-pending-plan.png",
+    "archived": "numeric-corrected/005-original-primary-released-one-pending-plan.png",
+    "sourceBytes": 1663221,
+    "sourceSha256": "b6951e892123759a554d7d1e1dba33a5685078af350f0568a4dbaa8fab0295c3",
+    "archivedBytes": 1663221,
+    "archivedSha256": "b6951e892123759a554d7d1e1dba33a5685078af350f0568a4dbaa8fab0295c3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003.json",
+    "archived": "consumer-negative/report.json",
+    "sourceBytes": 140651,
+    "sourceSha256": "2da6a0c4cb44491c83c75ceee994452f37416b324ac370b394b15c95911dc80a",
+    "archivedBytes": 140651,
+    "archivedSha256": "2da6a0c4cb44491c83c75ceee994452f37416b324ac370b394b15c95911dc80a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003.txt",
+    "archived": "consumer-negative/console.txt",
+    "sourceBytes": 41680,
+    "sourceSha256": "f50c8bb57414cb1c3dad5d778a0b1f93cd7c6724ed466da390bd83602f1fde44",
+    "archivedBytes": 21361,
+    "archivedSha256": "b20c5167b6e9e02bd3d22d3d0f69fd596ed5f525481ee3f9d244b89ae80943ee",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\.last-run.json",
+    "archived": "consumer-negative/001-.last-run.json",
+    "sourceBytes": 243,
+    "sourceSha256": "96f27e1c24cc658deb07aeaeaccdd4d1845c831973ddcaec67fa638eb4c5c80f",
+    "archivedBytes": 243,
+    "archivedSha256": "96f27e1c24cc658deb07aeaeaccdd4d1845c831973ddcaec67fa638eb4c5c80f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\attachments\\dedicated-cell-toilet-worker-and-save-evidence-770aa959e4ef92de91aeb98c5ca6e13ff4ad7154.json",
+    "archived": "consumer-negative/002-dedicated-cell-toilet-worker-and-save-evidence-770aa959e4ef92de9.json",
+    "sourceBytes": 129663,
+    "sourceSha256": "c470a78eb434962a224fd9453a0e20873c136115652601669a7fd4215b78f083",
+    "archivedBytes": 129663,
+    "archivedSha256": "c470a78eb434962a224fd9453a0e20873c136115652601669a7fd4215b78f083"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "consumer-negative/003-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 54387,
+    "sourceSha256": "7bb60a525053a4d68c13177973bbba4f673342827a4d1a5fdbb69d18c9ba209e",
+    "archivedBytes": 54387,
+    "archivedSha256": "7bb60a525053a4d68c13177973bbba4f673342827a4d1a5fdbb69d18c9ba209e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "consumer-negative/004-completed-worker-snapshot.json",
+    "sourceBytes": 74703,
+    "sourceSha256": "73535c26c59ee3019e057601bd5610e871d24fb4823268df16c6119025c64c6c",
+    "archivedBytes": 74703,
+    "archivedSha256": "73535c26c59ee3019e057601bd5610e871d24fb4823268df16c6119025c64c6c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\dedicated-cell-toilet-loaded-fullhd.png",
+    "archived": "consumer-negative/005-dedicated-cell-toilet-loaded-fullhd.png",
+    "sourceBytes": 1553182,
+    "sourceSha256": "9b4a42c0ed35a90f7df57dda721783aa6f1a7b77d392a9d76493390b7c080f86",
+    "archivedBytes": 1553182,
+    "archivedSha256": "9b4a42c0ed35a90f7df57dda721783aa6f1a7b77d392a9d76493390b7c080f86"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-and-save-evidence.json",
+    "archived": "consumer-negative/006-dedicated-cell-toilet-worker-and-save-evidence.json",
+    "sourceBytes": 129663,
+    "sourceSha256": "c470a78eb434962a224fd9453a0e20873c136115652601669a7fd4215b78f083",
+    "archivedBytes": 129663,
+    "archivedSha256": "c470a78eb434962a224fd9453a0e20873c136115652601669a7fd4215b78f083"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-completed-fullhd.png",
+    "archived": "consumer-negative/007-dedicated-cell-toilet-worker-completed-fullhd.png",
+    "sourceBytes": 1487260,
+    "sourceSha256": "477a5e137f8520a0af411d5fa1494a6b2edbeabdb151b9fdb734479d69094097",
+    "archivedBytes": 1487260,
+    "archivedSha256": "477a5e137f8520a0af411d5fa1494a6b2edbeabdb151b9fdb734479d69094097"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\error-context.md",
+    "archived": "consumer-negative/008-error-context.md",
+    "sourceBytes": 9574,
+    "sourceSha256": "00ff148d0f407de4abf43f9c2c53d658b4e6d46a04d4269c0db18a55476bb368",
+    "archivedBytes": 9574,
+    "archivedSha256": "00ff148d0f407de4abf43f9c2c53d658b4e6d46a04d4269c0db18a55476bb368"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "consumer-negative/009-failed-player-fullhd.png",
+    "sourceBytes": 1483381,
+    "sourceSha256": "4294ed1776c4ad77e1d3f694504737d2b0bdaafe610d95d8d9e98936f9353ddf",
+    "archivedBytes": 1483381,
+    "archivedSha256": "4294ed1776c4ad77e1d3f694504737d2b0bdaafe610d95d8d9e98936f9353ddf"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\failed-player-worker-snapshot.json",
+    "archived": "consumer-negative/010-failed-player-worker-snapshot.json",
+    "sourceBytes": 74703,
+    "sourceSha256": "ff49bfba50049fd537edf8c1eed5bf37606e4b05483c952c53a709e9dd13c441",
+    "archivedBytes": 74703,
+    "archivedSha256": "ff49bfba50049fd537edf8c1eed5bf37606e4b05483c952c53a709e9dd13c441"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\failed-toilet-raw-network-provenance.json",
+    "archived": "consumer-negative/011-failed-toilet-raw-network-provenance.json",
+    "sourceBytes": 1470,
+    "sourceSha256": "abc9cdd7f301f66ddd13349c9922c13592969b0d5036ffc27eabc71182cebde7",
+    "archivedBytes": 1470,
+    "archivedSha256": "abc9cdd7f301f66ddd13349c9922c13592969b0d5036ffc27eabc71182cebde7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "consumer-negative/012-loaded-worker-snapshot.json",
+    "sourceBytes": 74703,
+    "sourceSha256": "187f383db179e912d90f10e322a2971c14a63e34cef3ace80b741fc3ff00186f",
+    "archivedBytes": 74703,
+    "archivedSha256": "187f383db179e912d90f10e322a2971c14a63e34cef3ace80b741fc3ff00186f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-completed-whole-paused-worker-snapshot.json",
+    "archived": "consumer-negative/013-toilet-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 74703,
+    "sourceSha256": "7e85ed9f86b90745354e6187c65af2590cd278bf9e417799815fc9a533fcea85",
+    "archivedBytes": 74703,
+    "archivedSha256": "7e85ed9f86b90745354e6187c65af2590cd278bf9e417799815fc9a533fcea85"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-loaded-whole-paused-worker-snapshot.json",
+    "archived": "consumer-negative/014-toilet-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 74703,
+    "sourceSha256": "2b48077748a336054bc94541be91cc2731cc80afebd86ce3f80a34c2ea9a63ac",
+    "archivedBytes": 74703,
+    "archivedSha256": "2b48077748a336054bc94541be91cc2731cc80afebd86ce3f80a34c2ea9a63ac"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-raw-response-provenance.json",
+    "archived": "consumer-negative/015-toilet-raw-response-provenance.json",
+    "sourceBytes": 1470,
+    "sourceSha256": "abc9cdd7f301f66ddd13349c9922c13592969b0d5036ffc27eabc71182cebde7",
+    "archivedBytes": 1470,
+    "archivedSha256": "abc9cdd7f301f66ddd13349c9922c13592969b0d5036ffc27eabc71182cebde7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "consumer-negative/016-worker-and-completed-save-evidence.json",
+    "sourceBytes": 285,
+    "sourceSha256": "4054ad4626f8d9266559744a5f7ae25ff09be6ebc7e0c9d528e5dba296adc4fb",
+    "archivedBytes": 285,
+    "archivedSha256": "4054ad4626f8d9266559744a5f7ae25ff09be6ebc7e0c9d528e5dba296adc4fb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\dedicated-cell-toilet-play-d5a09--capacity-before-Basic-cell\\capacity-completed-worker-snapshot.json",
+    "archived": "consumer-negative/017-capacity-completed-worker-snapshot.json",
+    "sourceBytes": 54387,
+    "sourceSha256": "c2e34a63384712798da000de4e40c3c0909e43183382dd1769feba94d8d16837",
+    "archivedBytes": 54387,
+    "archivedSha256": "c2e34a63384712798da000de4e40c3c0909e43183382dd1769feba94d8d16837"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\room-template-numeric-held-82a3a--a-second-transaction-1908-\\error-context.md",
+    "archived": "consumer-negative/018-error-context.md",
+    "sourceBytes": 13336,
+    "sourceSha256": "36cdccdb70dec0263d03768abc7f816a714937990e5069564b9ee666bcab33bc",
+    "archivedBytes": 13336,
+    "archivedSha256": "36cdccdb70dec0263d03768abc7f816a714937990e5069564b9ee666bcab33bc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\room-template-numeric-held-82a3a--a-second-transaction-1908-\\failed-numeric-held-primary.png",
+    "archived": "consumer-negative/019-failed-numeric-held-primary.png",
+    "sourceBytes": 256859,
+    "sourceSha256": "302233751fff24dac69712d04f94bf4c4d6ebe2bd93ea299785157f5fa79fdac",
+    "archivedBytes": 256859,
+    "archivedSha256": "302233751fff24dac69712d04f94bf4c4d6ebe2bd93ea299785157f5fa79fdac"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\room-template-numeric-held-82a3a--a-second-transaction-1908-\\numeric-accepted-primary-still-held.png",
+    "archived": "consumer-negative/020-numeric-accepted-primary-still-held.png",
+    "sourceBytes": 239660,
+    "sourceSha256": "7a3c9be9486867bf3e12fd0facc5a4ff21d3c8721a457f4bfd0042e782981eaa",
+    "archivedBytes": 239660,
+    "archivedSha256": "7a3c9be9486867bf3e12fd0facc5a4ff21d3c8721a457f4bfd0042e782981eaa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\room-template-numeric-held-d52d4--a-second-transaction-1908-\\error-context.md",
+    "archived": "consumer-negative/021-error-context.md",
+    "sourceBytes": 13946,
+    "sourceSha256": "4a623f864a7dbb04648c2bfd246c34d8e633d354b94854e4c3897814823740ec",
+    "archivedBytes": 13946,
+    "archivedSha256": "4a623f864a7dbb04648c2bfd246c34d8e633d354b94854e4c3897814823740ec"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\room-template-numeric-held-d52d4--a-second-transaction-1908-\\failed-numeric-held-primary.png",
+    "archived": "consumer-negative/022-failed-numeric-held-primary.png",
+    "sourceBytes": 1703024,
+    "sourceSha256": "50b72f2eca396fa68eae45df90092bbe8b0c2450e97c7234bde04b813914c15b",
+    "archivedBytes": 1703024,
+    "archivedSha256": "50b72f2eca396fa68eae45df90092bbe8b0c2450e97c7234bde04b813914c15b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\room-template-numeric-held-d52d4--a-second-transaction-1908-\\numeric-accepted-primary-still-held.png",
+    "archived": "consumer-negative/023-numeric-accepted-primary-still-held.png",
+    "sourceBytes": 669957,
+    "sourceSha256": "cd81ee53ac787c94fc27a6dd4623ae6a5ce1902ad2f45048ade59390ea277de2",
+    "archivedBytes": 669957,
+    "archivedSha256": "cd81ee53ac787c94fc27a6dd4623ae6a5ce1902ad2f45048ade59390ea277de2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\wooden-bench-player-build--9989a-apacity-before-Holding-Cell\\capacity-completed-worker-snapshot.json",
+    "archived": "consumer-negative/024-capacity-completed-worker-snapshot.json",
+    "sourceBytes": 54387,
+    "sourceSha256": "4c3c251c7a0e3fa9087401e38eb004d9e0eac88ba330e76ffb0878e60db7adb1",
+    "archivedBytes": 54387,
+    "archivedSha256": "4c3c251c7a0e3fa9087401e38eb004d9e0eac88ba330e76ffb0878e60db7adb1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\attachments\\wooden-bench-worker-and-pixel-evidence-207d51b80999b87c67d55fb20499fbe3d59b5338.json",
+    "archived": "consumer-negative/025-wooden-bench-worker-and-pixel-evidence-207d51b80999b87c67d55fb20.json",
+    "sourceBytes": 130466,
+    "sourceSha256": "311830c1d0c3914e72a41726da5802c8aaccf4933f6bf6659c9683798d210375",
+    "archivedBytes": 130466,
+    "archivedSha256": "311830c1d0c3914e72a41726da5802c8aaccf4933f6bf6659c9683798d210375"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-completed-whole-paused-worker-snapshot.json",
+    "archived": "consumer-negative/026-bench-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75844,
+    "sourceSha256": "befaf98e1316d39f1808df656e65803ffdf91f5df585dd58ea933d4029141115",
+    "archivedBytes": 75844,
+    "archivedSha256": "befaf98e1316d39f1808df656e65803ffdf91f5df585dd58ea933d4029141115"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-loaded-whole-paused-worker-snapshot.json",
+    "archived": "consumer-negative/027-bench-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75844,
+    "sourceSha256": "3f5c46f1c273bcdb223360f37903349d2b893411497ca2216d1ac536cca01deb",
+    "archivedBytes": 75844,
+    "archivedSha256": "3f5c46f1c273bcdb223360f37903349d2b893411497ca2216d1ac536cca01deb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-raw-response-provenance.json",
+    "archived": "consumer-negative/028-bench-raw-response-provenance.json",
+    "sourceBytes": 1674,
+    "sourceSha256": "5792036170f3a7ad781f506386201fbd92df37bd7f2fe4df51657ea5f740e205",
+    "archivedBytes": 1674,
+    "archivedSha256": "5792036170f3a7ad781f506386201fbd92df37bd7f2fe4df51657ea5f740e205"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "consumer-negative/029-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 54387,
+    "sourceSha256": "7fc8f33e9f23c953002a73098899ae0bd5cb09b9ca30072d51db9217c2123c19",
+    "archivedBytes": 54387,
+    "archivedSha256": "7fc8f33e9f23c953002a73098899ae0bd5cb09b9ca30072d51db9217c2123c19"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\error-context.md",
+    "archived": "consumer-negative/030-error-context.md",
+    "sourceBytes": 9519,
+    "sourceSha256": "8c98bd0adb2aedf2fec81d40e19d5577486aeffff46d7b9a238e1c99506223e7",
+    "archivedBytes": 9519,
+    "archivedSha256": "8c98bd0adb2aedf2fec81d40e19d5577486aeffff46d7b9a238e1c99506223e7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\failed-bench-raw-network-provenance.json",
+    "archived": "consumer-negative/031-failed-bench-raw-network-provenance.json",
+    "sourceBytes": 1674,
+    "sourceSha256": "5792036170f3a7ad781f506386201fbd92df37bd7f2fe4df51657ea5f740e205",
+    "archivedBytes": 1674,
+    "archivedSha256": "5792036170f3a7ad781f506386201fbd92df37bd7f2fe4df51657ea5f740e205"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "consumer-negative/032-failed-player-fullhd.png",
+    "sourceBytes": 1568301,
+    "sourceSha256": "47155a2062e819c7339d47fb805722a8822500636347f301590cc62fa39b47bf",
+    "archivedBytes": 1568301,
+    "archivedSha256": "47155a2062e819c7339d47fb805722a8822500636347f301590cc62fa39b47bf"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\failed-player-worker-snapshot.json",
+    "archived": "consumer-negative/033-failed-player-worker-snapshot.json",
+    "sourceBytes": 75844,
+    "sourceSha256": "a35c989b49decaa8e36d031874b749500c84b03e9fc5a36b180dc1e5fb5a8328",
+    "archivedBytes": 75844,
+    "archivedSha256": "a35c989b49decaa8e36d031874b749500c84b03e9fc5a36b180dc1e5fb5a8328"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\wooden-bench-loaded-fullhd.png",
+    "archived": "consumer-negative/034-wooden-bench-loaded-fullhd.png",
+    "sourceBytes": 1453208,
+    "sourceSha256": "60e2b832ff8bd84867068e9efb1657d24e9b19fa13757c0c94d20e46c121061f",
+    "archivedBytes": 1453208,
+    "archivedSha256": "60e2b832ff8bd84867068e9efb1657d24e9b19fa13757c0c94d20e46c121061f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\wooden-bench-worker-and-pixel-evidence.json",
+    "archived": "consumer-negative/035-wooden-bench-worker-and-pixel-evidence.json",
+    "sourceBytes": 130466,
+    "sourceSha256": "311830c1d0c3914e72a41726da5802c8aaccf4933f6bf6659c9683798d210375",
+    "archivedBytes": 130466,
+    "archivedSha256": "311830c1d0c3914e72a41726da5802c8aaccf4933f6bf6659c9683798d210375"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\wooden-bench-worker-completed-fullhd.png",
+    "archived": "consumer-negative/036-wooden-bench-worker-completed-fullhd.png",
+    "sourceBytes": 1484850,
+    "sourceSha256": "7fe4a00b5dc18e7a4168f8dddbd5191946663e76613a9a38ffcb7ce358dead01",
+    "archivedBytes": 1484850,
+    "archivedSha256": "7fe4a00b5dc18e7a4168f8dddbd5191946663e76613a9a38ffcb7ce358dead01"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-negative-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "consumer-negative/037-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 331,
+    "sourceSha256": "32064409088fafb94eaa3ed157551135c98a96f8d95bbca828dc9d941efef45b",
+    "archivedBytes": 331,
+    "archivedSha256": "32064409088fafb94eaa3ed157551135c98a96f8d95bbca828dc9d941efef45b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003.json",
+    "archived": "consumer-q1-negative/report.json",
+    "sourceBytes": 29829,
+    "sourceSha256": "0b295a877f1849293f0eb807977dcf4a7f2487cbbec55a24135ba3335544f94b",
+    "archivedBytes": 29829,
+    "archivedSha256": "0b295a877f1849293f0eb807977dcf4a7f2487cbbec55a24135ba3335544f94b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003.txt",
+    "archived": "consumer-q1-negative/console.txt",
+    "sourceBytes": 31584,
+    "sourceSha256": "8f0aa09509b9c36a89da1d6508c651326ce952a65aea9dd91e98314712636f51",
+    "archivedBytes": 16289,
+    "archivedSha256": "3d73de4bb459974ee1793289a2baa5a8e1aa7026de896c2e3c3624758daa2865",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\.last-run.json",
+    "archived": "consumer-q1-negative/001-.last-run.json",
+    "sourceBytes": 145,
+    "sourceSha256": "9ebbae9ce62d2495ca546d0dbef641f8cd69f26d2ec1e0a9ae91f31f70d232db",
+    "archivedBytes": 145,
+    "archivedSha256": "9ebbae9ce62d2495ca546d0dbef641f8cd69f26d2ec1e0a9ae91f31f70d232db"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\attachments\\dedicated-cell-toilet-worker-and-save-evidence-57426833e0999dcd0c2a69f3e795096fb6e4704f.json",
+    "archived": "consumer-q1-negative/002-dedicated-cell-toilet-worker-and-save-evidence-57426833e0999dcd0.json",
+    "sourceBytes": 127206,
+    "sourceSha256": "c5d9c414bbbcf333d6f6dfb505c02fdb01500d9e740369bff93a5ee8d4f2c62e",
+    "archivedBytes": 127206,
+    "archivedSha256": "c5d9c414bbbcf333d6f6dfb505c02fdb01500d9e740369bff93a5ee8d4f2c62e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "consumer-q1-negative/003-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 54388,
+    "sourceSha256": "90e106ea2f39ca2a3c546a49234673bd8965ba0c731233d0ddfcf8c2f3076c16",
+    "archivedBytes": 54388,
+    "archivedSha256": "90e106ea2f39ca2a3c546a49234673bd8965ba0c731233d0ddfcf8c2f3076c16"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "consumer-q1-negative/004-completed-worker-snapshot.json",
+    "sourceBytes": 73090,
+    "sourceSha256": "9444dba49c3ff28772710fadc2ebd025536426c25f74e5f68cf039e78b7cc8c7",
+    "archivedBytes": 73090,
+    "archivedSha256": "9444dba49c3ff28772710fadc2ebd025536426c25f74e5f68cf039e78b7cc8c7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\dedicated-cell-toilet-loaded-fullhd.png",
+    "archived": "consumer-q1-negative/005-dedicated-cell-toilet-loaded-fullhd.png",
+    "sourceBytes": 1471107,
+    "sourceSha256": "bb20a49122e205c5774e5907f3e8b2962000d5ab1da4008f8f15f61d1f9c6a20",
+    "archivedBytes": 1471107,
+    "archivedSha256": "bb20a49122e205c5774e5907f3e8b2962000d5ab1da4008f8f15f61d1f9c6a20"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-and-save-evidence.json",
+    "archived": "consumer-q1-negative/006-dedicated-cell-toilet-worker-and-save-evidence.json",
+    "sourceBytes": 127206,
+    "sourceSha256": "c5d9c414bbbcf333d6f6dfb505c02fdb01500d9e740369bff93a5ee8d4f2c62e",
+    "archivedBytes": 127206,
+    "archivedSha256": "c5d9c414bbbcf333d6f6dfb505c02fdb01500d9e740369bff93a5ee8d4f2c62e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-completed-fullhd.png",
+    "archived": "consumer-q1-negative/007-dedicated-cell-toilet-worker-completed-fullhd.png",
+    "sourceBytes": 1498173,
+    "sourceSha256": "892d368bf7159cfcb6ca35c739267840c58d9d10bebdb442b31984ad3c831976",
+    "archivedBytes": 1498173,
+    "archivedSha256": "892d368bf7159cfcb6ca35c739267840c58d9d10bebdb442b31984ad3c831976"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\error-context.md",
+    "archived": "consumer-q1-negative/008-error-context.md",
+    "sourceBytes": 9574,
+    "sourceSha256": "231e68e228beb95f4789a353bdc6bfdeaee0106db097c5eced53df2260c303ae",
+    "archivedBytes": 9574,
+    "archivedSha256": "231e68e228beb95f4789a353bdc6bfdeaee0106db097c5eced53df2260c303ae"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "consumer-q1-negative/009-failed-player-fullhd.png",
+    "sourceBytes": 1392896,
+    "sourceSha256": "14f010fab00412ea2b4833c9f15b11e0842f325d410b092a073640708624f23e",
+    "archivedBytes": 1392896,
+    "archivedSha256": "14f010fab00412ea2b4833c9f15b11e0842f325d410b092a073640708624f23e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\failed-player-worker-snapshot.json",
+    "archived": "consumer-q1-negative/010-failed-player-worker-snapshot.json",
+    "sourceBytes": 73090,
+    "sourceSha256": "3728cc0e778b57c5f576ec95be935cd1bacb3f6d6a31a2b1b72ab45dfa01a74c",
+    "archivedBytes": 73090,
+    "archivedSha256": "3728cc0e778b57c5f576ec95be935cd1bacb3f6d6a31a2b1b72ab45dfa01a74c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\failed-toilet-raw-network-provenance.json",
+    "archived": "consumer-q1-negative/011-failed-toilet-raw-network-provenance.json",
+    "sourceBytes": 1470,
+    "sourceSha256": "abc9cdd7f301f66ddd13349c9922c13592969b0d5036ffc27eabc71182cebde7",
+    "archivedBytes": 1470,
+    "archivedSha256": "abc9cdd7f301f66ddd13349c9922c13592969b0d5036ffc27eabc71182cebde7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "consumer-q1-negative/012-loaded-worker-snapshot.json",
+    "sourceBytes": 73090,
+    "sourceSha256": "872de98f39df9aa2c2e30129deca2013b66be0e34110e6a17d7a03cce35b0595",
+    "archivedBytes": 73090,
+    "archivedSha256": "872de98f39df9aa2c2e30129deca2013b66be0e34110e6a17d7a03cce35b0595"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-completed-whole-paused-worker-snapshot.json",
+    "archived": "consumer-q1-negative/013-toilet-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 73090,
+    "sourceSha256": "9b491aedd14ed2ad67b98d96f9735650cc0e013ed0f24db8ca7f7cc8b55a1b7a",
+    "archivedBytes": 73090,
+    "archivedSha256": "9b491aedd14ed2ad67b98d96f9735650cc0e013ed0f24db8ca7f7cc8b55a1b7a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-loaded-whole-paused-worker-snapshot.json",
+    "archived": "consumer-q1-negative/014-toilet-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 73090,
+    "sourceSha256": "fd26ac2557f97f731b0714e8038a5321139014f43f3b055ab523af950bf24a0c",
+    "archivedBytes": 73090,
+    "archivedSha256": "fd26ac2557f97f731b0714e8038a5321139014f43f3b055ab523af950bf24a0c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-raw-response-provenance.json",
+    "archived": "consumer-q1-negative/015-toilet-raw-response-provenance.json",
+    "sourceBytes": 1470,
+    "sourceSha256": "abc9cdd7f301f66ddd13349c9922c13592969b0d5036ffc27eabc71182cebde7",
+    "archivedBytes": 1470,
+    "archivedSha256": "abc9cdd7f301f66ddd13349c9922c13592969b0d5036ffc27eabc71182cebde7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "consumer-q1-negative/016-worker-and-completed-save-evidence.json",
+    "sourceBytes": 310,
+    "sourceSha256": "a2ac8cda66c1cb11ae87e1b73b0214cfcf756cdd0b5208919c524fddbac557cd",
+    "archivedBytes": 310,
+    "archivedSha256": "a2ac8cda66c1cb11ae87e1b73b0214cfcf756cdd0b5208919c524fddbac557cd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\dedicated-cell-toilet-play-d5a09--capacity-before-Basic-cell\\capacity-completed-worker-snapshot.json",
+    "archived": "consumer-q1-negative/017-capacity-completed-worker-snapshot.json",
+    "sourceBytes": 54388,
+    "sourceSha256": "afe0d4f816a5518fde0297f09b0d9939f460d79b72f65c317637ec16848a1d26",
+    "archivedBytes": 54388,
+    "archivedSha256": "afe0d4f816a5518fde0297f09b0d9939f460d79b72f65c317637ec16848a1d26"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\wooden-bench-player-build--9989a-apacity-before-Holding-Cell\\capacity-completed-worker-snapshot.json",
+    "archived": "consumer-q1-negative/018-capacity-completed-worker-snapshot.json",
+    "sourceBytes": 54382,
+    "sourceSha256": "a0f5e59a84b284ab1a46771f0d131104ca638f67f4c0a64c55fd3e48ac07b5bc",
+    "archivedBytes": 54382,
+    "archivedSha256": "a0f5e59a84b284ab1a46771f0d131104ca638f67f4c0a64c55fd3e48ac07b5bc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\attachments\\wooden-bench-worker-and-pixel-evidence-0ffc1f83a6dfeb7e7bf023988b32d952b8715743.json",
+    "archived": "consumer-q1-negative/019-wooden-bench-worker-and-pixel-evidence-0ffc1f83a6dfeb7e7bf023988.json",
+    "sourceBytes": 130183,
+    "sourceSha256": "36fd588cef88d909806f4a5c118eed49614dc6730ab18cbd34179986500f2301",
+    "archivedBytes": 130183,
+    "archivedSha256": "36fd588cef88d909806f4a5c118eed49614dc6730ab18cbd34179986500f2301"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-completed-whole-paused-worker-snapshot.json",
+    "archived": "consumer-q1-negative/020-bench-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75638,
+    "sourceSha256": "62f8aff79e2758c67891074be7bbd07307a5e7d1770418020361805963eecb90",
+    "archivedBytes": 75638,
+    "archivedSha256": "62f8aff79e2758c67891074be7bbd07307a5e7d1770418020361805963eecb90"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-loaded-whole-paused-worker-snapshot.json",
+    "archived": "consumer-q1-negative/021-bench-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75638,
+    "sourceSha256": "d6b0625ee56b65e86fa1bc4b5db25f049f7d9283edf3d5ca4621d33dc360b5e1",
+    "archivedBytes": 75638,
+    "archivedSha256": "d6b0625ee56b65e86fa1bc4b5db25f049f7d9283edf3d5ca4621d33dc360b5e1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-raw-response-provenance.json",
+    "archived": "consumer-q1-negative/022-bench-raw-response-provenance.json",
+    "sourceBytes": 1674,
+    "sourceSha256": "5792036170f3a7ad781f506386201fbd92df37bd7f2fe4df51657ea5f740e205",
+    "archivedBytes": 1674,
+    "archivedSha256": "5792036170f3a7ad781f506386201fbd92df37bd7f2fe4df51657ea5f740e205"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "consumer-q1-negative/023-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 54382,
+    "sourceSha256": "59c9897fe9524efc3958993526d18b13d8fe5c18685253eb71829d257bbbe228",
+    "archivedBytes": 54382,
+    "archivedSha256": "59c9897fe9524efc3958993526d18b13d8fe5c18685253eb71829d257bbbe228"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\error-context.md",
+    "archived": "consumer-q1-negative/024-error-context.md",
+    "sourceBytes": 9519,
+    "sourceSha256": "0c1fa3d5a7de489a116f136486f92153e3f6b9ca19febcda47f298d1dfe0e9ec",
+    "archivedBytes": 9519,
+    "archivedSha256": "0c1fa3d5a7de489a116f136486f92153e3f6b9ca19febcda47f298d1dfe0e9ec"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\failed-bench-raw-network-provenance.json",
+    "archived": "consumer-q1-negative/025-failed-bench-raw-network-provenance.json",
+    "sourceBytes": 1674,
+    "sourceSha256": "5792036170f3a7ad781f506386201fbd92df37bd7f2fe4df51657ea5f740e205",
+    "archivedBytes": 1674,
+    "archivedSha256": "5792036170f3a7ad781f506386201fbd92df37bd7f2fe4df51657ea5f740e205"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "consumer-q1-negative/026-failed-player-fullhd.png",
+    "sourceBytes": 1571871,
+    "sourceSha256": "89cf9702259a34e1fa04aac56c97cdfd17543205fc8f315deb354a5af33f177e",
+    "archivedBytes": 1571871,
+    "archivedSha256": "89cf9702259a34e1fa04aac56c97cdfd17543205fc8f315deb354a5af33f177e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\failed-player-worker-snapshot.json",
+    "archived": "consumer-q1-negative/027-failed-player-worker-snapshot.json",
+    "sourceBytes": 75638,
+    "sourceSha256": "94b2e320d0c8a01ca0c5f2c677905ca4a27c0538846c24b7c05ad56cb4dbc20d",
+    "archivedBytes": 75638,
+    "archivedSha256": "94b2e320d0c8a01ca0c5f2c677905ca4a27c0538846c24b7c05ad56cb4dbc20d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\wooden-bench-loaded-fullhd.png",
+    "archived": "consumer-q1-negative/028-wooden-bench-loaded-fullhd.png",
+    "sourceBytes": 1457454,
+    "sourceSha256": "dd8c158094ebe64acb57791c70613606714c92efba73a242f682603ffca06837",
+    "archivedBytes": 1457454,
+    "archivedSha256": "dd8c158094ebe64acb57791c70613606714c92efba73a242f682603ffca06837"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\wooden-bench-worker-and-pixel-evidence.json",
+    "archived": "consumer-q1-negative/029-wooden-bench-worker-and-pixel-evidence.json",
+    "sourceBytes": 130183,
+    "sourceSha256": "36fd588cef88d909806f4a5c118eed49614dc6730ab18cbd34179986500f2301",
+    "archivedBytes": 130183,
+    "archivedSha256": "36fd588cef88d909806f4a5c118eed49614dc6730ab18cbd34179986500f2301"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\wooden-bench-worker-completed-fullhd.png",
+    "archived": "consumer-q1-negative/030-wooden-bench-worker-completed-fullhd.png",
+    "sourceBytes": 1489208,
+    "sourceSha256": "4a8fe7ecfc0bca10179be76317c0f37ba39710158b144b8caba344c7de0018b8",
+    "archivedBytes": 1489208,
+    "archivedSha256": "4a8fe7ecfc0bca10179be76317c0f37ba39710158b144b8caba344c7de0018b8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-complement-negative-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "consumer-q1-negative/031-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 356,
+    "sourceSha256": "c614a04a4bcf1ec641278724170fa6f790f1e83113ba187f6d7a166fd4f69335",
+    "archivedBytes": 356,
+    "archivedSha256": "c614a04a4bcf1ec641278724170fa6f790f1e83113ba187f6d7a166fd4f69335"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003.json",
+    "archived": "consumer-restored-eight/report.json",
+    "sourceBytes": 200464,
+    "sourceSha256": "22ddcdc09f5f6130715295c74c255e434cc318bc6826bcc0d3741af3600a03db",
+    "archivedBytes": 200464,
+    "archivedSha256": "22ddcdc09f5f6130715295c74c255e434cc318bc6826bcc0d3741af3600a03db"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003.txt",
+    "archived": "consumer-restored-eight/console.txt",
+    "sourceBytes": 6188,
+    "sourceSha256": "877f1d94bb0464598ccb6ca509281f525314361ec604081db06054bca97fc7ac",
+    "archivedBytes": 3111,
+    "archivedSha256": "99a6346f879b45d91076bb91a67ce2b09d916824269c449ba85329666d79c570",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\.last-run.json",
+    "archived": "consumer-restored-eight/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\attachments\\dedicated-cell-toilet-worker-and-save-evidence-76cbb70afb61abda758f00ea1e4bb97d25beb712.json",
+    "archived": "consumer-restored-eight/002-dedicated-cell-toilet-worker-and-save-evidence-76cbb70afb61abda7.json",
+    "sourceBytes": 129669,
+    "sourceSha256": "625c42d891bf1fe655653b321ce4fefbe62a3c6d5b3292740773650a07f4bcff",
+    "archivedBytes": 129669,
+    "archivedSha256": "625c42d891bf1fe655653b321ce4fefbe62a3c6d5b3292740773650a07f4bcff"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "consumer-restored-eight/003-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 54386,
+    "sourceSha256": "1002565fd9fa92a03780bd903f71a1df369ee6d421be2258cdce3f17644340aa",
+    "archivedBytes": 54386,
+    "archivedSha256": "1002565fd9fa92a03780bd903f71a1df369ee6d421be2258cdce3f17644340aa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "consumer-restored-eight/004-completed-worker-snapshot.json",
+    "sourceBytes": 74702,
+    "sourceSha256": "878537f3ee10dee08f00f576f61079b4613a706e9e31a1f0bd632e1e3d4430fa",
+    "archivedBytes": 74702,
+    "archivedSha256": "878537f3ee10dee08f00f576f61079b4613a706e9e31a1f0bd632e1e3d4430fa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\dedicated-cell-toilet-loaded-fullhd.png",
+    "archived": "consumer-restored-eight/005-dedicated-cell-toilet-loaded-fullhd.png",
+    "sourceBytes": 1561386,
+    "sourceSha256": "902a58f80eb0e9f08bb0b4fa03373657813348cdcb764f3485523ed4b61c0c3a",
+    "archivedBytes": 1561386,
+    "archivedSha256": "902a58f80eb0e9f08bb0b4fa03373657813348cdcb764f3485523ed4b61c0c3a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-and-save-evidence.json",
+    "archived": "consumer-restored-eight/006-dedicated-cell-toilet-worker-and-save-evidence.json",
+    "sourceBytes": 129669,
+    "sourceSha256": "625c42d891bf1fe655653b321ce4fefbe62a3c6d5b3292740773650a07f4bcff",
+    "archivedBytes": 129669,
+    "archivedSha256": "625c42d891bf1fe655653b321ce4fefbe62a3c6d5b3292740773650a07f4bcff"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-completed-fullhd.png",
+    "archived": "consumer-restored-eight/007-dedicated-cell-toilet-worker-completed-fullhd.png",
+    "sourceBytes": 1590090,
+    "sourceSha256": "776af98de60819a8b6f6f306711984eb524f257aa0fcce6646718bce13026b97",
+    "archivedBytes": 1590090,
+    "archivedSha256": "776af98de60819a8b6f6f306711984eb524f257aa0fcce6646718bce13026b97"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "consumer-restored-eight/008-loaded-worker-snapshot.json",
+    "sourceBytes": 74702,
+    "sourceSha256": "4be07b2e84a25b0ced692c231c81779fbfa7416ceb3bed3be5009f4ff53ffc49",
+    "archivedBytes": 74702,
+    "archivedSha256": "4be07b2e84a25b0ced692c231c81779fbfa7416ceb3bed3be5009f4ff53ffc49"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-actual-network-and-htmlimage-evidence.json",
+    "archived": "consumer-restored-eight/009-toilet-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 24205,
+    "sourceSha256": "62dcc98b6d7a56ce01abccfb86600e397c083620b1057648fb36c5ab15062828",
+    "archivedBytes": 24205,
+    "archivedSha256": "62dcc98b6d7a56ce01abccfb86600e397c083620b1057648fb36c5ab15062828"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-actual200-exposed-frame.png",
+    "archived": "consumer-restored-eight/010-toilet-actual200-exposed-frame.png",
+    "sourceBytes": 14043,
+    "sourceSha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932",
+    "archivedBytes": 14043,
+    "archivedSha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-completed-whole-paused-worker-snapshot.json",
+    "archived": "consumer-restored-eight/011-toilet-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 74702,
+    "sourceSha256": "7716ec8a8e24fc16213b7a819e98ac95f279ff104d3aa8300a5236bac77765b1",
+    "archivedBytes": 74702,
+    "archivedSha256": "7716ec8a8e24fc16213b7a819e98ac95f279ff104d3aa8300a5236bac77765b1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-detail-pending-native-recipe.json",
+    "archived": "consumer-restored-eight/012-toilet-detail-pending-native-recipe.json",
+    "sourceBytes": 25933,
+    "sourceSha256": "be220df3e81d9b2a1a8919c134c661dd50f613d50e9c33d6952a4e1d35ac4bd9",
+    "archivedBytes": 25933,
+    "archivedSha256": "be220df3e81d9b2a1a8919c134c661dd50f613d50e9c33d6952a4e1d35ac4bd9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-detail-whole-paused-worker-snapshot.json",
+    "archived": "consumer-restored-eight/013-toilet-detail-whole-paused-worker-snapshot.json",
+    "sourceBytes": 74702,
+    "sourceSha256": "91c319148018d596fa71516925ae9ad5100c22a22776cdedf4bcd6674124a569",
+    "archivedBytes": 74702,
+    "archivedSha256": "91c319148018d596fa71516925ae9ad5100c22a22776cdedf4bcd6674124a569"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-loaded-whole-paused-worker-snapshot.json",
+    "archived": "consumer-restored-eight/014-toilet-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 74702,
+    "sourceSha256": "cd1100436acb8a4ab5ba4807a26293acdc5934927475a4ed12992b142b3f28fd",
+    "archivedBytes": 74702,
+    "archivedSha256": "cd1100436acb8a4ab5ba4807a26293acdc5934927475a4ed12992b142b3f28fd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-raw-response-provenance.json",
+    "archived": "consumer-restored-eight/015-toilet-raw-response-provenance.json",
+    "sourceBytes": 4532,
+    "sourceSha256": "d44e3bd29dda1f94a9f94b85d29e45be89bec84342890dc55e778c2af01d1ad7",
+    "archivedBytes": 4532,
+    "archivedSha256": "d44e3bd29dda1f94a9f94b85d29e45be89bec84342890dc55e778c2af01d1ad7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-transfer-neck-local45-elev40-loaded-fullhd.png",
+    "archived": "consumer-restored-eight/016-toilet-transfer-neck-local45-elev40-loaded-fullhd.png",
+    "sourceBytes": 1491901,
+    "sourceSha256": "1a95f5f39d732880f514123ec9d0b9a8ded8713fb7f59b6db35f6bc35e4fbd49",
+    "archivedBytes": 1491901,
+    "archivedSha256": "1a95f5f39d732880f514123ec9d0b9a8ded8713fb7f59b6db35f6bc35e4fbd49"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "consumer-restored-eight/017-worker-and-completed-save-evidence.json",
+    "sourceBytes": 289,
+    "sourceSha256": "51f638f07b2540ba96ba3a9641ef34ed7782c20078716f33323d9229c590cb59",
+    "archivedBytes": 289,
+    "archivedSha256": "51f638f07b2540ba96ba3a9641ef34ed7782c20078716f33323d9229c590cb59"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\attachments\\dedicated-cell-toilet-worker-and-save-evidence-92f507d1f6d810e8ef5037c424fe4761a461b572.json",
+    "archived": "consumer-restored-eight/018-dedicated-cell-toilet-worker-and-save-evidence-92f507d1f6d810e8e.json",
+    "sourceBytes": 127208,
+    "sourceSha256": "ff98b22151a858b23491331a82a86604e2a375dd3768da59195851fbe56e2131",
+    "archivedBytes": 127208,
+    "archivedSha256": "ff98b22151a858b23491331a82a86604e2a375dd3768da59195851fbe56e2131"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "consumer-restored-eight/019-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 54386,
+    "sourceSha256": "819c8d76480986470de58a54df9990faab3bb6dd90987c441afe2a3ebc507b37",
+    "archivedBytes": 54386,
+    "archivedSha256": "819c8d76480986470de58a54df9990faab3bb6dd90987c441afe2a3ebc507b37"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "consumer-restored-eight/020-completed-worker-snapshot.json",
+    "sourceBytes": 73088,
+    "sourceSha256": "f597b6bcb9279a296fc674f3e0adc6cb40f5dcfa9079822a572c9966d6634946",
+    "archivedBytes": 73088,
+    "archivedSha256": "f597b6bcb9279a296fc674f3e0adc6cb40f5dcfa9079822a572c9966d6634946"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\dedicated-cell-toilet-loaded-fullhd.png",
+    "archived": "consumer-restored-eight/021-dedicated-cell-toilet-loaded-fullhd.png",
+    "sourceBytes": 1478551,
+    "sourceSha256": "da3c4e44f2ff9e16eb661f7b0c687a5f1901797072fb9205c3df0ef7a597050a",
+    "archivedBytes": 1478551,
+    "archivedSha256": "da3c4e44f2ff9e16eb661f7b0c687a5f1901797072fb9205c3df0ef7a597050a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-and-save-evidence.json",
+    "archived": "consumer-restored-eight/022-dedicated-cell-toilet-worker-and-save-evidence.json",
+    "sourceBytes": 127208,
+    "sourceSha256": "ff98b22151a858b23491331a82a86604e2a375dd3768da59195851fbe56e2131",
+    "archivedBytes": 127208,
+    "archivedSha256": "ff98b22151a858b23491331a82a86604e2a375dd3768da59195851fbe56e2131"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-completed-fullhd.png",
+    "archived": "consumer-restored-eight/023-dedicated-cell-toilet-worker-completed-fullhd.png",
+    "sourceBytes": 1506436,
+    "sourceSha256": "f772886f756f4655fac18074703eb45f5dde9d5a2703c046ef0d66e620cdc5ab",
+    "archivedBytes": 1506436,
+    "archivedSha256": "f772886f756f4655fac18074703eb45f5dde9d5a2703c046ef0d66e620cdc5ab"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "consumer-restored-eight/024-loaded-worker-snapshot.json",
+    "sourceBytes": 73088,
+    "sourceSha256": "1f07054a8f62efea8e90e0809ade4a99b1824083a253d64f71080f9824204cc8",
+    "archivedBytes": 73088,
+    "archivedSha256": "1f07054a8f62efea8e90e0809ade4a99b1824083a253d64f71080f9824204cc8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-actual-network-and-htmlimage-evidence.json",
+    "archived": "consumer-restored-eight/025-toilet-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 24205,
+    "sourceSha256": "4d32d0111a646937978b79acb41ac674bcb1f622ea01d85a83aea0d9fc966e50",
+    "archivedBytes": 24205,
+    "archivedSha256": "4d32d0111a646937978b79acb41ac674bcb1f622ea01d85a83aea0d9fc966e50"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-actual200-exposed-frame.png",
+    "archived": "consumer-restored-eight/026-toilet-actual200-exposed-frame.png",
+    "sourceBytes": 14043,
+    "sourceSha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932",
+    "archivedBytes": 14043,
+    "archivedSha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-completed-whole-paused-worker-snapshot.json",
+    "archived": "consumer-restored-eight/027-toilet-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 73088,
+    "sourceSha256": "28f883f8658526cb443c3d293a9f4e4a4ceea8d2f50e1c5d226dff9244fb6a06",
+    "archivedBytes": 73088,
+    "archivedSha256": "28f883f8658526cb443c3d293a9f4e4a4ceea8d2f50e1c5d226dff9244fb6a06"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-detail-pending-native-recipe.json",
+    "archived": "consumer-restored-eight/028-toilet-detail-pending-native-recipe.json",
+    "sourceBytes": 25933,
+    "sourceSha256": "338c6cad020b1824327499bd38762119a7d68ab84a8daf3ad8c8725f9aba1496",
+    "archivedBytes": 25933,
+    "archivedSha256": "338c6cad020b1824327499bd38762119a7d68ab84a8daf3ad8c8725f9aba1496"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-detail-whole-paused-worker-snapshot.json",
+    "archived": "consumer-restored-eight/029-toilet-detail-whole-paused-worker-snapshot.json",
+    "sourceBytes": 73088,
+    "sourceSha256": "3ffaf5dea6f2d34c38d60eed5888ca1ee8b8118e4d5798ee436bd4b963b5fa3d",
+    "archivedBytes": 73088,
+    "archivedSha256": "3ffaf5dea6f2d34c38d60eed5888ca1ee8b8118e4d5798ee436bd4b963b5fa3d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-loaded-whole-paused-worker-snapshot.json",
+    "archived": "consumer-restored-eight/030-toilet-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 73088,
+    "sourceSha256": "a16daf3772cda3d2fcffc86420da080ade384dea4561bfb0e5e32eca16062c83",
+    "archivedBytes": 73088,
+    "archivedSha256": "a16daf3772cda3d2fcffc86420da080ade384dea4561bfb0e5e32eca16062c83"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-raw-response-provenance.json",
+    "archived": "consumer-restored-eight/031-toilet-raw-response-provenance.json",
+    "sourceBytes": 4532,
+    "sourceSha256": "799b92f15ac24c1f0bf31cc5d455947218243c0e4eb87aeff04be115f9f630fa",
+    "archivedBytes": 4532,
+    "archivedSha256": "799b92f15ac24c1f0bf31cc5d455947218243c0e4eb87aeff04be115f9f630fa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-transfer-neck-local45-elev40-loaded-fullhd.png",
+    "archived": "consumer-restored-eight/032-toilet-transfer-neck-local45-elev40-loaded-fullhd.png",
+    "sourceBytes": 1401698,
+    "sourceSha256": "0216527fca1bed88c0f0095d1f004e98ce4a43c1c176f604e3ab7a22f468563e",
+    "archivedBytes": 1401698,
+    "archivedSha256": "0216527fca1bed88c0f0095d1f004e98ce4a43c1c176f604e3ab7a22f468563e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "consumer-restored-eight/033-worker-and-completed-save-evidence.json",
+    "sourceBytes": 313,
+    "sourceSha256": "13bd0bc158b977bbce8b1394139960188b55a0b037e19b9fdbfcf6c7e01a8963",
+    "archivedBytes": 313,
+    "archivedSha256": "13bd0bc158b977bbce8b1394139960188b55a0b037e19b9fdbfcf6c7e01a8963"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\dedicated-cell-toilet-play-d5a09--capacity-before-Basic-cell\\capacity-completed-worker-snapshot.json",
+    "archived": "consumer-restored-eight/034-capacity-completed-worker-snapshot.json",
+    "sourceBytes": 54386,
+    "sourceSha256": "a7edff94167cacb8559653cfd6315553835624536894a6f3953d269d174d713a",
+    "archivedBytes": 54386,
+    "archivedSha256": "a7edff94167cacb8559653cfd6315553835624536894a6f3953d269d174d713a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\room-template-numeric-held-82a3a--a-second-transaction-1908-\\numeric-accepted-primary-still-held.png",
+    "archived": "consumer-restored-eight/035-numeric-accepted-primary-still-held.png",
+    "sourceBytes": 239556,
+    "sourceSha256": "d1ab6b4f2b88ce71d14f46c55d0f6427881b219e5ead8b52d21008c7fc60a143",
+    "archivedBytes": 239556,
+    "archivedSha256": "d1ab6b4f2b88ce71d14f46c55d0f6427881b219e5ead8b52d21008c7fc60a143"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\room-template-numeric-held-82a3a--a-second-transaction-1908-\\original-primary-released-one-pending-plan.png",
+    "archived": "consumer-restored-eight/036-original-primary-released-one-pending-plan.png",
+    "sourceBytes": 225981,
+    "sourceSha256": "9873c642275f51a0e9ececa5b1c0c3987b4162e37dd129ec634896283ccc7a50",
+    "archivedBytes": 225981,
+    "archivedSha256": "9873c642275f51a0e9ececa5b1c0c3987b4162e37dd129ec634896283ccc7a50"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\room-template-numeric-held-d52d4--a-second-transaction-1908-\\numeric-accepted-primary-still-held.png",
+    "archived": "consumer-restored-eight/037-numeric-accepted-primary-still-held.png",
+    "sourceBytes": 670443,
+    "sourceSha256": "8e343352da1cf7776414e712007bb65af7f88f61ffbe07cbe083c8bd6dd3b73c",
+    "archivedBytes": 670443,
+    "archivedSha256": "8e343352da1cf7776414e712007bb65af7f88f61ffbe07cbe083c8bd6dd3b73c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\room-template-numeric-held-d52d4--a-second-transaction-1908-\\original-primary-released-one-pending-plan.png",
+    "archived": "consumer-restored-eight/038-original-primary-released-one-pending-plan.png",
+    "sourceBytes": 1663223,
+    "sourceSha256": "eed1e6af3d1d3f1907f51794a88e411717e5e7f38ee2c2fffb644299c50ab810",
+    "archivedBytes": 1663223,
+    "archivedSha256": "eed1e6af3d1d3f1907f51794a88e411717e5e7f38ee2c2fffb644299c50ab810"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--9989a-apacity-before-Holding-Cell\\capacity-completed-worker-snapshot.json",
+    "archived": "consumer-restored-eight/039-capacity-completed-worker-snapshot.json",
+    "sourceBytes": 54386,
+    "sourceSha256": "296db509fb5da3278061d8cfd6b60fad4cadf3338555a760b27820938b775e14",
+    "archivedBytes": 54386,
+    "archivedSha256": "296db509fb5da3278061d8cfd6b60fad4cadf3338555a760b27820938b775e14"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\attachments\\wooden-bench-worker-and-pixel-evidence-f8f042c781f9d83cf4fc3cccc34d2c1cb849def0.json",
+    "archived": "consumer-restored-eight/040-wooden-bench-worker-and-pixel-evidence-f8f042c781f9d83cf4fc3cccc.json",
+    "sourceBytes": 130472,
+    "sourceSha256": "2a415db36df43cdf4005ec16e9b8740d3f6c96237120493d256486a812320d5f",
+    "archivedBytes": 130472,
+    "archivedSha256": "2a415db36df43cdf4005ec16e9b8740d3f6c96237120493d256486a812320d5f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-actual-network-and-htmlimage-evidence.json",
+    "archived": "consumer-restored-eight/041-bench-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 26973,
+    "sourceSha256": "deb0ef782897b0de1dbb21d2f326ac03d0bc55363010116e19cddea49c368571",
+    "archivedBytes": 26973,
+    "archivedSha256": "deb0ef782897b0de1dbb21d2f326ac03d0bc55363010116e19cddea49c368571"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-actual200-exposed-frame.png",
+    "archived": "consumer-restored-eight/042-bench-actual200-exposed-frame.png",
+    "sourceBytes": 7973,
+    "sourceSha256": "845cd9e2698f21575a73b74f7087261bf9e303250b5ea90201441bc696b0e1da",
+    "archivedBytes": 7973,
+    "archivedSha256": "845cd9e2698f21575a73b74f7087261bf9e303250b5ea90201441bc696b0e1da"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-completed-whole-paused-worker-snapshot.json",
+    "archived": "consumer-restored-eight/043-bench-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75843,
+    "sourceSha256": "642908550f668056571a33a213aa91a79599fd025ba9dc9c42bac8713efd6cde",
+    "archivedBytes": 75843,
+    "archivedSha256": "642908550f668056571a33a213aa91a79599fd025ba9dc9c42bac8713efd6cde"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-connected-rails-local60-elev40-loaded-fullhd.png",
+    "archived": "consumer-restored-eight/044-bench-connected-rails-local60-elev40-loaded-fullhd.png",
+    "sourceBytes": 1597211,
+    "sourceSha256": "98b04c981e9b13019234428278dbd4ca7beda328eaa332709cae4dc592f92ad3",
+    "archivedBytes": 1597211,
+    "archivedSha256": "98b04c981e9b13019234428278dbd4ca7beda328eaa332709cae4dc592f92ad3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-detail-pending-native-recipe.json",
+    "archived": "consumer-restored-eight/045-bench-detail-pending-native-recipe.json",
+    "sourceBytes": 28609,
+    "sourceSha256": "32c801a51e8dccb947e9a0224fd718af469d68d216068f3c093b0ca79adf6227",
+    "archivedBytes": 28609,
+    "archivedSha256": "32c801a51e8dccb947e9a0224fd718af469d68d216068f3c093b0ca79adf6227"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-detail-whole-paused-worker-snapshot.json",
+    "archived": "consumer-restored-eight/046-bench-detail-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75843,
+    "sourceSha256": "f191629ad5ed56e2aa245294e29a1f7105d711daa2e266cbe4de25349c01a88b",
+    "archivedBytes": 75843,
+    "archivedSha256": "f191629ad5ed56e2aa245294e29a1f7105d711daa2e266cbe4de25349c01a88b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-loaded-whole-paused-worker-snapshot.json",
+    "archived": "consumer-restored-eight/047-bench-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75843,
+    "sourceSha256": "9b99d36aaa64d6c4581afbbb07684c9965c5d3fd841a60603de0c75a9b5f7fa2",
+    "archivedBytes": 75843,
+    "archivedSha256": "9b99d36aaa64d6c4581afbbb07684c9965c5d3fd841a60603de0c75a9b5f7fa2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-raw-response-provenance.json",
+    "archived": "consumer-restored-eight/048-bench-raw-response-provenance.json",
+    "sourceBytes": 5769,
+    "sourceSha256": "c2bd0f53e3c3140fc08bbcb92b9d8df6e2ab99989d84edd5a81bb02903235e59",
+    "archivedBytes": 5769,
+    "archivedSha256": "c2bd0f53e3c3140fc08bbcb92b9d8df6e2ab99989d84edd5a81bb02903235e59"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "consumer-restored-eight/049-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 54386,
+    "sourceSha256": "4611dda1b94befbe8fa584e4e21341b73a42bd534ab92d5c063b8d620e546abb",
+    "archivedBytes": 54386,
+    "archivedSha256": "4611dda1b94befbe8fa584e4e21341b73a42bd534ab92d5c063b8d620e546abb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\wooden-bench-loaded-fullhd.png",
+    "archived": "consumer-restored-eight/050-wooden-bench-loaded-fullhd.png",
+    "sourceBytes": 1478384,
+    "sourceSha256": "c0b4cf19b1cbba69069cc022173a7948cabc7ba6df64102b509edc5d4f72f2b1",
+    "archivedBytes": 1478384,
+    "archivedSha256": "c0b4cf19b1cbba69069cc022173a7948cabc7ba6df64102b509edc5d4f72f2b1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\wooden-bench-worker-and-pixel-evidence.json",
+    "archived": "consumer-restored-eight/051-wooden-bench-worker-and-pixel-evidence.json",
+    "sourceBytes": 130472,
+    "sourceSha256": "2a415db36df43cdf4005ec16e9b8740d3f6c96237120493d256486a812320d5f",
+    "archivedBytes": 130472,
+    "archivedSha256": "2a415db36df43cdf4005ec16e9b8740d3f6c96237120493d256486a812320d5f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\wooden-bench-worker-completed-fullhd.png",
+    "archived": "consumer-restored-eight/052-wooden-bench-worker-completed-fullhd.png",
+    "sourceBytes": 1509585,
+    "sourceSha256": "f24e9748e36546fd80d9d1386d3015a1434af83cdfcb8d4e072909a847e03d40",
+    "archivedBytes": 1509585,
+    "archivedSha256": "f24e9748e36546fd80d9d1386d3015a1434af83cdfcb8d4e072909a847e03d40"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "consumer-restored-eight/053-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 335,
+    "sourceSha256": "d98cbb3f3cacb5c3e59bff1fa79f36afba568598694f56e5a9b9fb10571d124d",
+    "archivedBytes": 335,
+    "archivedSha256": "d98cbb3f3cacb5c3e59bff1fa79f36afba568598694f56e5a9b9fb10571d124d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\attachments\\wooden-bench-worker-and-pixel-evidence-8a9d65d1923ccad59742294b348031d10ec32b21.json",
+    "archived": "consumer-restored-eight/054-wooden-bench-worker-and-pixel-evidence-8a9d65d1923ccad59742294b3.json",
+    "sourceBytes": 130199,
+    "sourceSha256": "3d30c666492a0d65cad39950ffb709999136940532d1af3a885c62f36e3b2cab",
+    "archivedBytes": 130199,
+    "archivedSha256": "3d30c666492a0d65cad39950ffb709999136940532d1af3a885c62f36e3b2cab"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-actual-network-and-htmlimage-evidence.json",
+    "archived": "consumer-restored-eight/055-bench-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 25272,
+    "sourceSha256": "92b47938c6646eb9e5f9af2cd361da2d92568184fa465e2afc10aee2a1e712c5",
+    "archivedBytes": 25272,
+    "archivedSha256": "92b47938c6646eb9e5f9af2cd361da2d92568184fa465e2afc10aee2a1e712c5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-actual200-exposed-frame.png",
+    "archived": "consumer-restored-eight/056-bench-actual200-exposed-frame.png",
+    "sourceBytes": 7973,
+    "sourceSha256": "845cd9e2698f21575a73b74f7087261bf9e303250b5ea90201441bc696b0e1da",
+    "archivedBytes": 7973,
+    "archivedSha256": "845cd9e2698f21575a73b74f7087261bf9e303250b5ea90201441bc696b0e1da"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-completed-whole-paused-worker-snapshot.json",
+    "archived": "consumer-restored-eight/057-bench-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75642,
+    "sourceSha256": "73661af981b53924e74818c84756275305e18611e7dba01941493fb2abdfe510",
+    "archivedBytes": 75642,
+    "archivedSha256": "73661af981b53924e74818c84756275305e18611e7dba01941493fb2abdfe510"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-connected-rails-local60-elev40-loaded-fullhd.png",
+    "archived": "consumer-restored-eight/058-bench-connected-rails-local60-elev40-loaded-fullhd.png",
+    "sourceBytes": 1600426,
+    "sourceSha256": "cde688af7bb3b7d9646dac66f20e3c0151e8aeb24c20e0f4e8e985b9dbd21206",
+    "archivedBytes": 1600426,
+    "archivedSha256": "cde688af7bb3b7d9646dac66f20e3c0151e8aeb24c20e0f4e8e985b9dbd21206"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-detail-pending-native-recipe.json",
+    "archived": "consumer-restored-eight/059-bench-detail-pending-native-recipe.json",
+    "sourceBytes": 26849,
+    "sourceSha256": "0f589137d5e2d2d036cedc0c5299610ef7c53bc432d39f93d4bc43059cb98b4a",
+    "archivedBytes": 26849,
+    "archivedSha256": "0f589137d5e2d2d036cedc0c5299610ef7c53bc432d39f93d4bc43059cb98b4a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-detail-whole-paused-worker-snapshot.json",
+    "archived": "consumer-restored-eight/060-bench-detail-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75642,
+    "sourceSha256": "a3fc7420ab62bc342efae3116e3247a4b4e86dca4e4aa59abaf7be20ecfa4d25",
+    "archivedBytes": 75642,
+    "archivedSha256": "a3fc7420ab62bc342efae3116e3247a4b4e86dca4e4aa59abaf7be20ecfa4d25"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-loaded-whole-paused-worker-snapshot.json",
+    "archived": "consumer-restored-eight/061-bench-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 75642,
+    "sourceSha256": "0b467e52669b4562464f0c60a8ef0f294e483cf510d38e08064d502143a115e0",
+    "archivedBytes": 75642,
+    "archivedSha256": "0b467e52669b4562464f0c60a8ef0f294e483cf510d38e08064d502143a115e0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-raw-response-provenance.json",
+    "archived": "consumer-restored-eight/062-bench-raw-response-provenance.json",
+    "sourceBytes": 4128,
+    "sourceSha256": "d510ca8e2d21c46edc21975ce70709d6f88ad56c573d9ad87bc0d10affc66f70",
+    "archivedBytes": 4128,
+    "archivedSha256": "d510ca8e2d21c46edc21975ce70709d6f88ad56c573d9ad87bc0d10affc66f70"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "consumer-restored-eight/063-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 54386,
+    "sourceSha256": "4b6bd051c74d60f52abcb4ee4c5a63af1a771c22e0ce00e27af0c934ed1d5a03",
+    "archivedBytes": 54386,
+    "archivedSha256": "4b6bd051c74d60f52abcb4ee4c5a63af1a771c22e0ce00e27af0c934ed1d5a03"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\wooden-bench-loaded-fullhd.png",
+    "archived": "consumer-restored-eight/064-wooden-bench-loaded-fullhd.png",
+    "sourceBytes": 1486931,
+    "sourceSha256": "6d53d21b31a37a45dd5fc4eec4b1c795539f0104de915eaa891217215ff2bc8a",
+    "archivedBytes": 1486931,
+    "archivedSha256": "6d53d21b31a37a45dd5fc4eec4b1c795539f0104de915eaa891217215ff2bc8a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\wooden-bench-worker-and-pixel-evidence.json",
+    "archived": "consumer-restored-eight/065-wooden-bench-worker-and-pixel-evidence.json",
+    "sourceBytes": 130199,
+    "sourceSha256": "3d30c666492a0d65cad39950ffb709999136940532d1af3a885c62f36e3b2cab",
+    "archivedBytes": 130199,
+    "archivedSha256": "3d30c666492a0d65cad39950ffb709999136940532d1af3a885c62f36e3b2cab"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\wooden-bench-worker-completed-fullhd.png",
+    "archived": "consumer-restored-eight/066-wooden-bench-worker-completed-fullhd.png",
+    "sourceBytes": 1519381,
+    "sourceSha256": "40c15ad7fefc31f9e60d43c6d7861ecff4ce1813a5752415155d9cfc5c3244ab",
+    "archivedBytes": 1519381,
+    "archivedSha256": "40c15ad7fefc31f9e60d43c6d7861ecff4ce1813a5752415155d9cfc5c3244ab"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-bench-toilet-numeric-restored-eight-20261003\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "consumer-restored-eight/067-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 360,
+    "sourceSha256": "544d1efb0b9274bd086f70860e6732098f980b2eed0e21f595d2b1aec2a6d9a1",
+    "archivedBytes": 360,
+    "archivedSha256": "544d1efb0b9274bd086f70860e6732098f980b2eed0e21f595d2b1aec2a6d9a1"
+  }
+]
