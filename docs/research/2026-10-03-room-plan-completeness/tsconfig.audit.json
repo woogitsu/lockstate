@@ -1,0 +1,4 @@
+{
+  "extends": "../../../tsconfig.json",
+  "include": ["quarter-turn.audit.ts", "vitest.audit.config.ts"]
+}
