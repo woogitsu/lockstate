@@ -1,0 +1,65 @@
+[
+  {
+    "control": "actual-producer-green-before",
+    "exitCode": 0,
+    "expected": "COMMON_ROOM35/8GRAPHS/4CONTACTS/72CAMERAS/4OCCUPIED_GREEN",
+    "expectGreen": true
+  },
+  {
+    "control": "actual-saved-riser-mutation",
+    "exitCode": 0,
+    "expected": null,
+    "expectGreen": true
+  },
+  {
+    "control": "actual-producer-disconnected-riser-red",
+    "exitCode": 1,
+    "expected": "lacks real triangle-interior contact",
+    "expectGreen": false
+  },
+  {
+    "control": "actual-producer-wrong-dispatch-red",
+    "exitCode": 1,
+    "expected": "Common Room producer dispatch source changed",
+    "expectGreen": false
+  },
+  {
+    "control": "actual-producer-wrong-camera-span-red",
+    "exitCode": 1,
+    "expected": "Common Room actual accepted camera span changed",
+    "expectGreen": false
+  },
+  {
+    "control": "actual-hash-valid-opaque-png-red",
+    "exitCode": 1,
+    "expected": "expected false to be true",
+    "expectGreen": false
+  },
+  {
+    "control": "actual-producer-green-restored",
+    "exitCode": 0,
+    "expected": "COMMON_ROOM35/8GRAPHS/4CONTACTS/72CAMERAS/4OCCUPIED_GREEN",
+    "expectGreen": true
+  },
+  {
+    "control": "actual-producer-72-rerender-restored",
+    "exitCode": 0,
+    "expected": "rendered 72 verified poses",
+    "expectGreen": true
+  },
+  {
+    "control": "actual-unit-green-restored",
+    "exitCode": 0,
+    "expected": "9 passed",
+    "expectGreen": true
+  },
+  {
+    "exactRestoration": {
+      "sourceSha256": "825f228a6bb81dd03ab06d80c52af02646b92a16880e929c112c461b68992772",
+      "producerSha256": "af5a3b21b0cf7494b992fe433331a9b2997e01ab240be8883f9694c6ad544d5d",
+      "provenanceSha256": "e97d375fd9c2852a0d7d9077f41bb020821284cf52a24342ed87548cc0a925a2",
+      "manifestSha256": "c87814a2c13f7352ae8ed46c20f6ede956bb149fcb43beeba53eff4e438a7bf1",
+      "all72ExportsByteEqual": true
+    }
+  }
+]

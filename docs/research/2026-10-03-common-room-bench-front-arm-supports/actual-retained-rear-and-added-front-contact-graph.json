@@ -1,0 +1,163 @@
+{
+  "retainedMeshNames": [
+    "arm captive fitting",
+    "arm captive fitting.001",
+    "back cushion 1",
+    "back cushion 2",
+    "back pad highlight 1",
+    "back pad highlight 2",
+    "back support",
+    "back support.001",
+    "bound seat seam 1",
+    "bound seat seam 1.001",
+    "bound seat seam 2",
+    "bound seat seam 2.001",
+    "continuous under-seat rail",
+    "continuous under-seat rail.001",
+    "dark center back reveal",
+    "dark center seat reveal",
+    "non-marking rubber foot",
+    "non-marking rubber foot.001",
+    "non-marking rubber foot.002",
+    "non-marking rubber foot.003",
+    "sealed timber arm",
+    "sealed timber arm.001",
+    "seat cushion 1",
+    "seat cushion 2",
+    "seat highlight 1",
+    "seat highlight 2",
+    "seat support panel",
+    "side seat bearer",
+    "side seat bearer.001",
+    "steel upright",
+    "steel upright.001",
+    "steel upright.002",
+    "steel upright.003"
+  ],
+  "retainedActualRearFrameTargets": {
+    "back support": [
+      "side seat bearer",
+      "sealed timber arm",
+      "steel upright.001"
+    ],
+    "back support.001": [
+      "side seat bearer.001",
+      "sealed timber arm.001",
+      "steel upright.003"
+    ]
+  },
+  "retainedActualRearFrameTriangleContacts": [
+    {
+      "shoe": "back support",
+      "retainedTarget": "side seat bearer",
+      "actualInteriorWitness": [
+        0.2199999988079071,
+        0.7799999713897705,
+        0.4514999985694885
+      ],
+      "overlappingDepth": 0.023000001907348633
+    },
+    {
+      "shoe": "back support",
+      "retainedTarget": "sealed timber arm",
+      "actualInteriorWitness": [
+        0.2199999988079071,
+        0.7465000152587891,
+        0.6899999976158142
+      ],
+      "overlappingDepth": 0.07400000095367432
+    },
+    {
+      "shoe": "back support",
+      "retainedTarget": "steel upright.001",
+      "actualInteriorWitness": [
+        0.2199999988079071,
+        0.784500002861023,
+        0.44999998807907104
+      ],
+      "overlappingDepth": 0.019999980926513672
+    },
+    {
+      "shoe": "back support.001",
+      "retainedTarget": "side seat bearer.001",
+      "actualInteriorWitness": [
+        1.7799999713897705,
+        0.7799999713897705,
+        0.4514999985694885
+      ],
+      "overlappingDepth": 0.023000001907348633
+    },
+    {
+      "shoe": "back support.001",
+      "retainedTarget": "sealed timber arm.001",
+      "actualInteriorWitness": [
+        1.7799999713897705,
+        0.7465000152587891,
+        0.6899999976158142
+      ],
+      "overlappingDepth": 0.07400000095367432
+    },
+    {
+      "shoe": "back support.001",
+      "retainedTarget": "steel upright.003",
+      "actualInteriorWitness": [
+        1.7799999713897705,
+        0.784500002861023,
+        0.44999998807907104
+      ],
+      "overlappingDepth": 0.019999980926513672
+    }
+  ],
+  "addedFrontRiserTargets": {
+    "physical-common-room-bench.front arm riser 0": [
+      "side seat bearer",
+      "sealed timber arm"
+    ],
+    "physical-common-room-bench.front arm riser 1": [
+      "side seat bearer.001",
+      "sealed timber arm.001"
+    ]
+  },
+  "addedFrontRiserTriangleContacts": [
+    {
+      "shoe": "physical-common-room-bench.front arm riser 0",
+      "retainedTarget": "side seat bearer",
+      "actualInteriorWitness": [
+        0.2199999988079071,
+        0.25,
+        0.4440000057220459
+      ],
+      "overlappingDepth": 0.03799998760223389
+    },
+    {
+      "shoe": "physical-common-room-bench.front arm riser 0",
+      "retainedTarget": "sealed timber arm",
+      "actualInteriorWitness": [
+        0.2199999988079071,
+        0.25,
+        0.6640000343322754
+      ],
+      "overlappingDepth": 0.022000014781951904
+    },
+    {
+      "shoe": "physical-common-room-bench.front arm riser 1",
+      "retainedTarget": "side seat bearer.001",
+      "actualInteriorWitness": [
+        1.7799999713897705,
+        0.25,
+        0.4440000057220459
+      ],
+      "overlappingDepth": 0.03799998760223389
+    },
+    {
+      "shoe": "physical-common-room-bench.front arm riser 1",
+      "retainedTarget": "sealed timber arm.001",
+      "actualInteriorWitness": [
+        1.7799999713897705,
+        0.25,
+        0.6640000343322754
+      ],
+      "overlappingDepth": 0.022000014781951904
+    }
+  ]
+}

@@ -1,0 +1,6719 @@
+{
+  "source": "assets/source/blender/furniture.common-room.upholstered-bench.blend",
+  "sourceSha256": "cfb1af97817ff0f5944626c2888a498bf96d60c3880544cc5f6d6544b9613b92",
+  "allRawMeshes": [
+    {
+      "name": "arm captive fitting",
+      "rawVertexBytesSha256": "49172d50431de852746c86f05043c2812f996bd64b17dfb34902d9ed4060cf2e",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "stainless captive fittings"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": []
+    },
+    {
+      "name": "arm captive fitting.001",
+      "rawVertexBytesSha256": "49172d50431de852746c86f05043c2812f996bd64b17dfb34902d9ed4060cf2e",
+      "rawTopologyBytesSha256": "896a9ebb25903225edcca0e0697e86719d47af335afb0f73027237736a11b016",
+      "materials": [
+        "stainless captive fittings"
+      ],
+      "polygonMaterialIndicesSha256": "10eef285deef7a4b7c82b22aa53589b7833df29de3814649c772bbd5c832f365",
+      "modifiers": []
+    },
+    {
+      "name": "back cushion 1",
+      "rawVertexBytesSha256": "e46dd70eb590074f5cf61ae18438983220dfe531bf9c92a871ff4d65a2634551",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm grey teal woven upholstery"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.04500000178813934,
+            "width_pct": 0.04500000178813934,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "back cushion 2",
+      "rawVertexBytesSha256": "e46dd70eb590074f5cf61ae18438983220dfe531bf9c92a871ff4d65a2634551",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm grey teal woven upholstery"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.04500000178813934,
+            "width_pct": 0.04500000178813934,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "back pad highlight 1",
+      "rawVertexBytesSha256": "c869fec39332a35f33f40dbf00ddcfc341407b3a72c7f360efe17ab4a5c33055",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "cushion light-catching weave"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.007000000216066837,
+            "width_pct": 0.007000000216066837,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "back pad highlight 2",
+      "rawVertexBytesSha256": "c869fec39332a35f33f40dbf00ddcfc341407b3a72c7f360efe17ab4a5c33055",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "cushion light-catching weave"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.007000000216066837,
+            "width_pct": 0.007000000216066837,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "back support",
+      "rawVertexBytesSha256": "a0b61a36e04e308ffb330bdac325e6f12801d8234f30777abe13b93983ebf171",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder-coated petrol steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.013000000268220901,
+            "width_pct": 0.013000000268220901,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "back support.001",
+      "rawVertexBytesSha256": "a0b61a36e04e308ffb330bdac325e6f12801d8234f30777abe13b93983ebf171",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder-coated petrol steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.013000000268220901,
+            "width_pct": 0.013000000268220901,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "bound seat seam 1",
+      "rawVertexBytesSha256": "18001ee7b7176a894e028c8ed1089cd17d26ea1be526608e8fea506d7fbf2919",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "recessed cushion seam"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.003000000026077032,
+            "width_pct": 0.003000000026077032,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "bound seat seam 1.001",
+      "rawVertexBytesSha256": "18001ee7b7176a894e028c8ed1089cd17d26ea1be526608e8fea506d7fbf2919",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "recessed cushion seam"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.003000000026077032,
+            "width_pct": 0.003000000026077032,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "bound seat seam 2",
+      "rawVertexBytesSha256": "18001ee7b7176a894e028c8ed1089cd17d26ea1be526608e8fea506d7fbf2919",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "recessed cushion seam"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.003000000026077032,
+            "width_pct": 0.003000000026077032,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "bound seat seam 2.001",
+      "rawVertexBytesSha256": "18001ee7b7176a894e028c8ed1089cd17d26ea1be526608e8fea506d7fbf2919",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "recessed cushion seam"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.003000000026077032,
+            "width_pct": 0.003000000026077032,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "continuous under-seat rail",
+      "rawVertexBytesSha256": "e09999d6ebd2f2bd9a9fabc823eec5bde4eb02014ab3d25cc81ae33f79da3783",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder-coated petrol steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "continuous under-seat rail.001",
+      "rawVertexBytesSha256": "e09999d6ebd2f2bd9a9fabc823eec5bde4eb02014ab3d25cc81ae33f79da3783",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder-coated petrol steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.009999999776482582,
+            "width_pct": 0.009999999776482582,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "dark center back reveal",
+      "rawVertexBytesSha256": "cfe7015d43be205ea858c19c7341dbb360204d7724998871d96503a992d9c42c",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "recessed cushion seam"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "dark center seat reveal",
+      "rawVertexBytesSha256": "1442369c3895b701274f17c4a32e628e04cda1895747e3bc7456af55a2d34d7f",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "recessed cushion seam"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "non-marking rubber foot",
+      "rawVertexBytesSha256": "2ae714c568f78ab174ba6993e5674bb5565e02493fc8229d44628dc89aaa1372",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "charcoal rubber"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "non-marking rubber foot.001",
+      "rawVertexBytesSha256": "2ae714c568f78ab174ba6993e5674bb5565e02493fc8229d44628dc89aaa1372",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "charcoal rubber"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "non-marking rubber foot.002",
+      "rawVertexBytesSha256": "2ae714c568f78ab174ba6993e5674bb5565e02493fc8229d44628dc89aaa1372",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "charcoal rubber"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "non-marking rubber foot.003",
+      "rawVertexBytesSha256": "2ae714c568f78ab174ba6993e5674bb5565e02493fc8229d44628dc89aaa1372",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "charcoal rubber"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "sealed timber arm",
+      "rawVertexBytesSha256": "abb4c6e82105526c88f29ef5022360ede2f00b513fa472325c8900dbfb296401",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "sealed warm timber arm cap"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.026000000536441803,
+            "width_pct": 0.026000000536441803,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "sealed timber arm.001",
+      "rawVertexBytesSha256": "abb4c6e82105526c88f29ef5022360ede2f00b513fa472325c8900dbfb296401",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "sealed warm timber arm cap"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.026000000536441803,
+            "width_pct": 0.026000000536441803,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "seat cushion 1",
+      "rawVertexBytesSha256": "00cc070d97d81833937eced570f996dad25ad8c8ffc72eb3c91307aabf06619e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm grey teal woven upholstery"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.07500000298023224,
+            "width_pct": 0.07500000298023224,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "seat cushion 2",
+      "rawVertexBytesSha256": "00cc070d97d81833937eced570f996dad25ad8c8ffc72eb3c91307aabf06619e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm grey teal woven upholstery"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.07500000298023224,
+            "width_pct": 0.07500000298023224,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "seat highlight 1",
+      "rawVertexBytesSha256": "a8a62a33aaf5c4ed4198f3fd1de744a4e0afe251b099e3578575aa9b00e921f0",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "cushion light-catching weave"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.003000000026077032,
+            "width_pct": 0.003000000026077032,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "seat highlight 2",
+      "rawVertexBytesSha256": "a8a62a33aaf5c4ed4198f3fd1de744a4e0afe251b099e3578575aa9b00e921f0",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "cushion light-catching weave"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.003000000026077032,
+            "width_pct": 0.003000000026077032,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "seat support panel",
+      "rawVertexBytesSha256": "3143b66819497e010a5e23ce26fc6d5bebd296c70649dd53b3d5e961935a6b59",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "charcoal rubber"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.02500000037252903,
+            "width_pct": 0.02500000037252903,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "side seat bearer",
+      "rawVertexBytesSha256": "43ebad525fe39317786754675c8648ae05236f40f115fcf9560b3343a9368405",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder-coated petrol steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "side seat bearer.001",
+      "rawVertexBytesSha256": "43ebad525fe39317786754675c8648ae05236f40f115fcf9560b3343a9368405",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder-coated petrol steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "steel upright",
+      "rawVertexBytesSha256": "c7bc3cf7175b8b34750838eea74dd1cf56b195b95f8b3a38d68713eaa2f98d3e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder-coated petrol steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "steel upright.001",
+      "rawVertexBytesSha256": "c7bc3cf7175b8b34750838eea74dd1cf56b195b95f8b3a38d68713eaa2f98d3e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder-coated petrol steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "steel upright.002",
+      "rawVertexBytesSha256": "c7bc3cf7175b8b34750838eea74dd1cf56b195b95f8b3a38d68713eaa2f98d3e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder-coated petrol steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "steel upright.003",
+      "rawVertexBytesSha256": "c7bc3cf7175b8b34750838eea74dd1cf56b195b95f8b3a38d68713eaa2f98d3e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "powder-coated petrol steel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft upholstered edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft upholstered edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": false,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.012000000104308128,
+            "width_pct": 0.012000000104308128,
+            "segments": 3,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        },
+        {
+          "name": "weighted normals",
+          "type": "WEIGHTED_NORMAL",
+          "values": {
+            "name": "weighted normals",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "weight": 50,
+            "mode": "FACE_AREA",
+            "thresh": 0.009999999776482582,
+            "keep_sharp": false,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_face_influence": false
+          }
+        }
+      ]
+    }
+  ],
+  "allStoredGraphs": [
+    {
+      "name": "Material",
+      "diffuse": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.5,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "a83730e71d8885737a7513eca32fdfc9350bca452775153ff5fe6543ce82281d"
+    },
+    {
+      "name": "charcoal rubber",
+      "diffuse": [
+        0.11999999731779099,
+        0.17000000178813934,
+        0.18000000715255737,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.11999999731779099,
+                0.17000000178813934,
+                0.18000000715255737,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.7200000286102295
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "263a375d68f089de23567f57a8e63dd8cb9ad140eb26f638c593f9988e54e8fe"
+    },
+    {
+      "name": "cushion light-catching weave",
+      "diffuse": [
+        0.3799999952316284,
+        0.4699999988079071,
+        0.46000000834465027,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.3799999952316284,
+                0.4699999988079071,
+                0.46000000834465027,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.7200000286102295
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "93b2cfd7a26b3b122d94c7632f66f362e6fb585808b5eb729bcd52b72c0bfd0e"
+    },
+    {
+      "name": "powder-coated petrol steel",
+      "diffuse": [
+        0.10000000149011612,
+        0.25,
+        0.30000001192092896,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.10000000149011612,
+                0.25,
+                0.30000001192092896,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.3400000035762787
+            },
+            {
+              "name": "Roughness",
+              "value": 0.550000011920929
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "1b14ed39b704cb2f65668b1e3fe51ba17fd7582bc6aef26a10bb1774d1facc4a"
+    },
+    {
+      "name": "recessed cushion seam",
+      "diffuse": [
+        0.17000000178813934,
+        0.25999999046325684,
+        0.2800000011920929,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.17000000178813934,
+                0.25999999046325684,
+                0.2800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.7200000286102295
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "27face51aad367d405a76177eaec552a57f7588ed851e93dcf0cd0c455551767"
+    },
+    {
+      "name": "sealed warm timber arm cap",
+      "diffuse": [
+        0.5,
+        0.4300000071525574,
+        0.30000001192092896,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.5,
+                0.4300000071525574,
+                0.30000001192092896,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.7200000286102295
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "1284011c5f2a9e0aae885b11f377fc1631803b6f1c050c3d97aaf52ab5d20874"
+    },
+    {
+      "name": "stainless captive fittings",
+      "diffuse": [
+        0.5799999833106995,
+        0.6299999952316284,
+        0.6100000143051147,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.5799999833106995,
+                0.6299999952316284,
+                0.6100000143051147,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.6499999761581421
+            },
+            {
+              "name": "Roughness",
+              "value": 0.41999998688697815
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "58f76e7e1cb328b056a93d07db3c45754c66f0da6e0ef7649d901a55f1f89f84"
+    },
+    {
+      "name": "warm grey teal woven upholstery",
+      "diffuse": [
+        0.3100000023841858,
+        0.4000000059604645,
+        0.4000000059604645,
+        1.0
+      ],
+      "metallic": 0.0,
+      "roughness": 0.4000000059604645,
+      "useNodes": true,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.3100000023841858,
+                0.4000000059604645,
+                0.4000000059604645,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.7200000286102295
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ],
+      "canonicalMaterialSha256": "6e9be2af6cbe93a1076631276339868d8c073af8224566a14b97ce7d9c7d8206"
+    }
+  ],
+  "allObjectMatrices": {
+    "arm captive fitting": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.2199999988079071
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.25
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.7279999852180481
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "arm captive fitting.001": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.7799999713897705
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.25
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.7279999852180481
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "back cushion 1": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.6000000238418579
+      ],
+      [
+        0.0,
+        0.9925461411476135,
+        0.12186934798955917,
+        0.7350000143051147
+      ],
+      [
+        0.0,
+        -0.12186934798955917,
+        0.9925461411476135,
+        0.8199999928474426
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "back cushion 2": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.399999976158142
+      ],
+      [
+        0.0,
+        0.9925461411476135,
+        0.12186934798955917,
+        0.7350000143051147
+      ],
+      [
+        0.0,
+        -0.12186934798955917,
+        0.9925461411476135,
+        0.8199999928474426
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "back pad highlight 1": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.6000000238418579
+      ],
+      [
+        0.0,
+        0.9925461411476135,
+        0.12186934798955917,
+        0.6600000262260437
+      ],
+      [
+        0.0,
+        -0.12186934798955917,
+        0.9925461411476135,
+        0.8500000238418579
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "back pad highlight 2": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.399999976158142
+      ],
+      [
+        0.0,
+        0.9925461411476135,
+        0.12186934798955917,
+        0.6600000262260437
+      ],
+      [
+        0.0,
+        -0.12186934798955917,
+        0.9925461411476135,
+        0.8500000238418579
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "back support": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.2199999988079071
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.7799999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.699999988079071
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "back support.001": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.7799999713897705
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.7799999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.699999988079071
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "bound seat seam 1": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.6000000238418579
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.2199999988079071
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.5849999785423279
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "bound seat seam 1.001": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.6000000238418579
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.699999988079071
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.5849999785423279
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "bound seat seam 2": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.399999976158142
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.2199999988079071
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.5849999785423279
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "bound seat seam 2.001": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.399999976158142
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.699999988079071
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.5849999785423279
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "continuous under-seat rail": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.20000000298023224
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.4300000071525574
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "continuous under-seat rail.001": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.7799999713897705
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.4300000071525574
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "dark center back reveal": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.6539999842643738
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.8399999737739563
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "dark center seat reveal": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.46000000834465027
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.6460000276565552
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "non-marking rubber foot": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.2199999988079071
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.1899999976158142
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.02800000086426735
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "non-marking rubber foot.001": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.2199999988079071
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.7900000214576721
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.02800000086426735
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "non-marking rubber foot.002": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.7799999713897705
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.1899999976158142
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.02800000086426735
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "non-marking rubber foot.003": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.7799999713897705
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.7900000214576721
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.02800000086426735
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "sealed timber arm": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.2199999988079071
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.47999998927116394
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.6899999976158142
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "sealed timber arm.001": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.7799999713897705
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.47999998927116394
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.6899999976158142
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "seat cushion 1": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.6000000238418579
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.46000000834465027
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.5649999976158142
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "seat cushion 2": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.399999976158142
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.46000000834465027
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.5649999976158142
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "seat highlight 1": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.6000000238418579
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.44999998807907104
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.6579999923706055
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "seat highlight 2": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.399999976158142
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.44999998807907104
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.6579999923706055
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "seat support panel": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.47999998927116394
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.49000000953674316
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "side seat bearer": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.2199999988079071
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.49000000953674316
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.4300000071525574
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "side seat bearer.001": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.7799999713897705
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.49000000953674316
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.4300000071525574
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "steel upright": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.2199999988079071
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.1899999976158142
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.25
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "steel upright.001": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.2199999988079071
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.7900000214576721
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.25
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "steel upright.002": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.7799999713897705
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.1899999976158142
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.25
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "steel upright.003": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        1.7799999713897705
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.7900000214576721
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.25
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "allEvaluatedHashes": {
+    "arm captive fitting": "a1d57d23282e8466c68d4222adc3f6d9779c467aa557efd4833b3ec561506202",
+    "arm captive fitting.001": "8c5b72e619633aa9a8a4641b9212d086f6567fb11735ec287ba80ddc85e6b838",
+    "back cushion 1": "e6782bd3da6d2b151e2bdb3777c487eafccbf74d67e531449bd98a0d76817c94",
+    "back cushion 2": "2b7b5561229c187c4948922ea494a71bc51c3ccaa4e7dfc5cef4b4b756b8bbcb",
+    "back pad highlight 1": "d3527ec041da93cddfd98aa99caee6b076d3760c550427ec43e136c9b8c261ce",
+    "back pad highlight 2": "4b3218cc0f5d20ccdfbe9b0b896041f506ba5a883ce38911be28463fcdac4788",
+    "back support": "0cb5e8c83def7d8f7741372e6bf08e0e9f8efc63758601195c0560233ec0b236",
+    "back support.001": "4681c17084ec5c153357d65c30466c2cefa233d7a32a2012858f5725ed971e9a",
+    "bound seat seam 1": "e4b62abf369200e991382dbfd31f55b2b65a5a83992490ecee538e4e1756303a",
+    "bound seat seam 1.001": "63e360d8e700b804f1c46482cd3e82534c94f97bc43b7bb5f313f7fa99691c69",
+    "bound seat seam 2": "6583fb8efd614142e6bec2006af10b3d991496cdcca7fabcb8f7636532492038",
+    "bound seat seam 2.001": "37d9f478ab9aafc1b2df87f480fcccebf471f44138a224579c72c9ac0b898235",
+    "continuous under-seat rail": "5a6f9dcd179d461e3107e17afe7486d4ca761880a39fd06ee63487e089a33e9f",
+    "continuous under-seat rail.001": "d64971544fea3ac8feab49714a921985a9e08a887ff9bb7a5f37276e0f216f18",
+    "dark center back reveal": "0841a8c019cb9b34a8f54ef07beccfd7c0d0a960ec7cb82344ebd19f90929fdb",
+    "dark center seat reveal": "1dfba26c411d8a0174a60912612be9fed75b342bcb9071cdaec731c6f035e4b0",
+    "non-marking rubber foot": "3ba849ca9176a2523787ad21f75fea3d50649f32355f1a3a1e6b0119069f426a",
+    "non-marking rubber foot.001": "03e40316945c64104f3da29bef152a89c187977343087590c95b7ac075474349",
+    "non-marking rubber foot.002": "ca6aebf6ec9f1613648adf51f7042caedc53a23b17009e03c474aae6e40a565d",
+    "non-marking rubber foot.003": "635a390177ae325c7d02016e824f7c0de3cb3ad809ee19eedd52a7fd1d579de0",
+    "sealed timber arm": "37bf12692bcbaa030eaa27961ad315395eb0ab3686bd6d32e730b6eb0ba18c34",
+    "sealed timber arm.001": "c3eb999b3dff13d5b2aa80060c3f618d7bb4368cf46cdf9e4e718d562137e6fb",
+    "seat cushion 1": "6f03095cfa01ce78309be84792bdf0986f2fcda120d94beedc2a31265837138f",
+    "seat cushion 2": "c707cefd2adb1044b79ea6c95b3cded6a8991a15825608b80d49e9c5935a9015",
+    "seat highlight 1": "f2b48a6240964be25a60baf0edbee3e73bff554a247134b4523df89eb8cad92e",
+    "seat highlight 2": "7a7979d3c1e8d2aeaac71ed8ee8f282980028a2354fac1b1e606dec15392c2da",
+    "seat support panel": "8222a1ece1d7e45f929b8a9ee35861c5728361edbc5126c9f32883302fd4e5e1",
+    "side seat bearer": "ef0be2735466b1d6017aa32eb07564698c78f0ff80afbe2da4aaf7925329e696",
+    "side seat bearer.001": "9f92664099c3b4240261c0bd7b571482603aa1b440a0407c7134fce7bba266ab",
+    "steel upright": "c81e1a698de7c3585d78a6bea7ec997d22efdddd0fe47c8e0ce7219a481990d7",
+    "steel upright.001": "4a9795da2469a8604da87c968b3837419c6ddd0d0f87264b5ff3c6f5d51bb8bf",
+    "steel upright.002": "31e19647eb53cc5bf5da0244f7f8e9ed7e1d5e25e346b14fc6e6828e5fbd91e5",
+    "steel upright.003": "2bd324148b41699343f7177c4ea54521d7f6672c315142ce8530478bc70e238c"
+  },
+  "allEvaluatedNormals": [
+    {
+      "name": "arm captive fitting",
+      "polygons": 22,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.005999863147735596,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "arm captive fitting.001",
+      "polygons": 22,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.005999863147735596,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "back cushion 1",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.05999984935624525,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "back cushion 2",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.05999985313974321,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "back pad highlight 1",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.007999901841685642,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "back pad highlight 2",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.007999901841685642,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "back support",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.03599990904331207,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "back support.001",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.03599977493286133,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "bound seat seam 1",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.005999967455863953,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "bound seat seam 1.001",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.005999743938446045,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "bound seat seam 2",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.005999967455863953,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "bound seat seam 2.001",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.005999743938446045,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "continuous under-seat rail",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.03399991989135742,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "continuous under-seat rail.001",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.033999621868133545,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "dark center back reveal",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.00899970531463623,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "dark center seat reveal",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.006999850273132324,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "non-marking rubber foot",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.02800000086426735,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "non-marking rubber foot.001",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.02800000086426735,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "non-marking rubber foot.002",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.02800000086426735,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "non-marking rubber foot.003",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.02800000086426735,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "sealed timber arm",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.03700000047683716,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "sealed timber arm.001",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.03700000047683716,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "seat cushion 1",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.09099996089935303,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "seat cushion 2",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.09099996089935303,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "seat highlight 1",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.003999829292297363,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "seat highlight 2",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.003999829292297363,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "seat support panel",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.059999823570251465,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "side seat bearer",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.03299996256828308,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "side seat bearer.001",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.03299996256828308,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "steel upright",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.034999966621398926,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "steel upright.001",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.034999966621398926,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "steel upright.002",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.03499960899353027,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    },
+    {
+      "name": "steel upright.003",
+      "polygons": 98,
+      "degenerateIndices": [],
+      "minimumOutwardDistance": 0.03499960899353027,
+      "inwardPolygons": 0,
+      "transformDeterminant": 1.0
+    }
+  ],
+  "sourceEvaluatedBounds": {
+    "min": [
+      0.11999999731779099,
+      0.09999999403953552,
+      0.0
+    ],
+    "max": [
+      1.8799999952316284,
+      0.8799999952316284,
+      0.9905608892440796
+    ]
+  },
+  "storedActions": [],
+  "allPartBounds": {
+    "arm captive fitting": {
+      "min": [
+        0.20399999618530273,
+        0.23399999737739563,
+        0.722000002861023
+      ],
+      "max": [
+        0.23600000143051147,
+        0.26600000262260437,
+        0.7339999675750732
+      ]
+    },
+    "arm captive fitting.001": {
+      "min": [
+        1.7639999389648438,
+        0.23399999737739563,
+        0.722000002861023
+      ],
+      "max": [
+        1.7960000038146973,
+        0.26600000262260437,
+        0.7339999675750732
+      ]
+    },
+    "back cushion 1": {
+      "min": [
+        0.2500000298023224,
+        0.6602135896682739,
+        0.6494390964508057
+      ],
+      "max": [
+        0.9500000476837158,
+        0.8097864389419556,
+        0.9905608892440796
+      ]
+    },
+    "back cushion 2": {
+      "min": [
+        1.0499999523162842,
+        0.6602135896682739,
+        0.6494390964508057
+      ],
+      "max": [
+        1.75,
+        0.8097864389419556,
+        0.9905608892440796
+      ]
+    },
+    "back pad highlight 1": {
+      "min": [
+        0.30000001192092896,
+        0.6419445276260376,
+        0.760549008846283
+      ],
+      "max": [
+        0.9000000357627869,
+        0.6780555248260498,
+        0.9394510388374329
+      ]
+    },
+    "back pad highlight 2": {
+      "min": [
+        1.0999999046325684,
+        0.6419445276260376,
+        0.760549008846283
+      ],
+      "max": [
+        1.7000000476837158,
+        0.6780555248260498,
+        0.9394510388374329
+      ]
+    },
+    "back support": {
+      "min": [
+        0.18400000035762787,
+        0.7429999709129333,
+        0.4399999976158142
+      ],
+      "max": [
+        0.25599998235702515,
+        0.8169999718666077,
+        0.9599999785423279
+      ]
+    },
+    "back support.001": {
+      "min": [
+        1.74399995803833,
+        0.7429999709129333,
+        0.4399999976158142
+      ],
+      "max": [
+        1.815999984741211,
+        0.8169999718666077,
+        0.9599999785423279
+      ]
+    },
+    "bound seat seam 1": {
+      "min": [
+        0.2800000309944153,
+        0.21400000154972076,
+        0.5769999623298645
+      ],
+      "max": [
+        0.9200000166893005,
+        0.22599999606609344,
+        0.5929999947547913
+      ]
+    },
+    "bound seat seam 1.001": {
+      "min": [
+        0.2800000309944153,
+        0.6940000057220459,
+        0.5769999623298645
+      ],
+      "max": [
+        0.9200000166893005,
+        0.7059999704360962,
+        0.5929999947547913
+      ]
+    },
+    "bound seat seam 2": {
+      "min": [
+        1.0799999237060547,
+        0.21400000154972076,
+        0.5769999623298645
+      ],
+      "max": [
+        1.7200000286102295,
+        0.22599999606609344,
+        0.5929999947547913
+      ]
+    },
+    "bound seat seam 2.001": {
+      "min": [
+        1.0799999237060547,
+        0.6940000057220459,
+        0.5769999623298645
+      ],
+      "max": [
+        1.7200000286102295,
+        0.7059999704360962,
+        0.5929999947547913
+      ]
+    },
+    "continuous under-seat rail": {
+      "min": [
+        0.19999998807907104,
+        0.16600000858306885,
+        0.3959999978542328
+      ],
+      "max": [
+        1.7999999523162842,
+        0.23399999737739563,
+        0.46400001645088196
+      ]
+    },
+    "continuous under-seat rail.001": {
+      "min": [
+        0.19999998807907104,
+        0.7459999918937683,
+        0.3959999978542328
+      ],
+      "max": [
+        1.7999999523162842,
+        0.8139999508857727,
+        0.46400001645088196
+      ]
+    },
+    "dark center back reveal": {
+      "min": [
+        0.9829999804496765,
+        0.6449999809265137,
+        0.699999988079071
+      ],
+      "max": [
+        1.0169999599456787,
+        0.6629999876022339,
+        0.9799999594688416
+      ]
+    },
+    "dark center seat reveal": {
+      "min": [
+        0.9789999723434448,
+        0.24000000953674316,
+        0.6389999985694885
+      ],
+      "max": [
+        1.0210000276565552,
+        0.6800000071525574,
+        0.6530000567436218
+      ]
+    },
+    "non-marking rubber foot": {
+      "min": [
+        0.11999999731779099,
+        0.09999999403953552,
+        0.0
+      ],
+      "max": [
+        0.3199999928474426,
+        0.2800000011920929,
+        0.0560000017285347
+      ]
+    },
+    "non-marking rubber foot.001": {
+      "min": [
+        0.11999999731779099,
+        0.7000000476837158,
+        0.0
+      ],
+      "max": [
+        0.3199999928474426,
+        0.8799999952316284,
+        0.0560000017285347
+      ]
+    },
+    "non-marking rubber foot.002": {
+      "min": [
+        1.6799999475479126,
+        0.09999999403953552,
+        0.0
+      ],
+      "max": [
+        1.8799999952316284,
+        0.2800000011920929,
+        0.0560000017285347
+      ]
+    },
+    "non-marking rubber foot.003": {
+      "min": [
+        1.6799999475479126,
+        0.7000000476837158,
+        0.0
+      ],
+      "max": [
+        1.8799999952316284,
+        0.8799999952316284,
+        0.0560000017285347
+      ]
+    },
+    "sealed timber arm": {
+      "min": [
+        0.15700000524520874,
+        0.20999997854232788,
+        0.652999997138977
+      ],
+      "max": [
+        0.28299999237060547,
+        0.75,
+        0.7269999980926514
+      ]
+    },
+    "sealed timber arm.001": {
+      "min": [
+        1.7170000076293945,
+        0.20999997854232788,
+        0.652999997138977
+      ],
+      "max": [
+        1.8429999351501465,
+        0.75,
+        0.7269999980926514
+      ]
+    },
+    "seat cushion 1": {
+      "min": [
+        0.24000000953674316,
+        0.20500001311302185,
+        0.4740000069141388
+      ],
+      "max": [
+        0.9600000381469727,
+        0.7150000333786011,
+        0.656000018119812
+      ]
+    },
+    "seat cushion 2": {
+      "min": [
+        1.0399999618530273,
+        0.20500001311302185,
+        0.4740000069141388
+      ],
+      "max": [
+        1.7599999904632568,
+        0.7150000333786011,
+        0.656000018119812
+      ]
+    },
+    "seat highlight 1": {
+      "min": [
+        0.30000001192092896,
+        0.2449999898672104,
+        0.6539999842643738
+      ],
+      "max": [
+        0.9000000357627869,
+        0.6549999713897705,
+        0.6620000004768372
+      ]
+    },
+    "seat highlight 2": {
+      "min": [
+        1.0999999046325684,
+        0.2449999898672104,
+        0.6539999842643738
+      ],
+      "max": [
+        1.7000000476837158,
+        0.6549999713897705,
+        0.6620000004768372
+      ]
+    },
+    "seat support panel": {
+      "min": [
+        0.19999998807907104,
+        0.16999998688697815,
+        0.4300000071525574
+      ],
+      "max": [
+        1.7999999523162842,
+        0.7899999618530273,
+        0.550000011920929
+      ]
+    },
+    "side seat bearer": {
+      "min": [
+        0.17599999904632568,
+        0.15000000596046448,
+        0.3970000147819519
+      ],
+      "max": [
+        0.2639999985694885,
+        0.8300000429153442,
+        0.46299999952316284
+      ]
+    },
+    "side seat bearer.001": {
+      "min": [
+        1.7359999418258667,
+        0.15000000596046448,
+        0.3970000147819519
+      ],
+      "max": [
+        1.8240000009536743,
+        0.8300000429153442,
+        0.46299999952316284
+      ]
+    },
+    "steel upright": {
+      "min": [
+        0.1850000023841858,
+        0.15199999511241913,
+        0.040000006556510925
+      ],
+      "max": [
+        0.2549999952316284,
+        0.2280000001192093,
+        0.4599999785423279
+      ]
+    },
+    "steel upright.001": {
+      "min": [
+        0.1850000023841858,
+        0.7520000338554382,
+        0.040000006556510925
+      ],
+      "max": [
+        0.2549999952316284,
+        0.828000009059906,
+        0.4599999785423279
+      ]
+    },
+    "steel upright.002": {
+      "min": [
+        1.7450000047683716,
+        0.15199999511241913,
+        0.040000006556510925
+      ],
+      "max": [
+        1.8149999380111694,
+        0.2280000001192093,
+        0.4599999785423279
+      ]
+    },
+    "steel upright.003": {
+      "min": [
+        1.7450000047683716,
+        0.7520000338554382,
+        0.040000006556510925
+      ],
+      "max": [
+        1.8149999380111694,
+        0.828000009059906,
+        0.4599999785423279
+      ]
+    }
+  },
+  "actualOriginal72Replay": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "sha256": "2837a44c35736bec2a098f41954a33d72703968210937eb5251199afa81ad437",
+      "canonicalSha256": "2837a44c35736bec2a098f41954a33d72703968210937eb5251199afa81ad437",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30,
+      "sha256": "da3b8289135052dc595374826cfea17c9f6998b6b73cfb103a9db2d63120dd3a",
+      "canonicalSha256": "da3b8289135052dc595374826cfea17c9f6998b6b73cfb103a9db2d63120dd3a",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "sha256": "a794631fbb692afa7191e6351ae051f85e9b5b66faf440a4e6ff9611d3435432",
+      "canonicalSha256": "a794631fbb692afa7191e6351ae051f85e9b5b66faf440a4e6ff9611d3435432",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50,
+      "sha256": "76b74449f5d903c2122e35b8d78a583b073027fdc74ecc11313965553590980b",
+      "canonicalSha256": "76b74449f5d903c2122e35b8d78a583b073027fdc74ecc11313965553590980b",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "sha256": "2dfed2eaf3ba538a1e315a55559f5749cda352117bd0d23cfaff95dbb8a2cb7b",
+      "canonicalSha256": "2dfed2eaf3ba538a1e315a55559f5749cda352117bd0d23cfaff95dbb8a2cb7b",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "sha256": "b28b34383d3f187d6b56b7e9c7b1da79127cbf40ba6c4764147914e4ce32e8bf",
+      "canonicalSha256": "b28b34383d3f187d6b56b7e9c7b1da79127cbf40ba6c4764147914e4ce32e8bf",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20,
+      "sha256": "ad950c39d88b7933f8db91e095d72c909f6439524c4039bf911ce500cd342f3b",
+      "canonicalSha256": "ad950c39d88b7933f8db91e095d72c909f6439524c4039bf911ce500cd342f3b",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30,
+      "sha256": "beedced23e6d179dc3d3e430bd31ae737d79d4afb88cffca4bb2b77dfee598be",
+      "canonicalSha256": "beedced23e6d179dc3d3e430bd31ae737d79d4afb88cffca4bb2b77dfee598be",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "sha256": "6eb81f30960b394b1871f57ab7a1239c98e35911cf51689bd746034f639ff73b",
+      "canonicalSha256": "6eb81f30960b394b1871f57ab7a1239c98e35911cf51689bd746034f639ff73b",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "sha256": "0899657c5cf042c5df929ed57412bd4b8b2c192d4fa8ea9dc57f678dfd326668",
+      "canonicalSha256": "0899657c5cf042c5df929ed57412bd4b8b2c192d4fa8ea9dc57f678dfd326668",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "sha256": "5a613088e0ff3afdc8ed2a1e4c86d5d9060ad6185c3ac4bb837f2bea60dbd7c4",
+      "canonicalSha256": "5a613088e0ff3afdc8ed2a1e4c86d5d9060ad6185c3ac4bb837f2bea60dbd7c4",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "sha256": "9a7ac46d3e59aff9cf6484f94320ec1a7cc668b4324b375498260980435dc6bc",
+      "canonicalSha256": "9a7ac46d3e59aff9cf6484f94320ec1a7cc668b4324b375498260980435dc6bc",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20,
+      "sha256": "7c08f7a0d9d77250a974333d861319386abe2f00613704cdc36aebc2ae5960ab",
+      "canonicalSha256": "7c08f7a0d9d77250a974333d861319386abe2f00613704cdc36aebc2ae5960ab",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30,
+      "sha256": "b0f13d82de4ed7dc07e904891ebe69d6df722b8477b299e9ed337dbbd170c7b7",
+      "canonicalSha256": "b0f13d82de4ed7dc07e904891ebe69d6df722b8477b299e9ed337dbbd170c7b7",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "sha256": "060ff66139ee57458d25d4b7d89f605a362356d4b1623ecbc73e744af23ec49f",
+      "canonicalSha256": "060ff66139ee57458d25d4b7d89f605a362356d4b1623ecbc73e744af23ec49f",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "sha256": "18363f254ea71963b33b9d02ba65009997cec232ccecf0a3c2b74f64242f10a4",
+      "canonicalSha256": "18363f254ea71963b33b9d02ba65009997cec232ccecf0a3c2b74f64242f10a4",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "sha256": "090c3eef0ae7bee379f7b1b3aa17be7c178f9eed5d4fc95826ce3592a5f52531",
+      "canonicalSha256": "090c3eef0ae7bee379f7b1b3aa17be7c178f9eed5d4fc95826ce3592a5f52531",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "sha256": "ca6cffbb5ee449023fd6bcb48c9cb51eb6faf497c59d23333490a8462c2d9dec",
+      "canonicalSha256": "ca6cffbb5ee449023fd6bcb48c9cb51eb6faf497c59d23333490a8462c2d9dec",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20,
+      "sha256": "4074fe8ec0e711d037069dc1c76e22229a0871985ffa9282a4aabe89530c3520",
+      "canonicalSha256": "4074fe8ec0e711d037069dc1c76e22229a0871985ffa9282a4aabe89530c3520",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "sha256": "ec1fd04da704d63972c563e030c0e24519624ee6498c0f24731be8b2a3eea545",
+      "canonicalSha256": "ec1fd04da704d63972c563e030c0e24519624ee6498c0f24731be8b2a3eea545",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "sha256": "b8cf9817e119e2c5a42e8c194ad69a5ed7690f367c9892cab5d924005c28d509",
+      "canonicalSha256": "b8cf9817e119e2c5a42e8c194ad69a5ed7690f367c9892cab5d924005c28d509",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "sha256": "c39e7718f36068b259d16e86abb18df1328751a31a83b52d787f3560b0c5222e",
+      "canonicalSha256": "c39e7718f36068b259d16e86abb18df1328751a31a83b52d787f3560b0c5222e",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "sha256": "57f00350437407efd4fc2eb97fc5291582c75781c6546d99d40b7f6d5e76e791",
+      "canonicalSha256": "57f00350437407efd4fc2eb97fc5291582c75781c6546d99d40b7f6d5e76e791",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "sha256": "ab7273d195becbf823946b0fdf24efb3cde4fdab7519cde42629b2764ef89430",
+      "canonicalSha256": "ab7273d195becbf823946b0fdf24efb3cde4fdab7519cde42629b2764ef89430",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20,
+      "sha256": "bfad494757c6dd1568d53560dc95771a9d5c803ce4eaa28a36df8152ee386b68",
+      "canonicalSha256": "bfad494757c6dd1568d53560dc95771a9d5c803ce4eaa28a36df8152ee386b68",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30,
+      "sha256": "1a10c203e30720553ad2534204bf043212b3a074871cd00dd514ffc165adda52",
+      "canonicalSha256": "1a10c203e30720553ad2534204bf043212b3a074871cd00dd514ffc165adda52",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "sha256": "4008df68b5de429276658171bd51b416d5b981a86a2041933fbdec1faebf6d7b",
+      "canonicalSha256": "4008df68b5de429276658171bd51b416d5b981a86a2041933fbdec1faebf6d7b",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "sha256": "ee99e3813e370af36ce0aa88192e0d0329659765a416b2ba381b9f8171270d1c",
+      "canonicalSha256": "ee99e3813e370af36ce0aa88192e0d0329659765a416b2ba381b9f8171270d1c",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "sha256": "b23c6b65bd0c62de5acc1d5bdc02b631585bf218fc923f910abc65a2723fac74",
+      "canonicalSha256": "b23c6b65bd0c62de5acc1d5bdc02b631585bf218fc923f910abc65a2723fac74",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "sha256": "7af63d3e8957528383913addc319da4decfc10e3fdaec40b1bcf3461db1ad5a9",
+      "canonicalSha256": "7af63d3e8957528383913addc319da4decfc10e3fdaec40b1bcf3461db1ad5a9",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20,
+      "sha256": "1085a51e04db370f469084c04a048445e07d7d1e4f9195d08d9c76408d2896db",
+      "canonicalSha256": "1085a51e04db370f469084c04a048445e07d7d1e4f9195d08d9c76408d2896db",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30,
+      "sha256": "9761211078904e663489b65d351fc6dc87243badbf683c57a285ccc0f3d68040",
+      "canonicalSha256": "9761211078904e663489b65d351fc6dc87243badbf683c57a285ccc0f3d68040",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "sha256": "fb1c2ea918353e93a061d0ec15f0e3757eee017954e88decdd23806c274e671b",
+      "canonicalSha256": "fb1c2ea918353e93a061d0ec15f0e3757eee017954e88decdd23806c274e671b",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "sha256": "bfde7de8a6a622fbb3bc0d54d42bb8ab3528f302660d4ac0708bf93b53db041e",
+      "canonicalSha256": "bfde7de8a6a622fbb3bc0d54d42bb8ab3528f302660d4ac0708bf93b53db041e",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "sha256": "6c71fb17b7f0e5e71bfbebaed162700f1f4d8ed836eb293c5954996a9fbcb175",
+      "canonicalSha256": "6c71fb17b7f0e5e71bfbebaed162700f1f4d8ed836eb293c5954996a9fbcb175",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "sha256": "e459eb3ce0831303186a27170ffc10f35fc7a2f45e50cd23ac3a284bf08a93d7",
+      "canonicalSha256": "e459eb3ce0831303186a27170ffc10f35fc7a2f45e50cd23ac3a284bf08a93d7",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "sha256": "477f196a05060dee120aac388f8503525a155be75b087152a2c63e32cb1f6de7",
+      "canonicalSha256": "477f196a05060dee120aac388f8503525a155be75b087152a2c63e32cb1f6de7",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "sha256": "0bc177d3c2cf4d5437dfca5ba0e383ca97a092eead448f95ef3d177a9c9c1e37",
+      "canonicalSha256": "0bc177d3c2cf4d5437dfca5ba0e383ca97a092eead448f95ef3d177a9c9c1e37",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "sha256": "a72f758afab0c2c88a6c6f91a503f8b1ceb082e4353f0d78320646480d85a1ce",
+      "canonicalSha256": "a72f758afab0c2c88a6c6f91a503f8b1ceb082e4353f0d78320646480d85a1ce",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "sha256": "516f7b1d5d676802753af027862d94832fca36a8d9b84371173f62fd28e55bc2",
+      "canonicalSha256": "516f7b1d5d676802753af027862d94832fca36a8d9b84371173f62fd28e55bc2",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "sha256": "55cbb70e2a0913ba446b165545aad9ee66b61dbabc762bd16bfa173daa42319e",
+      "canonicalSha256": "55cbb70e2a0913ba446b165545aad9ee66b61dbabc762bd16bfa173daa42319e",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "sha256": "7111180bd9c41ffe773910ff0ecda86fbfb6ce621b7de82f2834b96fe1eca3d5",
+      "canonicalSha256": "7111180bd9c41ffe773910ff0ecda86fbfb6ce621b7de82f2834b96fe1eca3d5",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "sha256": "b9a21803d722eadaffb1d9acabde78a4748b9423e189bffb339c99b1b07527a4",
+      "canonicalSha256": "b9a21803d722eadaffb1d9acabde78a4748b9423e189bffb339c99b1b07527a4",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "sha256": "4665dc1a86a8f99a5c1f2d007f1f76f05ad4486b7e91ba8d005b3b1359f38cb4",
+      "canonicalSha256": "4665dc1a86a8f99a5c1f2d007f1f76f05ad4486b7e91ba8d005b3b1359f38cb4",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "sha256": "e1e88de2fad11b1f1989d97afc3e19be9621802a0ba1ba797b450045cf4c1c8c",
+      "canonicalSha256": "e1e88de2fad11b1f1989d97afc3e19be9621802a0ba1ba797b450045cf4c1c8c",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "sha256": "e6fc94a808b3970d73b8ec2355f3ce94ce44de5687f3cdaf1eb789df4b50beac",
+      "canonicalSha256": "e6fc94a808b3970d73b8ec2355f3ce94ce44de5687f3cdaf1eb789df4b50beac",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "sha256": "2b88f9e5719a263e99c6acb1ad14cd6a0584abeaab48d2a13fd48e14196a9c2e",
+      "canonicalSha256": "2b88f9e5719a263e99c6acb1ad14cd6a0584abeaab48d2a13fd48e14196a9c2e",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "sha256": "1585544426d2f1dc3e8ceea4e99bd80be04b30468ce59a6a568bb66dd174c9e7",
+      "canonicalSha256": "1585544426d2f1dc3e8ceea4e99bd80be04b30468ce59a6a568bb66dd174c9e7",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "sha256": "6ea7eb3016a337e66dab52fb24907b22273d00b4166ec08c1edb4503c68cfbca",
+      "canonicalSha256": "6ea7eb3016a337e66dab52fb24907b22273d00b4166ec08c1edb4503c68cfbca",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "sha256": "4e06edea9bb617203e323abf653c7c27989884d1ad821bd3a751375b9f12f822",
+      "canonicalSha256": "4e06edea9bb617203e323abf653c7c27989884d1ad821bd3a751375b9f12f822",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "sha256": "c4990c213f9413fc24b218cc444d6340528340c6ed85c0599051488b1586e199",
+      "canonicalSha256": "c4990c213f9413fc24b218cc444d6340528340c6ed85c0599051488b1586e199",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "sha256": "ed1ad3423511b4c422ad813d456b5eb383b675e706c3350c4d24972bfb0c1f5f",
+      "canonicalSha256": "ed1ad3423511b4c422ad813d456b5eb383b675e706c3350c4d24972bfb0c1f5f",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "sha256": "cce47ebea0c777983623840dbe63f8f4f9140f431eb1f10fa91a04d25d2bee55",
+      "canonicalSha256": "cce47ebea0c777983623840dbe63f8f4f9140f431eb1f10fa91a04d25d2bee55",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "sha256": "b82c76d3730ce72daac9e86d0a3a9feb70f266349d61e390d3d5255a4ec3c59c",
+      "canonicalSha256": "b82c76d3730ce72daac9e86d0a3a9feb70f266349d61e390d3d5255a4ec3c59c",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "sha256": "f11fb767853383dbd615fd3b9d38e98d8099dcb4c8a1316443f1c4436d9aba3e",
+      "canonicalSha256": "f11fb767853383dbd615fd3b9d38e98d8099dcb4c8a1316443f1c4436d9aba3e",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "sha256": "5ac89e428cea949c765070ce5dda5928e385ee79a946f02aff3e4e6a64813e3a",
+      "canonicalSha256": "5ac89e428cea949c765070ce5dda5928e385ee79a946f02aff3e4e6a64813e3a",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "sha256": "052ac9d1cadbfe03b2ed850f51eb63662819c11edcf117d95762da06303c74dd",
+      "canonicalSha256": "052ac9d1cadbfe03b2ed850f51eb63662819c11edcf117d95762da06303c74dd",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "sha256": "18ec3a18f288dc3912af0aaffef55684ca5d5386efe39c8845f5ac1e4288d8f5",
+      "canonicalSha256": "18ec3a18f288dc3912af0aaffef55684ca5d5386efe39c8845f5ac1e4288d8f5",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "sha256": "03dbda3b36ca67f2f7cc001c1a10c89cb2a5a99440eda0608d3bc205578b88b1",
+      "canonicalSha256": "03dbda3b36ca67f2f7cc001c1a10c89cb2a5a99440eda0608d3bc205578b88b1",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "sha256": "75a3b57ad92c7dcef89ed3b95fdd79922afe14e6fe2e6c433f5cdb67c1a8912f",
+      "canonicalSha256": "75a3b57ad92c7dcef89ed3b95fdd79922afe14e6fe2e6c433f5cdb67c1a8912f",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "sha256": "985c68f7f6904181a904a9fc32ede1ec66a092a7cfaf8a56ac55db377dae7b72",
+      "canonicalSha256": "985c68f7f6904181a904a9fc32ede1ec66a092a7cfaf8a56ac55db377dae7b72",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "sha256": "fca03ca82f8526c3fa83e51de18c5e5b48d4ff726e3961b907eb0d24870bded4",
+      "canonicalSha256": "fca03ca82f8526c3fa83e51de18c5e5b48d4ff726e3961b907eb0d24870bded4",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "sha256": "d3f2d1b9659cee8c4bc31843c710552144650c18f4497558240b4c54449fce6c",
+      "canonicalSha256": "d3f2d1b9659cee8c4bc31843c710552144650c18f4497558240b4c54449fce6c",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "sha256": "c9eebbe00746bd225a3f3524fe40b3c8297c3df50fe49eddb5213d6b13448477",
+      "canonicalSha256": "c9eebbe00746bd225a3f3524fe40b3c8297c3df50fe49eddb5213d6b13448477",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "sha256": "10e6d8da9c8f1da451aae3171c422b79e5705357e5260b64022fef61f3679d02",
+      "canonicalSha256": "10e6d8da9c8f1da451aae3171c422b79e5705357e5260b64022fef61f3679d02",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "sha256": "5dd35063b2612781e44d7dc3e579fa196661fcadaf1690cf9e65857e26f84711",
+      "canonicalSha256": "5dd35063b2612781e44d7dc3e579fa196661fcadaf1690cf9e65857e26f84711",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "sha256": "a2b6aa3ea7c19b11c693872f05c2c11861854a434d381033332214994612bd02",
+      "canonicalSha256": "a2b6aa3ea7c19b11c693872f05c2c11861854a434d381033332214994612bd02",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "sha256": "e9946da8ee873de2e15ebf2e3d0d8886fcbc25455e2816a92fe2e34f8b346e16",
+      "canonicalSha256": "e9946da8ee873de2e15ebf2e3d0d8886fcbc25455e2816a92fe2e34f8b346e16",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "sha256": "2e8b220f8479b58086bb427f4023aa7ec94a7b865408bdd5d948b1f39e9afcd6",
+      "canonicalSha256": "2e8b220f8479b58086bb427f4023aa7ec94a7b865408bdd5d948b1f39e9afcd6",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "sha256": "4451d0e34e0f8d140da29e2bacd6844da9c02cd22eaed11f02aca3d7830fadf2",
+      "canonicalSha256": "4451d0e34e0f8d140da29e2bacd6844da9c02cd22eaed11f02aca3d7830fadf2",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "sha256": "a607785e06bd5015754758ff61474ed3f4ae6e90158289b2b89163e3b78f4e6c",
+      "canonicalSha256": "a607785e06bd5015754758ff61474ed3f4ae6e90158289b2b89163e3b78f4e6c",
+      "byteEqual": true
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "sha256": "6b46924dfcdbef6897909fc8ff4a7ac4cc63b504419a9ce2ee1347257b72ef2f",
+      "canonicalSha256": "6b46924dfcdbef6897909fc8ff4a7ac4cc63b504419a9ce2ee1347257b72ef2f",
+      "byteEqual": true
+    }
+  ],
+  "acceptedCamera": {
+    "resolution": [
+      256,
+      256
+    ],
+    "orthoScale": 4.0,
+    "target": [
+      1.0,
+      0.5,
+      0.5199999809265137
+    ],
+    "engine": "BLENDER_WORKBENCH",
+    "light": "STUDIO",
+    "studioLight": "paint.sl",
+    "viewTransform": "AgX",
+    "look": "None",
+    "exposure": 0.0,
+    "gamma": 1.0,
+    "nominalPixelsPerTile": 64,
+    "sourceFit": [
+      1,
+      1,
+      1
+    ],
+    "footprint": [
+      2,
+      1
+    ]
+  }
+}
