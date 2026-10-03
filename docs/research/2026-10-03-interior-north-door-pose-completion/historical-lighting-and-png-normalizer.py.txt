@@ -1,0 +1,43 @@
+def configure_oblique_module_lighting(scene: bpy.types.Scene) -> None:
+    """Give isolated oblique assets one authored light direction and colour grade.
+
+    Actor source files contain the lighting for their older directional atlas.
+    Disable it before adding the same studio used by environment modules.
+    """
+    for obj in scene.objects:
+        if obj.type == "LIGHT":
+            obj.hide_render = True
+    scene.view_settings.view_transform = "Standard"
+    scene.view_settings.look = "Medium High Contrast"
+    world = bpy.data.worlds.new("neutral oblique studio")
+    scene.world = world
+    world.use_nodes = True
+    background = world.node_tree.nodes.get("Background")
+    background.inputs["Color"].default_value = (0.72, 0.77, 0.82, 1)
+    background.inputs["Strength"].default_value = 0.7
+    light_data = bpy.data.lights.new("soft north-west light", "AREA")
+    light_data.energy = 600
+    light_data.shape = "DISK"
+    light_data.size = 5
+    light = bpy.data.objects.new("soft north-west light", light_data)
+    scene.collection.objects.link(light)
+    light.location = (-3, -4, 7)
+
+
+def strip_png_metadata(path: Path) -> None:
+    """Remove Blender's per-render EXIF/text chunks from an otherwise stable PNG."""
+    source = path.read_bytes()
+    if source[:8] != b"\x89PNG\r\n\x1a\n":
+        raise RuntimeError(f"{path} is not a PNG")
+    result = bytearray(source[:8])
+    offset = 8
+    while offset < len(source):
+        size = struct.unpack(">I", source[offset:offset + 4])[0]
+        kind = source[offset + 4:offset + 8]
+        data = source[offset + 8:offset + 8 + size]
+        if kind in (b"IHDR", b"sRGB", b"gAMA", b"cHRM", b"IDAT", b"IEND"):
+            result += struct.pack(">I", size) + kind + data
+            result += struct.pack(">I", zlib.crc32(kind + data) & 0xffffffff)
+        offset += 12 + size
+    path.write_bytes(result)
+
