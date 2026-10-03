@@ -517,7 +517,7 @@ the owner wants it, it is a change to ADR 0045 decision 8 and theirs to make.
 > player actually met was `out-of-bounds` rather than `unowned-land`, because
 > with one owned chunk the two faces coincide with the edge of the materialised
 > world; and the `canBuildAt` line this document cites as
-> `src/simulation/construction/system.ts:528`, `admits` has moved into `admits`
+> `system.ts:528` in `src/simulation/construction/system.ts`, `admits` has moved into `admits`
 > (`:353`), called from `submitOrder` (`:313`).
 >
 > **All three of those line numbers have since drifted, and the block above is
@@ -528,6 +528,11 @@ the owner wants it, it is a change to ADR 0045 decision 8 and theirs to make.
 > above, which cites the same original `:266`, was **not** amended when this
 > block was written — so this document stated two different things about one
 > anchor for eighteen days. It is amended now.
+
+**V9 continuity checkpoint 962b8dc014, 2026-10-03.** The quoted `system.ts:528`
+above remains historical, not a live instruction. The current admission reader
+is `src/simulation/construction/system.ts:721`, `private admits`; its existing
+ownership rule is unchanged by the two saved continuity fields.
 
 The fix from correction 1, stated as a decision because it changes a rule
 `docs/WORLD.md` records and a test pins.
@@ -679,7 +684,8 @@ same tool.
 
 **The pacing risk, derived rather than guessed.** The clock steps every 50 ms at
 speed 1 (`src/simulation/clock/fixed-step-clock.ts:29`, `ConstructionSystem`), `ConstructionSystem`
-runs every ten ticks (`src/simulation/construction/system.ts:342`, `ConstructionSystem`), and one
+runs every ten ticks (`src/simulation/construction/system.ts:347`, `ConstructionSystem`; the
+earlier `system.ts:342` is historical before V9's snapshot type fields), and one
 order is in progress at a time. So the crew completes **at most one order every
 500 ms at speed 1**, or one every 125 ms at speed 4. A 10×10 slab is 100 orders
 and therefore **at least 50 seconds of watching at speed 1**; a 20×20 slab is at

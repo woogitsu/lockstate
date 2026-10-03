@@ -355,13 +355,13 @@ export class ConstructionSystem implements SystemRegistration {
   /**
    * A per-order monotonic counter, bumped once for every write to
    * `order.state` (`setState`, below) -- ADR 0107 Decision §1's answer to
-   * "what did the row's Cancel button see". Never serialized: it lives
-   * outside `ConstructionSnapshot`, is never read by `snapshot()` or
-   * `restore()`, and never touches `BuildOrder`'s persisted shape (ADR 0107
-   * Decision §2 and §6). Its usefulness is bounded to one live worker
-   * session's few-second window between a row being painted and a press
-   * executing on it, and a restore rebuilds every row from scratch, so there
-   * is nothing pre-restore for a post-restore press to compare against.
+   * "what did the row's Cancel button see". V9 preserves the exact Map
+   * beside the history, under the owner's 2026-10-03 ruling (#2021).
+   * Historical absence restores no counters; they cannot be inferred.
+   * The earlier contract read "Never serialized: it lives outside
+   * ConstructionSnapshot" and assumed no pre-restore press survived.
+   * Actual queued commands do survive (#2021), so V9 snapshots carry
+   * their comparison ledger. `BuildOrder`'s persisted shape is unchanged.
    */
   private orderRevisions = new Map<string, number>();
 
@@ -2373,13 +2373,16 @@ export class ConstructionSystem implements SystemRegistration {
    * what the new taxonomy must not have to guess at. With it, the payload is
    * refused as `damaged-payload` by a check that says so.
    *
-   * Three array checks and no deeper walk, deliberately. A save reaching here
+   * The original guard had three array checks and no deeper walk. V9 also
+   * validates the exact ledger entries before any mutation, because malformed
+   * raw counters must not become cancellation comparison tokens. A save reaching here
    * through `SessionController` has already been validated field by field by
    * `constructionSnapshotSchema`; what this guards is the *other* two callers
    * of `restoreSimulationRuntime` -- a worker `simulation/initialize` payload,
    * whose snapshot data the protocol declares only as `jsonValue`, and
    * `InProcessSessionHost` -- so the check belongs to the shape the loop below
-   * actually depends on, not to a second copy of the schema
+   * actually depends on. V9's raw ledger must obey the same value bounds as
+   * the save schema even on these two callers that bypass it
    * (`src/persistence/save-schema.ts` owns that, and ADR 0038's
    * *"Validate the stream set in the save schema"* section argues against
    * duplicating a semantic rule into it).
@@ -2389,8 +2392,14 @@ export class ConstructionSystem implements SystemRegistration {
       throw new SnapshotRefusedError('damaged-payload', 'Construction snapshot "newerActionThanTheStackTop" must be a boolean.');
     }
     if (data.orderRevisions !== undefined && (typeof data.orderRevisions !== 'object' ||
-      data.orderRevisions === null || Array.isArray(data.orderRevisions))) {
+      data.orderRevisions === null || Array.isArray(data.orderRevisions) ||
+      (Object.getPrototypeOf(data.orderRevisions) !== Object.prototype && Object.getPrototypeOf(data.orderRevisions) !== null))) {
       throw new SnapshotRefusedError('damaged-payload', 'Construction snapshot "orderRevisions" must be an object.');
+    }
+    // Worker initialization also accepts raw snapshots, without the save codec.
+    if (data.orderRevisions !== undefined && Object.entries(data.orderRevisions).some(([id, revision]) =>
+      id.length === 0 || typeof revision !== 'number' || !Number.isSafeInteger(revision) || revision < 0)) {
+      throw new SnapshotRefusedError('damaged-payload', 'Construction snapshot "orderRevisions" must map nonempty IDs to nonnegative safe integers.');
     }
     for (const [field, value] of [
       ['orders', data.orders],

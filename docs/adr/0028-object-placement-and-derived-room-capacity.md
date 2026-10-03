@@ -319,9 +319,10 @@ of the procurement route on a bay's boundary. It also inverts the dependency —
 "which room contains this tile" becomes a *precondition for placing anything*
 rather than a query answered afterwards.
 
-**Save consequence, which is the decisive half.** `roomInstanceSchema` is
+**Save consequence, which is the decisive half.** `roomInstanceSchemaV5` is
 `.strict()` inside `prisoners.roomInstanceDefinitions`
-(`src/persistence/save-schema.ts:371-393`), so the objects become a
+(`src/persistence/save-schema.ts:585-593`, `roomInstanceSchemaV5`; the earlier
+indication `save-schema.ts:371-393` and name `roomInstanceSchema` are historical), so the objects become a
 variable-length array nested in every room-instance row. Deleting a room then
 silently deletes its furniture from the save with no record that it existed, and
 an object's identity inherits a room id that ADR 0012 says cannot survive a room
