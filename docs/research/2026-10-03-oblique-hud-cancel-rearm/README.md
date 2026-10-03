@@ -2,7 +2,7 @@
 
 2026-10-03, source458f8eaad142de927f889f78d5adc8ac85eb73d3.
 [Issue2004](https://github.com/woogitsu/lockstate/issues/2004).
-Diagnostic checkpoint only: production unchanged; no browser/server launched.
+Original diagnostic retained below; scoped source correction now verified. No browser/server launched.
 
 ## Executed path
 
@@ -52,3 +52,35 @@ its old Yard rectangle report10,11,2?1. This stages explicit confirmation only;
 no ZoneRoom was auto-submitted. Updated original3red6controls.log records3 RED/6
 legal controls across wall/Bed/Rooms; strict-types-expanded.log exits0. Initial
 six-case evidence remains archived. Native timing remains unproven.
+
+## Scoped correction and final source evidence
+
+The existing main arm-build-tool and arm-room-tool adapters synchronously call
+cancelConstructionGesture only for armed=false. World delegates to its existing
+cancelAllGestures; Oblique to its existing cancelGesture. No camera IDs/anchors,
+hover, key state, art/depth/mapping, layout, copy, protocol or saved field changes.
+False?true before update can no longer revive the old construction press.
+
+The final suite covers both World and Oblique, wall/Bed/Rooms, cancelled old release,
+cancel-only then fresh re-arm/primary press, and ordinary placement. Rooms observes
+its real report only, preserving explicit confirmation rather than bypassing it.
+Three additional controls preserve active World middle pan and Oblique middle/RMB
+ownership through HUD disarm/re-arm, with no construction commands.
+
+| Final terminal receipt | Result |
+| --- | --- |
+| original-expanded6red15controls.log | Exact original three producers:6 RED/15 controls GREEN |
+| fixed21green.log | Scoped source:21 GREEN |
+| build-disarm-adapter-negative.log | Only actual Build false-adapter call omitted:4 RED/17 GREEN |
+| build-disarm-adapter-negative-exact-restored21green.log | Exact restored:21 GREEN |
+| room-disarm-adapter-negative.log | Only actual Rooms false-adapter call omitted:2 RED/19 GREEN |
+| room-disarm-adapter-negative-exact-restored21green.log | Exact restored:21 GREEN |
+| strict-fixed.log | Strict new source fixture types exit0 |
+| focused-neighbors.log | Five exact files,113/113 GREEN, maxWorkers2 |
+| production-build.log | Real build including application/tools typechecks exit0 |
+
+Both independent guard negatives used unique existing main adapter sites and finally
+byte-restored every source. producer-restoration.json records all three original
+fixed-source SHA256 hashes and six terminal stages. No temporary producer diff remains.
+Native fast activation timing, actual FullHD hit targets and pixel acceptance remain
+ROOT's later browser queue; this is not a native success claim.

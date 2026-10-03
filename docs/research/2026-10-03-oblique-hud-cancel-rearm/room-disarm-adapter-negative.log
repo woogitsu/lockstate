@@ -1,0 +1,59 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-cancel-rearm-gesture-audit-20261003
+
+stdout | tests/unit/oblique-hud-cancel-rearm.test.ts > world/room: HUD cancel then re-arm before next render frame must not complete the cancelled old left press
+CANCEL_REARM_OLD_RELEASE {"mode":"world","tool":"room","transitions":[true,false,true],"commands":[],"roomReports":[{"kind":"designate","roomId":"room.yard","area":{"x":11,"y":11,"width":1,"height":1}}]}
+
+stdout | tests/unit/oblique-hud-cancel-rearm.test.ts > oblique/room: HUD cancel then re-arm before next render frame must not complete the cancelled old left press
+CANCEL_REARM_OLD_RELEASE {"mode":"oblique","tool":"room","transitions":[true,false,true],"commands":[],"roomReports":[{"kind":"designate","roomId":"room.yard","area":{"x":10,"y":11,"width":2,"height":1}}]}
+
+ ❯ tests/unit/oblique-hud-cancel-rearm.test.ts (21 tests | 2 failed) 86ms
+   × world/room: HUD cancel then re-arm before next render frame must not complete the cancelled old left press 7ms
+   × oblique/room: HUD cancel then re-arm before next render frame must not complete the cancelled old left press 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > world/room: HUD cancel then re-arm before next render frame must not complete the cancelled old left press
+AssertionError: cancelled room rectangle must not reach pending confirmation: expected [ { kind: 'designate', …(2) } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/oblique-hud-cancel-rearm.test.ts:148:91
+    146|     h.mouse('up', 0, 0, 940);
+    147|     console.log('CANCEL_REARM_OLD_RELEASE', JSON.stringify({ mode, too…
+    148|     expect(h.roomReports, 'cancelled room rectangle must not reach pen…
+       |                                                                                           ^
+    149|     expect(h.actors.submitted(), 'a cancelled old press cannot buy aft…
+    150|     h.mouse('down', 0, 1); h.mouse('up', 0, 0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > oblique/room: HUD cancel then re-arm before next render frame must not complete the cancelled old left press
+AssertionError: cancelled room rectangle must not reach pending confirmation: expected [ { kind: 'designate', …(2) } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/oblique-hud-cancel-rearm.test.ts:148:91
+    146|     h.mouse('up', 0, 0, 940);
+    147|     console.log('CANCEL_REARM_OLD_RELEASE', JSON.stringify({ mode, too…
+    148|     expect(h.roomReports, 'cancelled room rectangle must not reach pen…
+       |                                                                                           ^
+    149|     expect(h.actors.submitted(), 'a cancelled old press cannot buy aft…
+    150|     h.mouse('down', 0, 1); h.mouse('up', 0, 0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 19 passed (21)
+   Start at  06:15:12
+   Duration  3.81s (transform 1.36s, setup 0ms, import 3.56s, tests 86ms, environment 0ms)
+
