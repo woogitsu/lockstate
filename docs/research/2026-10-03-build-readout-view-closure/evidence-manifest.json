@@ -1,0 +1,62 @@
+﻿[
+    {
+        "path":  "actual-hosted-failure.json",
+        "sha256":  "87c1f7255259b4d86753c2b923c85f8be13ae6322306739879d37a58fcfc7290",
+        "bytes":  3768
+    },
+    {
+        "path":  "consumer-mutation.json",
+        "sha256":  "bfaca3df37b61d1a50e2c06d7cc0d65b8b083c2b900a2b8bc55880bf387521ba",
+        "bytes":  308
+    },
+    {
+        "path":  "consumer-negative.cjs.txt",
+        "sha256":  "f3cf6bcc37d3adcf9e714ba72e7e7b117e3bb68267364a3a53377eba897ca607",
+        "bytes":  2004
+    },
+    {
+        "path":  "consumer-negative.txt",
+        "sha256":  "d66f34333926b27bf8a290c5ad3e63976ca100770549d8a12b8e27b6788e960c",
+        "bytes":  2259
+    },
+    {
+        "path":  "consumer-restored.txt",
+        "sha256":  "79fff6afc57c517771cd4e7f1d7ea1513aabafee1306584708f3d56909e5550b",
+        "bytes":  259
+    },
+    {
+        "path":  "current9f-original-fixture.spec.ts.txt",
+        "sha256":  "4007d8553bb36d4fa3f44a296a4e7cb2c71dcec007c8a2c790a154bb51126d15",
+        "bytes":  2651
+    },
+    {
+        "path":  "fixed-source.txt",
+        "sha256":  "cb2199fcb50e0da7e6b0b9d3bbed73a73aeddf43cb54a3b09987e254111965a7",
+        "bytes":  538
+    },
+    {
+        "path":  "hosted305-executed-fixture.spec.ts.txt",
+        "sha256":  "aa133ef71b16fafef6b3ab836882e7a695c1966f03ad998c2ddb75ab149e5aaf",
+        "bytes":  2554
+    },
+    {
+        "path":  "original-corrected-oracle.txt",
+        "sha256":  "c495f85683ba5ab863e291bf82eae42ce326fc7ec94bde2ecdd09de049b53c7c",
+        "bytes":  6638
+    },
+    {
+        "path":  "original-source.txt",
+        "sha256":  "f8f3be554dca6c95a0bf078c41dc15c37ab81a60a2b3fbe1a532df0bfd07fecc",
+        "bytes":  6454
+    },
+    {
+        "path":  "types-app.txt",
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes":  0
+    },
+    {
+        "path":  "types-tools.txt",
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes":  0
+    }
+]
