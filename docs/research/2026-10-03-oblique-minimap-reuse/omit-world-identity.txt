@@ -1,0 +1,46 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-oblique-minimap-reuse-20261003
+
+ ❯ tests/unit/oblique-minimap-projection-reuse.test.ts (5 tests | 2 failed) 15ms
+   × invalidates on a new actual world identity with the same revision 4ms
+   × publishes empty then recovers from a replacement world with loaded bounds 3ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  13:08:00
+   Duration  926ms (transform 286ms, setup 0ms, import 762ms, tests 15ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-minimap-projection-reuse.test.ts > invalidates on a new actual world identity with the same revision
+AssertionError: expected +0 to be 256 // Object.is equality
+
+- Expected
++ Received
+
+- 256
++ 0
+
+ ❯ tests/unit/oblique-minimap-projection-reuse.test.ts:50:35
+     48|   const reads = vi.spyOn(nextWorld, 'readTile');
+     49|   probe.setFrame({ ...probe.frame(), world: nextWorld }); probe.publis…
+     50|   expect(reads.mock.calls.length).toBe(256);
+       |                                   ^
+     51|   expect(probe.views[1]!.pixels).not.toBe(probe.views[0]!.pixels);
+     52|   expect(Array.from(probe.views[1]!.pixels)).toEqual(Array(256).fill(1…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/oblique-minimap-projection-reuse.test.ts > publishes empty then recovers from a replacement world with loaded bounds
+AssertionError: expected Uint8Array[ 2, 2, 2, 2, 2, 2, 2, …(255) ] not to be Uint8Array[ 2, 2, 2, 2, 2, 2, 2, …(255) ] // Object.is equality
+ ❯ tests/unit/oblique-minimap-projection-reuse.test.ts:82:38
+     80|   probe.setFrame({ ...probe.frame(), world: loaded }); probe.publish();
+     81|   expect(probe.views[2]!.pixels).toEqual(probe.views[0]!.pixels);
+     82|   expect(probe.views[2]!.pixels).not.toBe(probe.views[0]!.pixels);
+       |                                      ^
+     83| });
+     84|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

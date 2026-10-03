@@ -1,0 +1,23 @@
+﻿const fs=require('fs'),cp=require('child_process'),crypto=require('crypto');const node=process.execPath;
+const file='src/rendering/scene/oblique-world-scene.ts',original=fs.readFileSync(file),text=original.toString('utf8');
+const branch='codex/oblique-minimap-reuse-20261003',sha='2576a651683ded686e58411517664a9385d11313';
+const out='docs/research/2026-10-03-oblique-minimap-reuse';
+const run=(cmd,args)=>cp.spawnSync(cmd,args,{encoding:'utf8'});const save=(name,r)=>fs.writeFileSync(out+'/'+name+'.txt',r.stdout+r.stderr);
+const mutations=[
+ ['omit-cache', 'if (this.minimapRevision !== frame.revision || this.minimapWorld !== frame.world)', 'if (true)'],
+ ['omit-world-identity', 'if (this.minimapRevision !== frame.revision || this.minimapWorld !== frame.world)', 'if (this.minimapRevision !== frame.revision)'],
+ ['omit-revision', 'if (this.minimapRevision !== frame.revision || this.minimapWorld !== frame.world)', 'if (this.minimapWorld !== frame.world)'],
+ ['freeze-viewport', 'const viewport = visibleGroundBounds(this.pose);', 'const viewport = visibleGroundBounds({ ...this.pose, target: { x: 8 * 64, y: 8 * 64 }, zoom: 1.25 });'],
+];const receipt={fixedSha:sha,originalSha256:crypto.createHash('sha256').update(original).digest('hex'),mutations:[]};
+try{
+ const detach=run('git',['checkout','--detach',sha]);if(detach.status!==0)throw Error(detach.stderr);
+ for(const [name,from,to]of mutations){if(!text.includes(from))throw Error('missing mutation '+name);fs.writeFileSync(file,text.replace(from,to));
+ const result=run(node,['node_modules/vitest/vitest.mjs','run','tests/unit/oblique-minimap-projection-reuse.test.ts','--maxWorkers=2']);save(name,result);receipt.mutations.push({name,exitCode:result.status});if(result.status!==1)throw Error('mutation not RED '+name);fs.writeFileSync(file,original);}
+}finally{
+ fs.writeFileSync(file,original);receipt.exactByteRestore=fs.readFileSync(file).equals(original);
+ const restored=run(node,['node_modules/vitest/vitest.mjs','run','tests/unit/oblique-minimap-projection-reuse.test.ts','--maxWorkers=2']);save('restored',restored);receipt.restoredExitCode=restored.status;
+ const diff=run('git',['diff','--exit-code','--',file]);receipt.productionDiffExitCode=diff.status;
+ const attach=run('git',['checkout',branch]);receipt.branchRestoreExitCode=attach.status;
+ fs.writeFileSync(out+'/mutation-receipt.json',JSON.stringify(receipt,null,2)+'\n');
+ if(restored.status!==0||diff.status!==0||attach.status!==0||!receipt.exactByteRestore)throw Error('restore gate failed');
+}console.log(JSON.stringify(receipt));

@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-oblique-minimap-reuse-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  13:08:04
+   Duration  970ms (transform 318ms, setup 0ms, import 802ms, tests 11ms, environment 0ms)
+

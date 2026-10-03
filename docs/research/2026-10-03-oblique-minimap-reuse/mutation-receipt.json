@@ -1,0 +1,26 @@
+{
+  "fixedSha": "2576a651683ded686e58411517664a9385d11313",
+  "originalSha256": "3be01ce4aea9c7c9f8fdecc1acced68a53cc3752c97709cb5f36f9a105cdc68e",
+  "mutations": [
+    {
+      "name": "omit-cache",
+      "exitCode": 1
+    },
+    {
+      "name": "omit-world-identity",
+      "exitCode": 1
+    },
+    {
+      "name": "omit-revision",
+      "exitCode": 1
+    },
+    {
+      "name": "freeze-viewport",
+      "exitCode": 1
+    }
+  ],
+  "exactByteRestore": true,
+  "restoredExitCode": 0,
+  "productionDiffExitCode": 0,
+  "branchRestoreExitCode": 0
+}
