@@ -153,6 +153,8 @@ export class SearchSystem implements SystemRegistration {
      */
     private readonly events: SimulationEventLog,
     private readonly routeContextResolver: (staffRoleId: string) => RouteContext = (staffRoleId) => resolveStaffRouteContext(staffRoleId),
+    /** Dynamic holders can leave while queued, travelling or being searched. */
+    private readonly targetExists: (target: SearchTarget) => boolean = () => true,
   ) {}
 
   public getMetrics(): SearchMetrics {
@@ -312,6 +314,11 @@ export class SearchSystem implements SystemRegistration {
     while (this.queue.length > 0) {
       const next = this.queue[0]!;
       const policy = this.findPolicy(next.scope);
+      if (next.targets.some(target => !this.targetExists(target))) {
+        this.queue.shift();
+        this.searchesCancelled += 1;
+        continue;
+      }
       /*
        * A search is a security duty, so the pool is the post-eligible one
        * (ADR 0053) -- a kitchen worker does not frisk a prisoner -- and it is
@@ -380,6 +387,12 @@ export class SearchSystem implements SystemRegistration {
   }
 
   private advanceJob(job: SearchJobRecord, context: SimulationContext): void {
+    if (job.targets.slice(job.currentTargetIndex).some(target => !this.targetExists(target))) {
+      this.releaseGuards(job);
+      this.active.delete(job.id);
+      this.searchesCancelled += 1;
+      return;
+    }
     if (job.state === 'travelling') {
       if (!job.travelInFlight) {
         this.beginTravelToCurrentTarget(job, context.tick);

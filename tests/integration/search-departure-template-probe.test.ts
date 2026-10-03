@@ -53,6 +53,7 @@ it.each(cases)('standing sweep respects a genuine discharged target: saved=$save
   expect(progress).toMatchObject({ state: 'travelling', travelInFlight: true });
   expect(progress.pathRequestIdsByGuard).toHaveLength(1);
   expect(runtime.searchSystem.getSnapshot().active[0]![1].targets).toEqual([{ holderKind: 'prisoner', holderId: String(target) }]);
+  let replacement: number | undefined;
   const owners = runtime.placedObjects.getSnapshot();
   const construction = runtime.construction.snapshot();
   if (saved) runtime = reload(runtime);
@@ -64,7 +65,7 @@ it.each(cases)('standing sweep respects a genuine discharged target: saved=$save
     expect(runtime.prisoners.entityStore.isAlive(target)).toBe(false);
     if (surface === 'recycled') {
       send(runtime, { type: 'AdmitPrisoner', sentenceLengthTicks: 100_000, priorIncidents: 0, x: 26, y: 26 });
-      const replacement = runtime.prisoners.entityStore.getIdByIndex(index);
+      replacement = runtime.prisoners.entityStore.getIdByIndex(index);
       expect(replacement).not.toBe(target);
       expect(runtime.prisoners.entityStore.getIndex(replacement)).toBe(index);
       expect(runtime.prisoners.entityStore.isAlive(replacement)).toBe(true);
@@ -81,7 +82,16 @@ it.each(cases)('standing sweep respects a genuine discharged target: saved=$save
   expect(metrics.searchesCancelled).toBe(surface === 'live-target' ? 0 : 1);
   expect(runtime.searchSystem.orderIds()).not.toContain(sweep);
   expect(runtime.searchSystem.claimedGuardIds()).toHaveLength(0);
+  if (replacement !== undefined) {
+    while (runtime.kernel.tick < 2401) runtime.kernel.step();
+    const next = runtime.searchSystem.getSnapshot().active[0]!;
+    expect(next[1].targets).toEqual([{ holderKind: 'prisoner', holderId: String(replacement) }]);
+    until(runtime, () => runtime.searchSystem.getMetrics().searchesCompleted === 1, 500);
+    expect(runtime.searchSystem.getMetrics().searchesCancelled).toBe(1);
+    expect(runtime.prisoners.entityStore.isAlive(replacement)).toBe(true);
+  }
   for (const [, request] of progress.pathRequestIdsByGuard) {
     expect(runtime.navigation.getResult(request)).toBeUndefined();
   }
 });
+
