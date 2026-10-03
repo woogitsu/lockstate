@@ -136,7 +136,9 @@ test('05 same completed prison at three public camera poses and whole paused Sav
   const centre = async () => minimap.click({ position: { x: bounds.width * 15.5 / 32, y: bounds.height * 17.5 / 32 } });
   await centre();
   // Public native canvas focus, then five real keyboard zoom-out actions.
-  const focus = { x: 1600, y: 500 };
+  // The actual Full HD dock begins at1556px. Use the observed unobstructed
+  // central playfield, and still verify the real hit target before clicking.
+  const focus = { x: 900, y: 400 };
   expect(await page.evaluate(point => document.elementFromPoint(point.x, point.y) === document.querySelector('#game-root canvas'), focus)).toBe(true);
   await page.mouse.click(focus.x, focus.y);
   for (let index = 0; index < 5; index++) await page.keyboard.press('Minus');
