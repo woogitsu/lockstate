@@ -1,0 +1,17 @@
+✔ real balanced whole-file collections exactly cover source and once-only artifact (15.2836ms)
+✔ simpler real native shard collections have the same exact coverage (4.6747ms)
+✔ committed producer and snapshot file sets agree with real collection; future files remain included (11.3531ms)
+✔ coverage guard refuses missing file, duplicate source, and omitted artifact test (464.6057ms)
+✔ all collection configurations retain serial workers and existing case/retry metadata (3.7813ms)
+✔ balanced draft preserves gates/provisioning and selects all artifact files once (5.4542ms)
+✔ balanced actual aggregate shell rejects failure/cancellation/skips and mismatched/missing exact subjects (499.074ms)
+✔ native draft preserves gates/provisioning and selects all artifact files once (2.8029ms)
+✔ native actual aggregate shell rejects failure/cancellation/skips and mismatched/missing exact subjects (293.5823ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1454.9069
