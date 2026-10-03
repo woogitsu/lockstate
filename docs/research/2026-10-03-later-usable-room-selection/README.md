@@ -34,3 +34,9 @@ The first typed fixture contained a meaningless check of a nonexistent PrisonerO
 The previous object-on-door hypothesis was falsified by reading current navigation: objects do not themselves obstruct this navigation graph, and ordinary PlaceObject also requires room containment. No unmeasured object-route defect or Issue was manufactured from that hypothesis.
 
 Weakest claim: this measured q1 actor lifecycle is not native acceptance, a new global-connectivity rule, proof about every room class or a mutation-tested correction. Those have not been run or changed at this checkpoint.
+
+## Granted correction checkpoint
+
+The approved optional callback now filters candidate instances within the existing sorted registry walk; defaulttrue keeps current capacity-only clients unchanged. Only regular ActionSystem room selection supplies the same current graph tile membership that previously rejected a room after selection. Existing capacity/use/Infinity branches and own-accommodation remain unchanged, and no eligible instance still follows the existing next-action fallback.
+
+[Focused production](./fixed.txt) is8GREEN/2files: new4two-Shower cases and existing4single-blocked-Canteen/all-invalid fallback controls. [Real fixed actor measurement](./fixed-measurement.txt) and [full state](./fixed-measured-results.json) retain the executed public purchases/intake/regime and exact room targets. Both blocked-first live/V8 actors actually shower in room.shower-room:6:15; legal adjacent actors retain the first room. Application strict TypeScript exits0. Producer omission/exact restoration and bounded neighboring checks follow separately.

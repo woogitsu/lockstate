@@ -982,8 +982,10 @@ export class RoomInstanceRegistry {
    * capability no object in the room carries now has a ceiling of zero, which
    * refuses on the line above.
    */
-  public findAvailableForUse(roomCatalogId: string, requiredObjectCapability?: string): RoomInstance | undefined {
+  public findAvailableForUse(roomCatalogId: string, requiredObjectCapability?: string,
+    isEligible: (instance: RoomInstance) => boolean = () => true): RoomInstance | undefined {
     return this.allByRoomCatalogId(roomCatalogId).find((instance) => {
+      if (!isEligible(instance)) return false;
       const ceiling = this.concurrentUseCapacityFor(instance, requiredObjectCapability);
       // Infinity now means only one thing: an instance that records no
       // rectangle. **This used to add "which is what a V4 save carries"**, and
