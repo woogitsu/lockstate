@@ -1,0 +1,40 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-room-plan-completeness-audit-20261003
+
+ ❯ docs/research/2026-10-03-room-plan-completeness/dialog-reopen.audit.ts (2 tests | 2 failed) 2281ms
+   × actual public dialog q1 mirror=false Escape/reopen preserves owner then submits one shell 1154ms
+   × actual public dialog q1 mirror=true Escape/reopen preserves owner then submits one shell 1126ms
+vitest.CMD : 
+At line:2 char:231
++ ... pts.jsonl'; & node_modules/.bin/vitest.cmd run --config docs/research ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  docs/research/2026-10-03-room-plan-completeness/dialog-reopen.audit.ts > actual public dialog q1 mirror=false Es
+cape/reopen preserves owner then submits one shell
+ FAIL  docs/research/2026-10-03-room-plan-completeness/dialog-reopen.audit.ts > actual public dialog q1 mirror=true Esc
+ape/reopen preserves owner then submits one shell
+AssertionError: expected 'Room plan submitted.' to be 'Room plan queued.' // Object.is equality
+
+Expected: "Room plan queued."
+Received: "Room plan submitted."
+
+ ❯ docs/research/2026-10-03-room-plan-completeness/dialog-reopen.audit.ts:83:51
+     81|   expect(actors.snapshot()).toEqual(baseline);
+     82|   submit.dispatchEvent(new Event('click'));
+     83|   await vi.waitFor(()=>expect(status.textContent).toBe('Room plan queu…
+       |                                                   ^
+     84|   expect(tool.isArmed()).toBe(false);expect(actors.sent.filter(m=>m.ki…
+     85|   const actual=actors.snapshot();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 41 passed (43)
+   Start at  11:29:09
+   Duration  4.98s (transform 1.89s, setup 0ms, import 4.83s, tests 4.80s, environment 0ms)
+

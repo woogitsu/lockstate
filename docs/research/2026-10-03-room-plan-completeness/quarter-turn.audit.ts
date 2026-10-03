@@ -76,7 +76,7 @@ for (const [templateId,width,height,shellCount,objectCount,roomId,roomCount] of 
     }
     const envelope=createSaveEnvelope({gameVersion:'lockstate-0.0.0',prisonId:'catalogue-audit',revision:1,
       createdAt:1_700_000_000_000,updatedAt:1_700_000_000_001,...bundle});
-    expect(envelope.schemaVersion).toBe(8);
+    expect(envelope.saveSchemaVersion).toBe(8);
     const decoded=decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
     expect(decoded).toMatchObject({ok:true,migrated:false});
     if(!decoded.ok) throw Error('Actual scheduled catalogue save did not decode');
@@ -88,7 +88,7 @@ for (const [templateId,width,height,shellCount,objectCount,roomId,roomCount] of 
     expect(captureSessionSnapshot(restored).simulation?.prisoners.roomInstanceDefinitions).toEqual(rooms);
     if(process.env['LOCKSTATE_CATALOGUE_AUDIT_RECEIPT']!==undefined) appendFileSync(process.env['LOCKSTATE_CATALOGUE_AUDIT_RECEIPT'],JSON.stringify({templateId,mirrorX,quarterTurns:1,
       expectedDimensions:[height,width],shellCount,objectCount,elapsed,rooms,completed:runtime.roomTemplates.snapshot().completed,
-      objects:runtime.placedObjects.getSnapshot(),orderCount:runtime.construction.allOrders().length,saveSchemaVersion:envelope.schemaVersion,
+      objects:runtime.placedObjects.getSnapshot(),orderCount:runtime.construction.allOrders().length,saveSchemaVersion:envelope.saveSchemaVersion,
       restoreWorldObjectsOrdersOwnersAndRoomsEqual:true})+'\n');
   });
 }

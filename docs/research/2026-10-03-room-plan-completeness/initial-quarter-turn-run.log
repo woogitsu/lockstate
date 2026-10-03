@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-room-plan-completeness-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  41 passed (41)
+   Start at  11:22:14
+   Duration  4.18s (transform 754ms, setup 0ms, import 2.07s, tests 2.00s, environment 0ms)
+

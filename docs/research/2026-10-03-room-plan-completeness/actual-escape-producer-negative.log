@@ -1,0 +1,43 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-room-plan-completeness-audit-20261003
+
+ ❯ docs/research/2026-10-03-room-plan-completeness/dialog-reopen.audit.ts (2 tests | 2 failed) 133ms
+   × actual public dialog q1 mirror=false Escape/reopen preserves owner then submits one shell 76ms
+   × actual public dialog q1 mirror=true Escape/reopen preserves owner then submits one shell 56ms
+vitest.CMD : 
+At line:2 char:804
++ ... w($false)); & node_modules/.bin/vitest.cmd run --config docs/research ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  docs/research/2026-10-03-room-plan-completeness/dialog-reopen.audit.ts > actual public dialog q1 mirror=false Es
+cape/reopen preserves owner then submits one shell
+ FAIL  docs/research/2026-10-03-room-plan-completeness/dialog-reopen.audit.ts > actual public dialog q1 mirror=true Esc
+ape/reopen preserves owner then submits one shell
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ docs/research/2026-10-03-room-plan-completeness/dialog-reopen.audit.ts:74:66
+     72|   const revision=tool.revision,baseline=actors.snapshot();
+     73|   const escape=new Event('keydown',{cancelable:true});Object.assign(es…
+     74|   expect(escape.defaultPrevented).toBe(true);expect(dialog.open).toBe(…
+       |                                                                  ^
+     75|   expect(document.activeElement).toBe(preview.openButton);expect(tool.…
+     76|   expect(actors.sent.filter(m=>m.kind==='simulation/submit-command')).…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  11:31:11
+   Duration  3.20s (transform 1.16s, setup 0ms, import 2.92s, tests 133ms, environment 0ms)
+

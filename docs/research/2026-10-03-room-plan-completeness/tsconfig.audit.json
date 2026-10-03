@@ -1,4 +1,4 @@
 {
   "extends": "../../../tsconfig.json",
-  "include": ["quarter-turn.audit.ts", "vitest.audit.config.ts"]
+  "include": ["quarter-turn.audit.ts", "dialog-reopen.audit.ts", "vitest.audit.config.ts"]
 }

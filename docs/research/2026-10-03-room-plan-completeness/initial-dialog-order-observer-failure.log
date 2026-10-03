@@ -1,0 +1,390 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-room-plan-completeness-audit-20261003
+
+ ❯ docs/research/2026-10-03-room-plan-completeness/dialog-reopen.audit.ts (2 tests | 2 failed) 358ms
+   × actual public dialog q1 mirror=false Escape/reopen preserves owner then submits one shell 195ms
+   × actual public dialog q1 mirror=true Escape/reopen preserves owner then submits one shell 163ms
+vitest.CMD : 
+At line:2 char:569
++ ... pts.jsonl'; & node_modules/.bin/vitest.cmd run --config docs/research ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  docs/research/2026-10-03-room-plan-completeness/dialog-reopen.audit.ts > actual public dialog q1 mirror=false Es
+cape/reopen preserves owner then submits one shell
+AssertionError: expected [ { …(3) }, { …(3) }, { …(3) }, …(14) ] to deeply equal [ { …(3) }, { …(3) }, { …(3) }, …(14) 
+]
+
+- Expected
++ Received
+
+  [
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 5,
++       "x": 11,
+        "y": 5,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 6,
+-       "y": 5,
++       "x": 11,
++       "y": 6,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 7,
+-       "y": 5,
++       "x": 11,
++       "y": 7,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 8,
+-       "y": 5,
++       "x": 11,
++       "y": 8,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 9,
++       "x": 10,
+        "y": 5,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+        "x": 10,
+-       "y": 5,
++       "y": 8,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 11,
++       "x": 9,
+        "y": 5,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 11,
+-       "y": 6,
++       "x": 9,
++       "y": 8,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 5,
+-       "y": 7,
++       "x": 8,
++       "y": 5,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 11,
+-       "y": 7,
++       "x": 8,
++       "y": 8,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 5,
+-       "y": 8,
++       "x": 7,
++       "y": 5,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 6,
++       "x": 7,
+        "y": 8,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 7,
+-       "y": 8,
++       "x": 6,
++       "y": 5,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 8,
++       "x": 6,
+        "y": 8,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 9,
+-       "y": 8,
++       "x": 5,
++       "y": 5,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 10,
+-       "y": 8,
++       "x": 5,
++       "y": 7,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 11,
++       "x": 5,
+        "y": 8,
+      },
+    },
+  ]
+
+ ❯ docs/research/2026-10-03-room-plan-completeness/dialog-reopen.audit.ts:90:161
+     88|   const walls=[];for(let y=0;y<4;y++)for(let x=0;x<7;x++)if((x===0||y=…
+     89|   expect(actual.construction.orders).toHaveLength(18);
+     90|   expect(actual.construction.orders.filter(o=>o.definitionId==='wall-b…
+       |                                                                                                               
+                                                  ^
+     91|   expect(actual.construction.orders.filter(o=>o.definitionId==='door-w…
+     92|   submit.dispatchEvent(new Event('click'));for(let i=0;i<10;i++)await …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  docs/research/2026-10-03-room-plan-completeness/dialog-reopen.audit.ts > actual public dialog q1 mirror=true Esc
+ape/reopen preserves owner then submits one shell
+AssertionError: expected [ { …(3) }, { …(3) }, { …(3) }, …(14) ] to deeply equal [ { …(3) }, { …(3) }, { …(3) }, …(14) 
+]
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 41 passed (43)
+   Start at  11:29:33
+   Duration  5.16s (transform 1.94s, setup 0ms, import 4.85s, tests 3.06s, environment 0ms)
+
+
+- Expected
++ Received
+
+@@ -1,44 +1,44 @@
+  [
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 5,
+-       "y": 5,
++       "x": 11,
++       "y": 8,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 6,
+-       "y": 5,
++       "x": 11,
++       "y": 7,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 7,
+-       "y": 5,
++       "x": 11,
++       "y": 6,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 8,
++       "x": 11,
+        "y": 5,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 9,
+-       "y": 5,
++       "x": 10,
++       "y": 8,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+@@ -49,90 +49,90 @@
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 11,
+-       "y": 5,
++       "x": 9,
++       "y": 8,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 5,
+-       "y": 6,
++       "x": 9,
++       "y": 5,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 11,
+-       "y": 6,
++       "x": 8,
++       "y": 8,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 11,
+-       "y": 7,
++       "x": 8,
++       "y": 5,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 5,
++       "x": 7,
+        "y": 8,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 6,
+-       "y": 8,
++       "x": 7,
++       "y": 5,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 7,
++       "x": 6,
+        "y": 8,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 8,
+-       "y": 8,
++       "x": 6,
++       "y": 5,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 9,
++       "x": 5,
+        "y": 8,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 10,
+-       "y": 8,
++       "x": 5,
++       "y": 6,
+      },
+    },
+    {
+      "definitionId": "wall-brick",
+      "footprint": "square",
+      "location": {
+-       "x": 11,
+-       "y": 8,
++       "x": 5,
++       "y": 5,
+      },
+    },
+  ]
+
+ ❯ docs/research/2026-10-03-room-plan-completeness/dialog-reopen.audit.ts:90:161
+     88|   const walls=[];for(let y=0;y<4;y++)for(let x=0;x<7;x++)if((x===0||y=…
+     89|   expect(actual.construction.orders).toHaveLength(18);
+     90|   expect(actual.construction.orders.filter(o=>o.definitionId==='wall-b…
+       |                                                                                                               
+                                                  ^
+     91|   expect(actual.construction.orders.filter(o=>o.definitionId==='door-w…
+     92|   submit.dispatchEvent(new Event('click'));for(let i=0;i<10;i++)await …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
