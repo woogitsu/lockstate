@@ -22,9 +22,13 @@ function finish(runtime: Runtime) {
   until(runtime, () => runtime.roomTemplates.snapshot().pending.length === 0 &&
     runtime.construction.allOrders().every(order => ['completed', 'cancelled', 'failed'].includes(order.state)));
 }
-function reload(runtime: Runtime): Runtime {
+function reload(runtime: Runtime, legacy = false): Runtime {
+  const bundle = captureSessionSnapshot(runtime);
+  const simulation = legacy ? {
+    ...bundle.simulation!, roomTemplates: { version: 1 as const, pending: [] },
+  } : bundle.simulation;
   const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(createSaveEnvelope({
-    ...captureSessionSnapshot(runtime), gameVersion: 'test', prisonId: 'door-square-run',
+    ...bundle, ...(simulation === undefined ? {} : { simulation }), gameVersion: 'test', prisonId: 'door-square-run',
     revision: 1, createdAt: 0, updatedAt: 1,
   }))));
   expect(decoded.ok).toBe(true);
@@ -136,3 +140,40 @@ it.each([...cases, ...controls])(
     access(runtime, door, 'saved redo');
   },
 );
+
+it('protects the actual completed template door without optional completed gesture metadata', () => {
+  const pose = { quarterTurns: 3 as const, mirrorX: true };
+  const runtime = reload(prepare(pose, false, false), true);
+  const { door } = positions(pose);
+  access(runtime, door, 'legacy before');
+  const before = captureSessionSnapshot(runtime);
+  const funds = runtime.treasury.snapshot();
+  send(runtime, { type: 'PlaceBuildOrder', orderId: 'legacy-door-square', definitionId: 'wall-brick',
+    x: door.x, y: door.y, footprint: 'square' });
+  expect(runtime.construction.getOrder('legacy-door-square')).toMatchObject({
+    state: 'failed', failReason: 'unbuildable', materialsAllocated: [],
+  });
+  expect(runtime.treasury.snapshot()).toEqual(funds);
+  const { orders: _beforeOrders, ...beforeHistory } = before.construction;
+  const { orders: _afterOrders, ...afterHistory } = runtime.construction.snapshot();
+  expect(afterHistory).toEqual(beforeHistory);
+  expect(captureSessionSnapshot(runtime).world).toEqual(before.world);
+  access(runtime, door, 'legacy after refusal');
+});
+
+it('retains the existing standalone legacy-door and square-wall combination policy', () => {
+  const runtime = createNewSimulationRuntime(73);
+  send(runtime, { type: 'PlaceBuildOrder', orderId: 'ordinary-door', definitionId: 'door-wooden',
+    x: 10, y: 10, edge: 'west', transactionId: 'ordinary-door-gesture' });
+  finish(runtime);
+  expect(runtime.navigation.doors.all()).toHaveLength(1);
+  send(runtime, { type: 'PlaceBuildOrder', orderId: 'ordinary-square', definitionId: 'wall-brick',
+    x: 10, y: 10, footprint: 'square', transactionId: 'ordinary-wall-gesture' });
+  expect(runtime.construction.getOrder('ordinary-square')?.state).not.toBe('failed');
+  finish(runtime);
+  expect(runtime.world.getSquareStructure(tile(10, 10))).toBe(1);
+  expect(runtime.navigation.doors.all()).toHaveLength(1);
+  send(runtime, { type: 'Undo' });
+  expect(runtime.world.getSquareStructure(tile(10, 10))).toBe(0);
+  expect(runtime.navigation.doors.all()).toHaveLength(1);
+});
