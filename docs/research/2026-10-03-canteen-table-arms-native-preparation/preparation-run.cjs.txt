@@ -1,0 +1,23 @@
+const fs = require('node:fs');
+const cp = require('node:child_process');
+const dir = 'docs/research/2026-10-03-canteen-table-arms-native-preparation';
+const commands = [
+  ['types', ['node_modules/typescript/bin/tsc', '-b', '--pretty', 'false']],
+  ['build', ['scripts/cloudflare-task.mjs', 'build', 'production']],
+  ['collection', ['node_modules/@playwright/test/cli.js', 'test', '--config', 'tests/browser/playwright.artifact.config.ts', 'tests/browser/canteen-dining-table-player-build.spec.ts', '--list']],
+  ['docs', ['node_modules/vitest/vitest.mjs', 'run', 'tests/foundation/research-index-contract.test.ts', 'tests/foundation/documentation-links-contract.test.ts', '--maxWorkers=2']],
+];
+const outcomes=[];
+for (const [name,args] of commands) {
+  const r = cp.spawnSync(process.execPath,args,{encoding:'utf8',env:{...process.env,GIT_NO_LAZY_FETCH:'1'}});
+  fs.writeFileSync(`${dir}/${name}.txt`,r.stdout+r.stderr);
+  process.stdout.write(`${name}: exit=${r.status}\n`+r.stdout+r.stderr);
+  outcomes.push({name,status:r.status});
+  if (r.status!==0) throw Error('Preparation gate failed');
+}
+fs.writeFileSync(`${dir}/receipt.json`,JSON.stringify({
+  base:'d12504085593e844990685b0dbd67fefbacce733', outcomes,
+  browserExecuted:false,serverStarted:false,nativeProducerNegativeVerified:false,
+  boundPerObjectRuntimeFrameObserved:false,nativeSupportPixelCalibrationPending:true,
+  productionChanged:false,collectedCases:3,existingArtifactRoutingPreserved:true,
+},null,2)+'\n');
