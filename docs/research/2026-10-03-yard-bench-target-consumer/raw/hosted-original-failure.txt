@@ -1,0 +1,40 @@
+﻿browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0249107Z     ^[[31mTest timeout of 60000ms exceeded.^[[39m
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0249306Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0249732Z     Error: ^[[2mexpect(^[[22m^[[31mlocator^[[39m^[[2m).^[[22mtoHaveText^[[2m(^[[22m^[[32mexpected^[[39m^[[2m)^[[22m failed
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0250115Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0250275Z     Locator:  locator('.hud-build__target-value')
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0250639Z     Expected: ^[[32m"7, 7"^[[39m
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0251006Z     Received: ^[[31m"^[[7m2 × 1 tiles at ^[[27m7, 7"^[[39m
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0251216Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0251301Z     Call log:
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0251941Z     ^[[2m  - Expect "toHaveText" with timeout 10000ms^[[22m
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0252463Z     ^[[2m  - waiting for locator('.hud-build__target-value')^[[22m
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0253167Z     ^[[2m    11 × locator resolved to <span class="ui-value hud-build__target-value">2 × 1 tiles at 7, 7</span>^[[22m
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0253791Z     ^[[2m       - unexpected value "2 × 1 tiles at 7, 7"^[[22m
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0254018Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0254024Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0254198Z       89 |   await page.locator('.hud-build__arm').click();
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0254565Z       90 |   await page.mouse.move(940, 540);
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0255025Z     > 91 |   await expect(page.locator('.hud-build__target-value')).toHaveText('7, 7');
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0255506Z          |                                                          ^
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0255868Z       92 |   await page.mouse.click(940, 540);
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0256226Z       93 |   await page.locator('.hud-build__arm').click();
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0256710Z       94 |   await page.getByRole('button', { name: 'Fast forward', exact: true }).click();
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0257376Z         at /home/runner/work/lockstate/lockstate/tests/browser/yard-bench-player-build.spec.ts:91:58
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0257767Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0258186Z     Error Context: test-results/yard-bench-player-build-pl-e93fb-hrough-Save-Load-at-Full-HD/error-context.md
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0258650Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0259052Z     attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0259717Z     test-results/yard-bench-player-build-pl-e93fb-hrough-Save-Load-at-Full-HD/trace.zip
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0260177Z     Usage:
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0260291Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0260901Z         pnpm exec playwright show-trace test-results/yard-bench-player-build-pl-e93fb-hrough-Save-Load-at-Full-HD/trace.zip
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0261410Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0262044Z     ────────────────────────────────────────────────────────────────────────────────────────────────
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0262335Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0263005Z   35) tests/browser/yard-waste-bin-player-build.spec.ts:76:1 › player completes an existing waste bin in Yard and keeps it through Save/Load at Full HD 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0263567Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0263698Z     Error: Test timeout of 60000ms exceeded
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0263892Z 
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0264075Z        95 |   await page.locator('.hud-build__arm').click();
+browser-source (1)	UNKNOWN STEP	2026-10-03T11:54:25.0264586Z        96 |   await page.getByRole('button', { name: 'Fast forward', exact: true }).click();
