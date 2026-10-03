@@ -1388,3 +1388,21 @@ The next isolated integration contains the actual detailed Reception desk,
 Medicine Cabinet, renderer-change accepted-receipt fix and completed/pending
 square furniture collision fixes. Its native proof and full hosted CI remain
 separate gates; prototype screenshots do not count as release.
+## Desk Cabinet and renderer receipts accepted locally - 2026-10-03
+
+Frozen clientda685 passes six model capacity/q0/q1 Build/Load cases. Exact V8
+owners resolve to completed orders; whole paused worker data and unchanged
+native palette counts survive Load. Both loaded orientations were opened.
+Initial ten-case8GREEN/2RED retained: observer spread preflight-only kind into
+actual command. Corrected receipt4GREEN uses unchanged production; actual
+missing-Cabinet/disposed-bridge mutation3RED/3legal, finally restored7GREEN on
+byte-identical worker. [Actual root evidence](../../research/2026-10-03-desk-cabinet-integrated/README.md)
+is committed with real FullHD captures and raw failures.
+
+Next SafeRestore integration: canonical imported-object restoration,
+completed-doorway clearance, actual camera precondition repairs, Security
+Console and queued detailed Medical Bed. One root native browser at a time;
+Art refines actual Loading Dock Door, gameplay fixes actual occupied-template
+material cancellation, HUD probes interleaved actual camera gestures. Push
+coherent checkpoints. Full hosted CI/main/release gates remain separate;
+owner-only sharding and V9 proposals stay pending.

@@ -1,0 +1,21 @@
+pnpm : $ vitest run "tests/unit/oblique-office-desk-detail-integrity.test.ts" "tests/unit/oblique-office-desk-manifest-
+integrity.test.ts" "tests/unit/oblique-medicine-cabinet-detail-integrity.test.ts" "tests/unit/ui-room-plan-renderer-pla
+cement-receipt.test.ts" "tests/unit/minimap-unrounded-reference.test.ts" "tests/integration/completed-square-incoming-o
+bject-footprint.test.ts" "tests/integration/pending-square-wall-incoming-object.test.ts" "tests/integration/template-de
+ferred-history-order.test.ts" "tests/integration/object-placement-loop.test.ts" "tests/unit/room-template-oriented-inst
+antiation.test.ts" "--maxWorkers=2"
+At line:6 char:1
++ pnpm --config.verify-deps-before-run=false test @taskTests --maxWorke ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-desk-camera-integration-20261003
+
+
+ Test Files  10 passed (10)
+      Tests  109 passed (109)
+   Start at  02:23:59
+   Duration  5.80s (transform 1.75s, setup 0ms, import 5.83s, tests 4.44s, environment 0ms)
+

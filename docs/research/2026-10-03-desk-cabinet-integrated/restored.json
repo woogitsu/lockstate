@@ -1,0 +1,357 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-desk-camera-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-cabinet-receipt-restored-results-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-desk-camera-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5432 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-desk-camera-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5432/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "dedicated-medicine-cabinet-player-build.spec.ts",
+      "file": "dedicated-medicine-cabinet-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates actual storage and delivery capacity before detailed Infirmary",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43137,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:56:35.222Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e4c1461d8ed9878a9e84-93fcf0e2e32ba07b25b6",
+          "file": "dedicated-medicine-cabinet-player-build.spec.ts",
+          "line": 199,
+          "column": 1
+        },
+        {
+          "title": "player builds Infirmary at quarterTurns0 and retains the authored cabinet inset palette and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 44452,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:57:18.428Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-medicine-cabinet-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-cabinet-receipt-restored-results-20261003\\dedicated-medicine-cabinet-cfdf5-and-anchors-after-Save-Load\\attachments\\dedicated-medicine-cabinet-worker-and-save-evidence-73391af44844076a2eca317a97db03b6fb851f26.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e4c1461d8ed9878a9e84-ac165d5b371499f22be9",
+          "file": "dedicated-medicine-cabinet-player-build.spec.ts",
+          "line": 262,
+          "column": 3
+        },
+        {
+          "title": "player builds Infirmary at quarterTurns1 and retains the authored cabinet inset palette and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 44549,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:58:02.891Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-medicine-cabinet-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-cabinet-receipt-restored-results-20261003\\dedicated-medicine-cabinet-176ee-and-anchors-after-Save-Load\\attachments\\dedicated-medicine-cabinet-worker-and-save-evidence-770ac8cbc1dc1b0982a822ecc5836eeea926b819.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e4c1461d8ed9878a9e84-5d80cfb44cfc1f056e41",
+          "file": "dedicated-medicine-cabinet-player-build.spec.ts",
+          "line": 262,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "room-template-renderer-preflight-receipt.spec.ts",
+      "file": "room-template-renderer-preflight-receipt.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "FullHD world: renderer replacement during genuine preflight stands down accepted cell",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7008,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "RENDERER_PLAN_PREFLIGHT_RECEIPT {\"initialMode\":\"world\",\"rearm\":false,\"chosen\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":14,\"y\":13}},\"ok\":true}}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:58:47.471Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2cd3af65229a8e7b0c20-e068c3653993827da205",
+          "file": "room-template-renderer-preflight-receipt.spec.ts",
+          "line": 66,
+          "column": 3
+        },
+        {
+          "title": "FullHD world: renderer replacement during genuine preflight protects rearmed Yard",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7687,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "RENDERER_PLAN_PREFLIGHT_RECEIPT {\"initialMode\":\"world\",\"rearm\":true,\"chosen\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":14,\"y\":13}},\"ok\":true}}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:58:54.489Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2cd3af65229a8e7b0c20-381d7904d43062013fa4",
+          "file": "room-template-renderer-preflight-receipt.spec.ts",
+          "line": 66,
+          "column": 3
+        },
+        {
+          "title": "FullHD oblique: renderer replacement during genuine preflight stands down accepted cell",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6238,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "RENDERER_PLAN_PREFLIGHT_RECEIPT {\"initialMode\":\"oblique\",\"rearm\":false,\"chosen\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":17,\"y\":13}},\"ok\":true}}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:59:02.186Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2cd3af65229a8e7b0c20-9b1c6b3755e44a24775c",
+          "file": "room-template-renderer-preflight-receipt.spec.ts",
+          "line": 66,
+          "column": 3
+        },
+        {
+          "title": "FullHD oblique: renderer replacement during genuine preflight protects rearmed Yard",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6950,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "RENDERER_PLAN_PREFLIGHT_RECEIPT {\"initialMode\":\"oblique\",\"rearm\":true,\"chosen\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":17,\"y\":13}},\"ok\":true}}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T00:59:08.430Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2cd3af65229a8e7b0c20-32a02a2d7d5328589b4e",
+          "file": "room-template-renderer-preflight-receipt.spec.ts",
+          "line": 66,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T00:56:32.819Z",
+    "duration": 163137.737,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
