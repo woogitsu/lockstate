@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "assetId": "furniture.library.bookshelf.variants",
-  "source": "assets/source/blender/furniture.library.bookshelf.variants.blend",
-  "sourceSha256": "64a18ea80a6b3f97d3b3b389f82c3f52b282cd6c29e343d4f971eab9c0b42c02",
+  "source": "assets/source/blender/furniture.library.bookshelf.angled-detail.blend",
+  "sourceSha256": "ac0dd8e1a3345c3e791934b534d13c2043e9a5a04f85ed7cc9fe965e6716e9b7",
   "resolutionPx": [
     256,
     256
@@ -44,434 +44,434 @@
     {
       "yawDegrees": 0,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+00-elev20.236c8c35cf62.png",
-      "sha256": "236c8c35cf627742f5e63ab4c86396a29f80ee058790f34acb5ec2c071509ea9"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+00-elev20.97d31985aa5c.png",
+      "sha256": "97d31985aa5c7fd862375bbff7913746b7634fff9657a200c464dfec43421772"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+00-elev30.10c3a6d13ef4.png",
-      "sha256": "10c3a6d13ef43a5516762065cc5f461e6fccd5066ee593e88d03a8f71dd82c4d"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+00-elev30.96924d83a3b3.png",
+      "sha256": "96924d83a3b3a1484fa52390113055b9f38ca4c08e270942ffe5b3a9934c50a1"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+00-elev40.36297a28ce3f.png",
-      "sha256": "36297a28ce3f66a50f512ff6e78ecc3d9aecf206d86c500f90c1b7040feee124"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+00-elev40.09e57ed29994.png",
+      "sha256": "09e57ed29994e21f55f14db387586a460da4c891ac73b94136cde95afd59be1b"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+00-elev50.c431fe21a457.png",
-      "sha256": "c431fe21a45744c847f541168189053d04dc26c925866b14522de3c498efef0f"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+00-elev50.0668b0fd1f00.png",
+      "sha256": "0668b0fd1f00bf40ab33ba864e3bedbad7e76e7b9cc9786e156d42d6f26d9df0"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+00-elev60.5a99af8b450a.png",
-      "sha256": "5a99af8b450ae867b66e3785eb62ff92e9d4c9fbe181d4946042b723a152bdc4"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+00-elev60.ff439d6cafed.png",
+      "sha256": "ff439d6cafed4a294559d40dd0482a00ed1a0b0af64394361e583d16acd2cee3"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+00-elev70.d1785bd09b30.png",
-      "sha256": "d1785bd09b301150e8a888c5887404e6ecdb40861464a64e530563bd1d143bf4"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+00-elev70.acf8d47cee4f.png",
+      "sha256": "acf8d47cee4fbab170bcaa72aadb99a767c2a8c33bf6b9e1eea9e6142aceeaf1"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev20.34ee21bcf645.png",
-      "sha256": "34ee21bcf645d92211d90ada2f0c23794e8088a0abb0aaa9ed0a61818f75f3ea"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev20.9b3aaa75c98d.png",
+      "sha256": "9b3aaa75c98d9e10b55742f200195fec4917ce02f0b5025541458389648fb719"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev30.065a6fcd54cb.png",
-      "sha256": "065a6fcd54cbe4dc200b893bfc9ed18cba820fc45e4bd0eac0789efde91fe070"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev30.346cc52db4e5.png",
+      "sha256": "346cc52db4e57e1e92b64791398488c7729bb6cb62db9eb4553e15e687d693f3"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev40.bc1d2607d556.png",
-      "sha256": "bc1d2607d556120d1cb10e0e96d48b1f2c72a6f8f8b6b863a65801dc5a22640f"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev40.f5feda43b396.png",
+      "sha256": "f5feda43b3966699dfd60d9ad798e40a4a0440cc9ae70e13b8192eb6db948104"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev50.389647183e66.png",
-      "sha256": "389647183e664affcb170a890776a8de2b4cfcec4c6f74952c57faedd3d6e5a5"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev50.2dc997f97338.png",
+      "sha256": "2dc997f973388e2e64ac157ea6b8aa378b3ef58137a9f3176ccb9e520db8b872"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev60.b8f298d94730.png",
-      "sha256": "b8f298d94730c567d6d687aa67a427429bfceee3b445b92c1a296db047d2fb65"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev60.00afaa1571cf.png",
+      "sha256": "00afaa1571cfb810251482065c0d974da6c5e68e48a8265f78eec3a545260da6"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev70.9c6fe612c9d8.png",
-      "sha256": "9c6fe612c9d8e6368555f596dd486c2adfe967a1236705302f24a1afb1dacb6d"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+30-elev70.9daa64e7a493.png",
+      "sha256": "9daa64e7a493157b8b013320c5d4111dc55ed6614909a93e0c366098f58b4656"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev20.234a4ae88b76.png",
-      "sha256": "234a4ae88b7675fda5c7d0a4916d80bcc129fade5986eb4dc734d8e60bfc990e"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev20.8c689f32ba89.png",
+      "sha256": "8c689f32ba89374b51acfa97bc29b57ac0427307c0932e4230b3e38a4d9c38ea"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev30.529761b016c9.png",
-      "sha256": "529761b016c99a76c8f987cc99213cd009fd18891715b9093e46191b49f9c9be"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev30.56413096bc73.png",
+      "sha256": "56413096bc730c4af158782fa8e7bb34e9e0f1bae8be8406eecd217519c55b40"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev40.0c04c4724122.png",
-      "sha256": "0c04c4724122b6c154f6cc5be8d1effa5fc63744f12f1b49ed8ebf350492fe4c"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev40.95f60188aa98.png",
+      "sha256": "95f60188aa981482b54f3b429a8ab7bfa737251dc5e5157a32eeeded458bdd42"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev50.884d954bb578.png",
-      "sha256": "884d954bb5783ee100ab64c157b5cf7c551dac1b3e337ab52b646d4a88c8ded5"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev50.3434bfd575d4.png",
+      "sha256": "3434bfd575d49d4d8cb1c8dff7a4c1717b6b91bc7d545c04800c3f1e79fbc4a3"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev60.bcc54e912d3d.png",
-      "sha256": "bcc54e912d3d99b52211620d321e8f5b7f70cb0f34f764b6adc0167995b2a6ac"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev60.99a2e850ecde.png",
+      "sha256": "99a2e850ecdedb17439a85c0d397028c38f7844a0b8cd2edfbb2b41698cafe43"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev70.fc9b7709dd09.png",
-      "sha256": "fc9b7709dd093b5ed76a0e2b5484bb19c3c601546cd249afc7c6d0881dabdedb"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev70.8a9a3a6bce24.png",
+      "sha256": "8a9a3a6bce24c869e050961acd841fa0431b38609c3e496625e10b8a1af08387"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+90-elev20.0ed0e118730d.png",
-      "sha256": "0ed0e118730d9e2b0606b8498f9b6f78472d5eab5cd9f3254411afc56c799027"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+90-elev20.3b8d6caf5813.png",
+      "sha256": "3b8d6caf58136e27fa466610c12617b3979fab8ee6f6d79975c9fea731c26a18"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+90-elev30.91cbeb618846.png",
-      "sha256": "91cbeb61884642454d10d12e73b4cf78aaac2a07ae35ebef1d054b87f8924871"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+90-elev30.473a466fa8ae.png",
+      "sha256": "473a466fa8ae8ccf85bb038b3a2a182944c3ac2a24b81887ad837e9a55743f01"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+90-elev40.494bb818854f.png",
-      "sha256": "494bb818854f18a626c0fb715545067f909c2cb0eca675a12c888bb59e3b9bc9"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+90-elev40.5e125b734850.png",
+      "sha256": "5e125b7348503e7383bf886ac4a6a3818283caa282df116b03c7cc0bd1c136f0"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+90-elev50.8b019fcad045.png",
-      "sha256": "8b019fcad045cc4de9fdb5df685bc2ee0e636a5abcf254da1becc8587d43dd1f"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+90-elev50.79591a0bcbb3.png",
+      "sha256": "79591a0bcbb30e3da895e1bfb4c8afbaad97dd31e25ab5f73f28c2c7f6901192"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+90-elev60.1391ead8e2bc.png",
-      "sha256": "1391ead8e2bc150627c02a8a7ed283b83bf4712655db11f7c725fa2d0af38da4"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+90-elev60.9af053fccc1a.png",
+      "sha256": "9af053fccc1afdcda92de894b6b7192afa4ca53898b57494fc7c479788edce5f"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+90-elev70.86c2cb93cc1a.png",
-      "sha256": "86c2cb93cc1af1222d65be42d89bf3d1990efa6d6096f39d34d1782aa4c16e2d"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+90-elev70.512001aaaa19.png",
+      "sha256": "512001aaaa19c546a90e76838a46aaffac9331d87f33f7f04968a60591e74337"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+120-elev20.3515ad77c8c5.png",
-      "sha256": "3515ad77c8c5edfbafeb536ef07a54649c6ff401f91b48a049d732bbd657753c"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+120-elev20.aa94540192dc.png",
+      "sha256": "aa94540192dc247e11fa940a63706842d829086d050254c701397a135e253a3e"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+120-elev30.34100efd55ab.png",
-      "sha256": "34100efd55abe3279717d32bf33616e61f5bbf3ad968d91027899fe79db6740d"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+120-elev30.99be2511d1ca.png",
+      "sha256": "99be2511d1ca57b69d787bb8dc8c132c8320ce93f55c94c5b0424762add13a6b"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+120-elev40.4b657311cf12.png",
-      "sha256": "4b657311cf12414c690ab4e8e77d01f58f3454cdc16e51319b86490b95e24f89"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+120-elev40.8540cd45945c.png",
+      "sha256": "8540cd45945cdad23056d46d30c44563cfd347d62b77a68a698cf08789eee3d1"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+120-elev50.44413b29ac99.png",
-      "sha256": "44413b29ac99c265b98261c5478654a78b1ad3f4e5a25088018e3d690dba509a"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+120-elev50.35ff089e8a47.png",
+      "sha256": "35ff089e8a47531365375cb4b88a065c7f11b5c993249dc22fe1af15cd419170"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+120-elev60.f55af2de566b.png",
-      "sha256": "f55af2de566be84c4b7a38bdda446600e3d6bd683e759d8c8b90c04443b5d9a5"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+120-elev60.a5f3df9d2fd1.png",
+      "sha256": "a5f3df9d2fd1bbc45bb7f1af04711b70a874d6423774d12d9aead0554f52f741"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+120-elev70.fd0f9cdcbf92.png",
-      "sha256": "fd0f9cdcbf927f94420bdb66135261b1645dc18b5b95b5dc39ccd911b3ee8ebe"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+120-elev70.d9c827c9ca41.png",
+      "sha256": "d9c827c9ca41bdd54ac2c185245fcc2b0adb4615f7751ffcbeb28c9665a10f61"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev20.0410e412e096.png",
-      "sha256": "0410e412e096fbfb87d6605ad3827d412b15888a99001a0372358fcd44b41ebf"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev20.d68bcceea6cd.png",
+      "sha256": "d68bcceea6cdf263c4f9e20d137dc1cf7e504fed83c73e434f0858a6635983c8"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev30.102f42a59816.png",
-      "sha256": "102f42a59816a87fea2645ebfd23005c0d43e5dd2bf986ac22511d8841d9a4d6"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev30.c7b8cd2d5c41.png",
+      "sha256": "c7b8cd2d5c4126d89f1eb8894ab36d2066790baf2c09a86bad7fb3669df50c66"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev40.cb2ddeb148b8.png",
-      "sha256": "cb2ddeb148b8c67ddf6a43f0081dc2e73bb8dbac7ff1fde1b6d5ec17139c85ad"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev40.ea4e360edd44.png",
+      "sha256": "ea4e360edd440851d291ae14ab96bff1da83a57ddea7419722867c5fe43667b1"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev50.6cf307e74619.png",
-      "sha256": "6cf307e746195bca3ef459e6cec31138f48d508063e9c5b89e7b2bdf192bca38"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev50.fda7c452a76d.png",
+      "sha256": "fda7c452a76de78a5f121d3b0440a6673fb00aa41d83a829474fe280eaee9a67"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev60.3d667d65aa55.png",
-      "sha256": "3d667d65aa55a4fe4e643ad7a9b6cf46b17027c6a84609b5ec79faa25dc34cd4"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev60.099ea2136859.png",
+      "sha256": "099ea21368596eaa06a68dd9fa4f449d8112ab8795c1bb74d3b3bb940d0e38f5"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev70.efa27301f6d4.png",
-      "sha256": "efa27301f6d4154658190673a7a626d4b303afb00d4632b5427baba8bef65908"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev70.b67bef1044f1.png",
+      "sha256": "b67bef1044f11c876959519ec0598ff4e23676d36e89a9ce6a9fedd38899881e"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+180-elev20.cb5a4ff3b90c.png",
-      "sha256": "cb5a4ff3b90c4ffb9078df12eb7b67a2b913175b2d722490805d91238b63c62d"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+180-elev20.2380d95e47ee.png",
+      "sha256": "2380d95e47ee7e28906bf7d4416b6ef7a8581f7ba48b4c24874afc882bb1393c"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+180-elev30.81050628d84e.png",
-      "sha256": "81050628d84efe92292ca8c9541fdd6c650f8e1d23dc53ffa9d2d2239ce12fa3"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+180-elev30.cea064a9ade0.png",
+      "sha256": "cea064a9ade049619c06ad3d51e114d3f5d4179dd55aa898bc46a0dd2cb854c0"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+180-elev40.20c0634a9da9.png",
-      "sha256": "20c0634a9da913e4f0d97e1bda34976fc218dbec6b2ed98d7986ee04b2e16df2"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+180-elev40.d2cd5671d788.png",
+      "sha256": "d2cd5671d788022b45d7591a76bd2ed70a497f9b307bb204bdb9c28b088304b0"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+180-elev50.8d8f08bc1181.png",
-      "sha256": "8d8f08bc1181a3dd8353b5dec4d38935ff53aa0451851ad84a05362e5afcb028"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+180-elev50.12d8366bb7d9.png",
+      "sha256": "12d8366bb7d90cad7645815dde24f95779e4948a2ec79afec5ca2310fbfbef7b"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+180-elev60.2f9e9b9c24c4.png",
-      "sha256": "2f9e9b9c24c4f911f2f36522de13a27930a3944b6ad2ca78a05fc787c7dcb1a5"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+180-elev60.eb51355f008b.png",
+      "sha256": "eb51355f008bc1dced0b57eef306bbf7f0bf62ec604b45bfa1fee5ce8ee7fe4a"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+180-elev70.6e4b973e18b0.png",
-      "sha256": "6e4b973e18b01540a987b02cf8682ec235cfa4e8daf78a6c8a93c1bcce4389a2"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+180-elev70.b25a20c3c01b.png",
+      "sha256": "b25a20c3c01b867542007e32eae794afa72b324d092bad07b6049e93bf8b1448"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+210-elev20.1ee44a240948.png",
-      "sha256": "1ee44a240948745edef98e961a5d0d4fd7ee42842f39fece6f9e8357615ddc0d"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+210-elev20.724b4c734332.png",
+      "sha256": "724b4c7343320d7e168963b3d6b2e67eaaebb1ae1739996c21da2e27f8d84587"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+210-elev30.aecc91a95098.png",
-      "sha256": "aecc91a95098eab9a77ff1e49a1ce3c9efd6e2089d9c6ea0162b5078183505be"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+210-elev30.12bd1f65a779.png",
+      "sha256": "12bd1f65a779cc6ba99b2ecad2697eff11da8ea7919012d77f0e1004c454d796"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+210-elev40.3cf31897d304.png",
-      "sha256": "3cf31897d304417214da4aa3b8e7fdfb6578b266f40cdbeaf84daf3f06a5a030"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+210-elev40.72bae915f19d.png",
+      "sha256": "72bae915f19dbcb374b8cb1d9698ac2dd74aed75f0eb94b831a5f68332154b4f"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+210-elev50.c7ed6e7c99bf.png",
-      "sha256": "c7ed6e7c99bf09c23bd92327b0eba0b6eccec6035c881b0f9e13f5af5b1d0ce8"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+210-elev50.da4745a5b7ef.png",
+      "sha256": "da4745a5b7efeba4c1e26547c05fcac2296960ffd9f1802a933a573ca3a81b45"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+210-elev60.fd21c5736f28.png",
-      "sha256": "fd21c5736f282fe0c42e6b49bc54417bee8c8af73541c5f63cd5bc3aad46e999"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+210-elev60.f21a1e67247e.png",
+      "sha256": "f21a1e67247e95ac9bf9e840e0a88c50a115582d927f2441eaac8d19d16b2dd6"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+210-elev70.88e0747980bb.png",
-      "sha256": "88e0747980bb5d8b98bd6ec6089e3842e1effe06760772bfe634e2aa46a60c69"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+210-elev70.7ee42ccf0fa0.png",
+      "sha256": "7ee42ccf0fa079df4e1060fe2464de92d9e0a819ce54d05aa5eb56da7bc5a1fc"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+240-elev20.f72babb4fe84.png",
-      "sha256": "f72babb4fe845bf350520841bb3519d62d90fb942bf693efd48e21cf862cd048"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+240-elev20.aab7ea490547.png",
+      "sha256": "aab7ea49054797a68aa8b6ca091311d7bf42f4b6b851cc3d7296e90e104723d2"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+240-elev30.1b5acc58b79a.png",
-      "sha256": "1b5acc58b79af6172c0a24c3c97cddee8eedc6d8c95f31eff7f047142875757f"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+240-elev30.32c7957680c8.png",
+      "sha256": "32c7957680c8c390611485983de553fc1791ae55ad7ad47a336e472d50cba591"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+240-elev40.2e593362ab9b.png",
-      "sha256": "2e593362ab9b34bde85b36e4228724d9b8ddede3a25df6bcbb42222806fa037f"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+240-elev40.8a460e3d76bd.png",
+      "sha256": "8a460e3d76bd4f0546a2593f99763452407460135dd3cfa0fd00544d5b7e6d12"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+240-elev50.bdcd7b746e40.png",
-      "sha256": "bdcd7b746e40f1f9218c8a57f2b2575def869dbe7b127dfc47054329e357a989"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+240-elev50.33313f7fb5b5.png",
+      "sha256": "33313f7fb5b5a7bdac4e4290ec8e9869846b2cdeeae58278fd452161d6e34d87"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+240-elev60.86f06d23f33c.png",
-      "sha256": "86f06d23f33c0889705c89b3480541321a3305a4de6db7933f653306ffb3daa2"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+240-elev60.60de2743a718.png",
+      "sha256": "60de2743a718da9b7adf50a6b07ddd92a3386b63b6d0039175139399a87f071a"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+240-elev70.62bdd692ec95.png",
-      "sha256": "62bdd692ec95bbe7fb8cc204ef8fc0441bcd60db4b5a4ee690b442e82726eeab"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+240-elev70.e4848587fc32.png",
+      "sha256": "e4848587fc3295aeb3371502095117b032a1bc7d37da16d1839bf455733492a3"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+270-elev20.a21c24245e43.png",
-      "sha256": "a21c24245e43269e7978f8ab02614a6d528400421cb95acc4fbe775cd851ae51"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+270-elev20.11304a12d01f.png",
+      "sha256": "11304a12d01f075c3398bdd5cb7020c23c1005504043696ed03d97dfe532d736"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+270-elev30.70fd7ecf2bfe.png",
-      "sha256": "70fd7ecf2bfe535d7dcae2f70612ebefd14ee4ffea75ff8ee1b3307e00aeb89b"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+270-elev30.88ec5ed7b069.png",
+      "sha256": "88ec5ed7b069477bdeb78ed74f8b12f272bbb9e45303bf2cfade9995e84405e5"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+270-elev40.9d9e774ee654.png",
-      "sha256": "9d9e774ee65469a26f3966b5b229a0f25558dd12936656459ec09f6d8bba7b3f"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+270-elev40.cb9d59f4ba15.png",
+      "sha256": "cb9d59f4ba152be6a6c56c30a62343b6c1d0bd56191dc8869154a65b57c71c90"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+270-elev50.6d40bee67758.png",
-      "sha256": "6d40bee67758f126f749a30246edd2a835b0d830c1debd73502858b71122b291"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+270-elev50.8ff4243b197b.png",
+      "sha256": "8ff4243b197b60c27ceac44f39631a68c2fe923ac8198c14c37e7ca130befe6f"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+270-elev60.99fd9bc98e91.png",
-      "sha256": "99fd9bc98e9114b7f8ca1b35360db0f9f8b2c99e4d177829ac9aeecede2b18b2"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+270-elev60.0d7057b3f35e.png",
+      "sha256": "0d7057b3f35e29ebf96c96297108e6382244bdd58383ca9d9392ac4fc8bb0af3"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+270-elev70.d634d106beec.png",
-      "sha256": "d634d106beec7930bc5b4ee5da20f7f3d21ca00120be855053fd22556f8be5fc"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+270-elev70.1e06e9dd0052.png",
+      "sha256": "1e06e9dd00520e8a3cd29a6529c99a6c41299ff57599339b835e51d05910b5e2"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev20.ae9e91805906.png",
-      "sha256": "ae9e91805906dc6c550f3fa03b209c5ea39b431ef88b36d34249f4dcf7f1c67e"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev20.6fbc826eced8.png",
+      "sha256": "6fbc826eced8cefce27da893522fc731852f01fab3a1a5634e9d64464c4412c9"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev30.2b2284f6d297.png",
-      "sha256": "2b2284f6d297373802b1c6b487fdc2bf23adbd1b7c24acca2f6f566020bc2861"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev30.e1c1714e350d.png",
+      "sha256": "e1c1714e350d6872c4f5b214ba852de83a4d2cdf3b898edd656be87b9077d648"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev40.0b310595c5c8.png",
-      "sha256": "0b310595c5c8f587b882070f7c392152ad55c8f996dda842170bbaf3215b31c0"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev40.ec72ac7ae01d.png",
+      "sha256": "ec72ac7ae01dff96f4b1d79852334d4af60e80a0de87a7240f33aa63b854c643"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev50.cad4236bb978.png",
-      "sha256": "cad4236bb97850e5247b9780b143fa44e4d47fa4f78345d319cfbb25b194da2d"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev50.ed89cebcab4b.png",
+      "sha256": "ed89cebcab4bc4e2386923a658391c9642b640a46e4457132400d7b7f7dafcbe"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev60.dc390b782f02.png",
-      "sha256": "dc390b782f02414caa3eb570b5b522b31aab4d9154cf450f808bc2fe09bfa340"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev60.2ea78e4e6333.png",
+      "sha256": "2ea78e4e633335f1344d5a90a152e7917719e565b5ddff2b612dbebde5d38539"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev70.c391c17bed2c.png",
-      "sha256": "c391c17bed2c6787b3c0230a02294cc69289b2ee85d3267fc8b5516d73092189"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+300-elev70.f66cfcdd28b2.png",
+      "sha256": "f66cfcdd28b215df567ca6d162ed63fe1329055cee6e2ba3721c118391ce7d63"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+330-elev20.38abde28d9de.png",
-      "sha256": "38abde28d9de8f3e6eb50ce68a668c479f00cc6023f8b30ea8e8c2a9734b8488"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+330-elev20.dd6b51c9ffc2.png",
+      "sha256": "dd6b51c9ffc23dea76dc413f69bb59221ae5c8480cf52cdba0974ab541aaa641"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+330-elev30.1727ee244ee4.png",
-      "sha256": "1727ee244ee4ef26bb9ed18372370070a96c2a3d325ac856afda974b336bdce7"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+330-elev30.54d226f192ba.png",
+      "sha256": "54d226f192baf6c933a92dc793e581be82d4e3d45044004286eabd2b7c87f7cf"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+330-elev40.0d7c0d57e106.png",
-      "sha256": "0d7c0d57e1064ce4bccdee092bbcdc95086e17c38b1f9d32300a6db0416a7f96"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+330-elev40.2f961851223c.png",
+      "sha256": "2f961851223ca89e5679bc8140315e197dea93bfe6436992ce59fbe3d7813d6f"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+330-elev50.8cb5c83b7626.png",
-      "sha256": "8cb5c83b7626afd07fa3ea9e6a2a3fa703e1af81f64ac32ebf09a83f161bc8fd"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+330-elev50.48b33fb90119.png",
+      "sha256": "48b33fb901194e3c9b4c1be003ad63bf009825e39f441e78163b4f7ea4ec333d"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+330-elev60.580d6565c55b.png",
-      "sha256": "580d6565c55b00a857ff92b96c4cb2d8d525bdbc14886e40c2a3c6fef183b7e0"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+330-elev60.9391aa787865.png",
+      "sha256": "9391aa7878655f75979ff6498aaae3fd1c0a297bd23fb96f284042ed5cd864a1"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+330-elev70.89fecd1263d4.png",
-      "sha256": "89fecd1263d4084c95cf29e689af17d310c74d70ddb4e1fece9a385161e2ed69"
+      "image": "/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+330-elev70.3bdc76f23c25.png",
+      "sha256": "3bdc76f23c25b0070a3187bf4913eb3d4eec48b17686ed7c1496b95bf9f37489"
     }
   ]
 }

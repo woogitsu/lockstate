@@ -38,7 +38,8 @@ def prepare_source(scene, model):
     entry = next(row for row in registry['entries'] if row['assetId'] == ASSET_ID)
     if entry['manifest'] != '/game-content/' + model[2]:
         raise ValueError('Library bookshelf exporter targets the wrong canonical descriptor')
-    if receipt['retainedUnusedMaterialFakeUserForPersistence'] != ['Material'] or not exporter.bpy.data.materials['Material'].use_fake_user:
+    stored_unused = exporter.bpy.data.materials.get('Material')
+    if receipt['retainedUnusedMaterialFakeUserForPersistence'] != ['Material'] or stored_unused is None or not stored_unused.use_fake_user:
         raise ValueError('Retained unused bookshelf material graph is not pinned for source persistence')
     rows = audit.capture(scene)
     if sorted(rows) != sorted(row['name'] for row in receipt['meshes']):
