@@ -25,3 +25,18 @@ Fresh issue searches for texture/preload/on-demand found no specific existing ea
 Actual empty-boot regression before production edits: 1 RED (six other selected-out tests), because unrelated model PNGs were queued before any frame. Initial fixture named a nonexistent cot manifest and failed at import; that is retained as a fixture error, not production RED. Initial fixed test expected a pending square wall PNG, but the current projection intentionally gives that wall its existing fallback; retained as a fixture assumption error (1 RED / 6 GREEN). The corrected coverage checks actual pending cot frames and retains the square-wall fallback contract.
 
 Current implementation: 8 lifecycle tests GREEN; application and tools strict types both exit 0. Eager descriptor/skin validation is untouched. Floor and raised images now share serialized loader batches; floor key completion controls readiness; demanded orientation/skin and late shutdown completion guards remain explicit. Production-negative/exact-restoration proof and bounded neighbors are still pending this first source checkpoint.
+
+## Obtained actual producer negatives and restoration
+
+The mutation run detached exact fixed `b9281725ce6ff7452bec9deda2618a9ebd584149` before edits and returned to its own branch in finally. Six genuine source mutations were tested:
+
+| Actual producer alteration | Obtained negative |
+|---|---|
+| Reinstate original eager selected-model boot batch | 1 RED, 7 deliberately unselected |
+| Disconnect actual demand selector | 4 RED, 4 GREEN |
+| Ignore item orientation in actual selected-frame query | 2 RED, 6 GREEN |
+| Remove loader-busy serialization condition | 1 RED, 7 unselected; actual fake loader port also reports the forbidden overlapping start as one unhandled error |
+| Remove late shutdown/generation completion guard | 1 RED, 7 unselected |
+| Read generic chair catalog for the actual Classroom skin | 1 RED, 7 unselected |
+
+Every mutation was followed by finally exact physical source-byte restoration. Original and final source SHA256: `ed4a8ae130c039c8f19bd2cf48e6ec924c38f8e9d28e0193cc3222d5bf5d7bce`. Production diff was empty. The restored actual lifecycle suite passed **8/8**. [Structured original receipt](./mutation-receipt.json), named negative output files and [exact executed mutation driver](./executed-mutation.cjs.txt) are retained. No browser, network decoder, server or GPU was launched.

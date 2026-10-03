@@ -1,0 +1,28 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-oblique-empty-asset-demand-audit-20261003
+
+ ❯ tests/unit/oblique-demand-texture-lifecycle.test.ts (8 tests | 1 failed | 7 skipped) 7ms
+   × empty boot requests only required floor pixels and resolves readiness after them 6ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 skipped (8)
+   Start at  13:56:38
+   Duration  861ms (transform 248ms, setup 0ms, import 687ms, tests 7ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-demand-texture-lifecycle.test.ts > empty boot requests only required floor pixels and resolves readiness after them
+AssertionError: expected [ [ { …(2) }, { …(2) }, …(3) ] ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/oblique-demand-texture-lifecycle.test.ts:44:28
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

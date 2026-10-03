@@ -1,0 +1,25 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-oblique-empty-asset-demand-audit-20261003
+
+ ❯ tests/unit/oblique-demand-texture-lifecycle.test.ts (8 tests | 1 failed | 7 skipped) 9ms
+   × room-owned chair skin selects the actual classroom catalog after the generic chair loaded 8ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 skipped (8)
+   Start at  13:56:44
+   Duration  804ms (transform 245ms, setup 0ms, import 670ms, tests 9ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-demand-texture-lifecycle.test.ts > room-owned chair skin selects the actual classroom catalog after the generic chair loaded
+AssertionError: expected '/assets/environment/oblique/furniture…' to be '/assets/environment/oblique/furniture…' // Object.is equality
+
+Expected: "/assets/environment/oblique/furniture.classroom.school-chair-yaw+300-elev40.4edfe021a867.png"
+Received: "/assets/environment/oblique/furniture.chair.wooden-yaw+300-elev40.2f3d110ea54c.png"
+
+ ❯ tests/unit/oblique-demand-texture-lifecycle.test.ts:60:798
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
