@@ -1,0 +1,15 @@
+# Existing wooden bench lower tie physical connections
+
+Base d7aa0138696c4cf3a980856564d3b0d917c8214b. Fresh catalog audit finds21object identities/20buildable furniture or fixture objects (sink remains unbuildable); no Workshop/Visitation buildable exists. All actual default objects already have dedicated sources. Existing ExerciseStation source32parts/six stored graphs replays all72canonical hashes exactly; its foot-bolt separation is only.003tile/.192sourcepixel, so no speculative batch was added. Its actual complete alternate inventory is included.
+
+Selected existing default object.bench /bench-wooden -> furniture.corridor.bench.variants has real2x1 footprint and source furniture.corridor.bench.blend SHA3c07ae8916f36090803b05e09addb26458a704a674431ba786ccddee5e78b867. Actual40parts/nine complete stored shader graphs/1520nondegenerate outward polygons. Original source and all40raw vertices/topology/material indices/modifierRNA/matrices/evaluated hashes remain exact. Original72source renders match every canonical frame SHA, proving current Workbenchpaint.sl/256-ortho4/target1,.5,.44325/unit fit before any detail.
+
+## Actual structural gap and exactly two added pieces
+
+Existing Lower steel tie is disjoint from all39 other parts. Minimum geometric bound separation to each leg is.1580001116tile; seat bearer separationZ.175. Actual evaluated triangle-surface witnesses record this independently, rather than treating a merely coplanar joint as missing. At64ppt this is roughly10sourcepixels, unlike the subpixel ExerciseStation candidate. Source still has original end brackets/rivets/seat bolts; none were duplicated.
+
+Two transverse lower steel rails at original leg centerX -.70000076/+.70000076, Y0, Z.24 with dimensions.055x.53x.055, use the exact existing Lower steel tie material and retained edge style. Six actual triangle-ray parity witnesses lie inside each new rail and its front leg/back leg/original tie. Source now42parts; no existing part is remodeled. Allfull source bounds and original nine graphs remain exact; unused stored graphs are retained through save without shader changes. No winding defect is claimed. Source SHA4b174ad498260ac3c736d2b4d78fb1f566cface5bab81d513fb2e00a4568ab81.
+
+Direct saved-source verification checks all42raw/evaluated hashes, complete graphs, actual normals/contacts before and after existing export translation, four occupied orientations and all72actual camera transforms. Both actual original/connected source images0/60/180/300 elevation40 use the same proven camera/studio. Actual changed pixels at yaw0/60/180/300 are 0/186/0/197; the rails are exposed diagonally and occluded front/rear at elevation40. The opened full-body paired image and pixel delta receipt show real new structural supports. These are source pictures, not gameplay screenshots.
+
+First coherent source/prep checkpoint. Canonical tuple/bench-only dispatch, all72byte-repeat exports and loaded producer/consumer negatives follow; contextual Yard/CommonRoom overrides, runtime/schema/palette/ID/projection/camera/SaveLoad and browser/server remain untouched. Root owns genuine native route and integration.
