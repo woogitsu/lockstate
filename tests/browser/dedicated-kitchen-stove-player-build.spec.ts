@@ -2,6 +2,23 @@
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
+import { assertOwnedObjectOrders, recordOwnedObjectSnapshot, type OwnedObjectSnapshotData } from './owned-object-worker-evidence';
+import { fridgePalettePixels } from './kitchen-fixture-palette-evidence';
+
+function assertKitchenOwners(data: OwnedObjectSnapshotData, quarterTurns: 0 | 1): void {
+  // Authored catalogue order, independent of the objects we are checking.
+  const fixtures = quarterTurns === 0
+    ? [{ objectId: 'object.stove', definitionId: 'stove-brick', index: '000', x: 21, y: 6 },
+      { objectId: 'object.prep-counter', definitionId: 'prep-counter-brick', index: '001', x: 23, y: 6 },
+      { objectId: 'object.fridge', definitionId: 'fridge-brick', index: '002', x: 21, y: 8 }]
+    : [{ objectId: 'object.stove', definitionId: 'stove-brick', index: '000', x: 24, y: 6 },
+      { objectId: 'object.prep-counter', definitionId: 'prep-counter-brick', index: '001', x: 24, y: 8 },
+      { objectId: 'object.fridge', definitionId: 'fridge-brick', index: '002', x: 22, y: 6 }];
+  for (const fixture of fixtures) assertOwnedObjectOrders(data, fixture.objectId, fixture.definitionId, [{
+    anchorTile: { x: fixture.x, y: fixture.y }, orientation: quarterTurns,
+    sourceOrderId: `room-template-000000000002-2-object-${fixture.index}`,
+  }]);
+}
 
 interface ProbeWindow extends Window {
   askWorker?: (kind: string, payload: unknown) => Promise<unknown>;
@@ -141,7 +158,7 @@ test('player creates storage and delivery capacity before Kitchen', async ({ pag
 });
 
 for (const quarterTurns of [0, 1] as const) {
-test(`player builds Kitchen at quarterTurns${quarterTurns} and retains authored stove enamel and cast-iron detail palettes and anchors after Save/Load`, async ({ page }, info) => {
+test(`player builds Kitchen at quarterTurns${quarterTurns} and retains stove and fridge detail palettes and all completed owners after Save/Load`, async ({ page }, info) => {
   expect(routeStorage, 'this case consumes the first stage actual IndexedDB save').toBeDefined();
   await installWorkerProbe(page);
   await installTee(page);
@@ -164,6 +181,8 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains authored 
     { type: 'PlaceRoomTemplate', templateId: 'kitchen-basic', origin: { x: 20, y: 5 }, ...(quarterTurns === 0 ? {} : { quarterTurns }) },
   ]);
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  const pausedBefore = await recordOwnedObjectSnapshot(page, info.outputPath('kitchen-paused-before-save.json'));
+  assertKitchenOwners(pausedBefore, quarterTurns);
   const minimapRegion = page.getByRole('region', { name: 'Minimap', exact: true });
   if (!await page.locator('.hud-minimap__surface').isVisible()) {
     await minimapRegion.getByRole('button', { name: 'Expand', exact: true }).click();
@@ -175,31 +194,44 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains authored 
   await page.mouse.move(1300, 700);
   const completed = await page.screenshot({ path: info.outputPath('dedicated-kitchen-stove-worker-completed-fullhd.png') });
   const beforePixels = await stovePalettePixels(page, completed, quarterTurns);
+  const fridgeBefore = await fridgePalettePixels(page, completed, quarterTurns);
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
-    quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
+    quarterTurns, actualBefore, beforePixels, fridgeBefore, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   beforePixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? "enamel body" : "cast-iron support"} after construction`)
     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));
+  fridgeBefore.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after construction`)
+    .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
   await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
+  const pausedAfter = await recordOwnedObjectSnapshot(page, info.outputPath('kitchen-paused-after-load.json'));
+  assertKitchenOwners(pausedAfter, quarterTurns);
+  expect(pausedAfter).toEqual(pausedBefore);
   const actualAfter = await fixtureAnchors(page);
   expect(actualAfter).toEqual(expected);
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('dedicated-kitchen-stove-loaded-fullhd.png') });
   const afterPixels = await stovePalettePixels(page, loaded, quarterTurns);
+  const fridgeAfter = await fridgePalettePixels(page, loaded, quarterTurns);
   afterPixels.forEach((count, index) => expect.soft(count, `stove ${index === 0 ? "enamel body" : "cast-iron support"} after Load`)
     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 500 : 25 : 50));
   expect(afterPixels).toEqual(beforePixels);
+  fridgeAfter.forEach((count, index) => expect.soft(count, `fridge ${index === 0 ? 'freezer panel' : 'side louvres'} after Load`)
+    .toBeGreaterThan(quarterTurns === 0 ? 350 : index === 0 ? 800 : 100));
+  expect(fridgeAfter).toEqual(fridgeBefore);
   const evidencePath = info.outputPath('dedicated-kitchen-stove-worker-and-save-evidence.json');
   await writeFile(evidencePath, JSON.stringify({
-    quarterTurns, actualBefore, actualAfter, beforePixels, afterPixels,
+    quarterTurns, actualBefore, actualAfter, beforePixels, afterPixels, fridgeBefore, fridgeAfter,
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   await info.attach('dedicated-kitchen-stove-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
+  await page.getByRole('button', { name: 'Rotate view left', exact: true }).click();
+  await page.getByRole('button', { name: 'Rotate view left', exact: true }).click();
+  await page.screenshot({ path: info.outputPath('kitchen-loaded-physical-fixings-fullhd.png') });
 
 });
 }

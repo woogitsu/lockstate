@@ -1468,3 +1468,33 @@ are pushed. Next isolated integration includes detailed physical Chair/Rack,
 Art is modeling an actual connected ShowerHead, gameplay audits the remaining
 accepted/refused history class, HUD prepares a real native pending-wall test.
 One root browser at a time; full hosted CI and serial release still required.
+
+## Physical fixtures and construction integration - 2026-10-03
+
+Chair, Rack and Shower have completed real capacity/Build/SaveLoad acceptance:
+11 cases GREEN after the original observer failures were retained and corrected.
+Actual mapping and pending-wall depth omissions fail; exact source/worker
+restoration passes. The rear guard stays occluded while an independent front
+guard remains visible, including the pending texture state.
+[Published native proof](../../research/2026-10-03-chair-rack-depth-integration/README.md)
+is on the integration branch.
+
+Bookshelf and stationary renderer handoff now have 11 genuine FullHD cases GREEN,
+including UI scale 100/200 and both directions with rotated/mirrored templates.
+Completed owners and whole paused SaveLoad state are checked. The separate actual
+consumer controls are being completed; a setup needle guard aborted before any
+source mutation and its positive restoration was retained, not counted as a
+negative test.
+
+The following isolated source integration includes physical Fridge/Stove models,
+World primary-release ownership #2001, and abandoned preflight/session ownership
+#2002. Root will run one combined genuine Kitchen route for both fixtures and
+all three completed owners, plus actual Wall/Bed/Yard mouse-chord cases.
+[Current integration record](../../research/2026-10-03-kitchen-construction-session-integration/README.md)
+distinguishes pending native and hosted gates from completed source work.
+
+Three disjoint agents continue: actual Canteen rail-to-post modeling, immediate
+construction cancellation/re-arm #2004, and native New/Load session acceptance.
+Only root runs the browser, with one worker. Push every coherent checkpoint.
+Full hosted CI and serial release remain required; protected sharding #1983 and
+optional V9 proposals stay pending until the owner's answer.
