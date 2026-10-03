@@ -1,0 +1,66 @@
+[
+  {
+    "variant": "original",
+    "yawDegrees": 45,
+    "elevationDegrees": 40,
+    "sourceSha256": "335544282e27ff01608f7f10987c054012d38ec3905340c24c142b7b794b1b2a",
+    "image": "original-cell-toilet-yaw+45-elev40.png",
+    "imageSha256": "4fc3f8da449d1950f582c9b3058ebddf2aedfbe8b645af14a9e3bb90231aba4b"
+  },
+  {
+    "variant": "original",
+    "yawDegrees": 105,
+    "elevationDegrees": 40,
+    "sourceSha256": "335544282e27ff01608f7f10987c054012d38ec3905340c24c142b7b794b1b2a",
+    "image": "original-cell-toilet-yaw+105-elev40.png",
+    "imageSha256": "c678cad85f2956b68a36383f443eddca11df02b7994cba7a2643658324b9ef37"
+  },
+  {
+    "variant": "original",
+    "yawDegrees": -75,
+    "elevationDegrees": 40,
+    "sourceSha256": "335544282e27ff01608f7f10987c054012d38ec3905340c24c142b7b794b1b2a",
+    "image": "original-cell-toilet-yaw-75-elev40.png",
+    "imageSha256": "ee3a71b205631d0555cc459e63cb3d45d9b5810cba1521234e1cc5160aec7783"
+  },
+  {
+    "variant": "original",
+    "yawDegrees": -135,
+    "elevationDegrees": 40,
+    "sourceSha256": "335544282e27ff01608f7f10987c054012d38ec3905340c24c142b7b794b1b2a",
+    "image": "original-cell-toilet-yaw-135-elev40.png",
+    "imageSha256": "241dad232ca08bfd5c91796ee450b42d665988a8e159daeee7c3a968d79665b7"
+  },
+  {
+    "variant": "connected",
+    "yawDegrees": 45,
+    "elevationDegrees": 40,
+    "sourceSha256": "ebc1570274663d22315eed0adfafe8886120bdbf9901dfa744edcde540428ff8",
+    "image": "connected-cell-toilet-yaw+45-elev40.png",
+    "imageSha256": "fb4b086cfbce12ec1ae8a69b0414a70d8e9587e703d33b46e7dfc429f48c2932"
+  },
+  {
+    "variant": "connected",
+    "yawDegrees": 105,
+    "elevationDegrees": 40,
+    "sourceSha256": "ebc1570274663d22315eed0adfafe8886120bdbf9901dfa744edcde540428ff8",
+    "image": "connected-cell-toilet-yaw+105-elev40.png",
+    "imageSha256": "464da91239d967b3d43780bce2b422681cf3ca06a0085b8a1d38897fbceb42b1"
+  },
+  {
+    "variant": "connected",
+    "yawDegrees": -75,
+    "elevationDegrees": 40,
+    "sourceSha256": "ebc1570274663d22315eed0adfafe8886120bdbf9901dfa744edcde540428ff8",
+    "image": "connected-cell-toilet-yaw-75-elev40.png",
+    "imageSha256": "ee3a71b205631d0555cc459e63cb3d45d9b5810cba1521234e1cc5160aec7783"
+  },
+  {
+    "variant": "connected",
+    "yawDegrees": -135,
+    "elevationDegrees": 40,
+    "sourceSha256": "ebc1570274663d22315eed0adfafe8886120bdbf9901dfa744edcde540428ff8",
+    "image": "connected-cell-toilet-yaw-135-elev40.png",
+    "imageSha256": "41e60f30135c709402782c201fe7c7abb8165a9847c3feb21ed226086b82bd97"
+  }
+]
