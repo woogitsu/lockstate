@@ -1,14 +1,14 @@
 
  RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-noncell-template-playability-audit-20261003
 
- ❯ tests/integration/room-template-occupied-material-cancel.test.ts (10 tests | 2 failed) 1896ms
-   × refuses a delivery affecting occupied and unoccupied gestures collectively, encodedLoad=false 362ms
-   × refuses a delivery affecting occupied and unoccupied gestures collectively, encodedLoad=true 327ms
+ ❯ tests/integration/room-template-occupied-material-cancel.test.ts (11 tests | 2 failed) 2257ms
+   × refuses a delivery affecting occupied and unoccupied gestures collectively, encodedLoad=false 393ms
+   × refuses a delivery affecting occupied and unoccupied gestures collectively, encodedLoad=true 403ms
 
  Test Files  1 failed (1)
-      Tests  2 failed | 8 passed (10)
-   Start at  03:18:33
-   Duration  4.20s (transform 828ms, setup 0ms, import 2.18s, tests 1.90s, environment 0ms)
+      Tests  2 failed | 9 passed (11)
+   Start at  03:23:21
+   Duration  4.61s (transform 836ms, setup 0ms, import 2.22s, tests 2.26s, environment 0ms)
 
 
 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
@@ -403,13 +403,13 @@ AssertionError: expected { masterSeed: 73, …(5) } to deeply equal { masterSeed
       ],
       "ownedChunks": [
 
- ❯ tests/integration/room-template-occupied-material-cancel.test.ts:128:17
-    126|   send(runtime, { type: 'CancelMaterialPurchase', orderId: delivery.or…
-    127|   const { kernel: _afterKernel, ...after } = captureSessionSnapshot(ru…
-    128|   expect(after).toEqual(before);
+ ❯ tests/integration/room-template-occupied-material-cancel.test.ts:152:17
+    150|   send(runtime, { type: 'CancelMaterialPurchase', orderId: delivery.or…
+    151|   const { kernel: _afterKernel, ...after } = captureSessionSnapshot(ru…
+    152|   expect(after).toEqual(before);
        |                 ^
-    129|   expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-o…
-    130| });
+    153|   expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-o…
+    154| });
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
 

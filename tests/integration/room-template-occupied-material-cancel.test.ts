@@ -14,8 +14,17 @@ function until(runtime: Runtime, predicate: () => boolean) {
   for (let tick = 0; tick < 30_000 && !predicate(); tick++) runtime.kernel.step();
   expect(predicate()).toBe(true);
 }
-function reload(runtime: Runtime): Runtime {
-  const bundle = captureSessionSnapshot(runtime);
+function reload(runtime: Runtime, removeLegacyOwner = false): Runtime {
+  const original = captureSessionSnapshot(runtime);
+  // Explicit existing V8 compatibility input; packed player commands never
+  // erase provenance. Only the already optional physical owner is omitted.
+  const bundle = removeLegacyOwner ? { ...original, simulation: { ...original.simulation!, objects: {
+    ...original.simulation!.objects!, placedObjects: original.simulation!.objects!.placedObjects.map(object => {
+      if (object.objectId !== 'object.bed') return object;
+      const { sourceOrderId: _owner, ...legacy } = object;
+      return legacy;
+    }),
+  } } } : original;
   const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(createSaveEnvelope({
     gameVersion: 'test', prisonId: 'occupied-material', revision: 1, createdAt: 0, updatedAt: 1, ...bundle,
   }))));
@@ -64,6 +73,21 @@ it.each([false, true])('refuses JIT cancellation before refund or demolition of 
   const { kernel: _afterKernel, ...after } = captureSessionSnapshot(runtime);
   expect(after).toEqual(before);
   expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-occupied' });
+});
+
+it('retains approved unknown legacy ownership refusal before delivery refund and keeps direct object removal available', () => {
+  let runtime = partiallyFurnishedRow();
+  const deliveryId = buyNextBedMaterial(runtime);
+  runtime = reload(runtime, true);
+  const bed = runtime.placedObjects.getSnapshot().find(object => object.objectId === 'object.bed')!;
+  expect(bed.sourceOrderId).toBeUndefined();
+  const { kernel: _beforeKernel, ...before } = captureSessionSnapshot(runtime);
+  send(runtime, { type: 'CancelMaterialPurchase', orderId: deliveryId });
+  const { kernel: _afterKernel, ...after } = captureSessionSnapshot(runtime);
+  expect(after).toEqual(before);
+  expect(runtime.refusals.last).toMatchObject({ reason: 'construction.object-ownership-unknown' });
+  send(runtime, { type: 'RemoveObject', x: bed.anchorTile.x, y: bed.anchorTile.y });
+  expect(runtime.placedObjects.getSnapshot().some(object => object.placedObjectId === bed.placedObjectId)).toBe(false);
 });
 
 it.each([false, true])('relocates into a genuinely completed independent spare before refunding the row delivery, encodedLoad=%s', saved => {
