@@ -1,0 +1,16 @@
+00:01.187  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\docs\research\2026-10-03-modern-square-wall-material-study\draft.wall.square.brick.full.literal-graphs.blend"
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender\render-modern-square-wall-study.py", line 217, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender\render-modern-square-wall-study.py", line 149, in main
+    verify(bpy.context.scene, json.loads(receipt_path.read_text(encoding='utf-8')))
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender\render-modern-square-wall-study.py", line 124, in verify
+    raise ValueError('Wall tile camera changed')
+ValueError: Wall tile camera changed
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-modern-ground-wall-material-study-20261003\tooling\blender\render-modern-square-wall-study.py', exiting.
