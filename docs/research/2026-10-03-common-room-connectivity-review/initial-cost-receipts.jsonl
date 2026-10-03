@@ -1,0 +1,3 @@
+{"kind":"warm-query-cost","cells":16,"loadedChunks":7,"queries":100,"physicalReads":700,"previousReads":700,"portalWalks":0,"queueUnchanged":true}
+{"kind":"warm-query-cost","cells":64,"loadedChunks":23,"queries":100,"physicalReads":2300,"previousReads":2300,"portalWalks":0,"queueUnchanged":true}
+{"kind":"warm-query-cost","cells":256,"loadedChunks":87,"queries":100,"physicalReads":8700,"previousReads":8700,"portalWalks":0,"queueUnchanged":true}

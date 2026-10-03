@@ -1,0 +1,146 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-common-room-connectivity-review-20261003
+
+ ❯ docs/research/2026-10-03-common-room-connectivity-review/integration.audit.ts (4 tests | 1 failed) 785ms
+   × integrated q1 Common Room plus inaccessible first Shower keeps independent V8 continuations identical with only one cache warmed 742ms
+vitest.CMD : 
+At line:2 char:349
++ ... pts.jsonl'; & node_modules/.bin/vitest.cmd run --config docs/research ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  docs/research/2026-10-03-common-room-connectivity-review/integration.audit.ts > integrated q1 Common Room plus i
+naccessible first Shower keeps independent V8 continuations identical with only one cache warmed
+AssertionError: expected [ { …(5) }, { …(5) }, { …(5) }, …(8) ] to deeply equal undefined
+
+- Expected:
+undefined
+
++ Received:
+[
+  {
+    "anchorTile": {
+      "x": 3,
+      "y": 3,
+    },
+    "objectId": "object.storage-rack",
+    "orientation": 0,
+    "placedObjectId": "object:3:3",
+    "sourceOrderId": "room-template-000000000000-2-object-000",
+  },
+  {
+    "anchorTile": {
+      "x": 5,
+      "y": 3,
+    },
+    "objectId": "object.storage-rack",
+    "orientation": 0,
+    "placedObjectId": "object:5:3",
+    "sourceOrderId": "room-template-000000000000-2-object-001",
+  },
+  {
+    "anchorTile": {
+      "x": 17,
+      "y": 3,
+    },
+    "objectId": "object.bench",
+    "orientation": 1,
+    "placedObjectId": "object:17:3",
+    "sourceOrderId": "room-template-000000000002-2-object-000",
+  },
+  {
+    "anchorTile": {
+      "x": 21,
+      "y": 3,
+    },
+    "objectId": "object.loading-dock-door",
+    "orientation": 0,
+    "placedObjectId": "object:21:3",
+    "sourceOrderId": "room-template-000000000001-2-object-000",
+  },
+  {
+    "anchorTile": {
+      "x": 15,
+      "y": 5,
+    },
+    "objectId": "object.bench",
+    "orientation": 1,
+    "placedObjectId": "object:15:5",
+    "sourceOrderId": "room-template-000000000002-2-object-001",
+  },
+  {
+    "anchorTile": {
+      "x": 8,
+      "y": 15,
+    },
+    "objectId": "object.shower-head",
+    "orientation": 1,
+    "placedObjectId": "object:8:15",
+    "sourceOrderId": "room-template-000000000004-2-object-000",
+  },
+  {
+    "anchorTile": {
+      "x": 23,
+      "y": 15,
+    },
+    "objectId": "object.shower-head",
+    "orientation": 1,
+    "placedObjectId": "object:23:15",
+    "sourceOrderId": "room-template-000000000003-2-object-000",
+  },
+  {
+    "anchorTile": {
+      "x": 8,
+      "y": 17,
+    },
+    "objectId": "object.shower-head",
+    "orientation": 1,
+    "placedObjectId": "object:8:17",
+    "sourceOrderId": "room-template-000000000004-2-object-001",
+  },
+  {
+    "anchorTile": {
+      "x": 23,
+      "y": 17,
+    },
+    "objectId": "object.shower-head",
+    "orientation": 1,
+    "placedObjectId": "object:23:17",
+    "sourceOrderId": "room-template-000000000003-2-object-001",
+  },
+  {
+    "anchorTile": {
+      "x": 9,
+      "y": 25,
+    },
+    "objectId": "object.bed",
+    "orientation": 1,
+    "placedObjectId": "object:9:25",
+    "sourceOrderId": "room-template-000000000005-2-object-000",
+  },
+  {
+    "anchorTile": {
+      "x": 7,
+      "y": 26,
+    },
+    "objectId": "object.toilet",
+    "orientation": 1,
+    "placedObjectId": "object:7:26",
+    "sourceOrderId": "room-template-000000000005-2-object-001",
+  },
+]
+
+ ❯ docs/research/2026-10-03-common-room-connectivity-review/integration.audit.ts:90:41
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  11:45:21
+   Duration  4.74s (transform 2.22s, setup 0ms, import 3.82s, tests 785ms, environment 0ms)
+
