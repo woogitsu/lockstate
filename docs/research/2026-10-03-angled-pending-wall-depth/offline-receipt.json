@@ -1,0 +1,54 @@
+[
+  {
+    "name": "original-source-baseline",
+    "exitCode": 1,
+    "command": [
+      "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/unit/oblique-pending-wall-depth.test.ts",
+      "--maxWorkers=2"
+    ]
+  },
+  {
+    "name": "strict-diagnostic-typescript",
+    "exitCode": 0,
+    "command": [
+      "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "node_modules/typescript/bin/tsc",
+      "--ignoreConfig",
+      "--noEmit",
+      "--strict",
+      "--skipLibCheck",
+      "--target",
+      "ES2022",
+      "--module",
+      "ESNext",
+      "--moduleResolution",
+      "bundler",
+      "--types",
+      "node",
+      "--resolveJsonModule",
+      "tests/unit/oblique-pending-wall-depth.test.ts"
+    ]
+  },
+  {
+    "name": "unchanged-geometry-controls",
+    "exitCode": 0,
+    "command": [
+      "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/unit/oblique-world-projection.test.ts",
+      "tests/unit/oblique-geometry.test.ts",
+      "tests/unit/oblique-actor-projection.test.ts",
+      "--maxWorkers=2"
+    ]
+  },
+  {
+    "productionUnchanged": {
+      "src/rendering/scene/oblique-world-scene.ts": "fdf15c74e7e8d65d3d33e1d02825d79bcc564975596ebeee0cc0fdeda40a43e7",
+      "src/rendering/camera/oblique-world-projection.ts": "b91e2b22793052e2d90e6d7564ba600bc4d9e0ea3e0c700efeb16d413dcab784"
+    }
+  }
+]
