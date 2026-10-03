@@ -1,0 +1,10 @@
+{
+  "actualSourceProducer": "deleted real grip support -1 in saved .blend; recomputed source hash to reach actual structural gate",
+  "correctCanonicalGuardRejectsMissingGeometry": true,
+  "onlyCanonicalDetailGuardConsumerRemovedExitCode": 1,
+  "expectedFailure": "canonical dispatch accepted saved source without real grip support",
+  "exactRestoredConsumerRejectsMalformedSource": true,
+  "sourceProvenanceWrapperBytesExactlyRestored": true,
+  "finalNative72CameraVerifyExitCode": 0,
+  "sourceSha256": "4c4b52811935cb5fe44ee4ad09bbee1b5179484aecdb7eb001c71047c4a493c0"
+}

@@ -1,476 +1,901 @@
 {
-  "schemaVersion": 1,
-  "assetId": "utility.washing-machine.variants",
-  "source": "assets/source/blender/utility.washing-machine.angled-detail.blend",
   "sourceSha256": "4c4b52811935cb5fe44ee4ad09bbee1b5179484aecdb7eb001c71047c4a493c0",
-  "resolutionPx": [
-    256,
-    256
+  "descriptorSha256": "cf54a1875057a9b0df28912ded8a307339a7341837fc5fe5019301f3a69aa6e3",
+  "repeat": [
+    {
+      "label": "first",
+      "wrapper": "render-washing-machine-detail-oblique.py",
+      "exitCode": 0,
+      "descriptorAndFrameBytesExactlyEqual": true,
+      "comparedFiles": 73
+    },
+    {
+      "label": "dedicated-repeat",
+      "wrapper": "render-washing-machine-detail-oblique.py",
+      "exitCode": 0,
+      "descriptorAndFrameBytesExactlyEqual": true,
+      "comparedFiles": 73
+    },
+    {
+      "label": "production-repeat",
+      "wrapper": "render-washing-machine-angled-oblique.py",
+      "exitCode": 0,
+      "descriptorAndFrameBytesExactlyEqual": true,
+      "comparedFiles": 73
+    },
+    {
+      "label": "legacy-production-repeat",
+      "wrapper": "render-washing-machine-oblique.py",
+      "exitCode": 0,
+      "descriptorAndFrameBytesExactlyEqual": true,
+      "comparedFiles": 73
+    }
   ],
-  "nominalPixelsPerTile": 64,
-  "pivotPx": [
-    128,
-    128
-  ],
-  "cameraTargetTiles": [
-    1.0,
-    0.5,
-    0.7825000286102295
-  ],
-  "projection": "orthographic",
-  "yawDegrees": [
-    0,
-    30,
-    60,
-    90,
-    120,
-    150,
-    180,
-    210,
-    240,
-    270,
-    300,
-    330
-  ],
-  "elevationDegrees": [
-    20,
-    30,
-    40,
-    50,
-    60,
-    70
-  ],
+  "decodedRGBAFrames": 72,
+  "minimumTransparentBorderPx": 54,
   "frames": [
     {
       "yawDegrees": 0,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+00-elev20.b2f1c0738aa9.png",
+      "alphaBounds": [
+        72,
+        74,
+        184,
+        182
+      ],
+      "minimumTransparentBorderPx": 72,
       "sha256": "b2f1c0738aa9a701f846f3e97f36f56608ec463b693ec4d0fc48ffb86c2949e3"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+00-elev30.f708f246ee26.png",
+      "alphaBounds": [
+        72,
+        75,
+        184,
+        181
+      ],
+      "minimumTransparentBorderPx": 72,
       "sha256": "f708f246ee266a92756efeb2bd1ea42fc6408922cf12dddfa72503cdb15091a5"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+00-elev40.81846d5805cb.png",
+      "alphaBounds": [
+        72,
+        77,
+        184,
+        179
+      ],
+      "minimumTransparentBorderPx": 72,
       "sha256": "81846d5805cb0c9f932bf1918741b87abd37dd08196d6c5649118a7ffeba966f"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+00-elev50.924791fc0abf.png",
+      "alphaBounds": [
+        72,
+        81,
+        184,
+        176
+      ],
+      "minimumTransparentBorderPx": 72,
       "sha256": "924791fc0abf158b222debfb4c9257d467df2f18c6cf171f9a487ba3147fd3c6"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+00-elev60.8ffec1cf0413.png",
+      "alphaBounds": [
+        72,
+        85,
+        184,
+        172
+      ],
+      "minimumTransparentBorderPx": 72,
       "sha256": "8ffec1cf0413007ab0b64dd7c435b2206f587263502b22581128af6c498c718a"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+00-elev70.7b4792cba7d5.png",
+      "alphaBounds": [
+        72,
+        91,
+        184,
+        166
+      ],
+      "minimumTransparentBorderPx": 72,
       "sha256": "7b4792cba7d58e7a00478debaf1bc234e3903cc3e4d790b8fced4f1b161b3c55"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+30-elev20.a798b2741d8f.png",
+      "alphaBounds": [
+        71,
+        67,
+        185,
+        189
+      ],
+      "minimumTransparentBorderPx": 67,
       "sha256": "a798b2741d8f89cdc57d98083319e456e74d484eee85b6e6f03fe8c6755caf25"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+30-elev30.733126e12615.png",
+      "alphaBounds": [
+        71,
+        64,
+        185,
+        192
+      ],
+      "minimumTransparentBorderPx": 64,
       "sha256": "733126e126151f2eec55909bb7d783a6588f741bde3e391ed1fbb06735f9737c"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+30-elev40.0b6460310582.png",
+      "alphaBounds": [
+        71,
+        63,
+        185,
+        194
+      ],
+      "minimumTransparentBorderPx": 62,
       "sha256": "0b64603105828b9f1e2d06fb639dcc7d3ab5c45f12ec7dcce06ad80c092c2bac"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+30-elev50.5d29fb615ed7.png",
+      "alphaBounds": [
+        71,
+        63,
+        185,
+        193
+      ],
+      "minimumTransparentBorderPx": 63,
       "sha256": "5d29fb615ed7bacd591524a4ec5bfd494785eb2dcd375b8880b083d6e67c66b0"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+30-elev60.59029c1ca544.png",
+      "alphaBounds": [
+        71,
+        66,
+        185,
+        190
+      ],
+      "minimumTransparentBorderPx": 66,
       "sha256": "59029c1ca54493bea5cac5e67c08c81fed2354e07006e6e12b481f9239be515b"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+30-elev70.db2ae32a1ff8.png",
+      "alphaBounds": [
+        71,
+        70,
+        185,
+        186
+      ],
+      "minimumTransparentBorderPx": 70,
       "sha256": "db2ae32a1ff8bdc70f842c75309e1507e3be43c4ca2edd93e0524dfd19f1bad4"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+60-elev20.4c754c5c5b4b.png",
+      "alphaBounds": [
+        79,
+        63,
+        173,
+        194
+      ],
+      "minimumTransparentBorderPx": 62,
       "sha256": "4c754c5c5b4b114811c4c55628a27b3a40a6ebd4994cfb935bcd788ffb986409"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+60-elev30.02371a3bf6a4.png",
+      "alphaBounds": [
+        79,
+        58,
+        173,
+        198
+      ],
+      "minimumTransparentBorderPx": 58,
       "sha256": "02371a3bf6a4c1254d16e94be3ae9be0b1f999a7ef7616ed3e86ff3f5f917b36"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+60-elev40.1019db6e42f2.png",
+      "alphaBounds": [
+        79,
+        55,
+        173,
+        201
+      ],
+      "minimumTransparentBorderPx": 55,
       "sha256": "1019db6e42f2c75c372beb33a2e9a1558a9fb247f382f57ddecc1e12a3022ce7"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+60-elev50.f7b329394e3f.png",
+      "alphaBounds": [
+        79,
+        54,
+        173,
+        202
+      ],
+      "minimumTransparentBorderPx": 54,
       "sha256": "f7b329394e3f7b16b7ced8bb72b9588cec82d047e601a6ca8ceb24cd659c1a97"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+60-elev60.89dc1b8cd8d6.png",
+      "alphaBounds": [
+        79,
+        55,
+        173,
+        201
+      ],
+      "minimumTransparentBorderPx": 55,
       "sha256": "89dc1b8cd8d66e91c6d98b36139762b5b2e0bf2b6d8ca011a1b841404ae80b61"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+60-elev70.fc56f12de64f.png",
+      "alphaBounds": [
+        79,
+        59,
+        173,
+        197
+      ],
+      "minimumTransparentBorderPx": 59,
       "sha256": "fc56f12de64f0df900e99f35df2e10500f64181dcf6a1a429975c304715202ad"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+90-elev20.62134a33410d.png",
+      "alphaBounds": [
+        97,
+        63,
+        150,
+        193
+      ],
+      "minimumTransparentBorderPx": 63,
       "sha256": "62134a33410deb705be0d7ebf2fe3480e08e34eb64e512381f40f47872de14d7"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+90-elev30.777c452cb133.png",
+      "alphaBounds": [
+        97,
+        59,
+        150,
+        198
+      ],
+      "minimumTransparentBorderPx": 58,
       "sha256": "777c452cb1338dc00058b1381658045994e9242d35521950a86d7f36ba2d64d3"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+90-elev40.21162ea5a3a4.png",
+      "alphaBounds": [
+        97,
+        56,
+        150,
+        200
+      ],
+      "minimumTransparentBorderPx": 56,
       "sha256": "21162ea5a3a435273eb51f0e388cd0260c710e5d5f42f4b8d04aa7481399e96f"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+90-elev50.8d732f60db2e.png",
+      "alphaBounds": [
+        97,
+        56,
+        150,
+        201
+      ],
+      "minimumTransparentBorderPx": 55,
       "sha256": "8d732f60db2e6b5f2dbb7e11e630a1a35c1770d4f196c70ed3de406497f01dc0"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+90-elev60.2d3fc714a5ee.png",
+      "alphaBounds": [
+        97,
+        57,
+        150,
+        199
+      ],
+      "minimumTransparentBorderPx": 57,
       "sha256": "2d3fc714a5ee759590f1efe31e1a2960c1b159e88f32bf95351941d69b8e447f"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+90-elev70.9cf258ce86de.png",
+      "alphaBounds": [
+        97,
+        61,
+        150,
+        196
+      ],
+      "minimumTransparentBorderPx": 60,
       "sha256": "9cf258ce86dedb382a826541d382893bf1056f35c728a8878b91c026b0e36ddd"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+120-elev20.008082a47e69.png",
+      "alphaBounds": [
+        81,
+        63,
+        173,
+        194
+      ],
+      "minimumTransparentBorderPx": 62,
       "sha256": "008082a47e699903f3dc8e83d6a5bcc75b2134a49fdb545a3c5d5f2401393f44"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+120-elev30.ae8245c145ee.png",
+      "alphaBounds": [
+        81,
+        58,
+        173,
+        198
+      ],
+      "minimumTransparentBorderPx": 58,
       "sha256": "ae8245c145eecc9666174c5fea24d61606e8ae0795739277b8b6c4cac045ec1e"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+120-elev40.f2dfd02c35b5.png",
+      "alphaBounds": [
+        81,
+        55,
+        173,
+        201
+      ],
+      "minimumTransparentBorderPx": 55,
       "sha256": "f2dfd02c35b5c5e67245285a29966e2b4cf93cb1fab2427ad11744d95354f5eb"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+120-elev50.abb85af739c9.png",
+      "alphaBounds": [
+        81,
+        54,
+        173,
+        202
+      ],
+      "minimumTransparentBorderPx": 54,
       "sha256": "abb85af739c95748fbde06e2c1cdbd361e8f0fe5a285c347fcf8d1342954050c"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+120-elev60.c836b9735f88.png",
+      "alphaBounds": [
+        81,
+        55,
+        173,
+        201
+      ],
+      "minimumTransparentBorderPx": 55,
       "sha256": "c836b9735f88f0301f3db67235cd79f1190015ac85b63d1111c7121a96ff3c34"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+120-elev70.ae70af416d01.png",
+      "alphaBounds": [
+        81,
+        59,
+        173,
+        197
+      ],
+      "minimumTransparentBorderPx": 59,
       "sha256": "ae70af416d01d8fc07ce452d79cb55a3df67862fc42cc577e0f20aa248be33e8"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+150-elev20.87f20adfb696.png",
+      "alphaBounds": [
+        71,
+        67,
+        185,
+        190
+      ],
+      "minimumTransparentBorderPx": 66,
       "sha256": "87f20adfb696cafeee6685918dfad8d87254064899fc1ce02c06d2de4015ef4b"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+150-elev30.d12dbba3941d.png",
+      "alphaBounds": [
+        71,
+        64,
+        185,
+        192
+      ],
+      "minimumTransparentBorderPx": 64,
       "sha256": "d12dbba3941dbcf00be6a03a0b1403266c2075f35b30f6c7125464098a8725df"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+150-elev40.837c353a614f.png",
+      "alphaBounds": [
+        71,
+        62,
+        185,
+        194
+      ],
+      "minimumTransparentBorderPx": 62,
       "sha256": "837c353a614f61cdf111ec0b69f547206f9a3942f522487ee5f75ad395c0f270"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+150-elev50.9bbe1a8a377a.png",
+      "alphaBounds": [
+        71,
+        62,
+        185,
+        193
+      ],
+      "minimumTransparentBorderPx": 62,
       "sha256": "9bbe1a8a377a015f8a153d43f5c5c4e3daa99154bf9f6427ba3331bdc63e757f"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+150-elev60.3bf2c00ed05c.png",
+      "alphaBounds": [
+        71,
+        64,
+        185,
+        190
+      ],
+      "minimumTransparentBorderPx": 64,
       "sha256": "3bf2c00ed05cc46c266c5d5cfabc6bbb8490089948d2935074511ee10d0e693f"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+150-elev70.4c7084660411.png",
+      "alphaBounds": [
+        71,
+        67,
+        185,
+        186
+      ],
+      "minimumTransparentBorderPx": 67,
       "sha256": "4c708466041168d834fe065f4c5a6d6691b83bd40516e97c626767d6d50a9122"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+180-elev20.1382fb718411.png",
+      "alphaBounds": [
+        72,
+        74,
+        184,
+        182
+      ],
+      "minimumTransparentBorderPx": 72,
       "sha256": "1382fb71841138dbb1ca35024860ce57bee1f3810e4ec8e5f8444b05b8143e5a"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+180-elev30.f3a024489173.png",
+      "alphaBounds": [
+        72,
+        74,
+        184,
+        181
+      ],
+      "minimumTransparentBorderPx": 72,
       "sha256": "f3a024489173e59e09bace8be09e193564b94021e3ad58a95af1c88e472627b7"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+180-elev40.6e70eadd1478.png",
+      "alphaBounds": [
+        72,
+        75,
+        184,
+        179
+      ],
+      "minimumTransparentBorderPx": 72,
       "sha256": "6e70eadd14784b601a608f423b35a73e48fea57790c4de438dfe02132239ae5c"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+180-elev50.6d4f68881010.png",
+      "alphaBounds": [
+        72,
+        78,
+        184,
+        176
+      ],
+      "minimumTransparentBorderPx": 72,
       "sha256": "6d4f68881010a5b577be36833bcee0997161d685e44e29312f7ae33f77f3d3a4"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+180-elev60.69581464696f.png",
+      "alphaBounds": [
+        72,
+        81,
+        184,
+        171
+      ],
+      "minimumTransparentBorderPx": 72,
       "sha256": "69581464696f50b15a0a4097c8d9546e3fcae542ec5203325e033da70e144245"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+180-elev70.a42b19a4057f.png",
+      "alphaBounds": [
+        72,
+        86,
+        184,
+        165
+      ],
+      "minimumTransparentBorderPx": 72,
       "sha256": "a42b19a4057f7edc2f3618a8dcc62a9baf79693a413db0e688053e6f56a46b11"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+210-elev20.ec78b1adc3f4.png",
+      "alphaBounds": [
+        71,
+        67,
+        185,
+        189
+      ],
+      "minimumTransparentBorderPx": 67,
       "sha256": "ec78b1adc3f4af1b9931d915a0a900461017f666acb82a0fcbcde623761b0f7e"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+210-elev30.4755a76ed90b.png",
+      "alphaBounds": [
+        71,
+        64,
+        185,
+        192
+      ],
+      "minimumTransparentBorderPx": 64,
       "sha256": "4755a76ed90b3b8917ee645bab5cbfcf85fceae182924f8e4be30a8cd3f62571"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+210-elev40.da4625d5962b.png",
+      "alphaBounds": [
+        71,
+        62,
+        185,
+        194
+      ],
+      "minimumTransparentBorderPx": 62,
       "sha256": "da4625d5962b9f2d43f276161e1c2918e07fdb925663a8f09846415b7db02e9b"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+210-elev50.3fc574d3384b.png",
+      "alphaBounds": [
+        71,
+        62,
+        185,
+        193
+      ],
+      "minimumTransparentBorderPx": 62,
       "sha256": "3fc574d3384b618013aae6cc9c756fe339dba79578abf339361b138f2bcf8da9"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+210-elev60.89c7068155b8.png",
+      "alphaBounds": [
+        71,
+        64,
+        185,
+        190
+      ],
+      "minimumTransparentBorderPx": 64,
       "sha256": "89c7068155b88d6e106a04d4ee9c416fdae16571a41bcdcdeb199c935bb10a69"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+210-elev70.6a6ea6a353ff.png",
+      "alphaBounds": [
+        71,
+        68,
+        185,
+        186
+      ],
+      "minimumTransparentBorderPx": 68,
       "sha256": "6a6ea6a353ffa3426372b53c1fe40137aaaff049a97f39ffa4ab778bcbe2cb57"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+240-elev20.1f4f6ff13b88.png",
+      "alphaBounds": [
+        83,
+        63,
+        177,
+        194
+      ],
+      "minimumTransparentBorderPx": 62,
       "sha256": "1f4f6ff13b880b6e0ff529aee8a965f23178d695fe96259557ecf416144f1a30"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+240-elev30.0c2243942278.png",
+      "alphaBounds": [
+        83,
+        58,
+        177,
+        198
+      ],
+      "minimumTransparentBorderPx": 58,
       "sha256": "0c2243942278f36f70ef701e873532cb59c25dd3a66b2ec997807d56e76c1903"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+240-elev40.c2057e044c90.png",
+      "alphaBounds": [
+        83,
+        55,
+        177,
+        201
+      ],
+      "minimumTransparentBorderPx": 55,
       "sha256": "c2057e044c905c8f75c6f3b62dade84e29a35f7d3b001ff8d5b2075c73aa3e53"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+240-elev50.929d47b496d9.png",
+      "alphaBounds": [
+        83,
+        54,
+        177,
+        202
+      ],
+      "minimumTransparentBorderPx": 54,
       "sha256": "929d47b496d9709dcc853634eb594051eec236d510f85136c2ef045735a18acc"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+240-elev60.89475d621fd6.png",
+      "alphaBounds": [
+        83,
+        55,
+        177,
+        201
+      ],
+      "minimumTransparentBorderPx": 55,
       "sha256": "89475d621fd6b4a6642f197ebdd5dcddc715b6ec9e8b4a93fca56ce13785a100"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+240-elev70.ad55c3550fa9.png",
+      "alphaBounds": [
+        83,
+        59,
+        177,
+        197
+      ],
+      "minimumTransparentBorderPx": 59,
       "sha256": "ad55c3550fa9ef77cb47e27f5dba3b37de8e38e5b2e5fc6836fe98cebf93dd20"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+270-elev20.ef023dda8b43.png",
+      "alphaBounds": [
+        106,
+        63,
+        159,
+        193
+      ],
+      "minimumTransparentBorderPx": 63,
       "sha256": "ef023dda8b435f984cf034191ec22d42aca4b447ac6398da6ddc6322d540a54f"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+270-elev30.b581bb428521.png",
+      "alphaBounds": [
+        106,
+        59,
+        159,
+        198
+      ],
+      "minimumTransparentBorderPx": 58,
       "sha256": "b581bb4285211807ed3c3c67f7059dcc910297ed12effebe209b53c9da788921"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+270-elev40.df0d7fa2cef5.png",
+      "alphaBounds": [
+        106,
+        56,
+        159,
+        200
+      ],
+      "minimumTransparentBorderPx": 56,
       "sha256": "df0d7fa2cef54829f280a030872eb3b1794ed34d477fdf2bfbb6a721cda4fea9"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+270-elev50.538393768bfa.png",
+      "alphaBounds": [
+        106,
+        56,
+        159,
+        201
+      ],
+      "minimumTransparentBorderPx": 55,
       "sha256": "538393768bfab5ee387e2c41b65c1d6590746b59b40f570297231cf2f33f9a62"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+270-elev60.dce3f74ab6c2.png",
+      "alphaBounds": [
+        106,
+        57,
+        159,
+        199
+      ],
+      "minimumTransparentBorderPx": 57,
       "sha256": "dce3f74ab6c21523686258152d1f54b28d6d550ee4e4cf5e6f5e5d4e16812870"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+270-elev70.c42b4f194c0b.png",
+      "alphaBounds": [
+        106,
+        61,
+        159,
+        196
+      ],
+      "minimumTransparentBorderPx": 60,
       "sha256": "c42b4f194c0be0f6217a6bd3880e17c204dd3a6a80471e1b4fe52856d5dbcb20"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+300-elev20.981e93f096b5.png",
+      "alphaBounds": [
+        83,
+        63,
+        175,
+        194
+      ],
+      "minimumTransparentBorderPx": 62,
       "sha256": "981e93f096b559d782d6c2c152a56eb0886885fe76213f0875156e7c8c48f056"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+300-elev30.faf3dced38a4.png",
+      "alphaBounds": [
+        83,
+        58,
+        175,
+        198
+      ],
+      "minimumTransparentBorderPx": 58,
       "sha256": "faf3dced38a4ced156e47a2af0fd7d9839f2af56cceb4354fcfa02ab1b5e6aa7"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+300-elev40.b285c8f9ed0a.png",
+      "alphaBounds": [
+        83,
+        55,
+        175,
+        201
+      ],
+      "minimumTransparentBorderPx": 55,
       "sha256": "b285c8f9ed0a515600023fc2030ea17e510f10a0a965db28a47a5bd6f54aaf7f"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+300-elev50.f98385feb86f.png",
+      "alphaBounds": [
+        83,
+        54,
+        175,
+        202
+      ],
+      "minimumTransparentBorderPx": 54,
       "sha256": "f98385feb86ffd6c25878fee05125e9d3ec6e23cb7b54665c54fc42b1d9a3940"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+300-elev60.c4e0374a6eaf.png",
+      "alphaBounds": [
+        83,
+        55,
+        175,
+        201
+      ],
+      "minimumTransparentBorderPx": 55,
       "sha256": "c4e0374a6eaf20f87b044d79533f6bf7255ade7d3c94d3bc6e60d5ec00853b3c"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+300-elev70.b8811e778b49.png",
+      "alphaBounds": [
+        83,
+        59,
+        175,
+        197
+      ],
+      "minimumTransparentBorderPx": 59,
       "sha256": "b8811e778b49a8aef13ae3e0e42310a58052a5b86df13b13f6f2ba726a0251a5"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+330-elev20.e26f340a6ebf.png",
+      "alphaBounds": [
+        71,
+        67,
+        185,
+        190
+      ],
+      "minimumTransparentBorderPx": 66,
       "sha256": "e26f340a6ebf93460ed2f50b036cbd61d48463492863df90a50870daeb3febec"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+330-elev30.2227a020b9b0.png",
+      "alphaBounds": [
+        71,
+        64,
+        185,
+        192
+      ],
+      "minimumTransparentBorderPx": 64,
       "sha256": "2227a020b9b05cefdcd7879c06e83a325c45d47dc75db69ee18024a92d718d88"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+330-elev40.6dbac260388c.png",
+      "alphaBounds": [
+        71,
+        63,
+        185,
+        194
+      ],
+      "minimumTransparentBorderPx": 62,
       "sha256": "6dbac260388c45eaa2a9e2234c68482332fa34fd2cfd7a1152c2b9e48fc73fce"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+330-elev50.3fd588c71b25.png",
+      "alphaBounds": [
+        71,
+        63,
+        185,
+        193
+      ],
+      "minimumTransparentBorderPx": 63,
       "sha256": "3fd588c71b2510945c8065637b83000d8628219b4192fa9a1596c1c7541adc00"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+330-elev60.9fba5d7dfb9e.png",
+      "alphaBounds": [
+        71,
+        66,
+        185,
+        190
+      ],
+      "minimumTransparentBorderPx": 66,
       "sha256": "9fba5d7dfb9e7d9b72f432d37d8ac3772ec18dab1fcc5eea0540bb46a494938c"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/utility.washing-machine.variants-yaw+330-elev70.7c9c76dee150.png",
+      "alphaBounds": [
+        71,
+        70,
+        185,
+        186
+      ],
+      "minimumTransparentBorderPx": 70,
       "sha256": "7c9c76dee1504c9a1c4f0a51ce0bf61ff13ee24037d1b47aebe55e30cb0d10d4"
     }
   ]

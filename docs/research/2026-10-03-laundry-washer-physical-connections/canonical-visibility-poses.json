@@ -1,0 +1,115 @@
+{
+  "actualSourceExportsOnlyNotNative": true,
+  "changedFramesCount": 27,
+  "pixelIdenticalOccludedFramesCount": 45,
+  "changedPoses": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60
+    }
+  ]
+}
