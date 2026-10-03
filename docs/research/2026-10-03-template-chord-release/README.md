@@ -1,9 +1,8 @@
-# Second-touch room-template ownership: source diagnosis
+# Second-touch room-template ownership: scoped correction
 
 2026-10-03, subjectf0d74f71e2922946877b1af1f5532d4d2c35f634.
 [Issue2006](https://github.com/woogitsu/lockstate/issues/2006), isolated branch
-codex/hud-template-chord-release-audit-20261003. Production unchanged at this
-checkpoint. No browser/server/CI run.
+codex/hud-template-chord-release-audit-20261003. No browser/server/CI run.
 
 ## Verified actual source and worker boundary
 
@@ -44,3 +43,28 @@ failures. Event shape follows touch Pointer Events (button0, independent ids,
 isPrimary false for second touch). Native timing/isTrusted, implicit capture and
 actual browser delivery still require ROOT's later real two-pointer acceptance.
 Fresh all-state touch searches and full516/2001 are retained; no duplicate found.
+
+## Correction and production negative
+
+The registered bridge pointerdown now resets its press ownership and returns
+when a non-primary touch arrives. It does not stand down the selected plan,
+change preview geometry or send a worker command. Neither old finger release
+can submit the abandoned gesture; a subsequent fresh primary touch still can.
+Ordinary primary mouse/touch, standard mouse chords and rotation invalidation
+keep their actual legal controls. Only this bridge guard changes production.
+
+- Original:4 RED/28 legal GREEN, including exact actual worker snapshots.
+- Corrected:`fixed32green.log`,32/32 GREEN.
+- Remove only the unique second-touch guard from the corrected producer:
+  `second-touch-guard-omission4red28controls.log`,same4 RED/28 legal GREEN.
+- Finally restore the entire original corrected source byte for byte:
+  `exact-restored32green.log`,32/32 GREEN; hash and exits in
+  `mutation-restoration.json`.
+- Five focused bridge/renderer/session/camera files:`focused-neighbors.log`,
+  80/80 GREEN with maxWorkers2. Strict diagnostic types:`strict-final.log`,exit0.
+  Both application/tools TypeScript and production client/worker build:
+  `production-build.log`,exit0.
+
+These are source/real-worker outcomes. Actual browser trust, implicit touch
+capture and native touch ordering are pending ROOT acceptance. No native
+result is inferred from unit event injection or a successful build.

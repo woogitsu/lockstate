@@ -1,0 +1,73 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-chord-release-audit-20261003
+
+ ❯ tests/unit/ui-template-chord-release.test.ts (32 tests | 4 failed) 157ms
+   × world/normal: second touch must not buy an armed template before first finger lifts 8ms
+   × world/mirrored: second touch must not buy an armed template before first finger lifts 4ms
+   × oblique/normal: second touch must not buy an armed template before first finger lifts 4ms
+   × oblique/mirrored: second touch must not buy an armed template before first finger lifts 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-chord-release.test.ts > world/normal: second touch must not buy an armed template before first finger lifts
+AssertionError: second finger released before first up: {"mode":"world","mirrored":false,"commands":[{"type":"PlaceRoomTemplate","templateId":"cell-basic","origin":{"x":11,"y":11},"quarterTurns":1}],"beforeOrders":0,"afterOrders":18,"afterPending":1,"beforeBalance":25000,"afterBalance":25000}: expected [ { protocolVersion: 1, …(3) } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/ui-template-chord-release.test.ts:211:98
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/unit/ui-template-chord-release.test.ts > world/mirrored: second touch must not buy an armed template before first finger lifts
+AssertionError: second finger released before first up: {"mode":"world","mirrored":true,"commands":[{"type":"PlaceRoomTemplate","templateId":"cell-basic","origin":{"x":11,"y":11},"mirrorX":true,"quarterTurns":1}],"beforeOrders":0,"afterOrders":18,"afterPending":1,"beforeBalance":25000,"afterBalance":25000}: expected [ { protocolVersion: 1, …(3) } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/ui-template-chord-release.test.ts:211:98
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/unit/ui-template-chord-release.test.ts > oblique/normal: second touch must not buy an armed template before first finger lifts
+AssertionError: second finger released before first up: {"mode":"oblique","mirrored":false,"commands":[{"type":"PlaceRoomTemplate","templateId":"cell-basic","origin":{"x":11,"y":11},"quarterTurns":1}],"beforeOrders":0,"afterOrders":18,"afterPending":1,"beforeBalance":25000,"afterBalance":25000}: expected [ { protocolVersion: 1, …(3) } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/ui-template-chord-release.test.ts:211:98
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/unit/ui-template-chord-release.test.ts > oblique/mirrored: second touch must not buy an armed template before first finger lifts
+AssertionError: second finger released before first up: {"mode":"oblique","mirrored":true,"commands":[{"type":"PlaceRoomTemplate","templateId":"cell-basic","origin":{"x":11,"y":11},"mirrorX":true,"quarterTurns":1}],"beforeOrders":0,"afterOrders":18,"afterPending":1,"beforeBalance":25000,"afterBalance":25000}: expected [ { protocolVersion: 1, …(3) } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/ui-template-chord-release.test.ts:211:98
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 28 passed (32)
+   Start at  07:06:26
+   Duration  4.03s (transform 1.33s, setup 0ms, import 3.73s, tests 157ms, environment 0ms)
+

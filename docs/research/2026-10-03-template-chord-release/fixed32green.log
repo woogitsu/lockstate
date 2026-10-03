@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-chord-release-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  32 passed (32)
+   Start at  07:05:04
+   Duration  4.59s (transform 1.56s, setup 0ms, import 4.26s, tests 174ms, environment 0ms)
+
