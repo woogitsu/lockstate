@@ -48,6 +48,13 @@ test('opt-in actual paused minimap DOM identity across New, viewport, locale and
     await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
     await expect.poll(() => page.locator('.hud-minimap__viewport').getAttribute('style')).not.toBe(initial.viewport);
     await check('changed-viewport');
+    await page.locator('.language-control__cycle').click();
+    await page.locator('.language-control__cycle').click();
+    await expect(page.locator('.language-control__cycle')).toHaveAttribute('data-locale', 'pl');
+    await expect.poll(() => page.locator('.hud-minimap__placeholder').textContent()).not.toBe(initial.text);
+    await check('polish');
+    await page.locator('.language-control__cycle').click();
+    await expect(page.locator('.language-control__cycle')).toHaveAttribute('data-locale', 'en');
     await page.locator('.display-scale__cycle').click();
     await check('public-ui-scale');
     await page.getByRole('button', { name: 'Save now', exact: true }).click();
@@ -55,16 +62,6 @@ test('opt-in actual paused minimap DOM identity across New, viewport, locale and
     await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
     await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
     await check('loaded-paused');
-    // Language is an existing public Settings-menu action and reloads the
-    // document after saving (ADR0119). It is not an in-place HUD locale port.
-    await page.getByRole('button', { name: 'Open the settings menu', exact: true }).click();
-    await Promise.all([page.waitForEvent('load'), page.locator('.language-control__cycle').click()]);
-    await expect(page.locator('.language-control__cycle')).toHaveAttribute('data-preference', 'en');
-    await page.getByRole('button', { name: 'Open the settings menu', exact: true }).click();
-    await Promise.all([page.waitForEvent('load'), page.locator('.language-control__cycle').click()]);
-    await expect(page.locator('.language-control__cycle')).toHaveAttribute('data-locale', 'pl');
-    await expect.poll(() => page.locator('.hud-minimap__placeholder').textContent()).not.toBe(initial.text);
-    await check('polish-reloaded');
     receipt['servedScripts'] = await observer.scripts();
     receipt['complete'] = info.errors.length === 0;
   } finally {
