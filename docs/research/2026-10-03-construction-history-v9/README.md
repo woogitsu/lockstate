@@ -91,3 +91,29 @@ No browser/server/build/fullverify run was performed. The single public browser
 metadata expectation now pins9 but has no new native acceptance claim. The
 weakest remaining claim is historical continuity: old saves cannot recover data
 they did not record, and the measured coincident-counter boundary remains.
+
+## Direct restore review follow-up
+
+The coordinator identified another real input boundary: worker initialize calls
+`restoreSimulationRuntime(sessionSnapshotBundleFromTransport(snapshot.data))`,
+and that transport adapter only casts; `InProcessSessionHost.startFromSnapshot`
+also directly restores. They do not run the save-envelope parser. A genuine
+packed square purchase provided the immutable healthy bundle, then targeted
+malformed ledger entries were passed through the actual restore methods and
+worker initialize. Original12RED3legal proved negative/fractional/unsafe/NaN/
+Infinity/nonnumber/empty-ID entries and nonplain prototypes were admitted.
+The in-process host incorrectly replaced its existing session, and the worker
+became ready for a negative counter.
+
+The narrow added guard validates these entries before orders/history change,
+using existing `SnapshotRefusedError('damaged-payload', ...)`; plain and null
+prototypes with own `__proto__`/zero/maxsafe keys match the codec behavior.
+The source guard rejects malformed input without new player copy or cancellation
+policy. Fixed15GREEN; combinedV9 domain/codec proof71GREEN/4files. This supplements
+the earlier477GREEN/20files; it is not a claim those20 were rerun after this guard.
+
+The first documentation gate1RED19GREEN found exactly four formerly verified
+citations drifting; `raw/shifted-anchors.json` records the before/current scanner
+comparison. Exact current quotations were corrected in ADR0028/0047/0062, keeping
+the old coordinates explicitly historical. The restored gate20GREEN/3files
+keeps all pinned budgets and tolerances unchanged.
