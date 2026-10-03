@@ -1,0 +1,61 @@
+node : [2m[WebServer] [22m(node:41808) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:2 char:578
++ ... 1003.json'; node --experimental-transform-types --disable-warning=Exp ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 3 tests using 1 worker
+
+(node:31992) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:31992) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 tests\browser\common-room-upholstered-player-build.spec.ts:353:1 › player completes actual remote storage and delivery capacity before Common Room upholstery (40.7s)
+  -  2 tests\browser\common-room-upholstered-player-build.spec.ts:428:29 › Common Room quarterTurns0: actual upholstered benches retain owners, art source and whole paused Save/Load
+  -  3 tests\browser\common-room-upholstered-player-build.spec.ts:428:29 › Common Room quarterTurns1: actual upholstered benches retain owners, art source and whole paused Save/Load
+
+
+  1) tests\browser\common-room-upholstered-player-build.spec.ts:353:1 › player completes actual remote storage and delivery capacity before Common Room upholstery 
+
+    Error: Actual construction queue absent
+
+      112 |   const count = async () => {
+      113 |     const value = await queue.getAttribute('data-queued');
+    > 114 |     if (value === null || !/^\d+$/u.test(value)) throw Error('Actual construction queue absent');
+          |                                                        ^
+      115 |     return Number(value);
+      116 |   };
+      117 |   let remaining = await count();
+        at Object.count (C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-connectivity-integration-20261003\tests\browser\common-room-upholstered-player-build.spec.ts:114:56)
+        at finish (C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-connectivity-integration-20261003\tests\browser\common-room-upholstered-player-build.spec.ts:119:5)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-connectivity-integration-20261003\tests\browser\common-room-upholstered-player-build.spec.ts:166:155
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-common-room-original-20261003\common-room-upholstered-pl-ba98c-fore-Common-Room-upholstery\error-context.md
+
+  1 failed
+    tests\browser\common-room-upholstered-player-build.spec.ts:353:1 › player completes actual remote storage and delivery capacity before Common Room upholstery 
+  2 did not run
+
+==============================================================================
+LOCKSTATE_BROWSER_SUITE_NO_RETRY suite=artifact reason=no-last-run-file
+Playwright left no readable test-results/.last-run.json, so the run failed before it
+could record which tests failed. That is not net::ERR_NETWORK_CHANGED; not retrying.
+==============================================================================
+

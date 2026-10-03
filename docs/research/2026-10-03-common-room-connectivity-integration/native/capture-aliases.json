@@ -1,0 +1,51 @@
+[
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-original-20261003.json",
+    "archived": "original/report.json",
+    "sourceBytes": 11192,
+    "sourceSha256": "d5fdfb2c52913bf5d4cadfeccceb316f1a1284c3ff471b046aa4e50f300e29c5",
+    "archivedBytes": 11192,
+    "archivedSha256": "d5fdfb2c52913bf5d4cadfeccceb316f1a1284c3ff471b046aa4e50f300e29c5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-original-20261003.txt",
+    "archived": "original/console.txt",
+    "sourceBytes": 8186,
+    "sourceSha256": "18512c7fd486b5eaa8571cd9aa49caee273d25daf650dd0968cfd5b23107ade9",
+    "archivedBytes": 4107,
+    "archivedSha256": "9c4632a781e62f204e0021027e4f3bef43a8f12b083099b2128d517d4b43c027",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-original-20261003\\.last-run.json",
+    "archived": "original/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "49c25baedd7a6ad3604620c2da4062d859f1c46d39b0df6f13151bbee0dcc136",
+    "archivedBytes": 96,
+    "archivedSha256": "49c25baedd7a6ad3604620c2da4062d859f1c46d39b0df6f13151bbee0dcc136"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-original-20261003\\common-room-upholstered-pl-ba98c-fore-Common-Room-upholstery\\error-context.md",
+    "archived": "original/002-error-context.md",
+    "sourceBytes": 13644,
+    "sourceSha256": "424e37e888cc0cd026fc73030bb6e69a40af60c3546039eff8de8a7675cc9b85",
+    "archivedBytes": 13644,
+    "archivedSha256": "424e37e888cc0cd026fc73030bb6e69a40af60c3546039eff8de8a7675cc9b85"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-original-20261003\\common-room-upholstered-pl-ba98c-fore-Common-Room-upholstery\\failed-common-room-fullhd.png",
+    "archived": "original/003-failed-common-room-fullhd.png",
+    "sourceBytes": 1645212,
+    "sourceSha256": "a630cdab721282ebaa22313ab6a0ee805ac48c9cbf97c2fecc3b68ad7a8e0405",
+    "archivedBytes": 1645212,
+    "archivedSha256": "a630cdab721282ebaa22313ab6a0ee805ac48c9cbf97c2fecc3b68ad7a8e0405"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-original-20261003\\common-room-upholstered-pl-ba98c-fore-Common-Room-upholstery\\failed-common-room-worker.json",
+    "archived": "original/004-failed-common-room-worker.json",
+    "sourceBytes": 46858,
+    "sourceSha256": "c5527e2cf7d68aac2315e7667522a673fd11b83f048ec4191aeb013a0c441e43",
+    "archivedBytes": 46858,
+    "archivedSha256": "c5527e2cf7d68aac2315e7667522a673fd11b83f048ec4191aeb013a0c441e43"
+  }
+]

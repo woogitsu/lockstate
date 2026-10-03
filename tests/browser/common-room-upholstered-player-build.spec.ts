@@ -111,7 +111,15 @@ async function finish(page: Page): Promise<void> {
   const queue = page.locator('.hud-build');
   const count = async () => {
     const value = await queue.getAttribute('data-queued');
-    if (value === null || !/^\d+$/u.test(value)) throw Error('Actual construction queue absent');
+    if (value === null) {
+      // The genuine HUD removes this attribute at zero. Confirm actual worker
+      // completion rather than treating a missing observation as empty work.
+      const data = await snapshot(page);
+      expect(data.construction.orders.length).toBeGreaterThan(0);
+      expect(data.construction.orders.every(order => order.state === 'completed')).toBe(true);
+      return 0;
+    }
+    if (!/^\d+$/u.test(value)) throw Error('Actual construction queue malformed');
     return Number(value);
   };
   let remaining = await count();
