@@ -229,8 +229,8 @@ test(`player builds Kitchen at quarterTurns${quarterTurns} and retains stove and
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   await info.attach('dedicated-kitchen-stove-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
-  await page.getByRole('button', { name: 'Rotate view left', exact: true }).click();
-  await page.getByRole('button', { name: 'Rotate view left', exact: true }).click();
+  await page.getByRole('button', { name: 'Rotate camera left', exact: true }).click();
+  await page.getByRole('button', { name: 'Rotate camera left', exact: true }).click();
   await page.screenshot({ path: info.outputPath('kitchen-loaded-physical-fixings-fullhd.png') });
 
 });

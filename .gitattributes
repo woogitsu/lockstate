@@ -34,3 +34,5 @@ assets/rendered/**/*.png filter=lfs diff=lfs merge=lfs -text
 *.sql text eol=lf
 *.sh text eol=lf
 *.mjs text eol=lf
+docs/research/2026-10-03-kitchen-construction-session-integration/native/** -text
+docs/research/2026-10-03-kitchen-construction-session-integration/native/**/*.png filter=lfs diff=lfs merge=lfs -text

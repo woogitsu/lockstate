@@ -60,3 +60,11 @@ the guards and their budgets are unchanged. Original failure output remains.
 
 Actual native acceptance for the combined subject is still pending. This section
 does not replace a successful built-client run or exact full hosted CI.
+
+First frozen04ba4 native result: 4GREEN/1observerRED/1serialnotrun in119.90s.
+Kitchenq0 already passes both original palette gates, all three completed owners,
+and whole pausedSaveLoad equality, then times out on the incorrectly named new
+observer camera button. Actual button is Rotate camera left, as used by the
+existing Bookshelf route; corrected only this name. All three physical World
+Wall/Bed/Yard chord cases GREEN. Raw report/captures remain in native/initial.
+Neither Kitchenq1 nor corrected/native negative controls are claimed passed yet.

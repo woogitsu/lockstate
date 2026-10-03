@@ -1,0 +1,334 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-fridge-world-chord-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-kitchen-world-chord-native-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-fridge-world-chord-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build|dedicated-security-console-player-build|dedicated-medical-bed-player-build|dedicated-loading-dock-door-player-build|dedicated-camera-pan-player|oblique-pending-wall-player|room-template-renderer-stationary-hover|world-construction-chord-release)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5184 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5184/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "dedicated-kitchen-stove-player-build.spec.ts",
+      "file": "dedicated-kitchen-stove-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Kitchen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43505,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:31:54.681Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3b02ef91fdd82912db31-9c4343400423743c56c9",
+          "file": "dedicated-kitchen-stove-player-build.spec.ts",
+          "line": 216,
+          "column": 1
+        },
+        {
+          "title": "player builds Kitchen at quarterTurns0 and retains stove and fridge detail palettes and all completed owners after Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 60840,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts",
+                        "column": 77,
+                        "line": 232
+                      },
+                      "message": "Error: locator.click: Test timeout of 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Rotate view left', exact: true })\u001b[22m\n\n\n  230 |   }, null, 2));\n  231 |   await info.attach('dedicated-kitchen-stove-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });\n> 232 |   await page.getByRole('button', { name: 'Rotate view left', exact: true }).click();\n      |                                                                             ^\n  233 |   await page.getByRole('button', { name: 'Rotate view left', exact: true }).click();\n  234 |   await page.screenshot({ path: info.outputPath('kitchen-loaded-physical-fixings-fullhd.png') });\n  235 |\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-fridge-world-chord-integration-20261003\\tests\\browser\\dedicated-kitchen-stove-player-build.spec.ts:232:77"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:32:38.252Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-kitchen-stove-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\attachments\\dedicated-kitchen-stove-worker-and-save-evidence-55df3bd042fb5fe55c846436bcee3c6325b4b2a0.json"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-kitchen-world-chord-native-20261003\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "3b02ef91fdd82912db31-612a2c2ca602b9d6b7de",
+          "file": "dedicated-kitchen-stove-player-build.spec.ts",
+          "line": 279,
+          "column": 3
+        },
+        {
+          "title": "player builds Kitchen at quarterTurns1 and retains stove and fridge detail palettes and all completed owners after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:33:39.150Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "3b02ef91fdd82912db31-aec8fb08711b2ac61587",
+          "file": "dedicated-kitchen-stove-player-build.spec.ts",
+          "line": 279,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "world-construction-chord-release.spec.ts",
+      "file": "world-construction-chord-release.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "World FullHD wall: native middle release does not complete a held left build gesture",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3832,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "WORLD_CONSTRUCTION_CHORD {\"tool\":\"wall\",\"from\":{\"x\":592,\"y\":172},\"to\":{\"x\":720,\"y\":172},\"a\":{\"x\":10,\"y\":10},\"b\":{\"x\":12,\"y\":10},\"reference\":{\"canvas\":{\"width\":1920,\"height\":1080,\"left\":0,\"top\":0,\"widthCss\":1920,\"heightCss\":1080},\"map\":{\"width\":32,\"height\":32},\"percent\":{\"left\":3.125,\"top\":23.6328125,\"width\":93.75,\"height\":52.734375}},\"held\":[{\"type\":\"mousedown\",\"button\":0,\"buttons\":1,\"trusted\":true,\"canvas\":true},{\"type\":\"mousedown\",\"button\":1,\"buttons\":5,\"trusted\":true,\"canvas\":true},{\"type\":\"mouseup\",\"button\":1,\"buttons\":1,\"trusted\":true,\"canvas\":true}],\"final\":{\"type\":\"mouseup\",\"button\":0,\"buttons\":0,\"trusted\":true,\"canvas\":true},\"commands\":[{\"type\":\"PlaceBuildOrder\",\"orderId\":\"order-e8df9822-fbb6-4557-a994-518823e97019\",\"definitionId\":\"wall-brick\",\"x\":10,\"y\":10,\"footprint\":\"square\",\"transactionId\":\"build-96499a30-05c8-4336-ac31-e17c5d509136\"},{\"type\":\"PlaceBuildOrder\",\"orderId\":\"order-5cbb6532-1179-4c06-80d0-182c4facc872\",\"definitionId\":\"wall-brick\",\"x\":11,\"y\":10,\"footprint\":\"square\",\"transactionId\":\"build-96499a30-05c8-4336-ac31-e17c5d509136\"},{\"type\":\"PlaceBuildOrder\",\"orderId\":\"order-7d29a74b-5098-45b6-9a6f-5238a1c7f5c7\",\"definitionId\":\"wall-brick\",\"x\":12,\"y\":10,\"footprint\":\"square\",\"transactionId\":\"build-96499a30-05c8-4336-ac31-e17c5d509136\"}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:33:39.631Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "916ced42829d2772b845-d35ef61ed43a134c0c85",
+          "file": "world-construction-chord-release.spec.ts",
+          "line": 41,
+          "column": 45
+        },
+        {
+          "title": "World FullHD bed: native middle release does not complete a held left build gesture",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3730,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "WORLD_CONSTRUCTION_CHORD {\"tool\":\"bed\",\"from\":{\"x\":592,\"y\":172},\"to\":{\"x\":720,\"y\":172},\"a\":{\"x\":10,\"y\":10},\"b\":{\"x\":12,\"y\":10},\"reference\":{\"canvas\":{\"width\":1920,\"height\":1080,\"left\":0,\"top\":0,\"widthCss\":1920,\"heightCss\":1080},\"map\":{\"width\":32,\"height\":32},\"percent\":{\"left\":3.125,\"top\":23.6328125,\"width\":93.75,\"height\":52.734375}},\"held\":[{\"type\":\"mousedown\",\"button\":0,\"buttons\":1,\"trusted\":true,\"canvas\":true},{\"type\":\"mousedown\",\"button\":1,\"buttons\":5,\"trusted\":true,\"canvas\":true},{\"type\":\"mouseup\",\"button\":1,\"buttons\":1,\"trusted\":true,\"canvas\":true}],\"final\":{\"type\":\"mouseup\",\"button\":0,\"buttons\":0,\"trusted\":true,\"canvas\":true},\"commands\":[{\"type\":\"PlaceObject\",\"orderId\":\"object-14d9109e-2e48-4306-a75b-4d177659ef8b\",\"definitionId\":\"bed-wooden\",\"x\":12,\"y\":10}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:33:43.528Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "916ced42829d2772b845-8a471d916ee4db275f0f",
+          "file": "world-construction-chord-release.spec.ts",
+          "line": 41,
+          "column": 45
+        },
+        {
+          "title": "World FullHD yard: native middle release does not complete a held left build gesture",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4189,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "WORLD_CONSTRUCTION_CHORD {\"tool\":\"yard\",\"from\":{\"x\":592,\"y\":172},\"to\":{\"x\":1040,\"y\":620},\"a\":{\"x\":10,\"y\":10},\"b\":{\"x\":17,\"y\":17},\"reference\":{\"canvas\":{\"width\":1920,\"height\":1080,\"left\":0,\"top\":0,\"widthCss\":1920,\"heightCss\":1080},\"map\":{\"width\":32,\"height\":32},\"percent\":{\"left\":3.125,\"top\":23.6328125,\"width\":93.75,\"height\":52.734375}},\"held\":[{\"type\":\"mousedown\",\"button\":0,\"buttons\":1,\"trusted\":true,\"canvas\":true},{\"type\":\"mousedown\",\"button\":1,\"buttons\":5,\"trusted\":true,\"canvas\":true},{\"type\":\"mouseup\",\"button\":1,\"buttons\":1,\"trusted\":true,\"canvas\":true}],\"final\":{\"type\":\"mouseup\",\"button\":0,\"buttons\":0,\"trusted\":true,\"canvas\":true},\"commands\":[{\"type\":\"ZoneRoom\",\"roomId\":\"room.yard\",\"x\":10,\"y\":10,\"width\":8,\"height\":8}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:33:47.265Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "916ced42829d2772b845-47335b455d33f97bcfc7",
+          "file": "world-construction-chord-release.spec.ts",
+          "line": 41,
+          "column": 45
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T04:31:52.141Z",
+    "duration": 119902.681,
+    "expected": 4,
+    "skipped": 1,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}
