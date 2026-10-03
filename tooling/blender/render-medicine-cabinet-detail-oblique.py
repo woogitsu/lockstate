@@ -29,6 +29,10 @@ PROVENANCE = exporter.ROOT / 'assets/source/blender/fixture.medicine-cabinet.ang
 
 def prepare_source(scene, model):
     receipt = json.loads(PROVENANCE.read_text())
+    if tuple(model[3:7]) != (1, 1, 1.0, 1.0):
+        raise ValueError('Medicine cabinet declared occupied footprint and source scale changed')
+    if abs(model[7] - receipt['cameraTargetTiles'][2]) > 1e-9:
+        raise ValueError('Medicine cabinet declared target differs from measured source height')
     for path_key, hash_key in (('source', 'sourceSha256'), ('originalSource', 'originalSourceSha256')):
         if hashlib.sha256((exporter.ROOT / receipt[path_key]).read_bytes()).hexdigest() != receipt[hash_key]:
             raise ValueError('Medicine cabinet original/dedicated source bytes changed')
