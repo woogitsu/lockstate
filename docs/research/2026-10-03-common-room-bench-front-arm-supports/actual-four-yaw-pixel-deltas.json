@@ -1,0 +1,42 @@
+[
+  {
+    "yawDegrees": 30,
+    "elevationDegrees": 40,
+    "changedRGBAPixels": 76,
+    "nativeSourcePixels": [
+      256,
+      256
+    ],
+    "scale": 2
+  },
+  {
+    "yawDegrees": 120,
+    "elevationDegrees": 40,
+    "changedRGBAPixels": 58,
+    "nativeSourcePixels": [
+      256,
+      256
+    ],
+    "scale": 2
+  },
+  {
+    "yawDegrees": 210,
+    "elevationDegrees": 40,
+    "changedRGBAPixels": 26,
+    "nativeSourcePixels": [
+      256,
+      256
+    ],
+    "scale": 2
+  },
+  {
+    "yawDegrees": 300,
+    "elevationDegrees": 40,
+    "changedRGBAPixels": 64,
+    "nativeSourcePixels": [
+      256,
+      256
+    ],
+    "scale": 2
+  }
+]

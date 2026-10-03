@@ -13,7 +13,7 @@ describe('authored Common Room bench variant catalog', () => {
 
   it('preserves the two-square authored source and all 72 supported camera poses', () => {
     expect(catalog.assetId).toBe('furniture.common-room.upholstered-bench');
-    expect(catalog.source).toBe('assets/source/blender/furniture.common-room.upholstered-bench.blend');
+    expect(catalog.source).toBe('assets/source/blender/furniture.common-room.upholstered-bench.angled-detail.blend');
     expect(catalog.sourceSha256).toBe(sha256(readFileSync(new URL(catalog.source, root))));
     expect(catalog.resolutionPx).toEqual([256, 256]);
     expect(catalog.nominalPixelsPerTile).toBe(64);
