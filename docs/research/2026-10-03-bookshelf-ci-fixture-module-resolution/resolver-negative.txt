@@ -1,0 +1,31 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-bookshelf-parent-integration-20261003
+
+ ❯ tests/foundation/browser-network-changed-retry-contract.test.ts (7 tests | 1 failed) 42ms
+     × routes every browser spec through the fixture that watches for the signature 38ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  07:28:24
+   Duration  203ms (transform 20ms, setup 0ms, import 45ms, tests 42ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/browser-network-changed-retry-contract.test.ts > browser network-changed retry contract > routes every browser spec through the fixture that watches for the signature
+AssertionError: these browser specs import from '@playwright/test' directly. The `test` object they get that way has no listeners on it, so a run of theirs that is aborted by net::ERR_NETWORK_CHANGED records no evidence at all and `tests/browser/run-suite.ts` cannot tell it apart from an ordinary failure -- the failure would be red for the wrong reason, or, worse, block a retry that every other failing test qualified for. Import from './network-changed-fixture', which re-exports `expect` and the types too.: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "oblique-authored-actors.spec.ts",
++   "oblique-pending-wall-player.spec.ts",
++ ]
+
+ ❯ tests/foundation/browser-network-changed-retry-contract.test.ts:104:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
