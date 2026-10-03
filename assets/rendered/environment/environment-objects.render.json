@@ -1482,6 +1482,34 @@
         "height": 256,
         "opaquePixels": 65536
       }
+    },
+    {
+      "assetId": "floor.security-office.antistatic",
+      "image": "floor.security-office.antistatic.png",
+      "sha256": "036230c96023429a2b680c93c4827121dc7363ceb4925662c116a66d4a17c9af",
+      "pixelSha256": "59a7b85776ac8eb3042af6b174bf8ae9fac59be1b412ccf1ae3da41996b0f6b0",
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "marginFraction": 0,
+      "overhangsFootprint": false,
+      "sizePx": {
+        "width": 256,
+        "height": 256
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "opaqueBoundsPx": {
+        "x": 0,
+        "y": 0,
+        "width": 256,
+        "height": 256,
+        "opaquePixels": 65536
+      }
     }
   ]
 }

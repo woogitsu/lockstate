@@ -529,3 +529,12 @@ intent in `assets/source/concepts/common-room-floor-v1.md`. Blender 5.2 models
 the seamless, fully opaque `floor.common-room.cork-rubber`; the reference
 image is not used at runtime. The warm honey-grey material has fine ochre and
 charcoal recycled granules, with no tile-sized seams or floor icons.
+
+# Security Office floor, antistatic resin
+
+Original four-view material reference at
+`assets/source/concepts/security-office-floor-multiview-v1.png`, with production
+intent in `assets/source/concepts/security-office-floor-v1.md`. Blender 5.2
+models the seamless, fully opaque `floor.security-office.antistatic`. The
+approved lighter warm greige resin has sparse graphite and muted blue-steel
+inset grains, with no tile-sized seams, floor icons, or visible wiring.

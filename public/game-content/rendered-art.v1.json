@@ -278,6 +278,31 @@
       }
     },
     {
+      "assetId": "floor.security-office.antistatic",
+      "contentVersion": 1,
+      "image": "source-art/rendered.floor.security-office.antistatic.036230c96023.png",
+      "sha256": "036230c96023429a2b680c93c4827121dc7363ceb4925662c116a66d4a17c9af",
+      "dimensionsPx": {
+        "width": 256,
+        "height": 256
+      },
+      "footprintTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameTiles": {
+        "width": 1,
+        "height": 1
+      },
+      "frameAspectDriftFromFootprint": 0,
+      "sourceAttribution": {
+        "license": "project-rendered, reproducible",
+        "producedBy": "tooling/blender/render-environment-objects.py",
+        "catalog": "assets/source/blender/environment.mvp.catalog.blend",
+        "blenderVersion": "5.2.1"
+      }
+    },
+    {
       "assetId": "floor.shower.ceramic",
       "contentVersion": 1,
       "image": "source-art/rendered.floor.shower.ceramic.6917ab6272c4.png",
