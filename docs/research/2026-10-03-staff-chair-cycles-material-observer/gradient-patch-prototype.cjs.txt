@@ -1,0 +1,17 @@
+const fs=require('node:fs'),vm=require('node:vm');
+const reader=fs.readFileSync('docs/research/2026-10-03-staff-room-padded-chair/native/executed-pad-pixel-reader.cjs.txt','utf8').split('const file=process.argv[2]')[0];
+const sandbox={require,Buffer};vm.createContext(sandbox);vm.runInContext(reader+';globalThis.readFrame=decode;',sandbox);
+const signature=JSON.parse(fs.readFileSync(process.env.TEMP+'/lockstate-staff-chair-material-prototype.json','utf8'));
+const palette=new Set(signature.palette);
+function count(d,rect=[0,0,d.w,d.h]){const mask=new Uint8Array(d.w*d.h),keys=new Uint32Array(d.w*d.h);for(let y=0;y<d.h;y++)for(let x=0;x<d.w;x++){const i=(y*d.w+x)*d.c,key=(d.pixels[i]<<16)|(d.pixels[i+1]<<8)|d.pixels[i+2];keys[y*d.w+x]=key;mask[y*d.w+x]=(d.c===3||d.pixels[i+3]===255)&&palette.has(key)?1:0;}let n=0;for(let y=Math.max(2,rect[1]);y<Math.min(d.h-2,rect[1]+rect[3]);y++)for(let x=Math.max(2,rect[0]);x<Math.min(d.w-2,rect[0]+rect[2]);x++){if(!mask[y*d.w+x])continue;let complete=true;const colors=new Set();for(let dy=-2;dy<=2&&complete;dy++)for(let dx=-2;dx<=2;dx++){const k=(y+dy)*d.w+x+dx;if(!mask[k]){complete=false;break;}colors.add(keys[k]);}if(complete&&colors.size>=3)n++;}return n;}
+const pos=JSON.parse(fs.readFileSync('public/game-content/oblique-furniture-staff-room-padded-chair.v1.json','utf8'));
+const neg=JSON.parse(fs.readFileSync('public/game-content/oblique-cell-chair.v1.json','utf8'));
+const deskPath='oblique-reception-employee-desk.v1.json';
+const desk=deskPath?JSON.parse(fs.readFileSync('public/game-content/'+deskPath,'utf8')):null;
+const rows=catalog=>catalog.frames.map(frame=>({yaw:frame.yawDegrees,elevation:frame.elevationDegrees,count:count(sandbox.readFrame('public'+frame.image))}));
+const positives=rows(pos),defaultChair=rows(neg),defaultDesk=desk?rows(desk):[];
+const base='C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/assets/intermediate/staff-room-padded-chair-native/wooden-chair-player-build--e8d16-and-anchors-after-Save-Load/';
+const actual=['wooden-chair-worker-completed-fullhd.png','wooden-chair-loaded-fullhd.png'].map(path=>{const d=sandbox.readFrame(base+path);return {path:base+path,regions:[[770,490,100,115],[940,440,100,115]].map(rect=>({rect,count:count(d,rect)}))};});
+const result={kernel:5,distinctSourceGradientColorsRequired:3,paletteColors:palette.size,positiveSource:positives,defaultChair,defaultDesk,actualRootQ0Photos:actual,nativeBrowserRun:false};
+fs.writeFileSync(process.env.TEMP+'/lockstate-staff-chair-gradient-patch-prototype.json',JSON.stringify(result,null,2)+'\n');
+console.log(JSON.stringify({positiveCanonical:positives.filter(r=>r.elevation===40),defaultChairMaximum:Math.max(...defaultChair.map(r=>r.count)),defaultDeskManifest:deskPath,defaultDeskMaximum:Math.max(...defaultDesk.map(r=>r.count)),actual},null,2));

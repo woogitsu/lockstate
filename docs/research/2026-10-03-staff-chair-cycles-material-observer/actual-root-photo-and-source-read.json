@@ -1,0 +1,1437 @@
+{
+  "actualBuiltRootSubject": "c28d4815844af9081c4d16925bbf498eb3df2ff1",
+  "observerSource": "tests/browser/staff-room-padded-chair/material-observer.ts",
+  "kind": "offline read of actual original RED native photos, not a browser rerun or native GREEN",
+  "photos": [
+    {
+      "turns": 0,
+      "file": "C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/docs/research/2026-10-03-staff-chair-retained-cycles/native/original-fullhd/021-wooden-chair-worker-completed-fullhd.png",
+      "sha256": "5a2897f3bb15074f05b487e9fb79c1598e5f798836083f6bec303d0635f2ccba",
+      "width": 1920,
+      "height": 1080,
+      "originalRegions": [
+        [
+          770,
+          490,
+          100,
+          115
+        ],
+        [
+          940,
+          440,
+          100,
+          115
+        ]
+      ],
+      "counts": [
+        296,
+        219
+      ],
+      "everyOriginalRegionAbove40": true
+    },
+    {
+      "turns": 0,
+      "file": "C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/docs/research/2026-10-03-staff-chair-retained-cycles/native/original-fullhd/019-wooden-chair-loaded-fullhd.png",
+      "sha256": "742f5dd2cbca2a8c532d59a3e2c10a453febe2bbace9c45f69249049b4fa54b3",
+      "width": 1920,
+      "height": 1080,
+      "originalRegions": [
+        [
+          770,
+          490,
+          100,
+          115
+        ],
+        [
+          940,
+          440,
+          100,
+          115
+        ]
+      ],
+      "counts": [
+        296,
+        219
+      ],
+      "everyOriginalRegionAbove40": true
+    },
+    {
+      "turns": 1,
+      "file": "C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/docs/research/2026-10-03-staff-chair-retained-cycles/native/original-q1-fullhd/021-wooden-chair-worker-completed-fullhd.png",
+      "sha256": "7f51a0c85db9d2935383eb2108a7d1b9a9816646e4348a89175538dcfd32a499",
+      "width": 1920,
+      "height": 1080,
+      "originalRegions": [
+        [
+          825,
+          390,
+          95,
+          100
+        ],
+        [
+          885,
+          500,
+          100,
+          105
+        ]
+      ],
+      "counts": [
+        46,
+        53
+      ],
+      "everyOriginalRegionAbove40": true
+    },
+    {
+      "turns": 1,
+      "file": "C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/docs/research/2026-10-03-staff-chair-retained-cycles/native/original-q1-fullhd/019-wooden-chair-loaded-fullhd.png",
+      "sha256": "8f4db907502f396b361bf7a9c0d16bc02fd9256c8114c31f112b79f25f23af77",
+      "width": 1920,
+      "height": 1080,
+      "originalRegions": [
+        [
+          825,
+          390,
+          95,
+          100
+        ],
+        [
+          885,
+          500,
+          100,
+          105
+        ]
+      ],
+      "counts": [
+        46,
+        53
+      ],
+      "everyOriginalRegionAbove40": true
+    }
+  ],
+  "sources": [
+    {
+      "manifest": "oblique-cell-chair.v1.json",
+      "assetId": "furniture.chair.wooden",
+      "sourceSha256": "acd0e9decb3bb451b44e8354e797fb5656825f4748bbed832bab61659f06cd88",
+      "maximum": 0,
+      "rows": [
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+00-elev20.81f989e50888.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+00-elev30.c3829499378a.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+00-elev40.a1259503682a.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+00-elev50.544883e4da87.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+00-elev60.705c17162bea.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+00-elev70.3cac063d1a6d.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+30-elev20.b9eedb0f4cb3.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+30-elev30.5e105e521315.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+30-elev40.d2ecb91c5287.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+30-elev50.3aca640a7d89.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+30-elev60.5ce165fdfd0c.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+30-elev70.f6ea392ddd4b.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+60-elev20.e73d3275ae52.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+60-elev30.a11e261d271a.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+60-elev40.c235ab779920.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+60-elev50.7e27a083f890.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+60-elev60.8f4b75161600.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+60-elev70.0cefc03d3744.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+90-elev20.cef72f4f55b6.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+90-elev30.88ed11c82156.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+90-elev40.47f84b0da67e.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+90-elev50.fe0ec1ca4f83.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+90-elev60.7e125fa7d70e.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+90-elev70.6d5a0f50475d.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+120-elev20.0dc0da76e94d.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+120-elev30.83be8aa584f7.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+120-elev40.e5bf71ec52a4.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+120-elev50.4f702222f61e.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+120-elev60.8812b6de3391.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+120-elev70.d4d3123883f2.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+150-elev20.90113c527160.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+150-elev30.67a79ead2cf1.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+150-elev40.395f5784042c.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+150-elev50.460ef04a5cc9.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+150-elev60.b7ce902db25d.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+150-elev70.424b45406f24.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+180-elev20.467276e995a8.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+180-elev30.6dccf2b2056f.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+180-elev40.8cf8179d2196.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+180-elev50.9ddb320bde2b.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+180-elev60.1a24bd07b27a.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+180-elev70.b735ff03c469.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+210-elev20.91b9565a8b46.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+210-elev30.6124e00f7f95.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+210-elev40.f2b2f5948604.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+210-elev50.f7e679654a01.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+210-elev60.9815ba763d5a.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+210-elev70.85e586e25c3b.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+240-elev20.0a72e8620b7f.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+240-elev30.93e973a11f1a.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+240-elev40.d9b76c097384.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+240-elev50.d24f019a99eb.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+240-elev60.96d303d6b06e.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+240-elev70.5ff272bd7851.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+270-elev20.edd1b9c0b813.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+270-elev30.1ed6304cde43.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+270-elev40.56e81799f16c.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+270-elev50.9b74b98d522e.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+270-elev60.13015bfe81a2.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+270-elev70.194ef22632ed.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+300-elev20.bded01c17d62.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+300-elev30.61d4b121451d.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+300-elev40.2f3d110ea54c.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+300-elev50.3af65375c7bd.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+300-elev60.c13827c86f0d.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+300-elev70.2b9f1124b17d.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+330-elev20.ec6ee7f031e9.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+330-elev30.3bb28dde81ae.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+330-elev40.78770b7dfff2.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+330-elev50.a1120be62820.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+330-elev60.956e8d09382c.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.chair.wooden-yaw+330-elev70.123cdd7ea03e.png",
+          "count": 0
+        }
+      ]
+    },
+    {
+      "manifest": "oblique-reception-employee-desk.v1.json",
+      "assetId": "furniture.office.desk.employee.variants",
+      "sourceSha256": "4a7134622b170fae660aeb1a8155aa9adee4b54cff02c2fcdd8a0ea19dd7218c",
+      "maximum": 22,
+      "rows": [
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+00-elev20.14b7d133262a.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+00-elev30.cd5073f2e3e9.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+00-elev40.6be60435920b.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+00-elev50.69da7f72818d.png",
+          "count": 4
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+00-elev60.720f8539a3d7.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+00-elev70.5bc60f175a85.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+30-elev20.2400cbcd2a5c.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+30-elev30.21e2e03f215e.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+30-elev40.b14df01bbcb1.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+30-elev50.7eb5669dc5fd.png",
+          "count": 11
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+30-elev60.309a6cb2bd5d.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+30-elev70.0292ac45ecc8.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+60-elev20.1530d8d0a4b3.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+60-elev30.433709df5631.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+60-elev40.f54df9e651e2.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+60-elev50.84d1e0df3277.png",
+          "count": 22
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+60-elev60.663e99672ab5.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+60-elev70.3e59a52f8fe6.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+90-elev20.9abe9628eb5c.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+90-elev30.ccfdec596a4c.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+90-elev40.8aa1f1f6037d.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+90-elev50.1919440e422e.png",
+          "count": 2
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+90-elev60.58f601c5f270.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+90-elev70.d607d3be543d.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+120-elev20.408a59d7d567.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+120-elev30.3bff10bbdf86.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+120-elev40.18e93ee3b81e.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+120-elev50.217b0c930e27.png",
+          "count": 4
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+120-elev60.56625908814d.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+120-elev70.60040adf4352.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+150-elev20.624b8a69a30a.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+150-elev30.74bb01d3a8c8.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+150-elev40.7f8090b9da2d.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+150-elev50.64baafbb7ca0.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+150-elev60.26485e995f97.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+150-elev70.e6333534cfdd.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+180-elev20.27c9cc87aa69.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+180-elev30.b2d5615b1ea1.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+180-elev40.8e236f095099.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+180-elev50.b0fd7e523c2d.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+180-elev60.2f5b5e1c7e81.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+180-elev70.1d2f49de2d8c.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+210-elev20.debe7c760a38.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+210-elev30.b2ac2e261dfd.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+210-elev40.33cc0f65d33c.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+210-elev50.fc4c328e99c1.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+210-elev60.c5377f5bc8ce.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+210-elev70.f8f2fc9f1bf1.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+240-elev20.33543d193cd8.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+240-elev30.8cc77922c3e9.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+240-elev40.6287055b5d13.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+240-elev50.163552ef1dde.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+240-elev60.e995661ae84d.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+240-elev70.4b392756998a.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+270-elev20.c0e60da5fa46.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+270-elev30.2efd575f9d2c.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+270-elev40.c4507f8c95fa.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+270-elev50.5ddacf17202b.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+270-elev60.a63dcd98b3d7.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+270-elev70.f854c2fbb097.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+300-elev20.e3f730f6102c.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+300-elev30.0ce9559adc88.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+300-elev40.09dee978bfed.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+300-elev50.244649712d79.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+300-elev60.1cb3e6ebf6f1.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+300-elev70.523cd0ee53b7.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+330-elev20.5a6f216fece9.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+330-elev30.2d18bed0af1b.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+330-elev40.38af2ad54d58.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+330-elev50.b8dcb2c838c4.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+330-elev60.1e0eabbfc4de.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.office.desk.employee.variants-yaw+330-elev70.e223707f2fb3.png",
+          "count": 0
+        }
+      ]
+    },
+    {
+      "manifest": "oblique-furniture-staff-room-padded-chair.v1.json",
+      "assetId": "furniture.staff-room.padded-chair",
+      "sourceSha256": "2dde0a33689685fd067c124c82b7b88b31c606d6c950a0789903e1b0b4b0e934",
+      "maximum": 225,
+      "rows": [
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+00-elev20.d44456c0d4fe.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+00-elev30.0c18b4e814d7.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+00-elev40.2e9deef4245c.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+00-elev50.70c6211f056b.png",
+          "count": 114
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+00-elev60.dbb534f6e665.png",
+          "count": 125
+        },
+        {
+          "yawDegrees": 0,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+00-elev70.258085622b86.png",
+          "count": 48
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+30-elev20.be1171eb9e48.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+30-elev30.a834e748caea.png",
+          "count": 3
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+30-elev40.ff127ccde728.png",
+          "count": 23
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+30-elev50.cade139cb075.png",
+          "count": 88
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+30-elev60.e8f2431ffa88.png",
+          "count": 126
+        },
+        {
+          "yawDegrees": 30,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+30-elev70.441f53c35878.png",
+          "count": 21
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev20.2f3fae92c0ab.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev30.1cf83d39a84b.png",
+          "count": 46
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev40.a200ce9518d2.png",
+          "count": 156
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev50.55db9817947c.png",
+          "count": 137
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev60.a99eae7e8c3d.png",
+          "count": 65
+        },
+        {
+          "yawDegrees": 60,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+60-elev70.9b34b5b56895.png",
+          "count": 15
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+90-elev20.bf0811f82d38.png",
+          "count": 2
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+90-elev30.dd8b2eef865d.png",
+          "count": 72
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+90-elev40.feae8557b9e0.png",
+          "count": 90
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+90-elev50.adba858bd81d.png",
+          "count": 58
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+90-elev60.dfa26c86657c.png",
+          "count": 19
+        },
+        {
+          "yawDegrees": 90,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+90-elev70.d40907b0c480.png",
+          "count": 10
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+120-elev20.55ab0fe83e27.png",
+          "count": 3
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+120-elev30.dd12424766f9.png",
+          "count": 35
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+120-elev40.3fe68ace2759.png",
+          "count": 72
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+120-elev50.eac0238178e2.png",
+          "count": 146
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+120-elev60.a046a865f77b.png",
+          "count": 105
+        },
+        {
+          "yawDegrees": 120,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+120-elev70.9b0a4bfd975c.png",
+          "count": 57
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+150-elev20.40630cfdc1c4.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+150-elev30.d32d5fdeea78.png",
+          "count": 3
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+150-elev40.555aa58c9567.png",
+          "count": 44
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+150-elev50.b7851d8f34aa.png",
+          "count": 147
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+150-elev60.1a1f48b7c929.png",
+          "count": 63
+        },
+        {
+          "yawDegrees": 150,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+150-elev70.a6699c4419b0.png",
+          "count": 44
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+180-elev20.6685777bc9a6.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+180-elev30.e2c8cf755f72.png",
+          "count": 28
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+180-elev40.3e0fb6e86986.png",
+          "count": 132
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+180-elev50.ca389001e52b.png",
+          "count": 184
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+180-elev60.d173076fb5b2.png",
+          "count": 79
+        },
+        {
+          "yawDegrees": 180,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+180-elev70.411a6f9323ea.png",
+          "count": 94
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+210-elev20.2b63041c623b.png",
+          "count": 1
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+210-elev30.10e9c145ad73.png",
+          "count": 51
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+210-elev40.b89b268751dc.png",
+          "count": 146
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+210-elev50.ee8e67d1a029.png",
+          "count": 96
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+210-elev60.2cded19d0041.png",
+          "count": 86
+        },
+        {
+          "yawDegrees": 210,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+210-elev70.229c65413c1b.png",
+          "count": 26
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+240-elev20.75d8931f9b8a.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+240-elev30.9d44fe0baac5.png",
+          "count": 34
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+240-elev40.e81679ea4982.png",
+          "count": 145
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+240-elev50.a93c3093cf24.png",
+          "count": 83
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+240-elev60.766f0a49072b.png",
+          "count": 139
+        },
+        {
+          "yawDegrees": 240,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+240-elev70.059540aa77e9.png",
+          "count": 21
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+270-elev20.73cae786be27.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+270-elev30.cf7925f35c8a.png",
+          "count": 23
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+270-elev40.bb02f1aebd11.png",
+          "count": 117
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+270-elev50.319dcc9c7d99.png",
+          "count": 155
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+270-elev60.590d1c62fb36.png",
+          "count": 123
+        },
+        {
+          "yawDegrees": 270,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+270-elev70.dc3ca86d2b03.png",
+          "count": 47
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev20.0be7a488aa00.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev30.29f409600b78.png",
+          "count": 2
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev40.c89847058d28.png",
+          "count": 180
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev50.d9bc21c0de42.png",
+          "count": 198
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev60.60bcb61c7384.png",
+          "count": 155
+        },
+        {
+          "yawDegrees": 300,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+300-elev70.b53b4880b8d9.png",
+          "count": 27
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 20,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev20.4c0ee5b0d5bf.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 30,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev30.00bb7d8f7f5c.png",
+          "count": 0
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 40,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev40.94c7608eae7a.png",
+          "count": 8
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 50,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev50.095e7d23899b.png",
+          "count": 127
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 60,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev60.ca5e1612322f.png",
+          "count": 225
+        },
+        {
+          "yawDegrees": 330,
+          "elevationDegrees": 70,
+          "frame": "/assets/environment/oblique/furniture.staff-room.padded-chair-yaw+330-elev70.97d666b10c06.png",
+          "count": 60
+        }
+      ]
+    }
+  ],
+  "originalNativePixelFloor": 40,
+  "browserExecuted": false,
+  "buildExecuted": false,
+  "originalFailuresRetainedByRoot": true
+}
