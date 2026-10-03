@@ -1,0 +1,70 @@
+{
+  "original": {
+    "centre": {
+      "x": 768,
+      "y": 768
+    },
+    "zoom": 1.25
+  },
+  "angledView": {
+    "centre": {
+      "x": 992,
+      "y": 832
+    },
+    "zoom": 1.75,
+    "yawRadians": 0.8726646259971647,
+    "elevationRadians": 1.1344640137963142
+  },
+  "returnedView": {
+    "centre": {
+      "x": 992,
+      "y": 832
+    },
+    "zoom": 1.25
+  },
+  "memory": [
+    [
+      "world",
+      {
+        "centre": {
+          "x": 768,
+          "y": 768
+        },
+        "zoom": 1.25
+      }
+    ],
+    [
+      "oblique",
+      {
+        "centre": {
+          "x": 992,
+          "y": 832
+        },
+        "zoom": 1.75,
+        "yawRadians": 0.8726646259971647,
+        "elevationRadians": 1.1344640137963142
+      }
+    ]
+  ],
+  "expected": {
+    "x": 14,
+    "y": 12
+  },
+  "orders": 18,
+  "originalReleasePreservedWholeSnapshot": true,
+  "freshPressOnlyPurchase": true,
+  "wholeBeforeHash": "b89632050871640811290bddcf1ef27a578d441b09830a04c3295202d2af471e",
+  "wholeAcceptedHash": "c184f3871c88107beb4daf9f447a61d13efc60556ebf745be773f6666c09d325",
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "cell-basic",
+      "origin": {
+        "x": 14,
+        "y": 12
+      },
+      "mirrorX": true,
+      "quarterTurns": 1
+    }
+  ]
+}

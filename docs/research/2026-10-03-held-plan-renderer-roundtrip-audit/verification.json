@@ -1,0 +1,19 @@
+{
+  "base": "04bb28215a3e0d526613b39c86d174139e39bf97",
+  "sourceObservation": {
+    "caseCount": 1,
+    "passed": 1
+  },
+  "typechecks": {
+    "audit": 0,
+    "app": 0,
+    "tools": 0
+  },
+  "index": {
+    "passed": 5
+  },
+  "producerMutations": 0,
+  "productionEdits": 0,
+  "nativeRun": false,
+  "observerFailure": "select source extraction omitted final brace; first-run preserved"
+}
