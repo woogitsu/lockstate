@@ -1,0 +1,168 @@
+import { createHash } from 'node:crypto';
+import { writeFile } from 'node:fs/promises';
+import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
+import type { RoomListViewModel } from '../../src/simulation/presentation/room-projection';
+import { expect, type Page } from './network-changed-fixture';
+import { observeCotImages } from './cell-cot-evidence';
+import { SMALL_PRISON_PLANS, SMALL_PRISON_FIXTURES, showcaseOwnerId } from '../fixtures/native-small-prison-showcase-plan';
+
+interface ProbeWindow extends Window {
+  showcaseRead?: (kind: 'simulation/request-snapshot' | 'simulation/request-projection', payload: unknown) => Promise<unknown>;
+}
+
+/** Existing native-case Worker request/reply observer, constrained to reads.
+ * The public UI remains the only writer. No command, snapshot or fixture injection. */
+export async function installShowcaseReadProbe(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const RealWorker = Worker;
+    let worker: Worker | undefined;
+    const replies = new Map<string, (message: unknown) => void>();
+    class ProbeWorker extends RealWorker {
+      public constructor(url: string | URL, options?: WorkerOptions) {
+        super(url, options); worker = this;
+        super.addEventListener('message', (event: MessageEvent) => {
+          const replyTo = (event.data as { replyTo?: string }).replyTo;
+          if (replyTo === undefined) return;
+          const waiter = replies.get(replyTo);
+          if (waiter === undefined) return;
+          replies.delete(replyTo); waiter(event.data);
+        });
+      }
+    }
+    (window as unknown as { Worker: typeof Worker }).Worker = ProbeWorker as unknown as typeof Worker;
+    (window as ProbeWindow).showcaseRead = (kind, payload) => new Promise((resolve, reject) => {
+      if (kind !== 'simulation/request-snapshot' && kind !== 'simulation/request-projection') {
+        reject(new Error('showcase observer accepts reads only')); return;
+      }
+      if (worker === undefined) { reject(new Error('actual simulation worker absent')); return; }
+      const messageId = crypto.randomUUID();
+      const timer = setTimeout(() => { replies.delete(messageId); reject(new Error(`worker ${kind} timed out`)); }, 20_000);
+      replies.set(messageId, message => { clearTimeout(timer); resolve(message); });
+      worker.postMessage({ protocolVersion: 1, messageId, kind, payload });
+    });
+  });
+}
+
+export async function showcaseSnapshot(page: Page, path?: string): Promise<SessionSnapshotBundle> {
+  const reply = await page.evaluate(async () => (window as ProbeWindow).showcaseRead!(
+    'simulation/request-snapshot', { reason: 'consistency-check' }));
+  if (path !== undefined) await writeFile(path, JSON.stringify(reply, null, 2));
+  const envelope = reply as { kind: string; payload: { snapshot: { data: SessionSnapshotBundle } } };
+  expect(envelope.kind).toBe('simulation/snapshot');
+  return envelope.payload.snapshot.data;
+}
+
+export async function showcaseRooms(page: Page): Promise<RoomListViewModel> {
+  const reply = await page.evaluate(async () => (window as ProbeWindow).showcaseRead!(
+    'simulation/request-projection', { projectionId: 'hud/room-list' }));
+  const envelope = reply as { kind: string; payload: { view: { data: RoomListViewModel } } };
+  expect(envelope.kind).toBe('simulation/projection');
+  return envelope.payload.view.data;
+}
+
+export function assertShowcaseStage(data: SessionSnapshotBundle, lastGesture: number): void {
+  const plan = SMALL_PRISON_PLANS[lastGesture]!;
+  expect(data.world.version).toBe(1);
+  expect(data.simulation?.economy?.treasury.balanceMinorUnits).toBe(plan.balance);
+  expect(data.simulation?.economy?.procurement.pending).toEqual([]);
+  expect(data.construction.orders).toHaveLength(plan.cumulativeOrders);
+  expect(data.construction.orders.every(order => order.state === 'completed')).toBe(true);
+  expect(data.simulation?.roomTemplates?.pending).toEqual([]);
+  const completed = data.simulation?.roomTemplates?.completed ?? [];
+  expect(completed).toHaveLength(lastGesture + 1);
+  for (const [sequence, expected] of SMALL_PRISON_PLANS.slice(0, lastGesture + 1).entries()) {
+    expect(completed).toContainEqual({ sequence, templateId: expected.templateId, origin: expected.origin,
+      mirrorX: false, ...(expected.quarterTurns === 0 ? {} : { quarterTurns: expected.quarterTurns }) });
+  }
+  expect(data.simulation?.prisoners.roomInstanceDefinitions).toHaveLength(plan.rooms);
+  const fixtures = SMALL_PRISON_FIXTURES.filter(([gesture]) => gesture <= lastGesture);
+  const actual = data.simulation?.objects?.placedObjects ?? [];
+  expect(actual).toHaveLength(fixtures.length);
+  for (const [gesture, fixture, definitionId, objectId, x, y, orientation] of fixtures) {
+    const sourceOrderId = showcaseOwnerId(gesture, fixture);
+    expect(actual.find(o => o.placedObjectId === `object:${x}:${y}`)).toEqual({
+      placedObjectId: `object:${x}:${y}`, objectId, anchorTile: { x, y }, orientation, sourceOrderId,
+    });
+    const order = data.construction.orders.find(o => o.id === sourceOrderId);
+    expect(order).toMatchObject({ id: sourceOrderId, definitionId, location: { x, y }, placementSequence: gesture, state: 'completed' });
+    expect(order!.objectOrientation ?? 0).toBe(orientation);
+    expect(actual.filter(o => o.sourceOrderId === sourceOrderId)).toHaveLength(1);
+  }
+}
+
+/** Literal current source descriptor pins, independently opened in this baseline. */
+const SHOWCASE_ASSETS = [
+  ['oblique-furniture.storage-room-rack.v1.json', 'furniture.storage-room.timber-rack', '36c75d364d604ee666adf42b287a75f24e3a174bf7b0892a829aeb8a0dc9d435'],
+  ['oblique-utility.loading-dock-door.v1.json', 'utility.loading-dock-door.variants', '7eeca158b9e5f92abb139ab8164f5dd7a2aa2f2ca47936e4b08e4ea6c79a3aac'],
+  ['oblique-furniture.cell-cot.v1.json', 'furniture.cell.cot.single', 'ca8ed38a7250dd941b542a93b6e371ccdd692f6a0829d3646401d53d43a561ef'],
+  ['oblique-cell-toilet.v1.json', 'fixture.cell.toilet_sink', 'ebc1570274663d22315eed0adfafe8886120bdbf9901dfa744edcde540428ff8'],
+  ['oblique-furniture.kitchen-stove.v1.json', 'furniture.kitchen.stove.variants', '2a912331e9c20a35ea417c25d371cf89a5f80092c3f066504c7b792cb1a042a2'],
+  ['oblique-furniture.kitchen-prep-counter.v1.json', 'furniture.kitchen.prep-counter.variants', 'b20bffb79d6ffe66a6c741fc420bd163651faa4813ca4d77740eb3dd55914a8a'],
+  ['oblique-furniture.kitchen-fridge.v1.json', 'furniture.kitchen.fridge.variants', '0cb6861e636324cf4d1e6ad35c1739cbac6068f32eb702244f5ddb196715f3d5'],
+  ['oblique-shower-head.v1.json', 'fixture.shower.head', '0a375563958f382d6b1d8dde1a6252ace7ed3883f4994a78d040361a65397ea1'],
+  ['oblique-furniture.canteen-dining-table.v1.json', 'furniture.dining.table.wooden', '5f27967600a64ce4ded10a01fe6217ea849c2be9b57ff92353fd60b97af4ede1'],
+  ['oblique-canteen-bench.v1.json', 'furniture.corridor.bench.variants', '4b174ad498260ac3c736d2b4d78fb1f566cface5bab81d513fb2e00a4568ab81'],
+] as const;
+interface Descriptor { assetId: string; sourceSha256: string; frames: { image: string; sha256: string }[] }
+
+/** Observe terminal network bytes and existing real HTMLImageElement/Blob
+ * decoder evidence. This does not manufacture a texture or renderer verdict. */
+export async function observeShowcaseArt(page: Page) {
+  const readDecodedImages = await observeCotImages(page);
+  const descriptors: { url: string; status: number; data: Descriptor }[] = [];
+  const images: { path: string; status: number; sha256: string; width: number; height: number }[] = [];
+  const redirects: { url: string; status: number; location: string | undefined; path: string }[] = [];
+  const errors: string[] = [];
+  const pending: Promise<void>[] = [];
+  page.on('response', response => {
+    const path = decodeURIComponent(new URL(response.url()).pathname);
+    const descriptorPath = SHOWCASE_ASSETS.some(([file]) => path === `/game-content/${file}`);
+    const imagePath = SHOWCASE_ASSETS.some(([, id]) => path.startsWith(`/assets/environment/oblique/${id}-`)) && path.endsWith('.png');
+    if (!descriptorPath && !imagePath) return;
+    // The real preview server redirects canonical decoded filenames to their
+    // URL-encoded spelling. A redirect has no readable body; retain it and
+    // require the same terminal canonical path/body below.
+    if (response.status() >= 300 && response.status() < 400) {
+      redirects.push({ url: response.url(), status: response.status(), location: response.headers().location, path });
+      return;
+    }
+    if (descriptorPath) {
+      pending.push(response.json().then(data => { descriptors.push({ url: path, status: response.status(), data: data as Descriptor }); })
+        .catch(error => { errors.push(String(error)); }));
+    } else if (imagePath) {
+      pending.push((async () => {
+        const bytes = await response.body();
+        expect(response.status(), `terminal source PNG ${path}`).toBe(200);
+        expect(bytes.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
+        images.push({ path, status: response.status(), sha256: createHash('sha256').update(bytes).digest('hex'),
+          width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) });
+      })().catch(error => { errors.push(String(error)); }));
+    }
+  });
+  return async (requireAll = false) => {
+    await Promise.all(pending);
+    const decoded = await readDecodedImages();
+    if (requireAll) {
+      expect(errors).toEqual([]);
+      expect(decoded.errors).toEqual([]);
+      for (const redirect of redirects) {
+        expect(redirect.location, `actual source redirect ${redirect.url}`).toBeDefined();
+        expect(decodeURIComponent(new URL(redirect.location!, redirect.url).pathname),
+          'redirect preserves the canonical source path').toBe(redirect.path);
+        expect(descriptors.some(row => row.url === redirect.path && row.status === 200) ||
+          images.some(row => row.path === redirect.path && row.status === 200),
+        `redirect reaches an observed terminal canonical response ${redirect.path}`).toBe(true);
+      }
+      for (const [file, assetId, sourceSha256] of SHOWCASE_ASSETS) {
+        const descriptor = descriptors.find(row => row.url === `/game-content/${file}`);
+        expect(descriptor, `canonical descriptor for ${assetId}`).toMatchObject({ status: 200, data: { assetId, sourceSha256 } });
+        const canonical = images.filter(row => descriptor!.data.frames.some(frame => frame.image === row.path && frame.sha256 === row.sha256));
+        expect(canonical.length, `canonical PNG body for ${assetId}`).toBeGreaterThan(0);
+        expect(canonical.some(row => row.width === 256 && row.height === 256 && decoded.images.some(image =>
+          image.sha256 === row.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)),
+        `actual loader decoded ${assetId}`).toBe(true);
+      }
+    }
+    return { descriptors, images, redirects, decodedImages: decoded.images, errors };
+  };
+}

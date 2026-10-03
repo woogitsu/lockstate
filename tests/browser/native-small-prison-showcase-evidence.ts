@@ -103,7 +103,7 @@ const SHOWCASE_ASSETS = [
   ['oblique-furniture.canteen-dining-table.v1.json', 'furniture.dining.table.wooden', '5f27967600a64ce4ded10a01fe6217ea849c2be9b57ff92353fd60b97af4ede1'],
   ['oblique-canteen-bench.v1.json', 'furniture.corridor.bench.variants', '4b174ad498260ac3c736d2b4d78fb1f566cface5bab81d513fb2e00a4568ab81'],
 ] as const;
-interface Descriptor { assetId: string; sourceSha256: string; frames: { image: string; sha256: string }[] }
+interface Descriptor { assetId: string; sourceSha256: string; resolutionPx: [number, number]; frames: { image: string; sha256: string }[] }
 
 /** Observe terminal network bytes and existing real HTMLImageElement/Blob
  * decoder evidence. This does not manufacture a texture or renderer verdict. */
@@ -117,7 +117,10 @@ export async function observeShowcaseArt(page: Page) {
   page.on('response', response => {
     const path = decodeURIComponent(new URL(response.url()).pathname);
     const descriptorPath = SHOWCASE_ASSETS.some(([file]) => path === `/game-content/${file}`);
-    const imagePath = SHOWCASE_ASSETS.some(([, id]) => path.startsWith(`/assets/environment/oblique/${id}-`)) && path.endsWith('.png');
+    // Filename prefixes are source-owned and need not equal logical asset IDs:
+    // the retained512px CellToilet uses cell-toilet-*. Observe actual traffic,
+    // then require exact descriptor frame paths and hashes, never a name guess.
+    const imagePath = path.startsWith('/assets/environment/oblique/') && path.endsWith('.png');
     if (!descriptorPath && !imagePath) return;
     // The real preview server redirects canonical decoded filenames to their
     // URL-encoded spelling. A redirect has no readable body; retain it and
@@ -156,10 +159,12 @@ export async function observeShowcaseArt(page: Page) {
       for (const [file, assetId, sourceSha256] of SHOWCASE_ASSETS) {
         const descriptor = descriptors.find(row => row.url === `/game-content/${file}`);
         expect(descriptor, `canonical descriptor for ${assetId}`).toMatchObject({ status: 200, data: { assetId, sourceSha256 } });
+        const resolution = assetId === 'fixture.cell.toilet_sink' ? 512 : 256;
+        expect(descriptor!.data.resolutionPx, `retained source resolution for ${assetId}`).toEqual([resolution, resolution]);
         const canonical = images.filter(row => descriptor!.data.frames.some(frame => frame.image === row.path && frame.sha256 === row.sha256));
         expect(canonical.length, `canonical PNG body for ${assetId}`).toBeGreaterThan(0);
-        expect(canonical.some(row => row.width === 256 && row.height === 256 && decoded.images.some(image =>
-          image.sha256 === row.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)),
+        expect(canonical.some(row => row.width === resolution && row.height === resolution && decoded.images.some(image =>
+          image.sha256 === row.sha256 && image.complete && !image.error && image.width === resolution && image.height === resolution)),
         `actual loader decoded ${assetId}`).toBe(true);
       }
     }
