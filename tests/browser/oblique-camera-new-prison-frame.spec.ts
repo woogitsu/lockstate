@@ -9,15 +9,18 @@ test('angled camera returns to a newly created prison after panning beyond the o
 
   const viewport = page.locator('.hud-minimap__viewport');
   await expect(viewport).toBeVisible();
-  // A physical remappable camera key, held long enough to leave the initial
-  // loaded chunk. The minimap hides its camera outline when no ground in the
+  // Physical remappable camera keys, held until they leave the initial loaded
+  // chunk, within the original visibility assertion's 10s budget. The minimap
+  // hides its camera outline when no ground in the
   // current prison intersects the view; this is a public UI oracle.
   await page.keyboard.down('ArrowRight');
   await page.keyboard.down('ArrowDown');
-  await page.waitForTimeout(5500);
-  await page.keyboard.up('ArrowDown');
-  await page.keyboard.up('ArrowRight');
-  await expect(viewport).toBeHidden();
+  try {
+    await expect(viewport).toBeHidden({ timeout: 10_000 });
+  } finally {
+    await page.keyboard.up('ArrowDown');
+    await page.keyboard.up('ArrowRight');
+  }
   await page.screenshot({ path: testInfo.outputPath('old-prison-off-map-fullhd.png') });
 
   // Keyboard activation leaves the pointer and camera untouched. A new

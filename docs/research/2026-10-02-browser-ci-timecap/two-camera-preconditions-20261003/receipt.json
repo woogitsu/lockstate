@@ -1,0 +1,25 @@
+{
+  "run": 37039088544,
+  "originalHead": "3eeeddc2d276714fee6a7c8420270b78d2e49b3c",
+  "repairBase": "873093cae87312d2fb76f9c540f61374bbef2c8d",
+  "artifact": 11245699264,
+  "archiveBytes": 340342933,
+  "archiveSha256": "fa52ba78533bcea17dc34c14ae61647e2b56c059694b6ca23036c8efccb2efad",
+  "nativeRepairAcceptance": "pending; no browser launched by this audit",
+  "traces": [
+    {
+      "label": "new-prison",
+      "folder": "oblique-camera-new-prison--4a771--panning-beyond-the-old-map",
+      "sha256": "4ea5fb14a9093cd9b16600c35fdc16ed007c9000922b18bbaccf5d28246042dc",
+      "bytes": 2144836,
+      "nativeViewportNodesRetained": 13
+    },
+    {
+      "label": "held-arrow",
+      "folder": "oblique-hud-roving-camera--397f2-es-into-a-Build-radio-group",
+      "sha256": "93c54da1001518c8b6ae5b94907be9a4ece4050df3243daa583d5f193bb298a2",
+      "bytes": 2146611,
+      "nativeViewportNodesRetained": 9
+    }
+  ]
+}
