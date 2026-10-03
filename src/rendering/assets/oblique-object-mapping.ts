@@ -43,7 +43,7 @@ const ROOM_VISUAL_VARIANTS: readonly {
     'object.bench': 'furniture.common-room.upholstered-bench',
   }) },
   { roomCatalogId: 'room.classroom', objectAssets: Object.freeze({
-    'object.chair': 'furniture.classroom.school-chair',
+    'object.chair': 'furniture.classroom.student-chair',
     'object.desk': 'furniture.classroom.teacher-desk',
   }) },
   { roomCatalogId: 'room.reception', objectAssets: Object.freeze({

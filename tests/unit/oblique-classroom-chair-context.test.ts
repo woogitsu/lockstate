@@ -29,7 +29,7 @@ const room = (roomCatalogId: string, x: number, y: number, width: number, height
 
 describe('existing chair gets Classroom art only inside an authoritative Classroom rectangle', () => {
   it.each([
-    { rooms: [room('room.classroom', 2, 2, 4, 4)], phase: 'built' as const, x: 3, y: 3, expected: 'furniture.classroom.school-chair' },
+    { rooms: [room('room.classroom', 2, 2, 4, 4)], phase: 'built' as const, x: 3, y: 3, expected: 'furniture.classroom.student-chair' },
     { rooms: [room('room.classroom', 2, 2, 1, 1)], phase: 'built' as const, x: 3, y: 3, expected: 'furniture.chair.wooden' },
     { rooms: [room('room.common-room', 2, 2, 4, 4)], phase: 'built' as const, x: 3, y: 3, expected: 'furniture.chair.wooden' },
     { rooms: [], phase: 'built' as const, x: 3, y: 3, expected: 'furniture.chair.wooden' },

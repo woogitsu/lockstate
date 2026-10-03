@@ -44,7 +44,7 @@ describe('authored room furniture in the actual projection', () => {
   it('preserves generic desks and Classroom chairs, including planned desks', () => {
     expect(projected('desk-wooden', [])?.assetId).toBe('furniture.office.desk.generic');
     expect(projected('desk-wooden', [room('room.classroom')], 0, 3, 3, 'planned')?.assetId).toBe('furniture.office.desk.generic');
-    expect(projected('chair-wooden', [room('room.classroom')])?.assetId).toBe('furniture.classroom.school-chair');
+    expect(projected('chair-wooden', [room('room.classroom')])?.assetId).toBe('furniture.classroom.student-chair');
   });
   it('loads both selected assets from the real runtime registry and matching descriptors', () => {
     const root = new URL('../../public/', import.meta.url);
