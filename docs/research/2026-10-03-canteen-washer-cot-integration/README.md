@@ -51,3 +51,7 @@ The integrated routing/network/documentation run was31GREEN/1RED: the hired-Guar
 ### First actual Guard and history execution
 
 Frozen34878b666b native1GREEN/1RED/2serialSKIP: genuinely hired Guard passes identity/body/wholepausedSaveLoad and real decoded original/rear PNGs in17.6s. Storage/Delivery preparation completed but the history fixture rejected the intentionally absent empty-queue dataset at40.3s. Actual build-panel.ts removes data-queued when no orders remain; observer now reads that documented empty state as0 while still rejecting malformed nonnull values. All authoritative completed orders/object/room/template assertions remain. Original fixture/report/errors/captures retained; no runtime/camera/timeout correction. World/Angled history acceptance still pending.
+
+### Preserved second history observer result
+
+After documented empty-queue correction, actual Storage/Delivery preparationGREEN43.5s; WorldLoad reaches the exact persisted39orders, but its helper has no simulation/clock-state message yet (native1GREEN/1RED/1serialSKIP). Whole actual worker snapshot is archived. The history route now explicitly confirms Pause through the public control after Load before reading the clock-message helper. This is an actual player action; it does not inject a clock/verdict/session, extend a budget, or claim persistent clock state. Kernel/data identity and all UndoRedo/geometry/origin checks remain.
