@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-classroom-student-chair-integration-20261003
+
+ ❯ tests/unit/oblique-classroom-student-chair-context.test.ts (7 tests | 1 failed) 21ms
+     × registers the selected asset once with its real source and complete descriptor 8ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  15:21:34
+   Duration  599ms (transform 162ms, setup 0ms, import 461ms, tests 21ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+$ vitest run "tests/unit/oblique-classroom-student-chair-context.test.ts"
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > registers the selected asset once with its real source and complete descriptor
+AssertionError: actual runtime Classroom student registry entry: expected [] to deeply equal [ { …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "assetId": "furniture.classroom.student-chair",
+-     "manifest": "/game-content/oblique-furniture-classroom-student-chair.v1.json",
+-   },
+- ]
++ []
+
+ ❯ tests/unit/oblique-classroom-student-chair-context.test.ts:106:72
+    104|     const registry = parseObliqueModuleRegistry(JSON.parse(readFileSyn…
+    105|     const entries = registry.entries.filter(entry => entry.assetId ===…
+    106|     expect(entries, 'actual runtime Classroom student registry entry')…
+       |                                                                        ^
+    107|       manifest: '/game-content/oblique-furniture-classroom-student-cha…
+    108|     const entry = entries[0];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

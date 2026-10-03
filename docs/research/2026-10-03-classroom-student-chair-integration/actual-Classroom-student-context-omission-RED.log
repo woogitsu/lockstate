@@ -1,0 +1,50 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-classroom-student-chair-integration-20261003
+
+ ❯ tests/unit/oblique-classroom-student-chair-context.test.ts (7 tests | 3 failed) 15ms
+     × selects ALL FOUR literal completed Classroom chairs q0 with their canonical source60/e40 frame 7ms
+     × selects ALL FOUR literal completed Classroom chairs q1 with their canonical source60/e40 frame 2ms
+     × preserves default/Reception/other-room chairs and the entire Classroom footprint boundary 3ms
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 4 passed (7)
+   Start at  15:21:33
+   Duration  616ms (transform 163ms, setup 0ms, import 483ms, tests 15ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+$ vitest run "tests/unit/oblique-classroom-student-chair-context.test.ts"
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > selects ALL FOUR literal completed Classroom chairs q0 with their canonical source60/e40 frame
+ FAIL  tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > selects ALL FOUR literal completed Classroom chairs q1 with their canonical source60/e40 frame
+AssertionError: actual Classroom student chair context selector: expected 'furniture.chair.wooden' to be 'furniture.classroom.student-chair' // Object.is equality
+
+Expected: "furniture.classroom.student-chair"
+Received: "furniture.chair.wooden"
+
+ ❯ tests/unit/oblique-classroom-student-chair-context.test.ts:55:81
+     53|       expect(structure.tileY + 1).toBeLessThanOrEqual(10);
+     54|       const solid = projected.raised.find(item => item.id === structur…
+     55|       expect(solid?.assetId, 'actual Classroom student chair context s…
+       |                                                                                 ^
+     56|       if (solid === undefined) throw new Error('Literal template-purch…
+     57|       const selected = selectObliqueModuleFrame(catalog, { yawRadians:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > preserves default/Reception/other-room chairs and the entire Classroom footprint boundary
+AssertionError: expected 'furniture.chair.wooden' to be 'furniture.classroom.student-chair' // Object.is equality
+
+Expected: "furniture.classroom.student-chair"
+Received: "furniture.chair.wooden"
+
+ ❯ tests/unit/oblique-classroom-student-chair-context.test.ts:86:132
+     84|       [[{ ...classroom, width: 1, height: 1 }, { ...classroom, roomCat…
+     85|     ] satisfies [readonly RenderRoom[], RenderStructure, string][]) {
+     86|       expect(projectObliqueWorldFrame(frame([structure], rooms), camer…
+       |                                                                                                                                    ^
+     87|     }
+     88|     // An anchor alone is insufficient: check the public selector's fu…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯

@@ -1,0 +1,4 @@
+[ELIFECYCLE] Command failed with exit code 1.
+$ pnpm typecheck && node scripts/cloudflare-task.mjs build production
+'pnpm' is not recognized as an internal or external command,
+operable program or batch file.

@@ -16,8 +16,10 @@ The new projection test consumes the existing literal public Classroom fixture: 
 - Genuine source SHA256: `0c3d7dc54a594659c810f8e1d76bd4980bf1293f7a5b22c367805760de1a9b1b`
 - Exact source60/e40: `/assets/environment/oblique/furniture.classroom.student-chair-yaw+60-elev40.eb690a439214.png`
 - PNG SHA256: `eb690a4392146a594fa1b692a2dc0b28b881820e541a7125f7f112c474c50260`
-- Original authored school-chair source and all72 renders are retained; see [actual source/render proof](../2026-10-03-classroom-student-writing-chair/README.md).
+- Original authored school-chair source and all 72 renders are retained; see [actual source/render proof](../2026-10-03-classroom-student-writing-chair/README.md).
 
 ## Pending boundary
 
-Repeatable consumer omission controls and final byte receipt are next. No browser/server started, no Blender matrix repeated. Native per-chair body acceptance, combined Classroom teacher/student view, public paused Save/Load and production release gates remain root work; this report does not claim a native pass.
+Repeatable actual Classroom chair-entry omission: three failures / four passing controls. Actual student registry omission: one failure / six passing controls. Both production files restored byte for byte; seven fresh context tests GREEN. Protected 374 source/provenance/descriptor/360 PNG files are unchanged. Final focused gate: 46 GREEN / one optional live-Blender scene skipped because Blender is not on PATH; no live result claimed. Strict source/tools typecheck GREEN; local production build GREEN (initial shell lacked pnpm on PATH, recorded then corrected using the existing runtime). The integrated hash receipt captures actual Windows descriptor bytes and normalizedLF separately. No Blender process was present and none was started.
+
+Native acceptance remains pending. No browser/server started, no Blender matrix repeated. Native per-chair body acceptance, combined Classroom teacher/student view, public paused Save/Load and production release gates remain root work; this report does not claim a native pass.
