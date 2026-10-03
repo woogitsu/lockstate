@@ -21,9 +21,6 @@ test('a publicly hired Guard keeps actual identity and visible authored body thr
   const centredBefore = await centreGuard(page, empty);
   const canvas = page.locator('#game-root canvas');
   await expect(canvas).toBeVisible();
-  // The real catalog's initial pose has decoded before the empty-world control.
-  await expect.poll(async () => (await loadedImages()).images.some(image =>
-    image.sha256 === GUARD_INITIAL_FRAME.sha256 && image.complete && !image.error && image.width === 512 && image.height === 512)).toBe(true);
   const emptyCanvas = await canvas.screenshot({ path: info.outputPath('guard-empty-world-control-canvas.png') });
 
   await showPanel(page, 'manage', '.hud-staff');
@@ -33,6 +30,9 @@ test('a publicly hired Guard keeps actual identity and visible authored body thr
   await expect.poll(async () => (await sentCommands(page)).filter(command => command.type === 'HireStaff')).toEqual([
     { type: 'HireStaff', staffRoleId: 'staff-role.guard', x: 16, y: 16 },
   ]);
+  // The real projected Guard demands this PNG only after public hiring.
+  await expect.poll(async () => (await loadedImages()).images.some(image =>
+    image.sha256 === GUARD_INITIAL_FRAME.sha256 && image.complete && !image.error && image.width === 512 && image.height === 512)).toBe(true);
   const pausedBefore = await guardSnapshot(page);
   const genuineBefore = requireGenuineGuard(pausedBefore);
   expect(pausedBefore.world).toEqual(empty.world);
