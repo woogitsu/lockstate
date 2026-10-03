@@ -28,6 +28,8 @@ Finally restore the original source Buffer byte for byte: SHA256 before/after `e
 
 ## Pending actual visual acceptance
 
+The [independent concept/code review](./concept-review.md) identifies three paint-only followup proposals from the inspected AI reference, without treating it as gameplay evidence or implementing further production changes.
+
 No browser, server or build was launched by this agent. Root retains that lease. A requested bounded before/after Full HD comparison must use the same public New prison, paused session, Angled scene/camera and UI scale, with real Build/Rooms/Save controls and both theme choices. Compare readable hierarchy, focus, all top readouts and actual unchanged allocation on those captured subjects. Screenshots must identify their exact source/build subjects. Source GREEN and contrast arithmetic alone do not establish a modern or attractive result.
 
 Final bounded documentation check: **26 GREEN/1 inherited RED across3 files,17.40s** ([raw](./raw/docs-terminal.txt)). Own indexing and quotation contracts pass. The inherited [V9 consumer receipt](../2026-10-03-v9-history-consumer-integration/README.md) still describes its absent historical proposal with a rooted filename, which the mechanical link gate resolves against today's tree. The coordinator was notified to replace that citation with the immutable proposal reference while preserving the old failure. No inherited record was changed by this skin branch.
