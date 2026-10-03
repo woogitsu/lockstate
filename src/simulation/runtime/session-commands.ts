@@ -821,6 +821,7 @@ export function createSessionCommandHandler(
           orderId: simCommand.orderId,
           x: simCommand.x,
           y: simCommand.y,
+          ...(simCommand.quarterTurns === undefined ? {} : { objectOrientation: simCommand.quarterTurns }),
         },
         context.tick,
         // The placement ordinal, exactly as `construction/handler.ts` stamps
