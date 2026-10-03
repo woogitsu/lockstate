@@ -1,0 +1,18 @@
+browser-artifact	Run the built client in a browser	2026-10-03T10:19:47.1128637Z   29) tests/browser/room-template-renderer-preflight-receipt.spec.ts:66:3 › FullHD oblique: renderer replacement during genuine preflight protects rearmed Yard 
+browser-artifact	Run the built client in a browser	2026-10-03T10:19:47.1129192Z 
+browser-artifact	Run the built client in a browser	2026-10-03T10:19:47.1129708Z     Error: ^[[2mexpect(^[[22m^[[31mreceived^[[39m^[[2m).^[[22mtoBe^[[2m(^[[22m^[[32mexpected^[[39m^[[2m) // Object.is equality^[[22m
+browser-artifact	Run the built client in a browser	2026-10-03T10:19:47.1130083Z 
+browser-artifact	Run the built client in a browser	2026-10-03T10:19:47.1130273Z     Expected: ^[[32m"^[[7myard^[[27m-basic"^[[39m
+browser-artifact	Run the built client in a browser	2026-10-03T10:19:47.1130642Z     Received: ^[[31m"^[[7mcell^[[27m-basic"^[[39m
+browser-artifact	Run the built client in a browser	2026-10-03T10:19:47.1130847Z 
+browser-artifact	Run the built client in a browser	2026-10-03T10:19:47.1131224Z       117 |       expect((await sentCommands(page)).filter(command => command.type === 'PlaceRoomTemplate')).toHaveLength(0);
+browser-artifact	Run the built client in a browser	2026-10-03T10:19:47.1132020Z       118 |       const current = await page.evaluate(() => (Reflect.get(window, 'rendererPlanPreflight') as Probe).replies.at(-1)!);
+browser-artifact	Run the built client in a browser	2026-10-03T10:19:47.1132731Z     > 119 |       expect(current.target.templateId).toBe('yard-basic'); expect(current.ok).toBe(true);
+browser-artifact	Run the built client in a browser	2026-10-03T10:19:47.1133218Z           |                                         ^
+browser-artifact	Run the built client in a browser	2026-10-03T10:19:47.1133662Z       120 |       await page.keyboard.press('Escape'); await expect(ghost).toBeHidden();
+browser-artifact	Run the built client in a browser	2026-10-03T10:19:47.1134063Z       121 |     } else {
+browser-artifact	Run the built client in a browser	2026-10-03T10:19:47.1134524Z       122 |       await expect(ghost).toBeHidden(); // original disposed guard reveals a new armed preview here
+browser-artifact	Run the built client in a browser	2026-10-03T10:19:47.1135262Z         at /home/runner/work/lockstate/lockstate/tests/browser/room-template-renderer-preflight-receipt.spec.ts:119:41
+browser-artifact	Run the built client in a browser	2026-10-03T10:19:47.1135687Z 
+browser-artifact	Run the built client in a browser	2026-10-03T10:19:47.1136079Z     Error Context: test-results/room-template-renderer-pre-849ed-light-protects-rearmed-Yard/error-context.md
+browser-artifact	Run the built client in a browser	2026-10-03T10:19:47.1136497Z 
