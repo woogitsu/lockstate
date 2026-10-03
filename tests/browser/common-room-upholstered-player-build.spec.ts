@@ -136,14 +136,17 @@ async function frameRoom(page: Page): Promise<void> {
   await minimap.click({ position: { x: bounds.width * .24, y: bounds.height * .24 } });
   await page.mouse.move(1300,700);
 }
-async function petrolPixels(page: Page, png: Buffer, turns: 0 | 1): Promise<number[]> {
+async function petrolPixels(page: Page, png: Buffer, turns: 0 | 1 | 'diagnostic'): Promise<number[]> {
   return page.evaluate(async ({ base64, turns }) => {
     const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap,0,0);
-    // q0 exact genuine crops/filter/floors are retained. q1 entire-image count
-    // is diagnostic only: root must measure independent disjoint fixture ROIs.
-    const rects = turns === 0 ? [[640,390,150,180], [860,390,150,180]] : [[0,0,bitmap.width,bitmap.height]];
+    // Literal, disjoint fixture regions measured from actual Full HD frames.
+    // q0 keeps its original regions/filter/floor. The completed and loaded q1
+    // frames independently contain2547/2504 petrol pixels in these two boxes.
+    const rects = turns === 0 ? [[640,390,150,180], [860,390,150,180]]
+      : turns === 1 ? [[870,270,170,160], [875,440,175,170]]
+      : [[0,0,bitmap.width,bitmap.height]];
     return rects.map(rect => {
       const pixels = context.getImageData(...rect as [number,number,number,number]).data;
       let count = 0;
@@ -201,7 +204,7 @@ for (const turns of [0,1] as const) test(`Common Room quarterTurns${turns}: actu
   const built=await snapshot(page); assertCommonRoom(built,turns,true); await frameRoom(page);
   const painted=await page.screenshot({ path:info.outputPath('common-room-actual-completed-fullhd.png') });
   const beforePixels=await petrolPixels(page,painted,turns);
-  if (turns===0) beforePixels.forEach(count=>expect(count,'each existing q0 Common Room bench retains authored petrol/teal upholstery').toBeGreaterThan(1500));
+  beforePixels.forEach(count=>expect(count,'each Common Room bench retains authored petrol/teal upholstery').toBeGreaterThan(1500));
   await page.getByRole('button', { name:'Overview',exact:true }).click(); await page.getByRole('button', { name:'Save now',exact:true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved'); await page.locator('.save-panel__item').first().getByRole('button', { name:'Load',exact:true }).click();
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
@@ -209,19 +212,18 @@ for (const turns of [0,1] as const) test(`Common Room quarterTurns${turns}: actu
   const loaded=await snapshot(page); assertCommonRoom(loaded,turns,true); expect(loaded).toEqual(built);
   await frameRoom(page); const restored=await page.screenshot({ path:info.outputPath('common-room-actual-loaded-fullhd.png') });
   const afterPixels=await petrolPixels(page,restored,turns);
-  if (turns===0) {
-    afterPixels.forEach(count=>expect(count,'each existing q0 bench retains authored upholstery after Load').toBeGreaterThan(1500));
-    expect(afterPixels).toEqual(beforePixels);
-  }
+  afterPixels.forEach(count=>expect(count,'each Common Room bench retains authored upholstery after Load').toBeGreaterThan(1500));
+  expect(afterPixels).toEqual(beforePixels);
   // Existing public Bench detail camera recipe; no fabricated renderer pose.
   for (let step=0;step<(turns===0?7:1);step++) await page.getByRole('button', { name:'Rotate camera right',exact:true }).click();
   await page.mouse.move(1200,650); await page.mouse.down({ button:'right' }); await page.mouse.move(1200,667,{ steps:3 }); await page.mouse.up({ button:'right' });
   await frameRoom(page); const provenance=await network.evidence(info,turns);
   const detail=await page.screenshot({ path:info.outputPath('common-room-actual-local60-elev40-fullhd.png') });
   const detailData=await snapshot(page); expect(detailData).toEqual(loaded);
-  const evidence={ turns,queued,built,loaded,detailData,beforePixels,afterPixels,detailPixels:await petrolPixels(page,detail,1),
-    commands:await sentCommands(page),provenance,q0ExactLegacyRegions:turns===0,q1PerFixtureRoiCalibrated:false,
-    q1VisualAcceptancePending:turns===1,commonRoomConsumerNegativeExecuted:false,hardwareRoiMeasured:false,
+  const evidence={ turns,queued,built,loaded,detailData,beforePixels,afterPixels,detailPixels:await petrolPixels(page,detail,'diagnostic'),
+    commands:await sentCommands(page),provenance,q0ExactLegacyRegions:turns===0,q1PerFixtureRoiCalibrated:turns===1,
+    fixtureRegions:turns===0?[[640,390,150,180],[860,390,150,180]]:[[870,270,170,160],[875,440,175,170]],
+    pixelFloor:1500,detailWholeImageDiagnosticOnly:true,commonRoomConsumerNegativeExecuted:false,hardwareRoiMeasured:false,
     cameraRightButtons:turns===0?7:1,rightButtonDragFrom:[1200,650],rightButtonDragTo:[1200,667],selectedSourcePose:[60,40] };
   await writeFile(info.outputPath('common-room-actual-worker-pixels-and-provenance.json'),JSON.stringify(evidence,null,2));
   await info.attach('common-room-actual-worker-pixels-and-provenance',{ body:JSON.stringify(evidence,null,2),contentType:'application/json' });
