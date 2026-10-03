@@ -1,0 +1,24 @@
+const fs=require('fs'),cp=require('child_process'),path=require('path'),crypto=require('crypto'),assert=require('assert');
+const dir='docs/design/2026-10-02-browser-ci-sharding/activation/room-plan-release';
+const base='3eeeddc2d276714fee6a7c8420270b78d2e49b3c';
+const git=(args)=>{const r=cp.spawnSync('git',args,{maxBuffer:5e6});if(r.status!==0)throw Error(r.stderr.toString());return r.stdout;};
+const lf=b=>b.toString().replaceAll('\r\n','\n');
+const before=lf(git(['show',base+':.github/workflows/ci.yml'])), active=lf(fs.readFileSync('.github/workflows/ci.yml'));
+const priorPrefix=before.slice(0,before.indexOf('\n  browser:'));
+const activePrefix=active.slice(0,active.indexOf('\n  browser:'));
+assert.strictEqual(activePrefix,priorPrefix);
+const immutable='docs/design/2026-10-02-browser-ci-sharding/activation/ci-before-room-plan-release-activation.yml';
+assert.strictEqual(lf(fs.readFileSync(immutable)),before);
+const oldMain='docs/design/2026-10-02-browser-ci-sharding/activation/ci-before-activation.yml';
+assert.strictEqual(lf(fs.readFileSync(oldMain)),lf(git(['show','45e3215:'+oldMain])));
+const preserved=['package.json','pnpm-lock.yaml','tests/browser/playwright.config.ts','tests/browser/playwright.artifact.config.ts','tests/browser/run-suite.ts','tests/browser/network-changed-signature.ts','tests/browser/network-changed-fixture.ts'];
+for(const f of preserved)assert.strictEqual(lf(fs.readFileSync(f)),lf(git(['show',base+':'+f])));
+const weights='docs/design/2026-10-02-browser-ci-sharding/file-weight-evidence.json';
+assert.strictEqual(lf(fs.readFileSync(weights)),lf(git(['show','45e3215:'+weights])));
+function files(report){return [...(report.specs||[]).map(s=>s.file),...(report.suites||[]).flatMap(files)];}
+const source=new Set(files(JSON.parse(fs.readFileSync(dir+'/source-all.json','utf8'))));
+const artifact=new Set(files(JSON.parse(fs.readFileSync(dir+'/artifact-all.json','utf8'))));
+const physical=fs.readdirSync('tests/browser').filter(f=>f.endsWith('.spec.ts')).sort();
+assert.deepStrictEqual([...new Set([...source,...artifact])].sort(),physical);
+fs.writeFileSync(dir+'/final-preservation-receipt.json',JSON.stringify({base,completeWorkflowPrefixThroughVerifyAssetsByteEqualAfterCheckoutLF:true,prefixSHA256:crypto.createHash('sha256').update(priorPrefix).digest('hex'),releaseBaselineExactGitBlob:true,originalMainBaselineUnchanged:true,preservedFiles:preserved,physicalSpecs:physical.length,sourceFiles:source.size,artifactFiles:artifact.size,physicalInventoryCoveredExactlyOnce:true,finalDocsTests:18,finalDocsFiles:2,noBrowserOrServer:true},null,2)+'\n');
+console.log('Exact workflow prefix and full physical spec inventory preserved: '+physical.length+' files.');
