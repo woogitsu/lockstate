@@ -1,0 +1,5 @@
+Listing tests:
+  room-template-history-verdict-player.spec.ts:291:1 › player completes and saves actual Storage/Delivery capacity before stationary Cell history cases
+  room-template-history-verdict-player.spec.ts:389:42 › world FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo
+  room-template-history-verdict-player.spec.ts:389:42 › oblique FullHD: stationary q1 Cell ghost follows actual completed Undo and pending Redo
+Total: 3 tests in 1 file
