@@ -1,0 +1,19 @@
+{
+  "nativeSnapshot": "docs/research/2026-10-03-ci2010-ui-source2-diagnosis/native-comparison/toolbox-fullhd-200-angled-controls.json",
+  "nativeSnapshotSha256": "b1e528dd6a1dcb05c5c4dd7a1805cfa840e45ed74485debbbbdc5183b3f6fde0",
+  "restoredCornerWithCompleteActualEmptyRow": 511,
+  "originalCornerCap": 528,
+  "renderer": 88,
+  "panBlock": 104,
+  "poseBlock": 104,
+  "surface": 110,
+  "paddingBorderFloor": 50,
+  "minimapMaximumRelief": 60,
+  "worldMinimumRetainingExistingPaddingAndCompleteRow": 643,
+  "angledMinimumRetainingExistingPaddingAndCompleteRow": 747,
+  "worldDeficit": 115,
+  "angledDeficit": 219,
+  "productionSourceChanges": false,
+  "browserRun": false,
+  "decision": "No independent full-row repair inside the existing 528px cap while all current camera rows remain there; owner camera layout choice required."
+}
