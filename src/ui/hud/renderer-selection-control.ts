@@ -52,11 +52,28 @@ export function createCameraControlsPresentation(options: {
     }
     panel.style.left = `${left}px`; panel.style.top = `${top + gap}px`;
     panel.style.width = `${Math.max(0, Math.min(396 * scale, rail.left - left - gap))}px`;
+    // Expanded Angled controls can outgrow the space above the corner at
+    // enlarged UI scale. Use the free map corridor beside that same corner;
+    // its Zoom/View nodes and minimap/alert allocation remain where they are.
+    const corner = options.hud.querySelector('.hud__corner')?.getBoundingClientRect();
+    if (!panel.hidden && corner !== undefined && top + gap + panel.getBoundingClientRect().height > corner.top) {
+      const sideLeft = corner.right + gap;
+      const sideWidth = rail.left - gap - sideLeft;
+      // Two original tap targets, their 8px-scaled gap and panel padding,
+      // plus the two unchanged hairlines. Existing flex groups wrap naturally.
+      if (sideWidth >= 112 * scale + 2) {
+        panel.style.left = `${sideLeft}px`;
+        panel.style.width = `${Math.min(396 * scale, sideWidth)}px`;
+      }
+    }
   }
   const observer = new ResizeObserver(position);
-  for (const selector of ['.hud-strip', '.hud__tabs', '.hud__rail', '.hud__unavailable', '.hud__refusal', '.hud__event']) {
+  for (const selector of ['.hud-strip', '.hud__tabs', '.hud__rail', '.hud__unavailable', '.hud__refusal', '.hud__event', '.hud__corner']) {
     const bounds = options.hud.querySelector(selector); if (bounds !== null) observer.observe(bounds);
   }
+  // Renderer selection reveals/hides the original pose group after its async
+  // readiness boundary; that changes this panel without resizing the strip.
+  observer.observe(panel);
   window.addEventListener('resize', position);
   position();
   return { element: panel, trigger, reposition: position, destroy: () => {
