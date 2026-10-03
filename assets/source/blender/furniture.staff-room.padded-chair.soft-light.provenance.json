@@ -1,0 +1,4917 @@
+{
+  "assetId": "furniture.staff-room.padded-chair",
+  "source": "assets/source/blender/furniture.staff-room.padded-chair.soft-light.blend",
+  "sourceSha256": "2dde0a33689685fd067c124c82b7b88b31c606d6c950a0789903e1b0b4b0e934",
+  "retainedSource": "assets/source/blender/furniture.staff-room.padded-chair.blend",
+  "retainedSourceSha256": "47004797588d92173e4140bc307ac3db73ed322ac2e1d2472f99c10475956109",
+  "originalSource": "assets/source/blender/furniture.chair.wooden.angled-detail.blend",
+  "originalSourceSha256": "acd0e9decb3bb451b44e8354e797fb5656825f4748bbed832bab61659f06cd88",
+  "footprintTiles": [
+    1,
+    1
+  ],
+  "cameraTargetTiles": [
+    0.5,
+    0.5,
+    0.6600000262260437
+  ],
+  "canonicalMinCornerTranslation": [
+    0.5,
+    0.5,
+    0
+  ],
+  "physicalAssembly": {
+    "meshCount": 54,
+    "rawMeshes": [
+      {
+        "name": "Chair refinement.back bracket -0.32",
+        "rawVertexBytesSha256": "b9c62d30720b9ba736b4bf72851268106b2ffb5db17950569daf9d8edc183110",
+        "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+        "modifiers": [
+          {
+            "name": "Worn softened edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "Worn softened edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": false,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.012000000104308128,
+              "width_pct": 0.012000000104308128,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          },
+          {
+            "name": "Weighted normals",
+            "type": "WEIGHTED_NORMAL",
+            "values": {
+              "name": "Weighted normals",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "weight": 50,
+              "mode": "FACE_AREA",
+              "thresh": 0.009999999776482582,
+              "keep_sharp": false,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_face_influence": false
+            }
+          }
+        ]
+      },
+      {
+        "name": "Chair refinement.back bracket 0.32",
+        "rawVertexBytesSha256": "b9c62d30720b9ba736b4bf72851268106b2ffb5db17950569daf9d8edc183110",
+        "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+        "modifiers": [
+          {
+            "name": "Worn softened edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "Worn softened edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": false,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.012000000104308128,
+              "width_pct": 0.012000000104308128,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          },
+          {
+            "name": "Weighted normals",
+            "type": "WEIGHTED_NORMAL",
+            "values": {
+              "name": "Weighted normals",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "weight": 50,
+              "mode": "FACE_AREA",
+              "thresh": 0.009999999776482582,
+              "keep_sharp": false,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_face_influence": false
+            }
+          }
+        ]
+      },
+      {
+        "name": "Chair refinement.back edge highlight",
+        "rawVertexBytesSha256": "9afa4fd23eaed151b1bd47d3a7dea2a35f1e8a77037548468ea96df19c3cdbac",
+        "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+        "modifiers": [
+          {
+            "name": "Worn softened edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "Worn softened edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": false,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.003000000026077032,
+              "width_pct": 0.003000000026077032,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          },
+          {
+            "name": "Weighted normals",
+            "type": "WEIGHTED_NORMAL",
+            "values": {
+              "name": "Weighted normals",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "weight": 50,
+              "mode": "FACE_AREA",
+              "thresh": 0.009999999776482582,
+              "keep_sharp": false,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_face_influence": false
+            }
+          }
+        ]
+      },
+      {
+        "name": "Chair refinement.dark back inset",
+        "rawVertexBytesSha256": "8f07e95628d7371f7d55402f955fd49416c88396a99599f4ebc9460bec723a67",
+        "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+        "materials": [
+          "shade"
+        ],
+        "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+        "modifiers": [
+          {
+            "name": "Worn softened edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "Worn softened edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": false,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.026000000536441803,
+              "width_pct": 0.026000000536441803,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          },
+          {
+            "name": "Weighted normals",
+            "type": "WEIGHTED_NORMAL",
+            "values": {
+              "name": "Weighted normals",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "weight": 50,
+              "mode": "FACE_AREA",
+              "thresh": 0.009999999776482582,
+              "keep_sharp": false,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_face_influence": false
+            }
+          }
+        ]
+      },
+      {
+        "name": "Chair refinement.front foot -0.32",
+        "rawVertexBytesSha256": "31eea20ffe5ff88b9ded3ec38bf4f1abc4f3a660a6c1435c8c7e5b389b4c82c5",
+        "rawTopologyBytesSha256": "050058d07159905ebe22ba29bc005602546f226726057ef471fbbccd62243196",
+        "materials": [
+          "shade"
+        ],
+        "polygonMaterialIndicesSha256": "834a709ba2534ebe3ee1397fd4f7bd288b2acc1d20a08d6c862dcd99b6f04400",
+        "modifiers": []
+      },
+      {
+        "name": "Chair refinement.front foot 0.32",
+        "rawVertexBytesSha256": "31eea20ffe5ff88b9ded3ec38bf4f1abc4f3a660a6c1435c8c7e5b389b4c82c5",
+        "rawTopologyBytesSha256": "050058d07159905ebe22ba29bc005602546f226726057ef471fbbccd62243196",
+        "materials": [
+          "shade"
+        ],
+        "polygonMaterialIndicesSha256": "834a709ba2534ebe3ee1397fd4f7bd288b2acc1d20a08d6c862dcd99b6f04400",
+        "modifiers": []
+      },
+      {
+        "name": "Chair refinement.front leg -0.32",
+        "rawVertexBytesSha256": "31f27c8dc5eaf29189828626380c330097c24db2ce5b0d31ad5a373e7303bacb",
+        "rawTopologyBytesSha256": "050058d07159905ebe22ba29bc005602546f226726057ef471fbbccd62243196",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "834a709ba2534ebe3ee1397fd4f7bd288b2acc1d20a08d6c862dcd99b6f04400",
+        "modifiers": []
+      },
+      {
+        "name": "Chair refinement.front leg 0.32",
+        "rawVertexBytesSha256": "31f27c8dc5eaf29189828626380c330097c24db2ce5b0d31ad5a373e7303bacb",
+        "rawTopologyBytesSha256": "050058d07159905ebe22ba29bc005602546f226726057ef471fbbccd62243196",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "834a709ba2534ebe3ee1397fd4f7bd288b2acc1d20a08d6c862dcd99b6f04400",
+        "modifiers": []
+      },
+      {
+        "name": "Chair refinement.front seat edge",
+        "rawVertexBytesSha256": "a346ae1094a82d484110c4d8fab5c028b9e51c74ef54ba62c2bdbaf1e037241d",
+        "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+        "modifiers": [
+          {
+            "name": "Worn softened edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "Worn softened edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": false,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.006000000052154064,
+              "width_pct": 0.006000000052154064,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          },
+          {
+            "name": "Weighted normals",
+            "type": "WEIGHTED_NORMAL",
+            "values": {
+              "name": "Weighted normals",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "weight": 50,
+              "mode": "FACE_AREA",
+              "thresh": 0.009999999776482582,
+              "keep_sharp": false,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_face_influence": false
+            }
+          }
+        ]
+      },
+      {
+        "name": "Chair refinement.rear foot -0.32",
+        "rawVertexBytesSha256": "9a0e33c0c4a5a6d588dfab3ae896ae5dc0448a33f1fde68b3e8a160659024b59",
+        "rawTopologyBytesSha256": "050058d07159905ebe22ba29bc005602546f226726057ef471fbbccd62243196",
+        "materials": [
+          "shade"
+        ],
+        "polygonMaterialIndicesSha256": "834a709ba2534ebe3ee1397fd4f7bd288b2acc1d20a08d6c862dcd99b6f04400",
+        "modifiers": []
+      },
+      {
+        "name": "Chair refinement.rear foot 0.32",
+        "rawVertexBytesSha256": "9a0e33c0c4a5a6d588dfab3ae896ae5dc0448a33f1fde68b3e8a160659024b59",
+        "rawTopologyBytesSha256": "050058d07159905ebe22ba29bc005602546f226726057ef471fbbccd62243196",
+        "materials": [
+          "shade"
+        ],
+        "polygonMaterialIndicesSha256": "834a709ba2534ebe3ee1397fd4f7bd288b2acc1d20a08d6c862dcd99b6f04400",
+        "modifiers": []
+      },
+      {
+        "name": "Chair refinement.rear post -0.32",
+        "rawVertexBytesSha256": "d606c7337b91878b712b966b7b4cef20110ef706a05fff17f7fbb99eda0e1889",
+        "rawTopologyBytesSha256": "050058d07159905ebe22ba29bc005602546f226726057ef471fbbccd62243196",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "834a709ba2534ebe3ee1397fd4f7bd288b2acc1d20a08d6c862dcd99b6f04400",
+        "modifiers": []
+      },
+      {
+        "name": "Chair refinement.rear post 0.32",
+        "rawVertexBytesSha256": "d606c7337b91878b712b966b7b4cef20110ef706a05fff17f7fbb99eda0e1889",
+        "rawTopologyBytesSha256": "050058d07159905ebe22ba29bc005602546f226726057ef471fbbccd62243196",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "834a709ba2534ebe3ee1397fd4f7bd288b2acc1d20a08d6c862dcd99b6f04400",
+        "modifiers": []
+      },
+      {
+        "name": "Chair refinement.seat underframe",
+        "rawVertexBytesSha256": "5ca22146444b6cc46ce225a77194bf4d7b05398af5d3f49a8b4417933baaecfb",
+        "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+        "modifiers": [
+          {
+            "name": "Worn softened edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "Worn softened edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": false,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.017999999225139618,
+              "width_pct": 0.017999999225139618,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          },
+          {
+            "name": "Weighted normals",
+            "type": "WEIGHTED_NORMAL",
+            "values": {
+              "name": "Weighted normals",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "weight": 50,
+              "mode": "FACE_AREA",
+              "thresh": 0.009999999776482582,
+              "keep_sharp": false,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_face_influence": false
+            }
+          }
+        ]
+      },
+      {
+        "name": "Chair refinement.walnut back rail",
+        "rawVertexBytesSha256": "090ea4cd34aedece69437be97354b4d753c17ba41d5dd5f60a9ed45168f23981",
+        "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+        "materials": [
+          "Corridor bench worn wood plank 1"
+        ],
+        "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+        "modifiers": [
+          {
+            "name": "Worn softened edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "Worn softened edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": false,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.03400000184774399,
+              "width_pct": 0.03400000184774399,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          },
+          {
+            "name": "Weighted normals",
+            "type": "WEIGHTED_NORMAL",
+            "values": {
+              "name": "Weighted normals",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "weight": 50,
+              "mode": "FACE_AREA",
+              "thresh": 0.009999999776482582,
+              "keep_sharp": false,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_face_influence": false
+            }
+          }
+        ]
+      },
+      {
+        "name": "Chair refinement.wooden seat",
+        "rawVertexBytesSha256": "8650f06814ed585ef03d4a3404ea844609831761a28e19642efda14de77f7f7e",
+        "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+        "materials": [
+          "Corridor bench worn wood plank 0"
+        ],
+        "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+        "modifiers": [
+          {
+            "name": "Worn softened edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "Worn softened edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": false,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.054999999701976776,
+              "width_pct": 0.054999999701976776,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          },
+          {
+            "name": "Weighted normals",
+            "type": "WEIGHTED_NORMAL",
+            "values": {
+              "name": "Weighted normals",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "weight": 50,
+              "mode": "FACE_AREA",
+              "thresh": 0.009999999776482582,
+              "keep_sharp": false,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_face_influence": false
+            }
+          }
+        ]
+      },
+      {
+        "name": "Staff Room padded chair.connected lumbar back pad",
+        "rawVertexBytesSha256": "04723de14d062859f447c36ae818bad0fd5ac26d741e81ce10c8f33c4927c932",
+        "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+        "materials": [
+          "shade"
+        ],
+        "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+        "modifiers": [
+          {
+            "name": "Broad institutional pad roundover",
+            "type": "BEVEL",
+            "values": {
+              "name": "Broad institutional pad roundover",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.029999999329447746,
+              "width_pct": 0.029999999329447746,
+              "segments": 4,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Staff Room padded chair.connected seat pad",
+        "rawVertexBytesSha256": "acbe46a7f973db1074c9382ccfa25d1509858a85ceca7a3fc9155c7c7f9926b4",
+        "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+        "materials": [
+          "shade"
+        ],
+        "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+        "modifiers": [
+          {
+            "name": "Broad institutional pad roundover",
+            "type": "BEVEL",
+            "values": {
+              "name": "Broad institutional pad roundover",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.029999999329447746,
+              "width_pct": 0.029999999329447746,
+              "segments": 4,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.back bracket mounting plate -0.32",
+        "rawVertexBytesSha256": "dd3057b8c740993393a62bd8e34c16165af72351d3ffc2ca8a6d5582b7e3a335",
+        "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "small service edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.back bracket mounting plate 0.32",
+        "rawVertexBytesSha256": "dd3057b8c740993393a62bd8e34c16165af72351d3ffc2ca8a6d5582b7e3a335",
+        "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "small service edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.back bracket screw -0.32 -0.035",
+        "rawVertexBytesSha256": "443fdfed9c3684a91050b93d8e7e836851292120b61a63ad603d4d75d7f066d9",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "shade"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0007999999797903001,
+              "width_pct": 0.0007999999797903001,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.back bracket screw -0.32 0.035",
+        "rawVertexBytesSha256": "443fdfed9c3684a91050b93d8e7e836851292120b61a63ad603d4d75d7f066d9",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "shade"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0007999999797903001,
+              "width_pct": 0.0007999999797903001,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.back bracket screw 0.32 -0.035",
+        "rawVertexBytesSha256": "443fdfed9c3684a91050b93d8e7e836851292120b61a63ad603d4d75d7f066d9",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "shade"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0007999999797903001,
+              "width_pct": 0.0007999999797903001,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.back bracket screw 0.32 0.035",
+        "rawVertexBytesSha256": "443fdfed9c3684a91050b93d8e7e836851292120b61a63ad603d4d75d7f066d9",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "shade"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0007999999797903001,
+              "width_pct": 0.0007999999797903001,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.back rail back fixing -0.32",
+        "rawVertexBytesSha256": "47f3e530dc823990aa6dbb95d2ec81865c997dc9a7b6195a5f8e795637047494",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "shade"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0007999999797903001,
+              "width_pct": 0.0007999999797903001,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.back rail back fixing 0.32",
+        "rawVertexBytesSha256": "47f3e530dc823990aa6dbb95d2ec81865c997dc9a7b6195a5f8e795637047494",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "shade"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0007999999797903001,
+              "width_pct": 0.0007999999797903001,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.back rail front fixing -0.32",
+        "rawVertexBytesSha256": "47f3e530dc823990aa6dbb95d2ec81865c997dc9a7b6195a5f8e795637047494",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "shade"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0007999999797903001,
+              "width_pct": 0.0007999999797903001,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.back rail front fixing 0.32",
+        "rawVertexBytesSha256": "47f3e530dc823990aa6dbb95d2ec81865c997dc9a7b6195a5f8e795637047494",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "shade"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0007999999797903001,
+              "width_pct": 0.0007999999797903001,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.back rail retaining collar -0.32",
+        "rawVertexBytesSha256": "57438024472ab80197ffd3694388d79b1504c372f58bf4a487ff12ea5f40c458",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.back rail retaining collar 0.32",
+        "rawVertexBytesSha256": "57438024472ab80197ffd3694388d79b1504c372f58bf4a487ff12ea5f40c458",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.front leg stretcher collar -0.32",
+        "rawVertexBytesSha256": "fb59d7d71d0cdc0183cd6802c0c9f38b0dae2c7165340d0c85a8ae0f7933e60b",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.front leg stretcher collar 0.32",
+        "rawVertexBytesSha256": "fb59d7d71d0cdc0183cd6802c0c9f38b0dae2c7165340d0c85a8ae0f7933e60b",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.front leg triangular gusset -0.32",
+        "rawVertexBytesSha256": "bf744f50c5df5cac68a037b699e3c96a44ff52ff787e005fae2ed9104e7a469b",
+        "rawTopologyBytesSha256": "6bc799ecd914d63f6bd674e9f1e2d1016a00020135f5e879828923b6facf6e47",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "de47c9b27eb8d300dbb5f2c353e632c393262cf06340c4fa7f1b40c4cbd36f90",
+        "modifiers": []
+      },
+      {
+        "name": "angled-wooden-chair.front leg triangular gusset 0.32",
+        "rawVertexBytesSha256": "2ab3919a7d7f3090e657e074164ced8fb8116896beecf0c1e213e6e0bb5dcee6",
+        "rawTopologyBytesSha256": "b86601ec26373de856645612ddba3313529a5b586a6d2fc53cb37ca5374e0118",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "de47c9b27eb8d300dbb5f2c353e632c393262cf06340c4fa7f1b40c4cbd36f90",
+        "modifiers": []
+      },
+      {
+        "name": "angled-wooden-chair.front side joint sleeve -0.32",
+        "rawVertexBytesSha256": "9597f8e9200c02903b321173dfc36a5c934cda350f6e47d77029021ce8c4b491",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.front side joint sleeve 0.32",
+        "rawVertexBytesSha256": "9597f8e9200c02903b321173dfc36a5c934cda350f6e47d77029021ce8c4b491",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.front transverse stretcher",
+        "rawVertexBytesSha256": "482b37d6dc53ed20533c3c2ef7633e059a58e7d999b7165a774ce1f5ea0bedaf",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.rear leg stretcher collar -0.32",
+        "rawVertexBytesSha256": "fb59d7d71d0cdc0183cd6802c0c9f38b0dae2c7165340d0c85a8ae0f7933e60b",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.rear leg stretcher collar 0.32",
+        "rawVertexBytesSha256": "fb59d7d71d0cdc0183cd6802c0c9f38b0dae2c7165340d0c85a8ae0f7933e60b",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.rear leg triangular gusset -0.32",
+        "rawVertexBytesSha256": "bd91682b380807e2a029dc0e3c886a4065239bb1a6cb2eb037e35625b1d03196",
+        "rawTopologyBytesSha256": "6bc799ecd914d63f6bd674e9f1e2d1016a00020135f5e879828923b6facf6e47",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "de47c9b27eb8d300dbb5f2c353e632c393262cf06340c4fa7f1b40c4cbd36f90",
+        "modifiers": []
+      },
+      {
+        "name": "angled-wooden-chair.rear leg triangular gusset 0.32",
+        "rawVertexBytesSha256": "8f0db48f2e83fc772fb8a699368f00c353c036244a4b33355b768ff7b96b463b",
+        "rawTopologyBytesSha256": "b86601ec26373de856645612ddba3313529a5b586a6d2fc53cb37ca5374e0118",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "de47c9b27eb8d300dbb5f2c353e632c393262cf06340c4fa7f1b40c4cbd36f90",
+        "modifiers": []
+      },
+      {
+        "name": "angled-wooden-chair.rear side joint sleeve -0.32",
+        "rawVertexBytesSha256": "9597f8e9200c02903b321173dfc36a5c934cda350f6e47d77029021ce8c4b491",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.rear side joint sleeve 0.32",
+        "rawVertexBytesSha256": "9597f8e9200c02903b321173dfc36a5c934cda350f6e47d77029021ce8c4b491",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.rear transverse stretcher",
+        "rawVertexBytesSha256": "482b37d6dc53ed20533c3c2ef7633e059a58e7d999b7165a774ce1f5ea0bedaf",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.seat fixing head -0.255 -0.07275060951709747",
+        "rawVertexBytesSha256": "fc328221694cea0730f1ba339efb6438b321649b63ac054ace962e6b42f92d17",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0007999999797903001,
+              "width_pct": 0.0007999999797903001,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.seat fixing head -0.255 0.28724939048290254",
+        "rawVertexBytesSha256": "fc328221694cea0730f1ba339efb6438b321649b63ac054ace962e6b42f92d17",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0007999999797903001,
+              "width_pct": 0.0007999999797903001,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.seat fixing head 0.255 -0.07275060951709747",
+        "rawVertexBytesSha256": "fc328221694cea0730f1ba339efb6438b321649b63ac054ace962e6b42f92d17",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0007999999797903001,
+              "width_pct": 0.0007999999797903001,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.seat fixing head 0.255 0.28724939048290254",
+        "rawVertexBytesSha256": "fc328221694cea0730f1ba339efb6438b321649b63ac054ace962e6b42f92d17",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0007999999797903001,
+              "width_pct": 0.0007999999797903001,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.seat saddle -0.255 -0.07275060951709747",
+        "rawVertexBytesSha256": "dd3057b8c740993393a62bd8e34c16165af72351d3ffc2ca8a6d5582b7e3a335",
+        "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "small service edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.seat saddle -0.255 0.28724939048290254",
+        "rawVertexBytesSha256": "dd3057b8c740993393a62bd8e34c16165af72351d3ffc2ca8a6d5582b7e3a335",
+        "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "small service edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.seat saddle 0.255 -0.07275060951709747",
+        "rawVertexBytesSha256": "dd3057b8c740993393a62bd8e34c16165af72351d3ffc2ca8a6d5582b7e3a335",
+        "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "small service edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.seat saddle 0.255 0.28724939048290254",
+        "rawVertexBytesSha256": "dd3057b8c740993393a62bd8e34c16165af72351d3ffc2ca8a6d5582b7e3a335",
+        "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+        "modifiers": [
+          {
+            "name": "small service edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "small service edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.side frame stretcher -0.32",
+        "rawVertexBytesSha256": "3402dc3741d58dc273939a62ed3aa6855a9f1a0b4252bb22b815891de7987d68",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      },
+      {
+        "name": "angled-wooden-chair.side frame stretcher 0.32",
+        "rawVertexBytesSha256": "3402dc3741d58dc273939a62ed3aa6855a9f1a0b4252bb22b815891de7987d68",
+        "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+        "materials": [
+          "Canteen worn steel"
+        ],
+        "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+        "modifiers": [
+          {
+            "name": "rounded control edge",
+            "type": "BEVEL",
+            "values": {
+              "name": "rounded control edge",
+              "show_viewport": true,
+              "show_render": true,
+              "show_in_editmode": true,
+              "show_on_cage": false,
+              "show_expanded": true,
+              "is_active": true,
+              "use_pin_to_last": false,
+              "use_apply_on_spline": false,
+              "width": 0.0010000000474974513,
+              "width_pct": 0.0010000000474974513,
+              "segments": 2,
+              "affect": "EDGES",
+              "limit_method": "ANGLE",
+              "edge_weight": "bevel_weight_edge",
+              "vertex_weight": "bevel_weight_vert",
+              "angle_limit": 0.5235987901687622,
+              "vertex_group": "",
+              "invert_vertex_group": false,
+              "use_clamp_overlap": true,
+              "offset_type": "OFFSET",
+              "profile_type": "SUPERELLIPSE",
+              "profile": 0.5,
+              "material": -1,
+              "loop_slide": true,
+              "mark_seam": false,
+              "mark_sharp": false,
+              "harden_normals": false,
+              "face_strength_mode": "FSTR_NONE",
+              "miter_outer": "MITER_SHARP",
+              "miter_inner": "MITER_SHARP",
+              "spread": 0.10000000149011612,
+              "vmesh_method": "ADJ"
+            }
+          }
+        ]
+      }
+    ],
+    "evaluatedPositions": {
+      "Chair refinement.back bracket -0.32": "ba3f50c895df65248772cfac4404cfcc3693acb96461b3abb82e34be6a793b33",
+      "Chair refinement.back bracket 0.32": "63626c1f30a3814dcb49628ebf67045aaba590874bf04ae86389f8acb1ddb36e",
+      "Chair refinement.back edge highlight": "b6b96d2a345b506f83ecaf722ce259574efddea56823019052d145c2eb84ad63",
+      "Chair refinement.dark back inset": "08e4c565e9f39c80eb6018621da7898b50c6cbdefa133125b910a6672a0235a7",
+      "Chair refinement.front foot -0.32": "2ff559a271e7e21869983d57825a754bee9ee8b613465b6d1c7f531a932b3969",
+      "Chair refinement.front foot 0.32": "ff551043cec57bb8e3b3fadc2e479831ff75dd6aa322ba466a119770eb65cc54",
+      "Chair refinement.front leg -0.32": "fd0853eb83dd91f067086a3aa44d7278e1a9e65fb5e87bf282e3a50f18c16d2a",
+      "Chair refinement.front leg 0.32": "ba3f79fd89f3894dc7a84a26bd5dccd955e9591c745707fb2b48b30d6d59437f",
+      "Chair refinement.front seat edge": "3b9bf9ba87ca3555c66b992f44286edfd800c9644b733ee911dfaca231b1d4cc",
+      "Chair refinement.rear foot -0.32": "2600d4600786a9812353727c7683dc81147b202ad35919adb4b94bbd516acf71",
+      "Chair refinement.rear foot 0.32": "bb2092f31e18249a0c79bedf1d7ccf37f029d90070426fb07939ddeb2a48c241",
+      "Chair refinement.rear post -0.32": "7bff5932aa42528a81c7044ab26534948584e8e871d9d8c2f0219527ac72670f",
+      "Chair refinement.rear post 0.32": "d3656d2f16f55e527b0deb537056834d4fe447b2c3f7668b6098d3e2e4063aaa",
+      "Chair refinement.seat underframe": "448c66b5237b8dcaf91a5f8a369a1499988c36ee79f4412586e9ab105161c0d9",
+      "Chair refinement.walnut back rail": "ff4b256c6fb9bed6522ac927384dcaaff09f819cb14b01a7b4379aa94f1e097f",
+      "Chair refinement.wooden seat": "7d71043f4a1a58abeb1cdf572a4c77278f11e6d8072715bc295da991d864be19",
+      "Staff Room padded chair.connected lumbar back pad": "9422fd2770c6625aad0b6a046b4ed342585e93ee3041e00861658c20e59f8c98",
+      "Staff Room padded chair.connected seat pad": "8d84433079e62df6146aed4a4376562bbebf3241127e1fc186bd623a029969e7",
+      "angled-wooden-chair.back bracket mounting plate -0.32": "1bd41589d17a002bdd31a12faa0261e6cf05be9131a5e442213cc443c4a5d673",
+      "angled-wooden-chair.back bracket mounting plate 0.32": "5caaa077c2808f07f01013531cfc989359f3b3aa5f5de6f06e49bcb5ef4b4667",
+      "angled-wooden-chair.back bracket screw -0.32 -0.035": "bf99578885268a3aa3530fdaec19508f970f76db798f27d0efc8b771a9322f1e",
+      "angled-wooden-chair.back bracket screw -0.32 0.035": "a6bdaf4e7fca9bdc652f9bc798051fd0f09cdd39cf31fa4c44a231e30cd80b51",
+      "angled-wooden-chair.back bracket screw 0.32 -0.035": "521625f2e6642f50c9d38083fc04f820387bc5e04a3538d86b4acbcfa8dec0e6",
+      "angled-wooden-chair.back bracket screw 0.32 0.035": "8aad5007502188fa62eb2ce6b854df6c55460496d638864a479d1227516b30d7",
+      "angled-wooden-chair.back rail back fixing -0.32": "db66f04e9af39c0b282880b01c5b5df23acdbd4f951f324777bf69f279d21189",
+      "angled-wooden-chair.back rail back fixing 0.32": "3791e4521b3d8e93d47ea00325bab624e0039b3262eba6598429fceded1e4f42",
+      "angled-wooden-chair.back rail front fixing -0.32": "efc8ab886af2d347fcb05f7cad1ec47524aea0535f56fa76faf88f493da6fc06",
+      "angled-wooden-chair.back rail front fixing 0.32": "de94e3443073da9d2a30d97b514627c98af586ba2506ae843d8c6d2ec28acda8",
+      "angled-wooden-chair.back rail retaining collar -0.32": "98485ab6b62302648ab4379dfd3ec9dad94f7e6f6db2f9e9754038b51c62e6e3",
+      "angled-wooden-chair.back rail retaining collar 0.32": "4982a0f3adf4251fedcf012cb9a325c2ef4685f346a18decd6f073805aa32f81",
+      "angled-wooden-chair.front leg stretcher collar -0.32": "ed75401833476cd5b3c69f76b9bc478000c0a34f57464896ea27fd308cdf5946",
+      "angled-wooden-chair.front leg stretcher collar 0.32": "625054d9b58af6894239b03423a361ec2d0abcf1ce241282c68626032e574718",
+      "angled-wooden-chair.front leg triangular gusset -0.32": "ca85bb35912c641122b4e5cfedefa8a3c499510e2b2e93b138ec622665a80c42",
+      "angled-wooden-chair.front leg triangular gusset 0.32": "5d56ff48c2d1d8b703ec215aaae8e01c0e1cce64bad1756b678ec82d33ca85b5",
+      "angled-wooden-chair.front side joint sleeve -0.32": "9b5d011d87b3dc52d2c4939d0bfd91b52ef01d7e6e2bf18cc2c86be72770d89c",
+      "angled-wooden-chair.front side joint sleeve 0.32": "0e18b8c286b71b45cf621af33b25c90156b9c9e0920df8beaa13a145b4352f8a",
+      "angled-wooden-chair.front transverse stretcher": "1ec53b05a08d07b19d55c6ed051f7874867a2f0e9c00a5aebe653b481ee75fbd",
+      "angled-wooden-chair.rear leg stretcher collar -0.32": "be5386b0bd73313b5d2faca9862ef704908be4fa0297d4745bfd118b6eb2c7f3",
+      "angled-wooden-chair.rear leg stretcher collar 0.32": "a78ecb143023b3ceb97cc1c7bdc006b031591e39c404f4a0312b321b8cea6e13",
+      "angled-wooden-chair.rear leg triangular gusset -0.32": "08c166e7cf7eec38b1f62facd5ce444d07e19688979042f3873700a47c290216",
+      "angled-wooden-chair.rear leg triangular gusset 0.32": "96746783248fe1a1d1fe2f29affea495d004f178753aa8d785b40201a7b2f187",
+      "angled-wooden-chair.rear side joint sleeve -0.32": "c76ad281e45b92ca0dc0e8eeaa9789bc3bd2aa5e1df31f2a776179b06123b599",
+      "angled-wooden-chair.rear side joint sleeve 0.32": "d3c326bbb99ab0252ed7895fc2a22f9fed272480b0ca9860083398362a1a8dcd",
+      "angled-wooden-chair.rear transverse stretcher": "261e11d0f3dbf5741057b7496654f15599b0311197892678f47cc8aff5af7dc8",
+      "angled-wooden-chair.seat fixing head -0.255 -0.07275060951709747": "d25c3d0e17625ba01e89ab4887e718ea75b4eab346cec29b45161f3827d18c12",
+      "angled-wooden-chair.seat fixing head -0.255 0.28724939048290254": "b487e1436e9aea29411f0b49753bfaac53371f5e1ff7738ee2210b7bcf53a873",
+      "angled-wooden-chair.seat fixing head 0.255 -0.07275060951709747": "c8966965941eee02043abf0e6ab10a96d22cfa32f13e062b7d370008d5fbd377",
+      "angled-wooden-chair.seat fixing head 0.255 0.28724939048290254": "8d93ad7da99335a0a8a24250fd65cef4938271302745ddad46b9beb7ca12e3a9",
+      "angled-wooden-chair.seat saddle -0.255 -0.07275060951709747": "ca43d4fb28bdcd4036e8b0fc2da41ab35ce06ae35a9ecd12bffc2eaec141a9ba",
+      "angled-wooden-chair.seat saddle -0.255 0.28724939048290254": "4e606eb70a87312339f360ad3f3cbc24ea542c4d6e170fede7fb49b49684e036",
+      "angled-wooden-chair.seat saddle 0.255 -0.07275060951709747": "5f8a6142b47288d3042e669d356ff3190aa620614462d4b8339f2ba599ccb6ea",
+      "angled-wooden-chair.seat saddle 0.255 0.28724939048290254": "561b14c0b17e05fdec35a925118466f3021fd355da3d2ea2d7077618b2ce2afc",
+      "angled-wooden-chair.side frame stretcher -0.32": "62aee784d16f8573858bee607955bf4a2c113c22e04d0134287999563e385008",
+      "angled-wooden-chair.side frame stretcher 0.32": "3546a669c1ec15dac622dc2740b6fbe5aa275735410a3485b20a6fe450d28f7d"
+    },
+    "completeStoredMaterialGraphs": [
+      {
+        "name": "Canteen worn steel",
+        "diffuse": [
+          0.23999999463558197,
+          0.25999999046325684,
+          0.27000001072883606,
+          1.0
+        ],
+        "metallic": 0.0,
+        "roughness": 0.4000000059604645,
+        "useNodes": true,
+        "nodes": [
+          {
+            "name": "Image Texture",
+            "type": "ShaderNodeTexImage",
+            "inputs": [
+              {
+                "name": "Vector",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "properties": {
+              "location": [
+                0.0,
+                0.0
+              ],
+              "location_absolute": [
+                0.0,
+                0.0
+              ],
+              "width": 240.0,
+              "height": 100.0,
+              "name": "Image Texture",
+              "label": "",
+              "warning_propagation": "ALL",
+              "use_custom_color": false,
+              "color": [
+                0.6079999804496765,
+                0.6079999804496765,
+                0.6079999804496765
+              ],
+              "select": true,
+              "show_options": true,
+              "show_preview": false,
+              "hide": false,
+              "mute": false,
+              "show_texture": false,
+              "bl_idname": "ShaderNodeTexImage",
+              "bl_label": "Image Texture",
+              "bl_description": "Sample an image file as a texture",
+              "bl_icon": "NONE",
+              "bl_width_default": 240.0,
+              "bl_width_min": 100.0,
+              "bl_width_max": 700.0,
+              "bl_height_default": 100.0,
+              "bl_height_min": 30.0,
+              "bl_height_max": 3.4028234663852886e+38,
+              "projection": "FLAT",
+              "interpolation": "Linear",
+              "projection_blend": 0.0,
+              "extension": "CLIP"
+            },
+            "image": {
+              "name": "dining-table-steel-v1.png",
+              "size": [
+                1254,
+                1254
+              ],
+              "colorspace": "sRGB",
+              "packedSha256": [
+                "45b7a6def5e8ba94c187c93484160015c7d38e667eaaa516a33a7624936a678d"
+              ]
+            }
+          },
+          {
+            "name": "Material Output",
+            "type": "ShaderNodeOutputMaterial",
+            "inputs": [
+              {
+                "name": "Displacement",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Thickness",
+                "value": 0.0
+              }
+            ],
+            "properties": {
+              "location": [
+                200.0,
+                100.0
+              ],
+              "location_absolute": [
+                200.0,
+                100.0
+              ],
+              "width": 140.0,
+              "height": 100.0,
+              "name": "Material Output",
+              "label": "",
+              "warning_propagation": "ALL",
+              "use_custom_color": false,
+              "color": [
+                0.6079999804496765,
+                0.6079999804496765,
+                0.6079999804496765
+              ],
+              "select": true,
+              "show_options": true,
+              "show_preview": false,
+              "hide": false,
+              "mute": false,
+              "show_texture": false,
+              "bl_idname": "ShaderNodeOutputMaterial",
+              "bl_label": "Material Output",
+              "bl_description": "Output surface material information for use in rendering",
+              "bl_icon": "NONE",
+              "bl_width_default": 140.0,
+              "bl_width_min": 100.0,
+              "bl_width_max": 700.0,
+              "bl_height_default": 100.0,
+              "bl_height_min": 30.0,
+              "bl_height_max": 3.4028234663852886e+38,
+              "is_active_output": true,
+              "target": "ALL"
+            }
+          },
+          {
+            "name": "Principled BSDF",
+            "type": "ShaderNodeBsdfPrincipled",
+            "inputs": [
+              {
+                "name": "Base Color",
+                "value": [
+                  0.23999999463558197,
+                  0.25999999046325684,
+                  0.27000001072883606,
+                  1.0
+                ]
+              },
+              {
+                "name": "Metallic",
+                "value": 0.3799999952316284
+              },
+              {
+                "name": "Roughness",
+                "value": 0.6399999856948853
+              },
+              {
+                "name": "IOR",
+                "value": 1.5
+              },
+              {
+                "name": "Alpha",
+                "value": 1.0
+              },
+              {
+                "name": "Thin Wall",
+                "value": false
+              },
+              {
+                "name": "Normal",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Diffuse Roughness",
+                "value": 0.0
+              },
+              {
+                "name": "Subsurface Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Subsurface Radius",
+                "value": [
+                  1.0,
+                  0.20000000298023224,
+                  0.10000000149011612
+                ]
+              },
+              {
+                "name": "Subsurface Scale",
+                "value": 0.004999999888241291
+              },
+              {
+                "name": "Subsurface IOR",
+                "value": 1.399999976158142
+              },
+              {
+                "name": "Subsurface Anisotropy",
+                "value": 0.0
+              },
+              {
+                "name": "Specular IOR Level",
+                "value": 0.5
+              },
+              {
+                "name": "Specular Tint",
+                "value": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "name": "Anisotropic",
+                "value": 0.0
+              },
+              {
+                "name": "Anisotropic Rotation",
+                "value": 0.0
+              },
+              {
+                "name": "Tangent",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Transmission Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Coat Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Coat Roughness",
+                "value": 0.029999999329447746
+              },
+              {
+                "name": "Coat IOR",
+                "value": 1.5
+              },
+              {
+                "name": "Coat Tint",
+                "value": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "name": "Coat Normal",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Sheen Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Sheen Roughness",
+                "value": 0.5
+              },
+              {
+                "name": "Sheen Tint",
+                "value": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "name": "Emission Color",
+                "value": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "name": "Emission Strength",
+                "value": 0.0
+              },
+              {
+                "name": "Thin Film Thickness",
+                "value": 0.0
+              },
+              {
+                "name": "Thin Film IOR",
+                "value": 1.3300000429153442
+              }
+            ],
+            "properties": {
+              "location": [
+                -200.0,
+                100.0
+              ],
+              "location_absolute": [
+                -200.0,
+                100.0
+              ],
+              "width": 240.0,
+              "height": 100.0,
+              "name": "Principled BSDF",
+              "label": "",
+              "warning_propagation": "ALL",
+              "use_custom_color": false,
+              "color": [
+                0.6079999804496765,
+                0.6079999804496765,
+                0.6079999804496765
+              ],
+              "select": true,
+              "show_options": true,
+              "show_preview": false,
+              "hide": false,
+              "mute": false,
+              "show_texture": false,
+              "bl_idname": "ShaderNodeBsdfPrincipled",
+              "bl_label": "Principled BSDF",
+              "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+              "bl_icon": "NONE",
+              "bl_width_default": 240.0,
+              "bl_width_min": 100.0,
+              "bl_width_max": 700.0,
+              "bl_height_default": 100.0,
+              "bl_height_min": 30.0,
+              "bl_height_max": 3.4028234663852886e+38,
+              "distribution": "MULTI_GGX",
+              "subsurface_method": "RANDOM_WALK"
+            }
+          },
+          {
+            "name": "Texture Coordinate",
+            "type": "ShaderNodeTexCoord",
+            "inputs": [],
+            "properties": {
+              "location": [
+                0.0,
+                0.0
+              ],
+              "location_absolute": [
+                0.0,
+                0.0
+              ],
+              "width": 140.0,
+              "height": 100.0,
+              "name": "Texture Coordinate",
+              "label": "",
+              "warning_propagation": "ALL",
+              "use_custom_color": false,
+              "color": [
+                0.6079999804496765,
+                0.6079999804496765,
+                0.6079999804496765
+              ],
+              "select": true,
+              "show_options": true,
+              "show_preview": false,
+              "hide": false,
+              "mute": false,
+              "show_texture": false,
+              "bl_idname": "ShaderNodeTexCoord",
+              "bl_label": "Texture Coordinate",
+              "bl_description": "Retrieve multiple types of texture coordinates.\nTypically used as inputs for texture nodes",
+              "bl_icon": "NONE",
+              "bl_width_default": 140.0,
+              "bl_width_min": 100.0,
+              "bl_width_max": 700.0,
+              "bl_height_default": 100.0,
+              "bl_height_min": 30.0,
+              "bl_height_max": 3.4028234663852886e+38,
+              "from_instancer": false
+            }
+          }
+        ],
+        "links": [
+          [
+            "Image Texture",
+            "Color",
+            "Principled BSDF",
+            "Base Color"
+          ],
+          [
+            "Principled BSDF",
+            "BSDF",
+            "Material Output",
+            "Surface"
+          ],
+          [
+            "Texture Coordinate",
+            "Generated",
+            "Image Texture",
+            "Vector"
+          ]
+        ],
+        "canonicalMaterialSha256": "dc890178a6da729225008208f4fa44cea7ef5d3eb0b3ccebfef34e82aaf0128f"
+      },
+      {
+        "name": "Corridor bench worn wood plank 0",
+        "diffuse": [
+          0.47999998927116394,
+          0.27000001072883606,
+          0.10999999940395355,
+          1.0
+        ],
+        "metallic": 0.0,
+        "roughness": 0.4000000059604645,
+        "useNodes": true,
+        "nodes": [
+          {
+            "name": "Image Texture",
+            "type": "ShaderNodeTexImage",
+            "inputs": [
+              {
+                "name": "Vector",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "properties": {
+              "location": [
+                0.0,
+                0.0
+              ],
+              "location_absolute": [
+                0.0,
+                0.0
+              ],
+              "width": 240.0,
+              "height": 100.0,
+              "name": "Image Texture",
+              "label": "",
+              "warning_propagation": "ALL",
+              "use_custom_color": false,
+              "color": [
+                0.6079999804496765,
+                0.6079999804496765,
+                0.6079999804496765
+              ],
+              "select": true,
+              "show_options": true,
+              "show_preview": false,
+              "hide": false,
+              "mute": false,
+              "show_texture": false,
+              "bl_idname": "ShaderNodeTexImage",
+              "bl_label": "Image Texture",
+              "bl_description": "Sample an image file as a texture",
+              "bl_icon": "NONE",
+              "bl_width_default": 240.0,
+              "bl_width_min": 100.0,
+              "bl_width_max": 700.0,
+              "bl_height_default": 100.0,
+              "bl_height_min": 30.0,
+              "bl_height_max": 3.4028234663852886e+38,
+              "projection": "FLAT",
+              "interpolation": "Linear",
+              "projection_blend": 0.0,
+              "extension": "REPEAT"
+            },
+            "image": {
+              "name": "corridor-bench-wood-v1.png",
+              "size": [
+                1254,
+                1254
+              ],
+              "colorspace": "sRGB",
+              "packedSha256": [
+                "2ffb41ea6154870417b219d3555846d90997f5c068f2ab8c1833bd17f0af100a"
+              ]
+            }
+          },
+          {
+            "name": "Material Output",
+            "type": "ShaderNodeOutputMaterial",
+            "inputs": [
+              {
+                "name": "Displacement",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Thickness",
+                "value": 0.0
+              }
+            ],
+            "properties": {
+              "location": [
+                200.0,
+                100.0
+              ],
+              "location_absolute": [
+                200.0,
+                100.0
+              ],
+              "width": 140.0,
+              "height": 100.0,
+              "name": "Material Output",
+              "label": "",
+              "warning_propagation": "ALL",
+              "use_custom_color": false,
+              "color": [
+                0.6079999804496765,
+                0.6079999804496765,
+                0.6079999804496765
+              ],
+              "select": true,
+              "show_options": true,
+              "show_preview": false,
+              "hide": false,
+              "mute": false,
+              "show_texture": false,
+              "bl_idname": "ShaderNodeOutputMaterial",
+              "bl_label": "Material Output",
+              "bl_description": "Output surface material information for use in rendering",
+              "bl_icon": "NONE",
+              "bl_width_default": 140.0,
+              "bl_width_min": 100.0,
+              "bl_width_max": 700.0,
+              "bl_height_default": 100.0,
+              "bl_height_min": 30.0,
+              "bl_height_max": 3.4028234663852886e+38,
+              "is_active_output": true,
+              "target": "ALL"
+            }
+          },
+          {
+            "name": "Mix (Legacy)",
+            "type": "ShaderNodeMixRGB",
+            "inputs": [
+              {
+                "name": "Factor",
+                "value": 1.0
+              },
+              {
+                "name": "Color1",
+                "value": [
+                  0.5,
+                  0.5,
+                  0.5,
+                  1.0
+                ]
+              },
+              {
+                "name": "Color2",
+                "value": [
+                  0.800000011920929,
+                  0.6639999747276306,
+                  0.5360000133514404,
+                  1.0
+                ]
+              }
+            ],
+            "properties": {
+              "location": [
+                0.0,
+                0.0
+              ],
+              "location_absolute": [
+                0.0,
+                0.0
+              ],
+              "width": 140.0,
+              "height": 100.0,
+              "name": "Mix (Legacy)",
+              "label": "",
+              "warning_propagation": "ALL",
+              "use_custom_color": false,
+              "color": [
+                0.6079999804496765,
+                0.6079999804496765,
+                0.6079999804496765
+              ],
+              "select": true,
+              "show_options": true,
+              "show_preview": false,
+              "hide": false,
+              "mute": false,
+              "show_texture": false,
+              "bl_idname": "ShaderNodeMixRGB",
+              "bl_label": "Mix (Legacy)",
+              "bl_description": "Mix two input colors",
+              "bl_icon": "NONE",
+              "bl_width_default": 140.0,
+              "bl_width_min": 100.0,
+              "bl_width_max": 700.0,
+              "bl_height_default": 100.0,
+              "bl_height_min": 30.0,
+              "bl_height_max": 3.4028234663852886e+38,
+              "blend_type": "MULTIPLY",
+              "use_alpha": false,
+              "use_clamp": false
+            }
+          },
+          {
+            "name": "Principled BSDF",
+            "type": "ShaderNodeBsdfPrincipled",
+            "inputs": [
+              {
+                "name": "Base Color",
+                "value": [
+                  0.47999998927116394,
+                  0.27000001072883606,
+                  0.10999999940395355,
+                  1.0
+                ]
+              },
+              {
+                "name": "Metallic",
+                "value": 0.0
+              },
+              {
+                "name": "Roughness",
+                "value": 0.7599999904632568
+              },
+              {
+                "name": "IOR",
+                "value": 1.5
+              },
+              {
+                "name": "Alpha",
+                "value": 1.0
+              },
+              {
+                "name": "Thin Wall",
+                "value": false
+              },
+              {
+                "name": "Normal",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Diffuse Roughness",
+                "value": 0.0
+              },
+              {
+                "name": "Subsurface Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Subsurface Radius",
+                "value": [
+                  1.0,
+                  0.20000000298023224,
+                  0.10000000149011612
+                ]
+              },
+              {
+                "name": "Subsurface Scale",
+                "value": 0.004999999888241291
+              },
+              {
+                "name": "Subsurface IOR",
+                "value": 1.399999976158142
+              },
+              {
+                "name": "Subsurface Anisotropy",
+                "value": 0.0
+              },
+              {
+                "name": "Specular IOR Level",
+                "value": 0.5
+              },
+              {
+                "name": "Specular Tint",
+                "value": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "name": "Anisotropic",
+                "value": 0.0
+              },
+              {
+                "name": "Anisotropic Rotation",
+                "value": 0.0
+              },
+              {
+                "name": "Tangent",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Transmission Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Coat Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Coat Roughness",
+                "value": 0.029999999329447746
+              },
+              {
+                "name": "Coat IOR",
+                "value": 1.5
+              },
+              {
+                "name": "Coat Tint",
+                "value": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "name": "Coat Normal",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Sheen Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Sheen Roughness",
+                "value": 0.5
+              },
+              {
+                "name": "Sheen Tint",
+                "value": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "name": "Emission Color",
+                "value": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "name": "Emission Strength",
+                "value": 0.0
+              },
+              {
+                "name": "Thin Film Thickness",
+                "value": 0.0
+              },
+              {
+                "name": "Thin Film IOR",
+                "value": 1.3300000429153442
+              }
+            ],
+            "properties": {
+              "location": [
+                -200.0,
+                100.0
+              ],
+              "location_absolute": [
+                -200.0,
+                100.0
+              ],
+              "width": 240.0,
+              "height": 100.0,
+              "name": "Principled BSDF",
+              "label": "",
+              "warning_propagation": "ALL",
+              "use_custom_color": false,
+              "color": [
+                0.6079999804496765,
+                0.6079999804496765,
+                0.6079999804496765
+              ],
+              "select": true,
+              "show_options": true,
+              "show_preview": false,
+              "hide": false,
+              "mute": false,
+              "show_texture": false,
+              "bl_idname": "ShaderNodeBsdfPrincipled",
+              "bl_label": "Principled BSDF",
+              "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+              "bl_icon": "NONE",
+              "bl_width_default": 240.0,
+              "bl_width_min": 100.0,
+              "bl_width_max": 700.0,
+              "bl_height_default": 100.0,
+              "bl_height_min": 30.0,
+              "bl_height_max": 3.4028234663852886e+38,
+              "distribution": "MULTI_GGX",
+              "subsurface_method": "RANDOM_WALK"
+            }
+          },
+          {
+            "name": "Texture Coordinate",
+            "type": "ShaderNodeTexCoord",
+            "inputs": [],
+            "properties": {
+              "location": [
+                0.0,
+                0.0
+              ],
+              "location_absolute": [
+                0.0,
+                0.0
+              ],
+              "width": 140.0,
+              "height": 100.0,
+              "name": "Texture Coordinate",
+              "label": "",
+              "warning_propagation": "ALL",
+              "use_custom_color": false,
+              "color": [
+                0.6079999804496765,
+                0.6079999804496765,
+                0.6079999804496765
+              ],
+              "select": true,
+              "show_options": true,
+              "show_preview": false,
+              "hide": false,
+              "mute": false,
+              "show_texture": false,
+              "bl_idname": "ShaderNodeTexCoord",
+              "bl_label": "Texture Coordinate",
+              "bl_description": "Retrieve multiple types of texture coordinates.\nTypically used as inputs for texture nodes",
+              "bl_icon": "NONE",
+              "bl_width_default": 140.0,
+              "bl_width_min": 100.0,
+              "bl_width_max": 700.0,
+              "bl_height_default": 100.0,
+              "bl_height_min": 30.0,
+              "bl_height_max": 3.4028234663852886e+38,
+              "from_instancer": false
+            }
+          },
+          {
+            "name": "Vector Math",
+            "type": "ShaderNodeVectorMath",
+            "inputs": [
+              {
+                "name": "Vector",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Vector",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Vector",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Scale",
+                "value": 1.0
+              }
+            ],
+            "properties": {
+              "location": [
+                0.0,
+                0.0
+              ],
+              "location_absolute": [
+                0.0,
+                0.0
+              ],
+              "width": 140.0,
+              "height": 100.0,
+              "name": "Vector Math",
+              "label": "",
+              "warning_propagation": "ALL",
+              "use_custom_color": false,
+              "color": [
+                0.6079999804496765,
+                0.6079999804496765,
+                0.6079999804496765
+              ],
+              "select": true,
+              "show_options": true,
+              "show_preview": false,
+              "hide": false,
+              "mute": false,
+              "show_texture": false,
+              "bl_idname": "ShaderNodeVectorMath",
+              "bl_label": "Vector Math",
+              "bl_description": "Perform vector math operation",
+              "bl_icon": "NONE",
+              "bl_width_default": 140.0,
+              "bl_width_min": 100.0,
+              "bl_width_max": 700.0,
+              "bl_height_default": 100.0,
+              "bl_height_min": 30.0,
+              "bl_height_max": 3.4028234663852886e+38,
+              "operation": "ADD"
+            }
+          }
+        ],
+        "links": [
+          [
+            "Image Texture",
+            "Color",
+            "Mix (Legacy)",
+            "Color1"
+          ],
+          [
+            "Mix (Legacy)",
+            "Color",
+            "Principled BSDF",
+            "Base Color"
+          ],
+          [
+            "Principled BSDF",
+            "BSDF",
+            "Material Output",
+            "Surface"
+          ],
+          [
+            "Texture Coordinate",
+            "Generated",
+            "Vector Math",
+            "Vector"
+          ],
+          [
+            "Vector Math",
+            "Vector",
+            "Image Texture",
+            "Vector"
+          ]
+        ],
+        "canonicalMaterialSha256": "92054bca05467da0cc0a69300c851e40b014bb8ed7b7eb7fb347e8f0ea908048"
+      },
+      {
+        "name": "Corridor bench worn wood plank 1",
+        "diffuse": [
+          0.47999998927116394,
+          0.27000001072883606,
+          0.10999999940395355,
+          1.0
+        ],
+        "metallic": 0.0,
+        "roughness": 0.4000000059604645,
+        "useNodes": true,
+        "nodes": [
+          {
+            "name": "Image Texture",
+            "type": "ShaderNodeTexImage",
+            "inputs": [
+              {
+                "name": "Vector",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              }
+            ],
+            "properties": {
+              "location": [
+                0.0,
+                0.0
+              ],
+              "location_absolute": [
+                0.0,
+                0.0
+              ],
+              "width": 240.0,
+              "height": 100.0,
+              "name": "Image Texture",
+              "label": "",
+              "warning_propagation": "ALL",
+              "use_custom_color": false,
+              "color": [
+                0.6079999804496765,
+                0.6079999804496765,
+                0.6079999804496765
+              ],
+              "select": true,
+              "show_options": true,
+              "show_preview": false,
+              "hide": false,
+              "mute": false,
+              "show_texture": false,
+              "bl_idname": "ShaderNodeTexImage",
+              "bl_label": "Image Texture",
+              "bl_description": "Sample an image file as a texture",
+              "bl_icon": "NONE",
+              "bl_width_default": 240.0,
+              "bl_width_min": 100.0,
+              "bl_width_max": 700.0,
+              "bl_height_default": 100.0,
+              "bl_height_min": 30.0,
+              "bl_height_max": 3.4028234663852886e+38,
+              "projection": "FLAT",
+              "interpolation": "Linear",
+              "projection_blend": 0.0,
+              "extension": "REPEAT"
+            },
+            "image": {
+              "name": "corridor-bench-wood-v1.png",
+              "size": [
+                1254,
+                1254
+              ],
+              "colorspace": "sRGB",
+              "packedSha256": [
+                "2ffb41ea6154870417b219d3555846d90997f5c068f2ab8c1833bd17f0af100a"
+              ]
+            }
+          },
+          {
+            "name": "Material Output",
+            "type": "ShaderNodeOutputMaterial",
+            "inputs": [
+              {
+                "name": "Displacement",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Thickness",
+                "value": 0.0
+              }
+            ],
+            "properties": {
+              "location": [
+                200.0,
+                100.0
+              ],
+              "location_absolute": [
+                200.0,
+                100.0
+              ],
+              "width": 140.0,
+              "height": 100.0,
+              "name": "Material Output",
+              "label": "",
+              "warning_propagation": "ALL",
+              "use_custom_color": false,
+              "color": [
+                0.6079999804496765,
+                0.6079999804496765,
+                0.6079999804496765
+              ],
+              "select": true,
+              "show_options": true,
+              "show_preview": false,
+              "hide": false,
+              "mute": false,
+              "show_texture": false,
+              "bl_idname": "ShaderNodeOutputMaterial",
+              "bl_label": "Material Output",
+              "bl_description": "Output surface material information for use in rendering",
+              "bl_icon": "NONE",
+              "bl_width_default": 140.0,
+              "bl_width_min": 100.0,
+              "bl_width_max": 700.0,
+              "bl_height_default": 100.0,
+              "bl_height_min": 30.0,
+              "bl_height_max": 3.4028234663852886e+38,
+              "is_active_output": true,
+              "target": "ALL"
+            }
+          },
+          {
+            "name": "Mix (Legacy)",
+            "type": "ShaderNodeMixRGB",
+            "inputs": [
+              {
+                "name": "Factor",
+                "value": 1.0
+              },
+              {
+                "name": "Color1",
+                "value": [
+                  0.5,
+                  0.5,
+                  0.5,
+                  1.0
+                ]
+              },
+              {
+                "name": "Color2",
+                "value": [
+                  0.7599999904632568,
+                  0.6308000087738037,
+                  0.5091999769210815,
+                  1.0
+                ]
+              }
+            ],
+            "properties": {
+              "location": [
+                0.0,
+                0.0
+              ],
+              "location_absolute": [
+                0.0,
+                0.0
+              ],
+              "width": 140.0,
+              "height": 100.0,
+              "name": "Mix (Legacy)",
+              "label": "",
+              "warning_propagation": "ALL",
+              "use_custom_color": false,
+              "color": [
+                0.6079999804496765,
+                0.6079999804496765,
+                0.6079999804496765
+              ],
+              "select": true,
+              "show_options": true,
+              "show_preview": false,
+              "hide": false,
+              "mute": false,
+              "show_texture": false,
+              "bl_idname": "ShaderNodeMixRGB",
+              "bl_label": "Mix (Legacy)",
+              "bl_description": "Mix two input colors",
+              "bl_icon": "NONE",
+              "bl_width_default": 140.0,
+              "bl_width_min": 100.0,
+              "bl_width_max": 700.0,
+              "bl_height_default": 100.0,
+              "bl_height_min": 30.0,
+              "bl_height_max": 3.4028234663852886e+38,
+              "blend_type": "MULTIPLY",
+              "use_alpha": false,
+              "use_clamp": false
+            }
+          },
+          {
+            "name": "Principled BSDF",
+            "type": "ShaderNodeBsdfPrincipled",
+            "inputs": [
+              {
+                "name": "Base Color",
+                "value": [
+                  0.47999998927116394,
+                  0.27000001072883606,
+                  0.10999999940395355,
+                  1.0
+                ]
+              },
+              {
+                "name": "Metallic",
+                "value": 0.0
+              },
+              {
+                "name": "Roughness",
+                "value": 0.7599999904632568
+              },
+              {
+                "name": "IOR",
+                "value": 1.5
+              },
+              {
+                "name": "Alpha",
+                "value": 1.0
+              },
+              {
+                "name": "Thin Wall",
+                "value": false
+              },
+              {
+                "name": "Normal",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Diffuse Roughness",
+                "value": 0.0
+              },
+              {
+                "name": "Subsurface Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Subsurface Radius",
+                "value": [
+                  1.0,
+                  0.20000000298023224,
+                  0.10000000149011612
+                ]
+              },
+              {
+                "name": "Subsurface Scale",
+                "value": 0.004999999888241291
+              },
+              {
+                "name": "Subsurface IOR",
+                "value": 1.399999976158142
+              },
+              {
+                "name": "Subsurface Anisotropy",
+                "value": 0.0
+              },
+              {
+                "name": "Specular IOR Level",
+                "value": 0.5
+              },
+              {
+                "name": "Specular Tint",
+                "value": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "name": "Anisotropic",
+                "value": 0.0
+              },
+              {
+                "name": "Anisotropic Rotation",
+                "value": 0.0
+              },
+              {
+                "name": "Tangent",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Transmission Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Coat Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Coat Roughness",
+                "value": 0.029999999329447746
+              },
+              {
+                "name": "Coat IOR",
+                "value": 1.5
+              },
+              {
+                "name": "Coat Tint",
+                "value": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "name": "Coat Normal",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Sheen Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Sheen Roughness",
+                "value": 0.5
+              },
+              {
+                "name": "Sheen Tint",
+                "value": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "name": "Emission Color",
+                "value": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "name": "Emission Strength",
+                "value": 0.0
+              },
+              {
+                "name": "Thin Film Thickness",
+                "value": 0.0
+              },
+              {
+                "name": "Thin Film IOR",
+                "value": 1.3300000429153442
+              }
+            ],
+            "properties": {
+              "location": [
+                -200.0,
+                100.0
+              ],
+              "location_absolute": [
+                -200.0,
+                100.0
+              ],
+              "width": 240.0,
+              "height": 100.0,
+              "name": "Principled BSDF",
+              "label": "",
+              "warning_propagation": "ALL",
+              "use_custom_color": false,
+              "color": [
+                0.6079999804496765,
+                0.6079999804496765,
+                0.6079999804496765
+              ],
+              "select": true,
+              "show_options": true,
+              "show_preview": false,
+              "hide": false,
+              "mute": false,
+              "show_texture": false,
+              "bl_idname": "ShaderNodeBsdfPrincipled",
+              "bl_label": "Principled BSDF",
+              "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+              "bl_icon": "NONE",
+              "bl_width_default": 240.0,
+              "bl_width_min": 100.0,
+              "bl_width_max": 700.0,
+              "bl_height_default": 100.0,
+              "bl_height_min": 30.0,
+              "bl_height_max": 3.4028234663852886e+38,
+              "distribution": "MULTI_GGX",
+              "subsurface_method": "RANDOM_WALK"
+            }
+          },
+          {
+            "name": "Texture Coordinate",
+            "type": "ShaderNodeTexCoord",
+            "inputs": [],
+            "properties": {
+              "location": [
+                0.0,
+                0.0
+              ],
+              "location_absolute": [
+                0.0,
+                0.0
+              ],
+              "width": 140.0,
+              "height": 100.0,
+              "name": "Texture Coordinate",
+              "label": "",
+              "warning_propagation": "ALL",
+              "use_custom_color": false,
+              "color": [
+                0.6079999804496765,
+                0.6079999804496765,
+                0.6079999804496765
+              ],
+              "select": true,
+              "show_options": true,
+              "show_preview": false,
+              "hide": false,
+              "mute": false,
+              "show_texture": false,
+              "bl_idname": "ShaderNodeTexCoord",
+              "bl_label": "Texture Coordinate",
+              "bl_description": "Retrieve multiple types of texture coordinates.\nTypically used as inputs for texture nodes",
+              "bl_icon": "NONE",
+              "bl_width_default": 140.0,
+              "bl_width_min": 100.0,
+              "bl_width_max": 700.0,
+              "bl_height_default": 100.0,
+              "bl_height_min": 30.0,
+              "bl_height_max": 3.4028234663852886e+38,
+              "from_instancer": false
+            }
+          },
+          {
+            "name": "Vector Math",
+            "type": "ShaderNodeVectorMath",
+            "inputs": [
+              {
+                "name": "Vector",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Vector",
+                "value": [
+                  0.12999999523162842,
+                  0.1899999976158142,
+                  0.0
+                ]
+              },
+              {
+                "name": "Vector",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Scale",
+                "value": 1.0
+              }
+            ],
+            "properties": {
+              "location": [
+                0.0,
+                0.0
+              ],
+              "location_absolute": [
+                0.0,
+                0.0
+              ],
+              "width": 140.0,
+              "height": 100.0,
+              "name": "Vector Math",
+              "label": "",
+              "warning_propagation": "ALL",
+              "use_custom_color": false,
+              "color": [
+                0.6079999804496765,
+                0.6079999804496765,
+                0.6079999804496765
+              ],
+              "select": true,
+              "show_options": true,
+              "show_preview": false,
+              "hide": false,
+              "mute": false,
+              "show_texture": false,
+              "bl_idname": "ShaderNodeVectorMath",
+              "bl_label": "Vector Math",
+              "bl_description": "Perform vector math operation",
+              "bl_icon": "NONE",
+              "bl_width_default": 140.0,
+              "bl_width_min": 100.0,
+              "bl_width_max": 700.0,
+              "bl_height_default": 100.0,
+              "bl_height_min": 30.0,
+              "bl_height_max": 3.4028234663852886e+38,
+              "operation": "ADD"
+            }
+          }
+        ],
+        "links": [
+          [
+            "Image Texture",
+            "Color",
+            "Mix (Legacy)",
+            "Color1"
+          ],
+          [
+            "Mix (Legacy)",
+            "Color",
+            "Principled BSDF",
+            "Base Color"
+          ],
+          [
+            "Principled BSDF",
+            "BSDF",
+            "Material Output",
+            "Surface"
+          ],
+          [
+            "Texture Coordinate",
+            "Generated",
+            "Vector Math",
+            "Vector"
+          ],
+          [
+            "Vector Math",
+            "Vector",
+            "Image Texture",
+            "Vector"
+          ]
+        ],
+        "canonicalMaterialSha256": "07cdd9caf3b90ec4940be68e7b8086e60ade9532abb952b6da87f61ef36dd9ba"
+      },
+      {
+        "name": "shade",
+        "diffuse": [
+          0.03500000014901161,
+          0.03999999910593033,
+          0.04500000178813934,
+          1.0
+        ],
+        "metallic": 0.0,
+        "roughness": 0.4000000059604645,
+        "useNodes": true,
+        "nodes": [
+          {
+            "name": "Material Output",
+            "type": "ShaderNodeOutputMaterial",
+            "inputs": [
+              {
+                "name": "Displacement",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Thickness",
+                "value": 0.0
+              }
+            ],
+            "properties": {
+              "location": [
+                200.0,
+                100.0
+              ],
+              "location_absolute": [
+                200.0,
+                100.0
+              ],
+              "width": 140.0,
+              "height": 100.0,
+              "name": "Material Output",
+              "label": "",
+              "warning_propagation": "ALL",
+              "use_custom_color": false,
+              "color": [
+                0.6079999804496765,
+                0.6079999804496765,
+                0.6079999804496765
+              ],
+              "select": true,
+              "show_options": true,
+              "show_preview": false,
+              "hide": false,
+              "mute": false,
+              "show_texture": false,
+              "bl_idname": "ShaderNodeOutputMaterial",
+              "bl_label": "Material Output",
+              "bl_description": "Output surface material information for use in rendering",
+              "bl_icon": "NONE",
+              "bl_width_default": 140.0,
+              "bl_width_min": 100.0,
+              "bl_width_max": 700.0,
+              "bl_height_default": 100.0,
+              "bl_height_min": 30.0,
+              "bl_height_max": 3.4028234663852886e+38,
+              "is_active_output": true,
+              "target": "ALL"
+            }
+          },
+          {
+            "name": "Principled BSDF",
+            "type": "ShaderNodeBsdfPrincipled",
+            "inputs": [
+              {
+                "name": "Base Color",
+                "value": [
+                  0.03500000014901161,
+                  0.03999999910593033,
+                  0.04500000178813934,
+                  1.0
+                ]
+              },
+              {
+                "name": "Metallic",
+                "value": 0.0
+              },
+              {
+                "name": "Roughness",
+                "value": 0.8999999761581421
+              },
+              {
+                "name": "IOR",
+                "value": 1.5
+              },
+              {
+                "name": "Alpha",
+                "value": 1.0
+              },
+              {
+                "name": "Thin Wall",
+                "value": false
+              },
+              {
+                "name": "Normal",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Diffuse Roughness",
+                "value": 0.0
+              },
+              {
+                "name": "Subsurface Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Subsurface Radius",
+                "value": [
+                  1.0,
+                  0.20000000298023224,
+                  0.10000000149011612
+                ]
+              },
+              {
+                "name": "Subsurface Scale",
+                "value": 0.004999999888241291
+              },
+              {
+                "name": "Subsurface IOR",
+                "value": 1.399999976158142
+              },
+              {
+                "name": "Subsurface Anisotropy",
+                "value": 0.0
+              },
+              {
+                "name": "Specular IOR Level",
+                "value": 0.5
+              },
+              {
+                "name": "Specular Tint",
+                "value": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "name": "Anisotropic",
+                "value": 0.0
+              },
+              {
+                "name": "Anisotropic Rotation",
+                "value": 0.0
+              },
+              {
+                "name": "Tangent",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Transmission Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Coat Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Coat Roughness",
+                "value": 0.029999999329447746
+              },
+              {
+                "name": "Coat IOR",
+                "value": 1.5
+              },
+              {
+                "name": "Coat Tint",
+                "value": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "name": "Coat Normal",
+                "value": [
+                  0.0,
+                  0.0,
+                  0.0
+                ]
+              },
+              {
+                "name": "Sheen Weight",
+                "value": 0.0
+              },
+              {
+                "name": "Sheen Roughness",
+                "value": 0.5
+              },
+              {
+                "name": "Sheen Tint",
+                "value": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "name": "Emission Color",
+                "value": [
+                  1.0,
+                  1.0,
+                  1.0,
+                  1.0
+                ]
+              },
+              {
+                "name": "Emission Strength",
+                "value": 0.0
+              },
+              {
+                "name": "Thin Film Thickness",
+                "value": 0.0
+              },
+              {
+                "name": "Thin Film IOR",
+                "value": 1.3300000429153442
+              }
+            ],
+            "properties": {
+              "location": [
+                -200.0,
+                100.0
+              ],
+              "location_absolute": [
+                -200.0,
+                100.0
+              ],
+              "width": 240.0,
+              "height": 100.0,
+              "name": "Principled BSDF",
+              "label": "",
+              "warning_propagation": "ALL",
+              "use_custom_color": false,
+              "color": [
+                0.6079999804496765,
+                0.6079999804496765,
+                0.6079999804496765
+              ],
+              "select": true,
+              "show_options": true,
+              "show_preview": false,
+              "hide": false,
+              "mute": false,
+              "show_texture": false,
+              "bl_idname": "ShaderNodeBsdfPrincipled",
+              "bl_label": "Principled BSDF",
+              "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+              "bl_icon": "NONE",
+              "bl_width_default": 240.0,
+              "bl_width_min": 100.0,
+              "bl_width_max": 700.0,
+              "bl_height_default": 100.0,
+              "bl_height_min": 30.0,
+              "bl_height_max": 3.4028234663852886e+38,
+              "distribution": "MULTI_GGX",
+              "subsurface_method": "RANDOM_WALK"
+            }
+          }
+        ],
+        "links": [
+          [
+            "Principled BSDF",
+            "BSDF",
+            "Material Output",
+            "Surface"
+          ]
+        ],
+        "canonicalMaterialSha256": "e4f455aec5253887f71bb6a3537648b7830310c930c68531a122e060d4bcdd50"
+      }
+    ],
+    "evaluatedNormals": [
+      {
+        "name": "Chair refinement.back bracket -0.32",
+        "polygons": 54,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.0274999737739563,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "Chair refinement.back bracket 0.32",
+        "polygons": 54,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.027499912306666374,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "Chair refinement.back edge highlight",
+        "polygons": 54,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.0034998655319213867,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "Chair refinement.dark back inset",
+        "polygons": 54,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.049999892711639404,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "Chair refinement.front foot -0.32",
+        "polygons": 18,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.03500000014901161,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "Chair refinement.front foot 0.32",
+        "polygons": 18,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.03500000014901161,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "Chair refinement.front leg -0.32",
+        "polygons": 18,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.040212118648923934,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "Chair refinement.front leg 0.32",
+        "polygons": 18,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.04021200817078352,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "Chair refinement.front seat edge",
+        "polygons": 54,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.012499868869781494,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "Chair refinement.rear foot -0.32",
+        "polygons": 18,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.03500000014901161,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "Chair refinement.rear foot 0.32",
+        "polygons": 18,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.03500000014901161,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "Chair refinement.rear post -0.32",
+        "polygons": 18,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.038250619429163635,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "Chair refinement.rear post 0.32",
+        "polygons": 18,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.038250496494583786,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "Chair refinement.seat underframe",
+        "polygons": 54,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.037499964237213135,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "Chair refinement.walnut back rail",
+        "polygons": 54,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.04499971866607666,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "Chair refinement.wooden seat",
+        "polygons": 54,
+        "degenerateIndices": [
+          26,
+          27,
+          30,
+          31,
+          36,
+          37,
+          42,
+          43,
+          49,
+          50,
+          52,
+          53
+        ],
+        "minimumOutwardDistance": 0.03999978303909302,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "Staff Room padded chair.connected lumbar back pad",
+        "polygons": 150,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.04499995708465576,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "Staff Room padded chair.connected seat pad",
+        "polygons": 150,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.045999765396118164,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.back bracket mounting plate -0.32",
+        "polygons": 54,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.00599980354309082,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.back bracket mounting plate 0.32",
+        "polygons": 54,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.00599980354309082,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.back bracket screw -0.32 -0.035",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.0069994330406188965,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.back bracket screw -0.32 0.035",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.0069994330406188965,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.back bracket screw 0.32 -0.035",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.0069994330406188965,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.back bracket screw 0.32 0.035",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.0069994330406188965,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.back rail back fixing -0.32",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.006999976933002472,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.back rail back fixing 0.32",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.006999976933002472,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.back rail front fixing -0.32",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.006999969482421875,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.back rail front fixing 0.32",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.006999969482421875,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.back rail retaining collar -0.32",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.04776883311569691,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.back rail retaining collar 0.32",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.04776871722424403,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.front leg stretcher collar -0.32",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.0325000137090683,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.front leg stretcher collar 0.32",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.0325000137090683,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.front leg triangular gusset -0.32",
+        "polygons": 5,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.023999929428100586,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.front leg triangular gusset 0.32",
+        "polygons": 5,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.023999929428100586,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.front side joint sleeve -0.32",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.022499561309814453,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.front side joint sleeve 0.32",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.022499561309814453,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.front transverse stretcher",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.018908396828917356,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.rear leg stretcher collar -0.32",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.0325000137090683,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.rear leg stretcher collar 0.32",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.0325000137090683,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.rear leg triangular gusset -0.32",
+        "polygons": 5,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.023999974131584167,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.rear leg triangular gusset 0.32",
+        "polygons": 5,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.023999974131584167,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.rear side joint sleeve -0.32",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.022499956190614276,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.rear side joint sleeve 0.32",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.022499956190614276,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.rear transverse stretcher",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.01890846586321082,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.seat fixing head -0.255 -0.07275060951709747",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.005999922752380371,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.seat fixing head -0.255 0.28724939048290254",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.005999922752380371,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.seat fixing head 0.255 -0.07275060951709747",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.005999922752380371,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.seat fixing head 0.255 0.28724939048290254",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.005999922752380371,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.seat saddle -0.255 -0.07275060951709747",
+        "polygons": 54,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.005999922752380371,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.seat saddle -0.255 0.28724939048290254",
+        "polygons": 54,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.005999922752380371,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.seat saddle 0.255 -0.07275060951709747",
+        "polygons": 54,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.005999922752380371,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.seat saddle 0.255 0.28724939048290254",
+        "polygons": 54,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.005999922752380371,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.side frame stretcher -0.32",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.017913249088456366,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      },
+      {
+        "name": "angled-wooden-chair.side frame stretcher 0.32",
+        "polygons": 162,
+        "degenerateIndices": [],
+        "minimumOutwardDistance": 0.017912865732797725,
+        "inwardPolygons": 0,
+        "transformDeterminant": 1.0
+      }
+    ],
+    "actualContacts": [
+      {
+        "partA": "Staff Room padded chair.connected seat pad",
+        "partB": "Chair refinement.wooden seat",
+        "actualTriangleInteriorWitness": [
+          0.5,
+          0.5900000333786011,
+          0.6050000190734863
+        ]
+      },
+      {
+        "partA": "Staff Room padded chair.connected lumbar back pad",
+        "partB": "Chair refinement.walnut back rail",
+        "actualTriangleInteriorWitness": [
+          0.5,
+          0.1286253035068512,
+          1.0850000381469727
+        ]
+      },
+      {
+        "partA": "Staff Room padded chair.connected lumbar back pad",
+        "partB": "Chair refinement.dark back inset",
+        "actualTriangleInteriorWitness": [
+          0.5,
+          0.1323752999305725,
+          1.0199999809265137
+        ]
+      }
+    ],
+    "minCornerBounds": {
+      "min": [
+        0.11400030553340912,
+        0.014750592410564423,
+        0.0
+      ],
+      "max": [
+        0.8859996795654297,
+        0.9852507710456848,
+        1.3200000524520874
+      ]
+    }
+  },
+  "lightingProfile": {
+    "engine": "CYCLES",
+    "device": "CPU",
+    "threadsMode": "FIXED",
+    "threads": 1,
+    "samples": 64,
+    "seed": 0,
+    "animatedSeed": false,
+    "adaptiveSampling": false,
+    "denoising": false,
+    "maxBounces": 8,
+    "diffuseBounces": 4,
+    "glossyBounces": 4,
+    "viewTransform": "AgX",
+    "look": "None",
+    "exposure": 0.0,
+    "gamma": 1.0,
+    "filmTransparent": true,
+    "dither": 0.0,
+    "imageSettings": [
+      "PNG",
+      "RGBA",
+      "8",
+      15
+    ],
+    "worldRGBA": [
+      0.800000011920929,
+      0.800000011920929,
+      0.800000011920929,
+      1.0
+    ],
+    "worldStrength": 0.25,
+    "lights": [
+      {
+        "name": "Modern draft broad rear rim",
+        "type": "AREA",
+        "shape": "DISK",
+        "energy": 300.0,
+        "size": 3.0,
+        "rgb": [
+          1.0,
+          0.9599999785423279,
+          0.8999999761581421
+        ],
+        "offset": [
+          1.0,
+          3.0,
+          4.5
+        ],
+        "rotation": [
+          0.6125549674034119,
+          7.878408148087601e-09,
+          2.8198421001434326
+        ]
+      },
+      {
+        "name": "Modern draft soft neutral fill",
+        "type": "AREA",
+        "shape": "DISK",
+        "energy": 180.0,
+        "size": 5.0,
+        "rgb": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "offset": [
+          4.0,
+          -1.0,
+          3.0
+        ],
+        "rotation": [
+          0.9417816400527954,
+          9.220694430212006e-09,
+          1.3258177042007446
+        ]
+      },
+      {
+        "name": "Modern draft soft warm key",
+        "type": "AREA",
+        "shape": "DISK",
+        "energy": 450.0,
+        "size": 4.0,
+        "rgb": [
+          1.0,
+          0.9399999976158142,
+          0.8500000238418579
+        ],
+        "offset": [
+          -3.0,
+          -4.0,
+          6.0
+        ],
+        "rotation": [
+          0.6947383284568787,
+          -4.873782089021006e-08,
+          -0.6435011029243469
+        ]
+      }
+    ]
+  },
+  "sourceLightingChangesGeometryOrMaterials": false,
+  "groundPlaneAdded": false,
+  "nativeAcceptance": false
+}
