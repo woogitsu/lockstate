@@ -1,0 +1,495 @@
+{
+  "kind": "independent-fresh-reopened-scenes",
+  "original": {
+    "file": "assets/source/blender/furniture.chair.wooden.blend",
+    "sha256": "dab33079c7a42b2967950bab72048953270520383adbf3873a65aeb8e1b6687d",
+    "meshCount": 16,
+    "minimum": [
+      -0.3859996795654297,
+      -0.485249400138855,
+      0.0
+    ],
+    "maximum": [
+      0.3859996795654297,
+      0.4852507412433624,
+      1.3200000524520874
+    ]
+  },
+  "refined": {
+    "file": "assets/source/blender/furniture.chair.wooden.angled-detail.blend",
+    "sha256": "acd0e9decb3bb451b44e8354e797fb5656825f4748bbed832bab61659f06cd88",
+    "meshCount": 52,
+    "minimum": [
+      -0.3859996795654297,
+      -0.485249400138855,
+      0.0
+    ],
+    "maximum": [
+      0.3859996795654297,
+      0.4852507412433624,
+      1.3200000524520874
+    ]
+  },
+  "retainedComparisons": [
+    {
+      "name": "Chair refinement.back bracket -0.32",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Chair refinement.back bracket 0.32",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Chair refinement.back edge highlight",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Chair refinement.dark back inset",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Chair refinement.front foot -0.32",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Chair refinement.front foot 0.32",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Chair refinement.front leg -0.32",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Chair refinement.front leg 0.32",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Chair refinement.front seat edge",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Chair refinement.rear foot -0.32",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Chair refinement.rear foot 0.32",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Chair refinement.rear post -0.32",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Chair refinement.rear post 0.32",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Chair refinement.seat underframe",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Chair refinement.walnut back rail",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Chair refinement.wooden seat",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    }
+  ],
+  "geometricNormals": [
+    {
+      "name": "Chair refinement.back bracket -0.32",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0005709484701507487
+    },
+    {
+      "name": "Chair refinement.back bracket 0.32",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0005709484762519423
+    },
+    {
+      "name": "Chair refinement.back edge highlight",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 4.0262124980317004e-05
+    },
+    {
+      "name": "Chair refinement.dark back inset",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.007860276890520861
+    },
+    {
+      "name": "Chair refinement.front foot -0.32",
+      "faces": 18,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0008505676080403649
+    },
+    {
+      "name": "Chair refinement.front foot 0.32",
+      "faces": 18,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0008505676080403649
+    },
+    {
+      "name": "Chair refinement.front leg -0.32",
+      "faces": 18,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0027275525684065842
+    },
+    {
+      "name": "Chair refinement.front leg 0.32",
+      "faces": 18,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0027275525615853753
+    },
+    {
+      "name": "Chair refinement.front seat edge",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0007853753778685283
+    },
+    {
+      "name": "Chair refinement.rear foot -0.32",
+      "faces": 18,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0009335025689930866
+    },
+    {
+      "name": "Chair refinement.rear foot 0.32",
+      "faces": 18,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0009335025689930866
+    },
+    {
+      "name": "Chair refinement.rear post -0.32",
+      "faces": 18,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.006146569880305226
+    },
+    {
+      "name": "Chair refinement.rear post 0.32",
+      "faces": 18,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00614656980997097
+    },
+    {
+      "name": "Chair refinement.seat underframe",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.026825620569373616
+    },
+    {
+      "name": "Chair refinement.walnut back rail",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.005567658276233179
+    },
+    {
+      "name": "Chair refinement.wooden seat",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [
+        26,
+        27,
+        30,
+        31,
+        36,
+        37,
+        42,
+        43,
+        49,
+        50,
+        52,
+        53
+      ],
+      "signedVolumeAboutSolidCenter": 0.022460240928922532
+    },
+    {
+      "name": "angled-wooden-chair.back bracket mounting plate -0.32",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0001185536103026812
+    },
+    {
+      "name": "angled-wooden-chair.back bracket mounting plate 0.32",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00011855361081407536
+    },
+    {
+      "name": "angled-wooden-chair.back bracket screw -0.32 -0.035",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 4.3470214750145776e-06
+    },
+    {
+      "name": "angled-wooden-chair.back bracket screw -0.32 0.035",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 4.347021475495676e-06
+    },
+    {
+      "name": "angled-wooden-chair.back bracket screw 0.32 -0.035",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 4.347021472498072e-06
+    },
+    {
+      "name": "angled-wooden-chair.back bracket screw 0.32 0.035",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 4.34702154750094e-06
+    },
+    {
+      "name": "angled-wooden-chair.back rail back fixing -0.32",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 7.3552550479712925e-06
+    },
+    {
+      "name": "angled-wooden-chair.back rail back fixing 0.32",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 7.3552551502742725e-06
+    },
+    {
+      "name": "angled-wooden-chair.back rail front fixing -0.32",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 7.355255135679635e-06
+    },
+    {
+      "name": "angled-wooden-chair.back rail front fixing 0.32",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 7.355255168260478e-06
+    },
+    {
+      "name": "angled-wooden-chair.back rail retaining collar -0.32",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00071900482661628
+    },
+    {
+      "name": "angled-wooden-chair.back rail retaining collar 0.32",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0007190048291458123
+    },
+    {
+      "name": "angled-wooden-chair.front leg stretcher collar -0.32",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00044802105844610207
+    },
+    {
+      "name": "angled-wooden-chair.front leg stretcher collar 0.32",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00044802105844610207
+    },
+    {
+      "name": "angled-wooden-chair.front leg triangular gusset -0.32",
+      "faces": 5,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00036959996699200326
+    },
+    {
+      "name": "angled-wooden-chair.front leg triangular gusset 0.32",
+      "faces": 5,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00036959996699200326
+    },
+    {
+      "name": "angled-wooden-chair.front side joint sleeve -0.32",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00013487397518123295
+    },
+    {
+      "name": "angled-wooden-chair.front side joint sleeve 0.32",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0001348739750864148
+    },
+    {
+      "name": "angled-wooden-chair.front transverse stretcher",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.000721109748717335
+    },
+    {
+      "name": "angled-wooden-chair.rear leg stretcher collar -0.32",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00044802106023666965
+    },
+    {
+      "name": "angled-wooden-chair.rear leg stretcher collar 0.32",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00044802106023666965
+    },
+    {
+      "name": "angled-wooden-chair.rear leg triangular gusset -0.32",
+      "faces": 5,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0003695997402246575
+    },
+    {
+      "name": "angled-wooden-chair.rear leg triangular gusset 0.32",
+      "faces": 5,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00036959974264997675
+    },
+    {
+      "name": "angled-wooden-chair.rear side joint sleeve -0.32",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00013487397324500453
+    },
+    {
+      "name": "angled-wooden-chair.rear side joint sleeve 0.32",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00013487397328637257
+    },
+    {
+      "name": "angled-wooden-chair.rear transverse stretcher",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0007211097965259805
+    },
+    {
+      "name": "angled-wooden-chair.seat fixing head -0.255 -0.07275060951709747",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 7.309195221590152e-06
+    },
+    {
+      "name": "angled-wooden-chair.seat fixing head -0.255 0.28724939048290254",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 7.309198453747335e-06
+    },
+    {
+      "name": "angled-wooden-chair.seat fixing head 0.255 -0.07275060951709747",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 7.30919521130315e-06
+    },
+    {
+      "name": "angled-wooden-chair.seat fixing head 0.255 0.28724939048290254",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 7.309198491860727e-06
+    },
+    {
+      "name": "angled-wooden-chair.seat saddle -0.255 -0.07275060951709747",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00011855359171934139
+    },
+    {
+      "name": "angled-wooden-chair.seat saddle -0.255 0.28724939048290254",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00011855361217032005
+    },
+    {
+      "name": "angled-wooden-chair.seat saddle 0.255 -0.07275060951709747",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00011855359234025683
+    },
+    {
+      "name": "angled-wooden-chair.seat saddle 0.255 0.28724939048290254",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00011855360931057311
+    },
+    {
+      "name": "angled-wooden-chair.side frame stretcher -0.32",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.000844410238361259
+    },
+    {
+      "name": "angled-wooden-chair.side frame stretcher 0.32",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0008444102407172563
+    }
+  ],
+  "normalMethod": "Independent polygon edge-vector area and signed-volume triangulation on actual evaluated world-space surfaces; shading normals ignored."
+}
