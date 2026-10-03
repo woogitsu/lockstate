@@ -1,0 +1,727 @@
+{
+  "kind": "independent-fresh-reopened-scenes",
+  "original": {
+    "file": "assets/source/blender/fixture.shower.head.blend",
+    "sha256": "ac0cbe6a3673dd8db19c76375ddeb3d6f23d0cab6aa2e56b298ad8a8e70806fe",
+    "meshCount": 43,
+    "minimum": [
+      -0.35499998927116394,
+      -0.49999961256980896,
+      0.7099999785423279
+    ],
+    "maximum": [
+      0.35499998927116394,
+      0.47500067949295044,
+      1.1399999856948853
+    ]
+  },
+  "refined": {
+    "file": "assets/source/blender/fixture.shower.head.angled-detail.blend",
+    "sha256": "0a375563958f382d6b1d8dde1a6252ace7ed3883f4994a78d040361a65397ea1",
+    "meshCount": 64,
+    "minimum": [
+      -0.35499998927116394,
+      -0.49999961256980896,
+      0.7099999785423279
+    ],
+    "maximum": [
+      0.35499998927116394,
+      0.47500067949295044,
+      1.1399999856948853
+    ]
+  },
+  "retainedComparisons": [
+    {
+      "name": "Bent brushed-steel arm",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Centre dark diffuser",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Centre diffuser surround",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Coupling dark joint",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Dark plate bolt.-0.27.-0.35",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Dark plate bolt.-0.27.-0.45",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Dark plate bolt.0.27.-0.35",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Dark plate bolt.0.27.-0.45",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Deep charcoal nozzle face",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Enamel wall mounting plate",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Head coupling bright sleeve",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Inset blue-grey face",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.0.0",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.0.1",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.0.2",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.0.3",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.0.4",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.0.5",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.0.6",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.0.7",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.1.0",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.1.1",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.1.10",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.1.11",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.1.12",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.1.2",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.1.3",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.1.4",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.1.5",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.1.6",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.1.7",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.1.8",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Nozzle.1.9",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Recessed steel socket cover",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Service valve body.-0.255",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Service valve body.0.255",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Service valve lens.-0.255",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Service valve lens.0.255",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Shallow shower head shell",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Small retaining screw",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Teal rolled head ring",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Wall pipe socket",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    },
+    {
+      "name": "Worn raised plate rim",
+      "rawBytesMaterialModifiersMatrixExactlyEqual": true,
+      "evaluatedGeometryNormalsExactlyEqual": true
+    }
+  ],
+  "geometricNormals": [
+    {
+      "name": "Bent brushed-steel arm",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.002161089769253592
+    },
+    {
+      "name": "Centre dark diffuser",
+      "faces": 34,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 3.196356980517121e-05
+    },
+    {
+      "name": "Centre diffuser surround",
+      "faces": 34,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00011330812267829067
+    },
+    {
+      "name": "Coupling dark joint",
+      "faces": 34,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0016339195606368169
+    },
+    {
+      "name": "Dark plate bolt.-0.27.-0.35",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 2.2217911682294776e-05
+    },
+    {
+      "name": "Dark plate bolt.-0.27.-0.45",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 2.2217912146516028e-05
+    },
+    {
+      "name": "Dark plate bolt.0.27.-0.35",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 2.2217912274413717e-05
+    },
+    {
+      "name": "Dark plate bolt.0.27.-0.45",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 2.2217912885480476e-05
+    },
+    {
+      "name": "Deep charcoal nozzle face",
+      "faces": 66,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.003905136244407952
+    },
+    {
+      "name": "Enamel wall mounting plate",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.02918690486876585
+    },
+    {
+      "name": "Head coupling bright sleeve",
+      "faces": 34,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.002257330572395707
+    },
+    {
+      "name": "Inset blue-grey face",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [
+        26,
+        27,
+        30,
+        31,
+        36,
+        37,
+        42,
+        43,
+        49,
+        50,
+        52,
+        53
+      ],
+      "signedVolumeAboutSolidCenter": 0.0010676973520274604
+    },
+    {
+      "name": "Nozzle.0.0",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.215974274686307e-06
+    },
+    {
+      "name": "Nozzle.0.1",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.215974976939378e-06
+    },
+    {
+      "name": "Nozzle.0.2",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.215972795573176e-06
+    },
+    {
+      "name": "Nozzle.0.3",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.215974912990534e-06
+    },
+    {
+      "name": "Nozzle.0.4",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.215974303108018e-06
+    },
+    {
+      "name": "Nozzle.0.5",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.215974316134697e-06
+    },
+    {
+      "name": "Nozzle.0.6",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.215974351661771e-06
+    },
+    {
+      "name": "Nozzle.0.7",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.215974370609586e-06
+    },
+    {
+      "name": "Nozzle.1.0",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.21597747804981e-06
+    },
+    {
+      "name": "Nozzle.1.1",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.21597597643616e-06
+    },
+    {
+      "name": "Nozzle.1.10",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.215974566008828e-06
+    },
+    {
+      "name": "Nozzle.1.11",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.215972686623384e-06
+    },
+    {
+      "name": "Nozzle.1.12",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.215976848035267e-06
+    },
+    {
+      "name": "Nozzle.1.2",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.215971340144644e-06
+    },
+    {
+      "name": "Nozzle.1.3",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.215972767150967e-06
+    },
+    {
+      "name": "Nozzle.1.4",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.215973953757895e-06
+    },
+    {
+      "name": "Nozzle.1.5",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.215974626404961e-06
+    },
+    {
+      "name": "Nozzle.1.6",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.215977459102003e-06
+    },
+    {
+      "name": "Nozzle.1.7",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.21597747449704e-06
+    },
+    {
+      "name": "Nozzle.1.8",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.215975869854749e-06
+    },
+    {
+      "name": "Nozzle.1.9",
+      "faces": 14,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 9.215975378395989e-06
+    },
+    {
+      "name": "Recessed steel socket cover",
+      "faces": 50,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00023371185700978464
+    },
+    {
+      "name": "Service valve body.-0.255",
+      "faces": 26,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.001978412318597601
+    },
+    {
+      "name": "Service valve body.0.255",
+      "faces": 26,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0019784123010140407
+    },
+    {
+      "name": "Service valve lens.-0.255",
+      "faces": 26,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.278769197720636e-05
+    },
+    {
+      "name": "Service valve lens.0.255",
+      "faces": 26,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.278769132587553e-05
+    },
+    {
+      "name": "Shallow shower head shell",
+      "faces": 66,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.06423652533483923
+    },
+    {
+      "name": "Small retaining screw",
+      "faces": 50,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 8.119668752563465e-06
+    },
+    {
+      "name": "Teal rolled head ring",
+      "faces": 384,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.004717234107045015
+    },
+    {
+      "name": "Wall pipe socket",
+      "faces": 34,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.004473812400002923
+    },
+    {
+      "name": "Worn raised plate rim",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [
+        26,
+        27,
+        30,
+        31,
+        36,
+        37,
+        42,
+        43,
+        49,
+        50,
+        52,
+        53
+      ],
+      "signedVolumeAboutSolidCenter": 0.0037669064863241866
+    },
+    {
+      "name": "angled-shower-head.head outlet connecting stem",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0006385688530814609
+    },
+    {
+      "name": "angled-shower-head.outlet collar retaining bolt 0.931 -0.058",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.265111459735581e-06
+    },
+    {
+      "name": "angled-shower-head.outlet collar retaining bolt 0.931 0.058",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.2651114821245014e-06
+    },
+    {
+      "name": "angled-shower-head.outlet collar retaining bolt 1.017 -0.058",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.265109036710528e-06
+    },
+    {
+      "name": "angled-shower-head.outlet collar retaining bolt 1.017 0.058",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 6.265109062208705e-06
+    },
+    {
+      "name": "angled-shower-head.outlet locking collar 0.931",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0001955720458788324
+    },
+    {
+      "name": "angled-shower-head.outlet locking collar 1.017",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0001955720362640015
+    },
+    {
+      "name": "angled-shower-head.service valve physical grip -0.255",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 5.317589262017937e-05
+    },
+    {
+      "name": "angled-shower-head.service valve physical grip 0.255",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 5.317589312584895e-05
+    },
+    {
+      "name": "angled-shower-head.valve grip fixing -0.255",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 4.467155546990539e-06
+    },
+    {
+      "name": "angled-shower-head.valve grip fixing 0.255",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 4.467155587736033e-06
+    },
+    {
+      "name": "angled-shower-head.valve grip stem -0.255",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.980663432081698e-05
+    },
+    {
+      "name": "angled-shower-head.valve grip stem 0.255",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 1.9806634254931165e-05
+    },
+    {
+      "name": "angled-shower-head.valve retaining collar -0.255",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0001392354005543129
+    },
+    {
+      "name": "angled-shower-head.valve retaining collar 0.255",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0001392353992931407
+    },
+    {
+      "name": "angled-shower-head.wall arm bearing clip -0.068",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00025075298845554964
+    },
+    {
+      "name": "angled-shower-head.wall arm bearing clip 0.068",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00025075299595374593
+    },
+    {
+      "name": "angled-shower-head.wall arm clip foot -0.095",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.0002427477108615979
+    },
+    {
+      "name": "angled-shower-head.wall arm clip foot 0.095",
+      "faces": 54,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 0.00024274771036184953
+    },
+    {
+      "name": "angled-shower-head.wall arm foot fixing -0.095",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 2.1610798848215037e-05
+    },
+    {
+      "name": "angled-shower-head.wall arm foot fixing 0.095",
+      "faces": 162,
+      "geometricInwardFaces": 0,
+      "degenerateFaceIndices": [],
+      "signedVolumeAboutSolidCenter": 2.1610798675167514e-05
+    }
+  ],
+  "normalMethod": "Independent polygon edge-vector area and signed-volume triangulation on actual evaluated world-space surfaces; retained torus uses its known authored medial tube circle; shading normals ignored."
+}
