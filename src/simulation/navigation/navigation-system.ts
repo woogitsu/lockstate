@@ -348,7 +348,7 @@ export class NavigationSystem implements SystemRegistration {
   /**
    * Rejects physical disconnection without computing a route. Registered doors
    * join regions regardless of access; permission-aware routing stays queued.
-   * Labels cost O(regions + portals) once per graph generation, then O(1) per
+   * Sorted labels cost O(regions log regions + portals) per graph generation, then O(1) per
    * query. Unlike the exterior room readout, this answer depends only on the
    * graph, not zoned rectangles, so graph replacement completely invalidates it.
    */
