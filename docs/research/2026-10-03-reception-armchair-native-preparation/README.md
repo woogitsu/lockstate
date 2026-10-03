@@ -51,3 +51,25 @@ node node_modules/@playwright/test/cli.js test --config assets/intermediate/rece
 The generator was executed and inspected, without importing the production browser config or launching any browser/server. The generated opt-in config inherits existing timeout60000/expect10000/workers1/retries0 and changes only testMatch/outputDir. No slow or timeout override. Full TypeScript project+tools check passed.
 
  Actual gameplay placement/drawing, separate visual calibration for BOTH chairs, consumer omission controls and before/after Load screenshots remain pending root's serial native run. No guessed colors, thresholds or ROI.
+
+## Root actual compiled public construction
+
+The integrated compiled product at `d4299094d6` passes all three actual serial
+FullHD cases, with zero failed/skipped/flaky cases and global errors. Public
+capacity and Reception purchases complete the literal q0/q1 square shells,
+doorway, desk and both paid chair owners. Actual room projection, rotated
+occupied tiles, source60/e40 PNG body/hash/dimensions and native Blob decoder
+checks pass. The entire paused V8 snapshot remains exactly equal after Save/
+Load in both orientations; the genuine balance is 19980.
+
+Root opened both fresh FullHD after-Load frames: both dedicated waiting chairs,
+desk, low square-wall footprint and doorway are visibly present in each
+completed Reception. These are unpopulated scenes. Raw reports, exact executed
+recipe/helper/literal oracle, whole snapshots and all before/after images are
+retained under `native/compiled-fullhd-first-observation`, with original-byte
+hash aliases. Evidence bytes are pinned against checkout line-ending changes.
+
+Independent per-chair pixel calibration and actual context consumer omission/
+restoration still remain separate pending visual gates. This actual public
+construction and whole-save result does not claim those stronger pixel gates,
+hosted full CI or production release.

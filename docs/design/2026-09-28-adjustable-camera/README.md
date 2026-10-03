@@ -1576,3 +1576,16 @@ version checks, tooling type coverage and truthful room-metric expectations.
 Three agents continue Reception integration, native demanded-image profiling and
 tooling/gate repairs while root integrates results. Camera-controls allocation
 still awaits the previously displayed owner choice; unrelated work proceeds.
+
+The combined published d4299094d6 product now passes the complete unchanged
+local verification gate: 693 passing test files, 8208 tests passed/two explicit
+skips, both strict types and the real Cloudflare production build. Classroom
+and Reception also pass six actual public FullHD capacity/purchase/whole paused
+SaveLoad cases; both room orientations were opened and reviewed. Raw proof is
+retained in their native preparation records. Per-fixture consumer pixel gates
+and exact hosted CI remain separate. The genuine new student-chair model adds
+a connected side-writing tablet/notebook to the retained complete school chair;
+three agents continue its actual integration, ordinary object rotation and
+minimap work. The rotation control's proposed new copy remains a review draft
+until the owner's clickable decision; the accepted quarter-turn command path
+can proceed independently.

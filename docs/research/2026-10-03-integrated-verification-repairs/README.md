@@ -49,3 +49,26 @@ reports. Full integrated verification after the independent Blender/version,
 tooling type-coverage, generated-file checkout and historical room-metric
 repairs remains pending. Native acceptance of the new demand loader and
 Classroom/Reception fixtures also remains separate.
+
+## Complete repaired named gate
+
+On published subject `d4299094d6`, the actual unchanged named `pnpm verify`
+exits 0. Both application and tooling strict type checks pass. All 693 test
+files pass: **8208 tests pass and two explicitly skip**. The real production
+Cloudflare build also succeeds and its existing output verifier passes;
+the existing large-chunk warning is retained. The full terminal output is
+[repaired-verify.txt](./repaired-verify.txt).
+
+The combined subject includes the actual Reception-only armchair registry and
+context, all three explicit dedicated Blender guards, current main and the
+demanded-image/World-focus fixes. It preserves the original models and renders.
+The generated player-string content is byte-identical to its existing Git blob;
+its new LF checkout rule fixes a Windows working-file mismatch rather than
+adding sentences. The physical no-door route filter correctly prevents failed
+journeys: both route counters are exactly zero while real blocked-need
+substitutions remain positive; the working doorway control remains all zero.
+This replaces only a historical expectation and does not undo the source fix.
+
+No hosted full-green result or native fixture acceptance follows from this
+local gate. Actual Classroom/Reception construction and demanded-image native
+acceptance remain separately reported with their exact compiled subjects.

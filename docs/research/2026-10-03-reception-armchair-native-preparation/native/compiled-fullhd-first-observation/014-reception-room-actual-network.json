@@ -1,0 +1,68 @@
+[
+  {
+    "url": "http://127.0.0.1:5365/assets/worker-xlrM5ErR.js",
+    "path": "/assets/worker-xlrM5ErR.js",
+    "status": 200,
+    "sha256": "611165d87ac997da1b09968fb571a45c16fc7167fc0fcb6c43900bb44413319c",
+    "bytes": 442773
+  },
+  {
+    "url": "http://127.0.0.1:5365/game-content/oblique-furniture-reception-waiting-armchair.v1.json",
+    "path": "/game-content/oblique-furniture-reception-waiting-armchair.v1.json",
+    "status": 200,
+    "sha256": "95b4e9bcb69dd9e9e8420073b57c943ea77f63117e4ef237101a5db3061d3144",
+    "bytes": 20250
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.reception.waiting-armchair-yaw+30-elev40.c86e8e0ffe83.png",
+    "path": "/assets/environment/oblique/furniture.reception.waiting-armchair-yaw+30-elev40.c86e8e0ffe83.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.reception.waiting-armchair-yaw%2B30-elev40.c86e8e0ffe83.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.reception.waiting-armchair-yaw%2B30-elev40.c86e8e0ffe83.png",
+    "path": "/assets/environment/oblique/furniture.reception.waiting-armchair-yaw+30-elev40.c86e8e0ffe83.png",
+    "status": 200,
+    "sha256": "c86e8e0ffe8384425debe42948c372b333011f427b735aa4a16f170bdca9d4ca",
+    "bytes": 8263
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.reception.waiting-armchair-yaw+60-elev40.4e6ee8fdb156.png",
+    "path": "/assets/environment/oblique/furniture.reception.waiting-armchair-yaw+60-elev40.4e6ee8fdb156.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.reception.waiting-armchair-yaw%2B60-elev40.4e6ee8fdb156.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.reception.waiting-armchair-yaw%2B60-elev40.4e6ee8fdb156.png",
+    "path": "/assets/environment/oblique/furniture.reception.waiting-armchair-yaw+60-elev40.4e6ee8fdb156.png",
+    "status": 200,
+    "sha256": "4e6ee8fdb156be06a9d023f8806d90aede0b12552d048dcdba383c5f68b4cb0d",
+    "bytes": 7901
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.reception.waiting-armchair-yaw+60-elev30.716875d1f417.png",
+    "path": "/assets/environment/oblique/furniture.reception.waiting-armchair-yaw+60-elev30.716875d1f417.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.reception.waiting-armchair-yaw%2B60-elev30.716875d1f417.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.reception.waiting-armchair-yaw%2B60-elev30.716875d1f417.png",
+    "path": "/assets/environment/oblique/furniture.reception.waiting-armchair-yaw+60-elev30.716875d1f417.png",
+    "status": 200,
+    "sha256": "716875d1f41791db92c756c84cb0b743019bf69d0597d304cc7eb96f792c32cb",
+    "bytes": 7995
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.reception.waiting-armchair-yaw+60-elev20.8b7dd029f19c.png",
+    "path": "/assets/environment/oblique/furniture.reception.waiting-armchair-yaw+60-elev20.8b7dd029f19c.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/furniture.reception.waiting-armchair-yaw%2B60-elev20.8b7dd029f19c.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/furniture.reception.waiting-armchair-yaw%2B60-elev20.8b7dd029f19c.png",
+    "path": "/assets/environment/oblique/furniture.reception.waiting-armchair-yaw+60-elev20.8b7dd029f19c.png",
+    "status": 200,
+    "sha256": "8b7dd029f19c7e607b21615c90962fd455e5df2d6afbda0e21d9057d35042458",
+    "bytes": 7732
+  }
+]

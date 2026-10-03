@@ -70,3 +70,27 @@ The configuration generator was run and its actual output inspected. It inherits
 ### Final verification
 
 Both actual typed q0/q1 routes and whole V8 roundtrips are GREEN after exact producer restoration; full TypeScript typecheck is GREEN. The actual opt-in UI execution, network decoder proof, price screenshot, final camera screenshots, visual calibration and public paused Save/Load remain for root's single browser run. Merely preparing those assertions is not a native pass.
+
+## Root actual compiled public route
+
+The integrated compiled product at `d4299094d6` passes all three actual serial
+public FullHD cases, with zero failed/skipped/flaky cases and global errors.
+Its dedicated Classroom registry and context are installed. Public Storage/
+Delivery purchase completes, then the original Classroom plans in q0/q1 and a
+separately paid 130 desk complete with their exact owners, footprints, debit
+and room projection. Entire paused V8 snapshots remain exactly equal after
+Save/Load. Both room layouts retain the separately placed orientation0 desk.
+
+The actual terminal source PNG body, hash, dimensions, HTMLImageElement Blob
+decoder and retained descriptor/source identity pass. Root opened both fresh
+FullHD after-Load images: the original Classroom chairs, doorway, bookshelf and
+dedicated teacher desks are present and readable in the completed square-room
+footprint. The room scenes are unpopulated. Raw reports, complete snapshots,
+receipts, network observations and the exact executed recipe are retained under
+`native/compiled-fullhd-first-observation` with a hash alias manifest.
+
+This is genuine public construction/whole-save and opened-image evidence.
+Independent desk-specific pixel calibration and real consumer omission/
+restoration remain pending; source/network success alone does not establish
+that stronger visual gate. Hosted exact-head CI and production release also
+remain pending.
