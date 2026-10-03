@@ -1,0 +1,10 @@
+{
+  "cases": 77,
+  "passed": 75,
+  "failed": 2,
+  "actualFailures": [
+    "Parsed YAML serialization dropped # v6/# v4.6.2 action pin comments; restored same main release annotations",
+    "Artifact evidence observer only recognized tee, not approved printf output redirect; preserved ordering guard for both writers"
+  ],
+  "productionAssertionsNotRemoved": true
+}
