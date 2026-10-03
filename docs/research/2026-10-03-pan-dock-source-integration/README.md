@@ -43,3 +43,28 @@ contracts. These are source gates. Root is building the named committed client
 next; seven queued native cases and actual producer-negative/restoration remain
 required. The archive SHA256 before/after rename is
 3e741eed255d45bf8bb88e1689dd62b189cd90faa81224ac875ad808f6d76efd.
+
+## Actual frozen-client native evidence
+
+The named client a1de611e7588f0d18b6840dfc85adbbcbf5d0154 (v0.0.838)
+ran seven real browser cases:5 GREEN/2 RED. The original report and full images
+are retained in [initial aliases](native/initial-aliases.json), with original
+filenames, published short Windows-safe filenames and byte-exact SHA256.
+World200 failed the fixture's own canvas precondition: pointer700,240 was over
+the expanded HUD ending at258px. Dockq1 completed valid owner anchors and whole
+paused Save/Load equality, then failed the provisional exact RGB31,94,99 check.
+The actual q1 glazing is37,107,113; the same region and >100px requirement remain.
+The independent World200 setup now physically recentres through the minimap,
+uses Basic Cell's full28-tile footprint and pointer885,350 inside genuine ground.
+No game-source changes or assertion budgets were made for these corrections.
+The same unmodified production build then passed all three affected cases:
+World200, genuine capacity prerequisite and Dockq1 Build/Save/Load.
+[Corrected terminal](native/corrected-terminal.txt),
+[corrected aliases and images](native/corrected-aliases.json),
+[frozen worker receipt](native/acceptance-receipt.json).
+All four native pan input phases already passed on the original run; World100
+and both angled100/200 retained exact full footprint, quote and one purchase.
+The fixed12-case quotation gate retains its limits and corrects only two live
+hud.ts anchors3048?3054 after the integrated6-line HUD insertion.
+Actual producer-negative controls and one complete restored seven-case run
+remain next. These local results do not establish hosted CI or deployment.

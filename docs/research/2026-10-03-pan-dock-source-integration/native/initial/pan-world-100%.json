@@ -1,0 +1,486 @@
+{
+  "mode": "world",
+  "uiScale": 1,
+  "movement": [
+    {
+      "direction": "right",
+      "hit": {
+        "x": 330,
+        "y": 797,
+        "left": 308,
+        "top": 775,
+        "right": 352,
+        "bottom": 819,
+        "width": 44,
+        "height": 44,
+        "reachable": true,
+        "tap": 44
+      },
+      "before": {
+        "percent": {
+          "left": 20,
+          "top": 33.125,
+          "width": 60.00000000000001,
+          "height": 33.75
+        },
+        "css": {
+          "left": 20,
+          "top": 33.125,
+          "width": 60,
+          "height": 33.75
+        },
+        "canvas": {
+          "width": 1920,
+          "height": 1080,
+          "left": 0,
+          "top": 0,
+          "widthCss": 1920,
+          "heightCss": 1080
+        },
+        "map": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "delta": {
+        "x": 81.92000000000002,
+        "y": 0
+      },
+      "after": {
+        "percent": {
+          "left": 24.000000000000004,
+          "top": 33.125,
+          "width": 60.00000000000001,
+          "height": 33.75
+        },
+        "css": {
+          "left": 24,
+          "top": 33.125,
+          "width": 60,
+          "height": 33.75
+        },
+        "canvas": {
+          "width": 1920,
+          "height": 1080,
+          "left": 0,
+          "top": 0,
+          "widthCss": 1920,
+          "heightCss": 1080
+        },
+        "map": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "event": {
+        "direction": "right",
+        "trusted": true,
+        "detail": 1,
+        "x": 330,
+        "y": 797
+      }
+    },
+    {
+      "direction": "left",
+      "hit": {
+        "x": 174,
+        "y": 797,
+        "left": 152,
+        "top": 775,
+        "right": 196,
+        "bottom": 819,
+        "width": 44,
+        "height": 44,
+        "reachable": true,
+        "tap": 44
+      },
+      "before": {
+        "percent": {
+          "left": 24.000000000000004,
+          "top": 33.125,
+          "width": 60.00000000000001,
+          "height": 33.75
+        },
+        "css": {
+          "left": 24,
+          "top": 33.125,
+          "width": 60,
+          "height": 33.75
+        },
+        "canvas": {
+          "width": 1920,
+          "height": 1080,
+          "left": 0,
+          "top": 0,
+          "widthCss": 1920,
+          "heightCss": 1080
+        },
+        "map": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "delta": {
+        "x": -81.92000000000002,
+        "y": 0
+      },
+      "after": {
+        "percent": {
+          "left": 20,
+          "top": 33.125,
+          "width": 60.00000000000001,
+          "height": 33.75
+        },
+        "css": {
+          "left": 20,
+          "top": 33.125,
+          "width": 60,
+          "height": 33.75
+        },
+        "canvas": {
+          "width": 1920,
+          "height": 1080,
+          "left": 0,
+          "top": 0,
+          "widthCss": 1920,
+          "heightCss": 1080
+        },
+        "map": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "event": {
+        "direction": "left",
+        "trusted": true,
+        "detail": 1,
+        "x": 174,
+        "y": 797
+      }
+    },
+    {
+      "direction": "down",
+      "hit": {
+        "x": 278,
+        "y": 797,
+        "left": 256,
+        "top": 775,
+        "right": 300,
+        "bottom": 819,
+        "width": 44,
+        "height": 44,
+        "reachable": true,
+        "tap": 44
+      },
+      "before": {
+        "percent": {
+          "left": 20,
+          "top": 33.125,
+          "width": 60.00000000000001,
+          "height": 33.75
+        },
+        "css": {
+          "left": 20,
+          "top": 33.125,
+          "width": 60,
+          "height": 33.75
+        },
+        "canvas": {
+          "width": 1920,
+          "height": 1080,
+          "left": 0,
+          "top": 0,
+          "widthCss": 1920,
+          "heightCss": 1080
+        },
+        "map": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "delta": {
+        "x": 0,
+        "y": 81.92
+      },
+      "after": {
+        "percent": {
+          "left": 20,
+          "top": 37.125,
+          "width": 60.00000000000001,
+          "height": 33.75
+        },
+        "css": {
+          "left": 20,
+          "top": 37.125,
+          "width": 60,
+          "height": 33.75
+        },
+        "canvas": {
+          "width": 1920,
+          "height": 1080,
+          "left": 0,
+          "top": 0,
+          "widthCss": 1920,
+          "heightCss": 1080
+        },
+        "map": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "event": {
+        "direction": "down",
+        "trusted": true,
+        "detail": 1,
+        "x": 278,
+        "y": 797
+      }
+    },
+    {
+      "direction": "up",
+      "hit": {
+        "x": 226,
+        "y": 797,
+        "left": 204,
+        "top": 775,
+        "right": 248,
+        "bottom": 819,
+        "width": 44,
+        "height": 44,
+        "reachable": true,
+        "tap": 44
+      },
+      "before": {
+        "percent": {
+          "left": 20,
+          "top": 37.125,
+          "width": 60.00000000000001,
+          "height": 33.75
+        },
+        "css": {
+          "left": 20,
+          "top": 37.125,
+          "width": 60,
+          "height": 33.75
+        },
+        "canvas": {
+          "width": 1920,
+          "height": 1080,
+          "left": 0,
+          "top": 0,
+          "widthCss": 1920,
+          "heightCss": 1080
+        },
+        "map": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "delta": {
+        "x": 0,
+        "y": -81.92
+      },
+      "after": {
+        "percent": {
+          "left": 20,
+          "top": 33.125,
+          "width": 60.00000000000001,
+          "height": 33.75
+        },
+        "css": {
+          "left": 20,
+          "top": 33.125,
+          "width": 60,
+          "height": 33.75
+        },
+        "canvas": {
+          "width": 1920,
+          "height": 1080,
+          "left": 0,
+          "top": 0,
+          "widthCss": 1920,
+          "heightCss": 1080
+        },
+        "map": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "event": {
+        "direction": "up",
+        "trusted": true,
+        "detail": 1,
+        "x": 226,
+        "y": 797
+      }
+    }
+  ],
+  "chosen": {
+    "target": {
+      "kind": "room-template",
+      "templateId": "yard-basic",
+      "origin": {
+        "x": 12,
+        "y": 12
+      }
+    },
+    "ok": true
+  },
+  "armed": [
+    {
+      "direction": "right",
+      "actual": {
+        "target": {
+          "kind": "room-template",
+          "templateId": "yard-basic",
+          "origin": {
+            "x": 14,
+            "y": 12
+          }
+        },
+        "ok": true
+      },
+      "quote": "Click map to place; Esc cancels. | This footprint is clear. | Materials catalogue value: 0"
+    },
+    {
+      "direction": "left",
+      "actual": {
+        "target": {
+          "kind": "room-template",
+          "templateId": "yard-basic",
+          "origin": {
+            "x": 12,
+            "y": 12
+          }
+        },
+        "ok": true
+      },
+      "quote": "Click map to place; Esc cancels. | This footprint is clear. | Materials catalogue value: 0"
+    },
+    {
+      "direction": "down",
+      "actual": {
+        "target": {
+          "kind": "room-template",
+          "templateId": "yard-basic",
+          "origin": {
+            "x": 12,
+            "y": 13
+          }
+        },
+        "ok": true
+      },
+      "quote": "Click map to place; Esc cancels. | This footprint is clear. | Materials catalogue value: 0"
+    },
+    {
+      "direction": "up",
+      "actual": {
+        "target": {
+          "kind": "room-template",
+          "templateId": "yard-basic",
+          "origin": {
+            "x": 12,
+            "y": 12
+          }
+        },
+        "ok": true
+      },
+      "quote": "Click map to place; Esc cancels. | This footprint is clear. | Materials catalogue value: 0"
+    }
+  ],
+  "displayed": {
+    "target": {
+      "kind": "room-template",
+      "templateId": "yard-basic",
+      "origin": {
+        "x": 12,
+        "y": 12
+      }
+    },
+    "ok": true
+  },
+  "clicks": [
+    {
+      "direction": "right",
+      "trusted": true,
+      "detail": 1,
+      "x": 330,
+      "y": 797
+    },
+    {
+      "direction": "left",
+      "trusted": true,
+      "detail": 1,
+      "x": 174,
+      "y": 797
+    },
+    {
+      "direction": "down",
+      "trusted": true,
+      "detail": 1,
+      "x": 278,
+      "y": 797
+    },
+    {
+      "direction": "up",
+      "trusted": true,
+      "detail": 1,
+      "x": 226,
+      "y": 797
+    },
+    {
+      "direction": "right",
+      "trusted": true,
+      "detail": 0,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "direction": "left",
+      "trusted": true,
+      "detail": 0,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "direction": "down",
+      "trusted": true,
+      "detail": 0,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "direction": "up",
+      "trusted": true,
+      "detail": 0,
+      "x": 0,
+      "y": 0
+    }
+  ],
+  "events": [
+    {
+      "type": "pointerdown",
+      "x": 700,
+      "y": 240,
+      "trusted": true,
+      "canvas": true
+    },
+    {
+      "type": "pointerup",
+      "x": 700,
+      "y": 240,
+      "trusted": true,
+      "canvas": true
+    }
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "yard-basic",
+      "origin": {
+        "x": 12,
+        "y": 12
+      }
+    }
+  ]
+}

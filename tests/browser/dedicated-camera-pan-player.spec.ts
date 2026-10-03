@@ -188,11 +188,20 @@ for (const mode of ['world', 'oblique'] as const) for (const uiScale of [1, 2]) 
     // Test stationary-cursor Build continuity using native Enter instead; the
     // same four real buttons/callbacks still run, without manufacturing hover.
     if (mode === 'world') await page.getByRole('button', { name: 'Zoom out', exact: true }).click();
+    if (mode === 'world' && uiScale === 2) {
+      // At UI200 the physical strip ends at258px and the safe map column is
+      // narrow. Use an actual small Cell and a genuine minimap recenter to put
+      // its entire aligned footprint inside that column, never fake hover.
+      const map = page.locator('.hud-minimap__canvas');
+      const bounds = await map.boundingBox(); expect(bounds).not.toBeNull();
+      await map.click({ position: { x: bounds!.width * 16.25 / 32, y: bounds!.height / 2 } });
+      await frames(page);
+    }
     await page.getByRole('button', { name: 'Build', exact: true }).click();
     const open = page.getByRole('button', { name: 'Room plans', exact: true });
     const dialog = page.getByRole('dialog', { name: 'Room plans' });
-    const cursor = mode === 'world' ? { x: 700, y: 240 } : { x: 740, y: 420 };
-    const plan = mode === 'world' ? { name: 'Yard', id: 'yard-basic', count: 64 } : { name: 'Basic cell', id: 'cell-basic', count: 28 };
+    const cursor = mode === 'world' ? (uiScale === 2 ? { x: 885, y: 350 } : { x: 700, y: 240 }) : { x: 740, y: 420 };
+    const plan = mode === 'world' && uiScale === 1 ? { name: 'Yard', id: 'yard-basic', count: 64 } : { name: 'Basic cell', id: 'cell-basic', count: 28 };
     expect(await page.evaluate(p => document.elementFromPoint(p.x, p.y) === document.querySelector('#game-root canvas'), cursor)).toBe(true);
     await page.mouse.move(cursor.x, cursor.y); await frames(page);
     const marker = await page.evaluate(() => (Reflect.get(window, 'dedicatedPanPointers') as unknown[]).length);

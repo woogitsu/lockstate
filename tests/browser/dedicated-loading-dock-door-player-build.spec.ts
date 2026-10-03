@@ -97,11 +97,11 @@ async function dockPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1): 
     const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
     const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
     // Historical accepted actual q0 RGB/crop/>100 remains unchanged.
-    // q1 retains that source glazing colour but its target-only screen crop
-    // is provisional. Open the actual native FullHD before calibration;
-    // source previews are not native acceptance and may not set final crops.
+    // q1 now uses the actual opened a1de611 native target glazing RGB.
+    // The initial source-colour estimate failed0 before/after Load and is
+    // retained; original target-only crop/>100 and q0 remain unchanged.
     const rects = quarterTurns === 0 ? [[800,380,360,230]] : [[850,330,220,260]];
-    const colours = [[31,94,99]];
+    const colours = quarterTurns === 0 ? [[31,94,99]] : [[37,107,113]];
     return rects.map((rect, regionIndex) => {
       const colour = colours[regionIndex]!;
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;
