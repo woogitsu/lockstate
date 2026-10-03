@@ -1,0 +1,14 @@
+{
+  "node": "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+  "args": [
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/integration/build-order-object-collision-boundary.test.ts",
+    "-t",
+    "free incoming anchor|genuinely free desk",
+    "--maxWorkers=2"
+  ],
+  "status": 0,
+  "subject": "2023be9e1a7aaf1307c99a8f5d2e7dd9df2ee338",
+  "productionModified": false
+}
