@@ -1,0 +1,120 @@
+{
+  "at": "2026-10-03T10:19:14.075Z",
+  "results": [
+    {
+      "search": "template camera rotate zoom",
+      "results": []
+    },
+    {
+      "search": "template camera pending release",
+      "results": [
+        {
+          "number": 2006,
+          "state": "OPEN",
+          "title": "Second touch release commits an armed room template while primary finger remains down",
+          "url": "https://github.com/woogitsu/lockstate/issues/2006"
+        },
+        {
+          "number": 1967,
+          "state": "OPEN",
+          "title": "Native View option navigation pans the old map during renderer preparation",
+          "url": "https://github.com/woogitsu/lockstate/issues/1967"
+        },
+        {
+          "number": 1974,
+          "state": "OPEN",
+          "title": "Keyboard-armed fitted room plan jumps origin on the first stationary map click",
+          "url": "https://github.com/woogitsu/lockstate/issues/1974"
+        },
+        {
+          "number": 116,
+          "state": "CLOSED",
+          "title": "[Continuation prompt] START HERE — complete brief for the next model taking over Lockstate",
+          "url": "https://github.com/woogitsu/lockstate/issues/116"
+        }
+      ]
+    },
+    {
+      "search": "template mirrored undo redo load",
+      "results": [
+        {
+          "number": 1986,
+          "state": "OPEN",
+          "title": "Template Redo ignores later zoning and repurchases orphaned furniture after Load",
+          "url": "https://github.com/woogitsu/lockstate/issues/1986"
+        },
+        {
+          "number": 1996,
+          "state": "OPEN",
+          "title": "Refused occupied template cancellation blocks Undo of a newer independent purchase",
+          "url": "https://github.com/woogitsu/lockstate/issues/1996"
+        }
+      ]
+    },
+    {
+      "search": "room plan renderer camera",
+      "results": [
+        {
+          "number": 1918,
+          "state": "OPEN",
+          "title": "Keyboard camera actions remain active behind native room-plan modal buttons",
+          "url": "https://github.com/woogitsu/lockstate/issues/1918"
+        },
+        {
+          "number": 1951,
+          "state": "OPEN",
+          "title": "Expose live top-down / angled view selection without resetting an unsaved prison",
+          "url": "https://github.com/woogitsu/lockstate/issues/1951"
+        },
+        {
+          "number": 1967,
+          "state": "OPEN",
+          "title": "Native View option navigation pans the old map during renderer preparation",
+          "url": "https://github.com/woogitsu/lockstate/issues/1967"
+        },
+        {
+          "number": 1988,
+          "state": "OPEN",
+          "title": "Zoomed World room-plan ghost uses a different camera origin from its actual ground pick",
+          "url": "https://github.com/woogitsu/lockstate/issues/1988"
+        },
+        {
+          "number": 1965,
+          "state": "OPEN",
+          "title": "Room plans: native dialog Escape also cancels the armed world preview",
+          "url": "https://github.com/woogitsu/lockstate/issues/1965"
+        },
+        {
+          "number": 1953,
+          "state": "OPEN",
+          "title": "Full HD Build target clips whole-square coordinates and catalogue value",
+          "url": "https://github.com/woogitsu/lockstate/issues/1953"
+        },
+        {
+          "number": 1957,
+          "state": "OPEN",
+          "title": "Kitchen oblique stove, counter and fridge escape occupied squares",
+          "url": "https://github.com/woogitsu/lockstate/issues/1957"
+        },
+        {
+          "number": 1968,
+          "state": "OPEN",
+          "title": "Native non-modal View popup swallows a world-held camera release and keeps the armed plan moving",
+          "url": "https://github.com/woogitsu/lockstate/issues/1968"
+        },
+        {
+          "number": 604,
+          "state": "OPEN",
+          "title": "HANDOVER 2026-08-29 late — main red three times, five PRs became six, and the design search landed",
+          "url": "https://github.com/woogitsu/lockstate/issues/604"
+        },
+        {
+          "number": 116,
+          "state": "CLOSED",
+          "title": "[Continuation prompt] START HERE — complete brief for the next model taking over Lockstate",
+          "url": "https://github.com/woogitsu/lockstate/issues/116"
+        }
+      ]
+    }
+  ]
+}
