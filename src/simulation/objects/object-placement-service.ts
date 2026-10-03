@@ -2,6 +2,7 @@ import { defaultRoomContentRegistry, type RoomCatalogDefinition } from '../../co
 import type { ContentRegistry } from '../../content/registry';
 import { createBuildOrder, type BuildOrder, type BuildOrderLifecycleState } from '../construction/build-order';
 import { getBuildableDefinition, BUILDABLE_REGISTRY } from '../construction/definition';
+import { placementCostMinorUnits } from '../economy/placement-cost';
 import type { RoomInstanceRegistry } from '../prisoners/room-instance-registry';
 import { canBuildAt, type BuildabilityRequirement } from '../world/buildability';
 import { tileCoordinate, tileToChunk, type TilePosition } from '../world/coordinates';
@@ -123,6 +124,20 @@ export interface PlaceObjectRequest {
   /** Authored template or approved individual-command facing; absent retains 0. */
   readonly objectOrientation?: ObjectOrientation;
 }
+
+export type ObjectPlacementPreviewRequest = Pick<PlaceObjectRequest, 'definitionId' | 'x' | 'y' | 'objectOrientation'> & {
+  readonly orderId?: string;
+};
+
+interface ObjectPlacementQuote {
+  readonly footprint: readonly TilePosition[];
+  /** Catalogue value, not a promise of a treasury debit when stock already exists. */
+  readonly catalogueCostMinorUnits?: number;
+}
+
+export type ObjectPlacementPreflight =
+  | ({ readonly ok: true; readonly roomInstanceId: string } & ObjectPlacementQuote)
+  | ({ readonly ok: false; readonly reason: PlaceObjectRefusalReason; readonly tile?: TilePosition } & Partial<ObjectPlacementQuote>);
 
 /**
  * Why a placement was refused.
@@ -505,12 +520,16 @@ export class ObjectPlacementService {
    * order with no ordinal sorts exactly where it sorted before the field
    * existed -- see `compareBuildOrderExecution`.
    */
-  public place(request: PlaceObjectRequest, tick: number, placementSequence?: number): PlaceObjectOutcome {
+  public preflight(request: ObjectPlacementPreviewRequest): ObjectPlacementPreflight {
+    let quote: ObjectPlacementQuote | undefined;
+    const refuse = (reason: PlaceObjectRefusalReason, tile?: TilePosition): ObjectPlacementPreflight => ({
+      ok: false, reason, ...(tile === undefined ? {} : { tile }), ...quote,
+    });
     const definition = BUILDABLE_REGISTRY.get(request.definitionId);
-    if (definition === undefined) return this.refuse('unknown-buildable', request, tick);
+    if (definition === undefined) return refuse('unknown-buildable');
 
     const objectId = definition.placesObjectId;
-    if (objectId === undefined) return this.refuse('not-a-placeable-object', request, tick);
+    if (objectId === undefined) return refuse('not-a-placeable-object');
 
     const objectDefinition = this.placedObjects.definitionOf(objectId);
     // Unreachable while `validateBuildableObjectReferences` throws at import
@@ -518,28 +537,30 @@ export class ObjectPlacementService {
     // because a `RangeError` out of a kernel command dispatch faults the
     // worker. `not-a-placeable-object` is the truthful answer: the row cannot
     // place anything.
-    if (objectDefinition === undefined) return this.refuse('not-a-placeable-object', request, tick);
+    if (objectDefinition === undefined) return refuse('not-a-placeable-object');
 
     // A queued command restored from a save can carry an order id the session
     // already holds, and `submitOrder` throws on a duplicate. Refusing keeps
     // that throw inside the guard it was written as.
-    if (this.orders.getOrder(request.orderId) !== undefined) {
-      return this.refuse('duplicate-order', request, tick);
+    if (request.orderId !== undefined && this.orders.getOrder(request.orderId) !== undefined) {
+      return refuse('duplicate-order');
     }
 
     const anchor: TilePosition = { x: tileCoordinate(request.x), y: tileCoordinate(request.y) };
     const footprint = objectFootprintTiles(objectDefinition, anchor, request.objectOrientation ?? DEFAULT_PLACEMENT_ORIENTATION);
+    const cost = placementCostMinorUnits(definition.materialsRequired);
+    quote = { footprint, ...(cost === undefined ? {} : { catalogueCostMinorUnits: cost }) };
     const claimed = this.tilesClaimedByOrdersInFlight();
 
     for (const tile of footprint) {
       const { chunk } = tileToChunk(tile, this.world.tileChunkSize);
-      if (this.world.getChunk(chunk) === undefined) return this.refuse('out-of-bounds', request, tick, tile);
+      if (this.world.getChunk(chunk) === undefined) return refuse('out-of-bounds', tile);
       if (!canBuildAt(this.world, tile, PLACEMENT_REQUIREMENT).buildable) {
-        return this.refuse('unowned-land', request, tick, tile);
+        return refuse('unowned-land', tile);
       }
       if (this.world.getSquareStructure(tile) !== 0 || this.placedObjects.isTileOccupied(tile) ||
           claimed.has(tileKey(tile)) || this.pendingRoomDoorApproachClaim?.(tile) === true) {
-        return this.refuse('tile-occupied', request, tick, tile);
+        return refuse('tile-occupied', tile);
       }
     }
 
@@ -549,7 +570,18 @@ export class ObjectPlacementService {
     // once. Asking of every tile would refuse a legal placement against a rule
     // nobody wrote.
     const room = roomInstanceContaining(this.world, this.roomInstances, anchor, this.rooms);
-    if (room === undefined) return this.refuse('outside-room', request, tick, anchor);
+    if (room === undefined) return refuse('outside-room', anchor);
+
+    return { ok: true, ...quote, roomInstanceId: room.instanceId };
+  }
+
+  public place(request: PlaceObjectRequest, tick: number, placementSequence?: number): PlaceObjectOutcome {
+    const preview = this.preflight(request);
+    if (!preview.ok) return this.refuse(preview.reason, request, tick, preview.tile);
+    // The shared validation above establishes both catalogue references.
+    const definition = BUILDABLE_REGISTRY.get(request.definitionId)!;
+    const objectId = definition.placesObjectId!;
+    const anchor: TilePosition = { x: tileCoordinate(request.x), y: tileCoordinate(request.y) };
 
     // `undefined` for `edge`: an object is addressed by a tile and occupies no
     // edge. The ordinal after it is the placement order this object takes in
@@ -582,7 +614,7 @@ export class ObjectPlacementService {
       this.orders.registerTransactionOrder(request.orderId, request.transactionId ?? request.orderId, request.historyContinuationOrderIds);
     }
 
-    return { kind: 'ordered', orderId: request.orderId, objectId, anchorTile: anchor, roomInstanceId: room.instanceId };
+    return { kind: 'ordered', orderId: request.orderId, objectId, anchorTile: anchor, roomInstanceId: preview.roomInstanceId };
   }
 
   /** The pending removal target, with the same standing-object priority and footprint lookup as remove. */
