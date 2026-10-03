@@ -1,0 +1,2526 @@
+{
+  "source": "assets/source/blender/actor.prisoner.base.blend",
+  "sourceSha256": "48e3457298d9d3a2cc9dcd39725ba263450bffea27df05d42fe90afc6e659c0b",
+  "meshCount": 48,
+  "meshNames": [
+    "Back trouser pocket.-1",
+    "Back trouser pocket.1",
+    "Brow.-1",
+    "Brow.1",
+    "Button.2.08",
+    "Button.2.22",
+    "Button.2.36",
+    "Button.2.5",
+    "Chest pocket.-1",
+    "Chest pocket.1",
+    "Ear.-1",
+    "Ear.1",
+    "Eye.-1",
+    "Eye.1",
+    "Folded lapel.-1",
+    "Folded lapel.1",
+    "Forearm.-1",
+    "Forearm.1",
+    "Front placket seam",
+    "Hand.-1",
+    "Hand.1",
+    "Head",
+    "Jumpsuit hips",
+    "Jumpsuit torso",
+    "Neck",
+    "Nose",
+    "Pocket flap.-1",
+    "Pocket flap.1",
+    "Prisoner ID patch",
+    "Rolled hem.-1",
+    "Rolled hem.1",
+    "Rubber sole.-1",
+    "Rubber sole.1",
+    "Shirt collar opening",
+    "Short textured hair",
+    "Sideburn.-1",
+    "Sideburn.1",
+    "Sleeve cuff.-1",
+    "Sleeve cuff.1",
+    "Sleeve.-1",
+    "Sleeve.1",
+    "Trouser leg.-1",
+    "Trouser leg.1",
+    "Trouser seam.-1",
+    "Trouser seam.1",
+    "Waist seam",
+    "Work shoe upper.-1",
+    "Work shoe upper.1"
+  ],
+  "completeMaterialGraphs": 8,
+  "originalRawMeshesMaterialsActionsAllEightPosesNormalsBoundsEqualPrior": true,
+  "sourceBounds": {
+    "min": [
+      -0.5929999947547913,
+      -0.4099999964237213,
+      0.02500000223517418
+    ],
+    "max": [
+      0.5929999947547913,
+      0.3330000042915344,
+      3.450000047683716
+    ]
+  },
+  "actualInteriorContacts": [
+    {
+      "frame": 1,
+      "partA": "Jumpsuit torso",
+      "partB": "Jumpsuit hips",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.014999985694885254,
+        1.715000033378601
+      ],
+      "aabbIntersectionDepth": [
+        0.800000011920929,
+        0.5799999833106995,
+        0.3899998664855957
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Jumpsuit torso",
+      "partB": "Neck",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.0,
+        2.684999942779541
+      ],
+      "aabbIntersectionDepth": [
+        0.23000000417232513,
+        0.2240000069141388,
+        0.1100003719329834
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Neck",
+      "partB": "Head",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.0,
+        2.8575000762939453
+      ],
+      "aabbIntersectionDepth": [
+        0.23000000417232513,
+        0.2240000069141388,
+        0.18500018119812012
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Head",
+      "partB": "Short textured hair",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.021500006318092346,
+        3.2674999237060547
+      ],
+      "aabbIntersectionDepth": [
+        0.5699999928474426,
+        0.48899999260902405,
+        0.25499987602233887
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Jumpsuit torso",
+      "partB": "Sleeve.-1",
+      "actualTriangleInteriorWitness": [
+        -0.3734999895095825,
+        0.0,
+        2.299999952316284
+      ],
+      "aabbIntersectionDepth": [
+        0.15299999713897705,
+        0.3199999928474426,
+        0.5999999046325684
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Sleeve.-1",
+      "partB": "Sleeve cuff.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        0.0,
+        2.049999952316284
+      ],
+      "aabbIntersectionDepth": [
+        0.2640000283718109,
+        0.2639999985694885,
+        0.04500007629394531
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Sleeve.-1",
+      "partB": "Forearm.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        0.0,
+        2.012500047683716
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.19200000166893005,
+        0.02500009536743164
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Forearm.-1",
+      "partB": "Hand.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        0.0,
+        1.7425000667572021
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.18000000715255737,
+        0.13499987125396729
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Jumpsuit hips",
+      "partB": "Trouser leg.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        0.0,
+        1.4600000381469727
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.3799999952316284,
+        0.2599998712539673
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Trouser leg.-1",
+      "partB": "Rolled hem.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        0.0,
+        0.3799999952316284
+      ],
+      "aabbIntersectionDepth": [
+        0.3479999899864197,
+        0.3479999899864197,
+        0.09000003337860107
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Trouser leg.-1",
+      "partB": "Work shoe upper.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        -0.019999995827674866,
+        0.32750001549720764
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.3400000035762787,
+        0.07499998807907104
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Work shoe upper.-1",
+      "partB": "Rubber sole.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        -0.12000000476837158,
+        0.0949999988079071
+      ],
+      "aabbIntersectionDepth": [
+        0.3799999952316284,
+        0.5400000214576721,
+        0.09999999403953552
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Jumpsuit torso",
+      "partB": "Sleeve.1",
+      "actualTriangleInteriorWitness": [
+        0.3734999895095825,
+        0.0,
+        2.299999952316284
+      ],
+      "aabbIntersectionDepth": [
+        0.15299999713897705,
+        0.3199999928474426,
+        0.5999999046325684
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Sleeve.1",
+      "partB": "Sleeve cuff.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        0.0,
+        2.049999952316284
+      ],
+      "aabbIntersectionDepth": [
+        0.2640000283718109,
+        0.2639999985694885,
+        0.04500007629394531
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Sleeve.1",
+      "partB": "Forearm.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        0.0,
+        2.012500047683716
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.19200000166893005,
+        0.02500009536743164
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Forearm.1",
+      "partB": "Hand.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        0.0,
+        1.7425000667572021
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.18000000715255737,
+        0.13499987125396729
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Jumpsuit hips",
+      "partB": "Trouser leg.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        0.0,
+        1.4600000381469727
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.3799999952316284,
+        0.2599998712539673
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Trouser leg.1",
+      "partB": "Rolled hem.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        0.0,
+        0.3799999952316284
+      ],
+      "aabbIntersectionDepth": [
+        0.3479999899864197,
+        0.3479999899864197,
+        0.09000003337860107
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Trouser leg.1",
+      "partB": "Work shoe upper.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        -0.019999995827674866,
+        0.32750001549720764
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.3400000035762787,
+        0.07499998807907104
+      ]
+    },
+    {
+      "frame": 1,
+      "partA": "Work shoe upper.1",
+      "partB": "Rubber sole.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        -0.12000000476837158,
+        0.0949999988079071
+      ],
+      "aabbIntersectionDepth": [
+        0.3799999952316284,
+        0.5400000214576721,
+        0.09999999403953552
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Jumpsuit torso",
+      "partB": "Jumpsuit hips",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.014999985694885254,
+        1.715000033378601
+      ],
+      "aabbIntersectionDepth": [
+        0.800000011920929,
+        0.5799999833106995,
+        0.3899998664855957
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Jumpsuit torso",
+      "partB": "Neck",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.0,
+        2.684999942779541
+      ],
+      "aabbIntersectionDepth": [
+        0.23000000417232513,
+        0.2240000069141388,
+        0.1100003719329834
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Neck",
+      "partB": "Head",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.0,
+        2.8575000762939453
+      ],
+      "aabbIntersectionDepth": [
+        0.23000000417232513,
+        0.2240000069141388,
+        0.18500018119812012
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Head",
+      "partB": "Short textured hair",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.021500006318092346,
+        3.2674999237060547
+      ],
+      "aabbIntersectionDepth": [
+        0.5699999928474426,
+        0.48899999260902405,
+        0.25499987602233887
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Jumpsuit torso",
+      "partB": "Sleeve.-1",
+      "actualTriangleInteriorWitness": [
+        -0.3734999895095825,
+        0.09761684387922287,
+        2.320749044418335
+      ],
+      "aabbIntersectionDepth": [
+        0.15299999713897705,
+        0.37927545607089996,
+        0.5631370544433594
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Sleeve.-1",
+      "partB": "Sleeve cuff.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        0.17840799689292908,
+        2.102893829345703
+      ],
+      "aabbIntersectionDepth": [
+        0.2640000283718109,
+        0.21769314259290695,
+        0.1274263858795166
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Sleeve.-1",
+      "partB": "Forearm.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        0.20451179146766663,
+        2.056528091430664
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.16548555344343185,
+        0.06939053535461426
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Forearm.-1",
+      "partB": "Hand.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        0.34787338972091675,
+        1.7943267822265625
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.18330836296081543,
+        0.16718041896820068
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Jumpsuit hips",
+      "partB": "Trouser leg.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        -0.09351347386837006,
+        1.4561095237731934
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.36297305673360825,
+        0.25221896171569824
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Trouser leg.-1",
+      "partB": "Rolled hem.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        -0.41090157628059387,
+        0.4916604161262512
+      ],
+      "aabbIntersectionDepth": [
+        0.3479999899864197,
+        0.2652330994606018,
+        0.1941007375717163
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Trouser leg.-1",
+      "partB": "Work shoe upper.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        -0.46238577365875244,
+        0.43277281522750854
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.16226470470428467,
+        0.15265101194381714
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Work shoe upper.-1",
+      "partB": "Rubber sole.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        -0.6498234272003174,
+        0.30040252208709717
+      ],
+      "aabbIntersectionDepth": [
+        0.3799999952316284,
+        0.4832441210746765,
+        0.23225902020931244
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Jumpsuit torso",
+      "partB": "Sleeve.1",
+      "actualTriangleInteriorWitness": [
+        0.3734999895095825,
+        -0.09761684387922287,
+        2.320749044418335
+      ],
+      "aabbIntersectionDepth": [
+        0.15299999713897705,
+        0.37927545607089996,
+        0.5631370544433594
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Sleeve.1",
+      "partB": "Sleeve cuff.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        -0.17840799689292908,
+        2.102893829345703
+      ],
+      "aabbIntersectionDepth": [
+        0.2640000283718109,
+        0.21769314259290695,
+        0.1274263858795166
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Sleeve.1",
+      "partB": "Forearm.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        -0.20451179146766663,
+        2.056528091430664
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.16548555344343185,
+        0.06939053535461426
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Forearm.1",
+      "partB": "Hand.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        -0.34787338972091675,
+        1.7943267822265625
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.18330836296081543,
+        0.16718041896820068
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Jumpsuit hips",
+      "partB": "Trouser leg.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        0.10851345956325531,
+        1.4561095237731934
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.39297302812337875,
+        0.25221896171569824
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Trouser leg.1",
+      "partB": "Rolled hem.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        0.41090157628059387,
+        0.4916604161262512
+      ],
+      "aabbIntersectionDepth": [
+        0.3479999899864197,
+        0.2652330994606018,
+        0.1941007375717163
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Trouser leg.1",
+      "partB": "Work shoe upper.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        0.4481392204761505,
+        0.4221271276473999
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.38151563704013824,
+        0.05503419041633606
+      ]
+    },
+    {
+      "frame": 2,
+      "partA": "Work shoe upper.1",
+      "partB": "Rubber sole.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        0.4305724799633026,
+        0.20278573036193848
+      ],
+      "aabbIntersectionDepth": [
+        0.3799999952316284,
+        0.4832441210746765,
+        0.23225902020931244
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Jumpsuit torso",
+      "partB": "Jumpsuit hips",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.014999985694885254,
+        1.715000033378601
+      ],
+      "aabbIntersectionDepth": [
+        0.800000011920929,
+        0.5799999833106995,
+        0.3899998664855957
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Jumpsuit torso",
+      "partB": "Neck",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.0,
+        2.684999942779541
+      ],
+      "aabbIntersectionDepth": [
+        0.23000000417232513,
+        0.2240000069141388,
+        0.1100003719329834
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Neck",
+      "partB": "Head",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.0,
+        2.8575000762939453
+      ],
+      "aabbIntersectionDepth": [
+        0.23000000417232513,
+        0.2240000069141388,
+        0.18500018119812012
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Head",
+      "partB": "Short textured hair",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.021500006318092346,
+        3.2674999237060547
+      ],
+      "aabbIntersectionDepth": [
+        0.5699999928474426,
+        0.48899999260902405,
+        0.25499987602233887
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Jumpsuit torso",
+      "partB": "Sleeve.-1",
+      "actualTriangleInteriorWitness": [
+        -0.3734999895095825,
+        0.11681801080703735,
+        2.3458356857299805
+      ],
+      "aabbIntersectionDepth": [
+        0.15299999713897705,
+        0.3863639831542969,
+        0.5175518989562988
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Sleeve.-1",
+      "partB": "Sleeve cuff.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        0.26325011253356934,
+        2.1251378059387207
+      ],
+      "aabbIntersectionDepth": [
+        0.2640000283718109,
+        0.19050154089927673,
+        0.1523122787475586
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Sleeve.-1",
+      "partB": "Forearm.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        0.29177233576774597,
+        2.1102406978607178
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.13345712423324585,
+        0.09272384643554688
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Forearm.-1",
+      "partB": "Hand.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        0.494760662317276,
+        1.8716912269592285
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.18267840147018433,
+        0.17583680152893066
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Jumpsuit hips",
+      "partB": "Trouser leg.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        -0.0976669117808342,
+        1.4568989276885986
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.35466618835926056,
+        0.25379788875579834
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Trouser leg.-1",
+      "partB": "Rolled hem.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        -0.6145429015159607,
+        0.5657225847244263
+      ],
+      "aabbIntersectionDepth": [
+        0.3479999899864197,
+        0.2468855082988739,
+        0.22247827053070068
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Trouser leg.-1",
+      "partB": "Work shoe upper.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        -0.6800284385681152,
+        0.5642288327217102
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.11591452360153198,
+        0.21650320291519165
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Work shoe upper.-1",
+      "partB": "Rubber sole.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        -0.884331226348877,
+        0.3967021405696869
+      ],
+      "aabbIntersectionDepth": [
+        0.3799999952316284,
+        0.42025095224380493,
+        0.3103761374950409
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Jumpsuit torso",
+      "partB": "Sleeve.1",
+      "actualTriangleInteriorWitness": [
+        0.3734999895095825,
+        -0.11681801080703735,
+        2.3458356857299805
+      ],
+      "aabbIntersectionDepth": [
+        0.15299999713897705,
+        0.3863639831542969,
+        0.5175518989562988
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Sleeve.1",
+      "partB": "Sleeve cuff.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        -0.26325011253356934,
+        2.1251378059387207
+      ],
+      "aabbIntersectionDepth": [
+        0.2640000283718109,
+        0.19050154089927673,
+        0.1523122787475586
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Sleeve.1",
+      "partB": "Forearm.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        -0.29177233576774597,
+        2.1102406978607178
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.13345712423324585,
+        0.09272384643554688
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Forearm.1",
+      "partB": "Hand.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        -0.494760662317276,
+        1.8716912269592285
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.18267840147018433,
+        0.17583680152893066
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Jumpsuit hips",
+      "partB": "Trouser leg.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        0.11266689747571945,
+        1.4568989276885986
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.38466615974903107,
+        0.25379788875579834
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Trouser leg.1",
+      "partB": "Rolled hem.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        0.6145429015159607,
+        0.5657225847244263
+      ],
+      "aabbIntersectionDepth": [
+        0.3479999899864197,
+        0.2468855082988739,
+        0.22247827053070068
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Trouser leg.1",
+      "partB": "Work shoe upper.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        0.6604660153388977,
+        0.5478204488754272
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.31007853150367737,
+        0.07543474435806274
+      ]
+    },
+    {
+      "frame": 3,
+      "partA": "Work shoe upper.1",
+      "partB": "Rubber sole.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        0.6901671886444092,
+        0.255633682012558
+      ],
+      "aabbIntersectionDepth": [
+        0.3799999952316284,
+        0.42025092244148254,
+        0.3103761374950409
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Jumpsuit torso",
+      "partB": "Jumpsuit hips",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.014999985694885254,
+        1.715000033378601
+      ],
+      "aabbIntersectionDepth": [
+        0.800000011920929,
+        0.5799999833106995,
+        0.3899998664855957
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Jumpsuit torso",
+      "partB": "Neck",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.0,
+        2.684999942779541
+      ],
+      "aabbIntersectionDepth": [
+        0.23000000417232513,
+        0.2240000069141388,
+        0.1100003719329834
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Neck",
+      "partB": "Head",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.0,
+        2.8575000762939453
+      ],
+      "aabbIntersectionDepth": [
+        0.23000000417232513,
+        0.2240000069141388,
+        0.18500018119812012
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Head",
+      "partB": "Short textured hair",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.021500006318092346,
+        3.2674999237060547
+      ],
+      "aabbIntersectionDepth": [
+        0.5699999928474426,
+        0.48899999260902405,
+        0.25499987602233887
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Jumpsuit torso",
+      "partB": "Sleeve.-1",
+      "actualTriangleInteriorWitness": [
+        -0.3734999895095825,
+        0.08990561962127686,
+        2.3174757957458496
+      ],
+      "aabbIntersectionDepth": [
+        0.15299999713897705,
+        0.3693307116627693,
+        0.5683803558349609
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Sleeve.-1",
+      "partB": "Sleeve cuff.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        0.16365566849708557,
+        2.094637632369995
+      ],
+      "aabbIntersectionDepth": [
+        0.2640000283718109,
+        0.22183061391115189,
+        0.12270402908325195
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Sleeve.-1",
+      "partB": "Forearm.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        0.18924184143543243,
+        2.0495798587799072
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.17065825313329697,
+        0.06517696380615234
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Forearm.-1",
+      "partB": "Hand.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        0.32116788625717163,
+        1.784583330154419
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.1837528645992279,
+        0.16511905193328857
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Jumpsuit hips",
+      "partB": "Trouser leg.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        -0.09291250258684158,
+        1.4567232131958008
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.3641750067472458,
+        0.25344645977020264
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Trouser leg.-1",
+      "partB": "Rolled hem.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        -0.3750532269477844,
+        0.47328320145606995
+      ],
+      "aabbIntersectionDepth": [
+        0.3479999899864197,
+        0.2673622667789459,
+        0.19035130739212036
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Trouser leg.-1",
+      "partB": "Work shoe upper.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        -0.4238947629928589,
+        0.41440463066101074
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.1696791648864746,
+        0.14518839120864868
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Work shoe upper.-1",
+      "partB": "Rubber sole.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        -0.6077522039413452,
+        0.27531206607818604
+      ],
+      "aabbIntersectionDepth": [
+        0.3799999952316284,
+        0.491895467042923,
+        0.22021730244159698
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Jumpsuit torso",
+      "partB": "Sleeve.1",
+      "actualTriangleInteriorWitness": [
+        0.3734999895095825,
+        -0.08990561962127686,
+        2.3174757957458496
+      ],
+      "aabbIntersectionDepth": [
+        0.15299999713897705,
+        0.3693307116627693,
+        0.5683803558349609
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Sleeve.1",
+      "partB": "Sleeve cuff.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        -0.16365566849708557,
+        2.094637632369995
+      ],
+      "aabbIntersectionDepth": [
+        0.2640000283718109,
+        0.22183061391115189,
+        0.12270402908325195
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Sleeve.1",
+      "partB": "Forearm.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        -0.18924184143543243,
+        2.0495798587799072
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.17065825313329697,
+        0.06517696380615234
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Forearm.1",
+      "partB": "Hand.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        -0.32116788625717163,
+        1.784583330154419
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.1837528645992279,
+        0.16511905193328857
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Jumpsuit hips",
+      "partB": "Trouser leg.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        0.10791248828172684,
+        1.4567232131958008
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.3941749781370163,
+        0.25344645977020264
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Trouser leg.1",
+      "partB": "Rolled hem.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        0.3750532269477844,
+        0.47328320145606995
+      ],
+      "aabbIntersectionDepth": [
+        0.3479999899864197,
+        0.2673622667789459,
+        0.19035130739212036
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Trouser leg.1",
+      "partB": "Work shoe upper.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        0.4106835126876831,
+        0.40574896335601807
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.39220328629016876,
+        0.0552828311920166
+      ]
+    },
+    {
+      "frame": 4,
+      "partA": "Work shoe upper.1",
+      "partB": "Rubber sole.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        0.38522806763648987,
+        0.18540650606155396
+      ],
+      "aabbIntersectionDepth": [
+        0.3799999952316284,
+        0.49189549684524536,
+        0.22021730244159698
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Jumpsuit torso",
+      "partB": "Jumpsuit hips",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.014999985694885254,
+        1.715000033378601
+      ],
+      "aabbIntersectionDepth": [
+        0.800000011920929,
+        0.5799999833106995,
+        0.3899998664855957
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Jumpsuit torso",
+      "partB": "Neck",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.0,
+        2.684999942779541
+      ],
+      "aabbIntersectionDepth": [
+        0.23000000417232513,
+        0.2240000069141388,
+        0.1100003719329834
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Neck",
+      "partB": "Head",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.0,
+        2.8575000762939453
+      ],
+      "aabbIntersectionDepth": [
+        0.23000000417232513,
+        0.2240000069141388,
+        0.18500018119812012
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Head",
+      "partB": "Short textured hair",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.021500006318092346,
+        3.2674999237060547
+      ],
+      "aabbIntersectionDepth": [
+        0.5699999928474426,
+        0.48899999260902405,
+        0.25499987602233887
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Jumpsuit torso",
+      "partB": "Sleeve.-1",
+      "actualTriangleInteriorWitness": [
+        -0.3734999895095825,
+        0.0,
+        2.299999952316284
+      ],
+      "aabbIntersectionDepth": [
+        0.15299999713897705,
+        0.3199999928474426,
+        0.5999999046325684
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Sleeve.-1",
+      "partB": "Sleeve cuff.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        0.0,
+        2.049999952316284
+      ],
+      "aabbIntersectionDepth": [
+        0.2640000283718109,
+        0.2639999985694885,
+        0.04500007629394531
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Sleeve.-1",
+      "partB": "Forearm.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        0.0,
+        2.012500047683716
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.19200000166893005,
+        0.02500009536743164
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Forearm.-1",
+      "partB": "Hand.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        0.0,
+        1.7425000667572021
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.18000000715255737,
+        0.13499987125396729
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Jumpsuit hips",
+      "partB": "Trouser leg.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        0.0,
+        1.4600000381469727
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.3799999952316284,
+        0.2599998712539673
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Trouser leg.-1",
+      "partB": "Rolled hem.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        0.0,
+        0.3799999952316284
+      ],
+      "aabbIntersectionDepth": [
+        0.3479999899864197,
+        0.3479999899864197,
+        0.09000003337860107
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Trouser leg.-1",
+      "partB": "Work shoe upper.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        -0.019999995827674866,
+        0.32750001549720764
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.3400000035762787,
+        0.07499998807907104
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Work shoe upper.-1",
+      "partB": "Rubber sole.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        -0.12000000476837158,
+        0.0949999988079071
+      ],
+      "aabbIntersectionDepth": [
+        0.3799999952316284,
+        0.5400000214576721,
+        0.09999999403953552
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Jumpsuit torso",
+      "partB": "Sleeve.1",
+      "actualTriangleInteriorWitness": [
+        0.3734999895095825,
+        0.0,
+        2.299999952316284
+      ],
+      "aabbIntersectionDepth": [
+        0.15299999713897705,
+        0.3199999928474426,
+        0.5999999046325684
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Sleeve.1",
+      "partB": "Sleeve cuff.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        0.0,
+        2.049999952316284
+      ],
+      "aabbIntersectionDepth": [
+        0.2640000283718109,
+        0.2639999985694885,
+        0.04500007629394531
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Sleeve.1",
+      "partB": "Forearm.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        0.0,
+        2.012500047683716
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.19200000166893005,
+        0.02500009536743164
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Forearm.1",
+      "partB": "Hand.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        0.0,
+        1.7425000667572021
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.18000000715255737,
+        0.13499987125396729
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Jumpsuit hips",
+      "partB": "Trouser leg.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        0.0,
+        1.4600000381469727
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.3799999952316284,
+        0.2599998712539673
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Trouser leg.1",
+      "partB": "Rolled hem.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        0.0,
+        0.3799999952316284
+      ],
+      "aabbIntersectionDepth": [
+        0.3479999899864197,
+        0.3479999899864197,
+        0.09000003337860107
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Trouser leg.1",
+      "partB": "Work shoe upper.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        -0.019999995827674866,
+        0.32750001549720764
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.3400000035762787,
+        0.07499998807907104
+      ]
+    },
+    {
+      "frame": 5,
+      "partA": "Work shoe upper.1",
+      "partB": "Rubber sole.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        -0.12000000476837158,
+        0.0949999988079071
+      ],
+      "aabbIntersectionDepth": [
+        0.3799999952316284,
+        0.5400000214576721,
+        0.09999999403953552
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Jumpsuit torso",
+      "partB": "Jumpsuit hips",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.014999985694885254,
+        1.715000033378601
+      ],
+      "aabbIntersectionDepth": [
+        0.800000011920929,
+        0.5799999833106995,
+        0.3899998664855957
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Jumpsuit torso",
+      "partB": "Neck",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.0,
+        2.684999942779541
+      ],
+      "aabbIntersectionDepth": [
+        0.23000000417232513,
+        0.2240000069141388,
+        0.1100003719329834
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Neck",
+      "partB": "Head",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.0,
+        2.8575000762939453
+      ],
+      "aabbIntersectionDepth": [
+        0.23000000417232513,
+        0.2240000069141388,
+        0.18500018119812012
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Head",
+      "partB": "Short textured hair",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.021500006318092346,
+        3.2674999237060547
+      ],
+      "aabbIntersectionDepth": [
+        0.5699999928474426,
+        0.48899999260902405,
+        0.25499987602233887
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Jumpsuit torso",
+      "partB": "Sleeve.-1",
+      "actualTriangleInteriorWitness": [
+        -0.3734999895095825,
+        -0.08990561962127686,
+        2.3174757957458496
+      ],
+      "aabbIntersectionDepth": [
+        0.15299999713897705,
+        0.3693307116627693,
+        0.5683803558349609
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Sleeve.-1",
+      "partB": "Sleeve cuff.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        -0.16365566849708557,
+        2.094637632369995
+      ],
+      "aabbIntersectionDepth": [
+        0.2640000283718109,
+        0.22183061391115189,
+        0.12270402908325195
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Sleeve.-1",
+      "partB": "Forearm.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        -0.18924184143543243,
+        2.0495798587799072
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.17065825313329697,
+        0.06517696380615234
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Forearm.-1",
+      "partB": "Hand.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        -0.32116788625717163,
+        1.784583330154419
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.1837528645992279,
+        0.16511905193328857
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Jumpsuit hips",
+      "partB": "Trouser leg.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        0.10791248828172684,
+        1.4567232131958008
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.3941749781370163,
+        0.25344645977020264
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Trouser leg.-1",
+      "partB": "Rolled hem.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        0.3750532269477844,
+        0.47328320145606995
+      ],
+      "aabbIntersectionDepth": [
+        0.3479999899864197,
+        0.2673622667789459,
+        0.19035130739212036
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Trouser leg.-1",
+      "partB": "Work shoe upper.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        0.4106835126876831,
+        0.40574896335601807
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.39220328629016876,
+        0.0552828311920166
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Work shoe upper.-1",
+      "partB": "Rubber sole.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        0.38522806763648987,
+        0.18540650606155396
+      ],
+      "aabbIntersectionDepth": [
+        0.3799999952316284,
+        0.49189549684524536,
+        0.22021730244159698
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Jumpsuit torso",
+      "partB": "Sleeve.1",
+      "actualTriangleInteriorWitness": [
+        0.3734999895095825,
+        0.08990561962127686,
+        2.3174757957458496
+      ],
+      "aabbIntersectionDepth": [
+        0.15299999713897705,
+        0.3693307116627693,
+        0.5683803558349609
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Sleeve.1",
+      "partB": "Sleeve cuff.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        0.16365566849708557,
+        2.094637632369995
+      ],
+      "aabbIntersectionDepth": [
+        0.2640000283718109,
+        0.22183061391115189,
+        0.12270402908325195
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Sleeve.1",
+      "partB": "Forearm.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        0.18924184143543243,
+        2.0495798587799072
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.17065825313329697,
+        0.06517696380615234
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Forearm.1",
+      "partB": "Hand.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        0.32116788625717163,
+        1.784583330154419
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.1837528645992279,
+        0.16511905193328857
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Jumpsuit hips",
+      "partB": "Trouser leg.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        -0.09291250258684158,
+        1.4567232131958008
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.3641750067472458,
+        0.25344645977020264
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Trouser leg.1",
+      "partB": "Rolled hem.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        -0.3750532269477844,
+        0.47328320145606995
+      ],
+      "aabbIntersectionDepth": [
+        0.3479999899864197,
+        0.2673622667789459,
+        0.19035130739212036
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Trouser leg.1",
+      "partB": "Work shoe upper.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        -0.4238947629928589,
+        0.41440463066101074
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.1696791648864746,
+        0.14518839120864868
+      ]
+    },
+    {
+      "frame": 6,
+      "partA": "Work shoe upper.1",
+      "partB": "Rubber sole.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        -0.6077522039413452,
+        0.27531206607818604
+      ],
+      "aabbIntersectionDepth": [
+        0.3799999952316284,
+        0.491895467042923,
+        0.22021730244159698
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Jumpsuit torso",
+      "partB": "Jumpsuit hips",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.014999985694885254,
+        1.715000033378601
+      ],
+      "aabbIntersectionDepth": [
+        0.800000011920929,
+        0.5799999833106995,
+        0.3899998664855957
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Jumpsuit torso",
+      "partB": "Neck",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.0,
+        2.684999942779541
+      ],
+      "aabbIntersectionDepth": [
+        0.23000000417232513,
+        0.2240000069141388,
+        0.1100003719329834
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Neck",
+      "partB": "Head",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.0,
+        2.8575000762939453
+      ],
+      "aabbIntersectionDepth": [
+        0.23000000417232513,
+        0.2240000069141388,
+        0.18500018119812012
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Head",
+      "partB": "Short textured hair",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.021500006318092346,
+        3.2674999237060547
+      ],
+      "aabbIntersectionDepth": [
+        0.5699999928474426,
+        0.48899999260902405,
+        0.25499987602233887
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Jumpsuit torso",
+      "partB": "Sleeve.-1",
+      "actualTriangleInteriorWitness": [
+        -0.3734999895095825,
+        -0.11681801080703735,
+        2.3458356857299805
+      ],
+      "aabbIntersectionDepth": [
+        0.15299999713897705,
+        0.3863639831542969,
+        0.5175518989562988
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Sleeve.-1",
+      "partB": "Sleeve cuff.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        -0.26325011253356934,
+        2.1251378059387207
+      ],
+      "aabbIntersectionDepth": [
+        0.2640000283718109,
+        0.19050154089927673,
+        0.1523122787475586
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Sleeve.-1",
+      "partB": "Forearm.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        -0.29177233576774597,
+        2.1102406978607178
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.13345712423324585,
+        0.09272384643554688
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Forearm.-1",
+      "partB": "Hand.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        -0.494760662317276,
+        1.8716912269592285
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.18267840147018433,
+        0.17583680152893066
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Jumpsuit hips",
+      "partB": "Trouser leg.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        0.11266689747571945,
+        1.4568989276885986
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.38466615974903107,
+        0.25379788875579834
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Trouser leg.-1",
+      "partB": "Rolled hem.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        0.6145429015159607,
+        0.5657225847244263
+      ],
+      "aabbIntersectionDepth": [
+        0.3479999899864197,
+        0.2468855082988739,
+        0.22247827053070068
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Trouser leg.-1",
+      "partB": "Work shoe upper.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        0.6604660153388977,
+        0.5478204488754272
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.31007853150367737,
+        0.07543474435806274
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Work shoe upper.-1",
+      "partB": "Rubber sole.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        0.6901671886444092,
+        0.255633682012558
+      ],
+      "aabbIntersectionDepth": [
+        0.3799999952316284,
+        0.42025092244148254,
+        0.3103761374950409
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Jumpsuit torso",
+      "partB": "Sleeve.1",
+      "actualTriangleInteriorWitness": [
+        0.3734999895095825,
+        0.11681801080703735,
+        2.3458356857299805
+      ],
+      "aabbIntersectionDepth": [
+        0.15299999713897705,
+        0.3863639831542969,
+        0.5175518989562988
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Sleeve.1",
+      "partB": "Sleeve cuff.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        0.26325011253356934,
+        2.1251378059387207
+      ],
+      "aabbIntersectionDepth": [
+        0.2640000283718109,
+        0.19050154089927673,
+        0.1523122787475586
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Sleeve.1",
+      "partB": "Forearm.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        0.29177233576774597,
+        2.1102406978607178
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.13345712423324585,
+        0.09272384643554688
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Forearm.1",
+      "partB": "Hand.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        0.494760662317276,
+        1.8716912269592285
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.18267840147018433,
+        0.17583680152893066
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Jumpsuit hips",
+      "partB": "Trouser leg.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        -0.0976669117808342,
+        1.4568989276885986
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.35466618835926056,
+        0.25379788875579834
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Trouser leg.1",
+      "partB": "Rolled hem.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        -0.6145429015159607,
+        0.5657225847244263
+      ],
+      "aabbIntersectionDepth": [
+        0.3479999899864197,
+        0.2468855082988739,
+        0.22247827053070068
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Trouser leg.1",
+      "partB": "Work shoe upper.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        -0.6800284385681152,
+        0.5642288327217102
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.11591452360153198,
+        0.21650320291519165
+      ]
+    },
+    {
+      "frame": 7,
+      "partA": "Work shoe upper.1",
+      "partB": "Rubber sole.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        -0.884331226348877,
+        0.3967021405696869
+      ],
+      "aabbIntersectionDepth": [
+        0.3799999952316284,
+        0.42025095224380493,
+        0.3103761374950409
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Jumpsuit torso",
+      "partB": "Jumpsuit hips",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.014999985694885254,
+        1.715000033378601
+      ],
+      "aabbIntersectionDepth": [
+        0.800000011920929,
+        0.5799999833106995,
+        0.3899998664855957
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Jumpsuit torso",
+      "partB": "Neck",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.0,
+        2.684999942779541
+      ],
+      "aabbIntersectionDepth": [
+        0.23000000417232513,
+        0.2240000069141388,
+        0.1100003719329834
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Neck",
+      "partB": "Head",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.0,
+        2.8575000762939453
+      ],
+      "aabbIntersectionDepth": [
+        0.23000000417232513,
+        0.2240000069141388,
+        0.18500018119812012
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Head",
+      "partB": "Short textured hair",
+      "actualTriangleInteriorWitness": [
+        0.0,
+        0.021500006318092346,
+        3.2674999237060547
+      ],
+      "aabbIntersectionDepth": [
+        0.5699999928474426,
+        0.48899999260902405,
+        0.25499987602233887
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Jumpsuit torso",
+      "partB": "Sleeve.-1",
+      "actualTriangleInteriorWitness": [
+        -0.3734999895095825,
+        -0.09761684387922287,
+        2.320749044418335
+      ],
+      "aabbIntersectionDepth": [
+        0.15299999713897705,
+        0.37927545607089996,
+        0.5631370544433594
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Sleeve.-1",
+      "partB": "Sleeve cuff.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        -0.17840799689292908,
+        2.102893829345703
+      ],
+      "aabbIntersectionDepth": [
+        0.2640000283718109,
+        0.21769314259290695,
+        0.1274263858795166
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Sleeve.-1",
+      "partB": "Forearm.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        -0.20451179146766663,
+        2.056528091430664
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.16548555344343185,
+        0.06939053535461426
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Forearm.-1",
+      "partB": "Hand.-1",
+      "actualTriangleInteriorWitness": [
+        -0.4449999928474426,
+        -0.34787338972091675,
+        1.7943267822265625
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.18330836296081543,
+        0.16718041896820068
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Jumpsuit hips",
+      "partB": "Trouser leg.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        0.10851345956325531,
+        1.4561095237731934
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.39297302812337875,
+        0.25221896171569824
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Trouser leg.-1",
+      "partB": "Rolled hem.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        0.41090157628059387,
+        0.4916604161262512
+      ],
+      "aabbIntersectionDepth": [
+        0.3479999899864197,
+        0.2652330994606018,
+        0.1941007375717163
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Trouser leg.-1",
+      "partB": "Work shoe upper.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        0.4481392204761505,
+        0.4221271276473999
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.38151563704013824,
+        0.05503419041633606
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Work shoe upper.-1",
+      "partB": "Rubber sole.-1",
+      "actualTriangleInteriorWitness": [
+        -0.2150000035762787,
+        0.4305724799633026,
+        0.20278573036193848
+      ],
+      "aabbIntersectionDepth": [
+        0.3799999952316284,
+        0.4832441210746765,
+        0.23225902020931244
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Jumpsuit torso",
+      "partB": "Sleeve.1",
+      "actualTriangleInteriorWitness": [
+        0.3734999895095825,
+        0.09761684387922287,
+        2.320749044418335
+      ],
+      "aabbIntersectionDepth": [
+        0.15299999713897705,
+        0.37927545607089996,
+        0.5631370544433594
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Sleeve.1",
+      "partB": "Sleeve cuff.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        0.17840799689292908,
+        2.102893829345703
+      ],
+      "aabbIntersectionDepth": [
+        0.2640000283718109,
+        0.21769314259290695,
+        0.1274263858795166
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Sleeve.1",
+      "partB": "Forearm.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        0.20451179146766663,
+        2.056528091430664
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.16548555344343185,
+        0.06939053535461426
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Forearm.1",
+      "partB": "Hand.1",
+      "actualTriangleInteriorWitness": [
+        0.4449999928474426,
+        0.34787338972091675,
+        1.7943267822265625
+      ],
+      "aabbIntersectionDepth": [
+        0.19200003147125244,
+        0.18330836296081543,
+        0.16718041896820068
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Jumpsuit hips",
+      "partB": "Trouser leg.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        -0.09351347386837006,
+        1.4561095237731934
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.36297305673360825,
+        0.25221896171569824
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Trouser leg.1",
+      "partB": "Rolled hem.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        -0.41090157628059387,
+        0.4916604161262512
+      ],
+      "aabbIntersectionDepth": [
+        0.3479999899864197,
+        0.2652330994606018,
+        0.1941007375717163
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Trouser leg.1",
+      "partB": "Work shoe upper.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        -0.46238577365875244,
+        0.43277281522750854
+      ],
+      "aabbIntersectionDepth": [
+        0.3700000047683716,
+        0.16226470470428467,
+        0.15265101194381714
+      ]
+    },
+    {
+      "frame": 8,
+      "partA": "Work shoe upper.1",
+      "partB": "Rubber sole.1",
+      "actualTriangleInteriorWitness": [
+        0.2150000035762787,
+        -0.6498234272003174,
+        0.30040252208709717
+      ],
+      "aabbIntersectionDepth": [
+        0.3799999952316284,
+        0.4832441210746765,
+        0.23225902020931244
+      ]
+    }
+  ],
+  "bodyPairsPerPose": 20,
+  "animationPoses": 8,
+  "unchangedRuntimeFit": {
+    "resolutionPx": [
+      512,
+      512
+    ],
+    "nominalPixelsPerTile": 64,
+    "pivotPx": [
+      256,
+      256
+    ],
+    "cameraTargetTiles": [
+      0,
+      0,
+      0
+    ]
+  },
+  "historicalReplayFit": {
+    "SpriteRootScale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "orthoScale": 8,
+    "radius": 12,
+    "historicalProducer": "428cd89e48cdbb30c2b5dfda4476dec3a2e9cad0"
+  },
+  "fourActualHistoricalReplays": [
+    {
+      "yawDegrees": -135,
+      "elevationDegrees": 45,
+      "file": "prisoner-yaw-135-elev45.png",
+      "sha256": "18d7b4a3e02761659d54cc5213771c9bbc5b1dc7358d9ec9897ebdb5df2c689b"
+    },
+    {
+      "yawDegrees": -45,
+      "elevationDegrees": 45,
+      "file": "prisoner-yaw-45-elev45.png",
+      "sha256": "02f5b8fbfabd0eb19b441514524a29606a2355e242486cc689e6a37c050f5c10"
+    },
+    {
+      "yawDegrees": 45,
+      "elevationDegrees": 45,
+      "file": "prisoner-yaw+45-elev45.png",
+      "sha256": "af5952bc2e522e54417822442cb58b6489ed8c00d993789c1f6a84b56e98676e"
+    },
+    {
+      "yawDegrees": 135,
+      "elevationDegrees": 45,
+      "file": "prisoner-yaw+135-elev45.png",
+      "sha256": "9bb68615cd682ef60039ea8229017a4a2d7fa669c77c219b8f9da3fcb71a019d"
+    }
+  ],
+  "sourceBytesUnchanged": true
+}

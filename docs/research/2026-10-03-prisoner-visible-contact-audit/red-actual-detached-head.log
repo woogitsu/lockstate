@@ -1,0 +1,12 @@
+00:01.062  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-prisoner-visible-contact-audit-20261003\assets\source\blender\actor.prisoner.base.blend"
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-prisoner-visible-contact-audit-20261003\tooling\research\audit-prisoner-visible-contacts.py", line 104, in <module>
+    contacts = actual_contacts(scene)
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-prisoner-visible-contact-audit-20261003\tooling\research\audit-prisoner-visible-contacts.py", line 88, in actual_contacts
+    raise ValueError(f'Prisoner structural contact disconnected: {a} / {b} at frame {frame}')
+ValueError: Prisoner structural contact disconnected: Neck / Head at frame 1
+
+Error: script failed, file: 'tooling/research/audit-prisoner-visible-contacts.py', exiting.
