@@ -1406,3 +1406,16 @@ Art refines actual Loading Dock Door, gameplay fixes actual occupied-template
 material cancellation, HUD probes interleaved actual camera gestures. Push
 coherent checkpoints. Full hosted CI/main/release gates remain separate;
 owner-only sharding and V9 proposals stay pending.
+
+## SafeRestore source checkpoint - 2026-10-03
+
+The isolated following branch combines deterministic strict-V8 conflicting
+object import repair,32-case completed doorway admission, actual initial-CI
+HUD pointer/category-floor repairs, independent real camera preconditions,
+and actual detailed Security Console/Medical Bed sources. Medical retains11
+original meshes and adds65 physical caster/brake/rail/lifting parts; source
+previews and18 producer controls pass but do not replace genuine Build/Load.
+Native Security/Medical fixtures are routed once through the canonical artifact
+suite. Root now builds this exact integration and queues six actual player
+cases and three source camera regressions with unchanged budgets. First-CI
+repairs retain the original cancelled failure record; fullCI is still pending.
