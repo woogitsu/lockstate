@@ -1,0 +1,81 @@
+[
+  {
+    "url": "http://127.0.0.1:5365/assets/worker-BA42u9rG.js",
+    "path": "/assets/worker-BA42u9rG.js",
+    "status": 200,
+    "sha256": "5cbab442c9a45106c589077537eb10b94417373240b850fb949f61ed19dbca4f",
+    "bytes": 442752
+  },
+  {
+    "url": "http://127.0.0.1:5365/game-content/oblique-fixture.garbage-room-waste-bin.v1.json",
+    "path": "/game-content/oblique-fixture.garbage-room-waste-bin.v1.json",
+    "status": 200,
+    "sha256": "3d0f33f3372f02021c81474877997595065ee9b4430f42e835cd1a33819978d3",
+    "bytes": 19806
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev40.2a807505ad10.png",
+    "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev40.2a807505ad10.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B300-elev40.2a807505ad10.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B300-elev40.2a807505ad10.png",
+    "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev40.2a807505ad10.png",
+    "status": 200,
+    "sha256": "2a807505ad10545931ca717ac4cf8627d50e380323fb6052af4531f082df812b",
+    "bytes": 7065
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+330-elev40.b1dade694cb5.png",
+    "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+330-elev40.b1dade694cb5.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B330-elev40.b1dade694cb5.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B330-elev40.b1dade694cb5.png",
+    "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+330-elev40.b1dade694cb5.png",
+    "status": 200,
+    "sha256": "b1dade694cb57f30eb61633ee7def3578ce25dd380373912af2a711c50ec62d0",
+    "bytes": 6776
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+00-elev40.12651a040ff3.png",
+    "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+00-elev40.12651a040ff3.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B00-elev40.12651a040ff3.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B00-elev40.12651a040ff3.png",
+    "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+00-elev40.12651a040ff3.png",
+    "status": 200,
+    "sha256": "12651a040ff337a65975291bfdc1cdb5277245b0247653c823f86c665c3c3284",
+    "bytes": 4208
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+30-elev40.4bca18430593.png",
+    "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+30-elev40.4bca18430593.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B30-elev40.4bca18430593.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B30-elev40.4bca18430593.png",
+    "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+30-elev40.4bca18430593.png",
+    "status": 200,
+    "sha256": "4bca184305934d447463bba66a94076de35c56c3918a642678bee7c1ce41ab00",
+    "bytes": 6959
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+60-elev40.a573c065a873.png",
+    "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+60-elev40.a573c065a873.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B60-elev40.a573c065a873.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B60-elev40.a573c065a873.png",
+    "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+60-elev40.a573c065a873.png",
+    "status": 200,
+    "sha256": "a573c065a8733517712fdbecd752a47599b407cd1dcd0847a9fc00470cb9e348",
+    "bytes": 7095
+  }
+]

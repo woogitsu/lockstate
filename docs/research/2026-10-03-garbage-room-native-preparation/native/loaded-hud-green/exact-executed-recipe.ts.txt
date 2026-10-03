@@ -1,4 +1,4 @@
-/** Opt-in built-client public Garbage Room journey. No standard suite collects
+﻿/** Opt-in built-client public Garbage Room journey. No standard suite collects
  * .recipe.ts, no injected fixture/snapshot/command, no visual ROI guess. */
 import { writeFile } from 'node:fs/promises';
 import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';

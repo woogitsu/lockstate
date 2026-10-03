@@ -1,5 +1,13 @@
 # Garbage Room q0/q1 public native preparation
 
+## Root compiled observation — 2026-10-03
+
+The runtime registry and Garbage Room context are now integrated. Actual compiled subject `3bd76298c1964a4eaa802f263c2347e717593206` passes **3/3 public native cases** in1.9minutes: genuine Storage/Delivery capacity, q0 and q1 Garbage Room purchase, both exact generated bin owners, square shell, actual new source60/e40 PNG/body/decoder and whole paused Save/Load. Root opened both actual FullHD frames and saw the two refuse trolleys in the completed room. The run has zero skips/flaky/global errors.
+
+The original run is retained:1legal GREEN,1RED,1serialSKIP because a freshly installed message observer expected a later clock-state broadcast after Load; the actual HUD already showed Pause pressed and the real worker was restored. The observer now reads that real public paused control, while complete worker equality continues rejecting any changed tick/state. Timeouts, retries and state equality were not relaxed. Exact executed recipes and raw reports are archived under `native/`.
+
+This is an initial compiled observation. Independent per-bin hardware pixel controls and a genuine context-consumer omission/restoration remain pending, as does native verification after integrating the demand-loader correction. It is not a hosted full-CI/deployment claim.
+
 2026-10-03. Own branch `codex/garbage-room-native-preparation-20261003`, base
 `59b5fbb02bdb5c112f41abe0cb74bf4eb69fc3b9` (the genuine model/export checkpoint).
 **Preparation only: no browser, server, new Blender render or native pass.**

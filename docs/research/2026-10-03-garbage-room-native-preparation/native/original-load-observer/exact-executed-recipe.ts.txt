@@ -1,4 +1,4 @@
-/** Opt-in built-client public Garbage Room journey. No standard suite collects
+﻿/** Opt-in built-client public Garbage Room journey. No standard suite collects
  * .recipe.ts, no injected fixture/snapshot/command, no visual ROI guess. */
 import { writeFile } from 'node:fs/promises';
 import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
@@ -89,9 +89,7 @@ for (const turns of [0, 1] as const) test(`Garbage Room q${turns}: literal two-b
   await page.setViewportSize({ width: 1920, height: 1080 }); await page.goto('/?renderer=oblique');
   await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
-  // Loading publishes the initial HUD clock without a later clock-state
-  // broadcast. Whole snapshot equality below independently rejects any tick.
-  await expect(page.getByRole('button', { name: 'Pause', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(() => currentClock(page)).toEqual({ mode: 'paused' });
   const capacity = await showcaseSnapshot(page);
   expect(capacity).toEqual(wholeCapacity); assertGarbageCapacity(capacity);
   await placePublicPlan(page, GARBAGE_PLAN.name, GARBAGE_ORIGIN, turns);
@@ -124,7 +122,7 @@ for (const turns of [0, 1] as const) test(`Garbage Room q${turns}: literal two-b
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
   await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
-  await expect(page.getByRole('button', { name: 'Pause', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(() => currentClock(page)).toEqual({ mode: 'paused' });
   const loaded = await showcaseSnapshot(page, info.outputPath('actual-garbage-whole-paused-after-save-load.json'));
   expect(loaded, 'ALL V8 persisted state survives actual Save/Load').toEqual(built);
   assertGarbageRoom(loaded, turns, true); expect(await showcaseRooms(page)).toEqual(rooms);

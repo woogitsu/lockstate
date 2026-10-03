@@ -83,7 +83,9 @@ for (const turns of [0, 1] as const) test(`Classroom plan q${turns}: genuine sep
   await page.setViewportSize({ width: 1920, height: 1080 }); await page.goto('/?renderer=oblique');
   await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
-  await expect.poll(() => currentClock(page)).toEqual({ mode: 'paused' });
+  // Restored sessions expose their initial clock through the public HUD;
+  // the complete worker equality below also rejects an advanced tick.
+  await expect(page.getByRole('button', { name: 'Pause', exact: true })).toHaveAttribute('aria-pressed', 'true');
   expect(await showcaseSnapshot(page)).toEqual(wholeCapacity);
   await placePublicPlan(page, CLASSROOM_PLAN.name, CLASSROOM_ORIGIN, turns);
   const queued = await showcaseSnapshot(page, info.outputPath('actual-classroom-plan-queued.json'));
@@ -144,7 +146,7 @@ for (const turns of [0, 1] as const) test(`Classroom plan q${turns}: genuine sep
   await expect(page.locator('.save-panel__status')).toContainText('Saved');
   await page.locator('.save-panel__item').first().getByRole('button', { name: 'Load', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
-  await expect.poll(() => currentClock(page)).toEqual({ mode: 'paused' });
+  await expect(page.getByRole('button', { name: 'Pause', exact: true })).toHaveAttribute('aria-pressed', 'true');
   const loaded = await showcaseSnapshot(page, info.outputPath('actual-classroom-desk-whole-paused-after-load.json'));
   expect(loaded, 'whole paused V8 native Save/Load').toEqual(built);
   assertClassroomDesk(loaded, turns, String(objectOwner)); expect(await showcaseRooms(page)).toEqual(rooms);

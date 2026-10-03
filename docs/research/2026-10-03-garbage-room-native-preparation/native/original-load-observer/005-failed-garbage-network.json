@@ -1,0 +1,29 @@
+[
+  {
+    "url": "http://127.0.0.1:5365/assets/worker-BA42u9rG.js",
+    "path": "/assets/worker-BA42u9rG.js",
+    "status": 200,
+    "sha256": "5cbab442c9a45106c589077537eb10b94417373240b850fb949f61ed19dbca4f",
+    "bytes": 442752
+  },
+  {
+    "url": "http://127.0.0.1:5365/game-content/oblique-fixture.garbage-room-waste-bin.v1.json",
+    "path": "/game-content/oblique-fixture.garbage-room-waste-bin.v1.json",
+    "status": 200,
+    "sha256": "3d0f33f3372f02021c81474877997595065ee9b4430f42e835cd1a33819978d3",
+    "bytes": 19806
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev40.2a807505ad10.png",
+    "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev40.2a807505ad10.png",
+    "status": 307,
+    "location": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B300-elev40.2a807505ad10.png"
+  },
+  {
+    "url": "http://127.0.0.1:5365/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw%2B300-elev40.2a807505ad10.png",
+    "path": "/assets/environment/oblique/fixture.garbage-room.waste-bin-yaw+300-elev40.2a807505ad10.png",
+    "status": 200,
+    "sha256": "2a807505ad10545931ca717ac4cf8627d50e380323fb6052af4531f082df812b",
+    "bytes": 7065
+  }
+]

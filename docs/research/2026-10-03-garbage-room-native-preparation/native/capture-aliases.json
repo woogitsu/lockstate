@@ -1,0 +1,276 @@
+[
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-actual-native-20261003.json",
+    "archived": "original-load-observer/report.json",
+    "sourceBytes": 9694,
+    "sourceSha256": "21092c11114c978aa3a98a440266345d4dccefb3c614dba8c83b147a19287025",
+    "archivedBytes": 9694,
+    "archivedSha256": "21092c11114c978aa3a98a440266345d4dccefb3c614dba8c83b147a19287025"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-actual-native-20261003.txt",
+    "archived": "original-load-observer/console.txt",
+    "sourceBytes": 7082,
+    "sourceSha256": "3683797c1917d1311f57cebbec1fdc115d5d82a2c1fd6b9ebcf1d7a97d2bb0cb",
+    "archivedBytes": 3553,
+    "archivedSha256": "543d8eb2c8a1c7bd886b2615d0162fca3e51a0dfe22f74192302102f32669041",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-actual-native-20261003\\.last-run.json",
+    "archived": "original-load-observer/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "d0a84c2ae50e0b2ac739ef7c8ed207f52279fd8832cdf59c526dfbe36648d3bc",
+    "archivedBytes": 96,
+    "archivedSha256": "d0a84c2ae50e0b2ac739ef7c8ed207f52279fd8832cdf59c526dfbe36648d3bc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-actual-native-20261003\\native-garbage-room.recipe-1a26e--and-whole-paused-Save-Load\\error-context.md",
+    "archived": "original-load-observer/002-error-context.md",
+    "sourceBytes": 9519,
+    "sourceSha256": "2c1d8a827de9c700f4fb6123796bd5f446c49c7ae8abaa6e5022503743dc4680",
+    "archivedBytes": 9519,
+    "archivedSha256": "2c1d8a827de9c700f4fb6123796bd5f446c49c7ae8abaa6e5022503743dc4680"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-actual-native-20261003\\native-garbage-room.recipe-1a26e--and-whole-paused-Save-Load\\failed-garbage-actual-worker.json",
+    "archived": "original-load-observer/003-failed-garbage-actual-worker.json",
+    "sourceBytes": 54466,
+    "sourceSha256": "cbdf1e5ff2335c318fca02fee10c7991b1d3f89fdebd36236ff0660922d7a5ab",
+    "archivedBytes": 54466,
+    "archivedSha256": "cbdf1e5ff2335c318fca02fee10c7991b1d3f89fdebd36236ff0660922d7a5ab"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-actual-native-20261003\\native-garbage-room.recipe-1a26e--and-whole-paused-Save-Load\\failed-garbage-fullhd.png",
+    "archived": "original-load-observer/004-failed-garbage-fullhd.png",
+    "sourceBytes": 1581672,
+    "sourceSha256": "73bcf621e49744616107c4bdce73264ac5c578ce26a83b0e39a5aeae738fc22d",
+    "archivedBytes": 1581672,
+    "archivedSha256": "73bcf621e49744616107c4bdce73264ac5c578ce26a83b0e39a5aeae738fc22d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-actual-native-20261003\\native-garbage-room.recipe-1a26e--and-whole-paused-Save-Load\\failed-garbage-network.json",
+    "archived": "original-load-observer/005-failed-garbage-network.json",
+    "sourceBytes": 1270,
+    "sourceSha256": "8601280caf3cf13de805ba2483a859802475fdb2368bd3ef3c886ca3102d568d",
+    "archivedBytes": 1270,
+    "archivedSha256": "8601280caf3cf13de805ba2483a859802475fdb2368bd3ef3c886ca3102d568d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-actual-native-20261003\\native-garbage-room.recipe-7fa7d-otstrap-for-refuse-handling\\actual-public-capacity-whole-paused.json",
+    "archived": "original-load-observer/006-actual-public-capacity-whole-paused.json",
+    "sourceBytes": 54466,
+    "sourceSha256": "f0473de6bfb758d512c347786d3030913e28604d2d4b9dbc6633a96efb75c8d7",
+    "archivedBytes": 54466,
+    "archivedSha256": "f0473de6bfb758d512c347786d3030913e28604d2d4b9dbc6633a96efb75c8d7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003.json",
+    "archived": "loaded-hud-green/report.json",
+    "sourceBytes": 5805,
+    "sourceSha256": "19449709999a00ab0a81c1db8862a6729b44c40cce1298fbc8690fc31cebfd95",
+    "archivedBytes": 5805,
+    "archivedSha256": "19449709999a00ab0a81c1db8862a6729b44c40cce1298fbc8690fc31cebfd95"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003.txt",
+    "archived": "loaded-hud-green/console.txt",
+    "sourceBytes": 4172,
+    "sourceSha256": "b74f8d179f53bc7270238d0086d2c74a53b55c320e9beba812ba9c58be33a620",
+    "archivedBytes": 2093,
+    "archivedSha256": "06a44d06bc5cc13ab80817c5f996131c13408b8521bf7fa09fda5417d98476b3",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\.last-run.json",
+    "archived": "loaded-hud-green/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-1a26e--and-whole-paused-Save-Load\\actual-garbage-completed-whole-paused.json",
+    "archived": "loaded-hud-green/002-actual-garbage-completed-whole-paused.json",
+    "sourceBytes": 68683,
+    "sourceSha256": "f4367da04218e1a7a5a96f67b34cbd1a1ad78411ab744b4ba706016f7b8672f5",
+    "archivedBytes": 68683,
+    "archivedSha256": "f4367da04218e1a7a5a96f67b34cbd1a1ad78411ab744b4ba706016f7b8672f5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-1a26e--and-whole-paused-Save-Load\\actual-garbage-queued-whole-paused.json",
+    "archived": "loaded-hud-green/003-actual-garbage-queued-whole-paused.json",
+    "sourceBytes": 60274,
+    "sourceSha256": "6b0bae459287e0f7cc9441f3fdc205161edd5e62e0eb2cc19f7e956a963d5e07",
+    "archivedBytes": 60274,
+    "archivedSha256": "6b0bae459287e0f7cc9441f3fdc205161edd5e62e0eb2cc19f7e956a963d5e07"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-1a26e--and-whole-paused-Save-Load\\actual-garbage-whole-paused-after-save-load.json",
+    "archived": "loaded-hud-green/004-actual-garbage-whole-paused-after-save-load.json",
+    "sourceBytes": 68683,
+    "sourceSha256": "2bc9f4094a67ffde5532847f61922b21c9567dfa0480dc7e60a994febaf86a83",
+    "archivedBytes": 68683,
+    "archivedSha256": "2bc9f4094a67ffde5532847f61922b21c9567dfa0480dc7e60a994febaf86a83"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-1a26e--and-whole-paused-Save-Load\\garbage-room-actual-after-load-canvas.png",
+    "archived": "loaded-hud-green/005-garbage-room-actual-after-load-canvas.png",
+    "sourceBytes": 1410236,
+    "sourceSha256": "4b9885728eb5160cfa807665272dca3473166a94e8dfd28ea1f4ecf96cece9d5",
+    "archivedBytes": 1410236,
+    "archivedSha256": "4b9885728eb5160cfa807665272dca3473166a94e8dfd28ea1f4ecf96cece9d5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-1a26e--and-whole-paused-Save-Load\\garbage-room-actual-after-load-fullhd.png",
+    "archived": "loaded-hud-green/006-garbage-room-actual-after-load-fullhd.png",
+    "sourceBytes": 1410236,
+    "sourceSha256": "4b9885728eb5160cfa807665272dca3473166a94e8dfd28ea1f4ecf96cece9d5",
+    "archivedBytes": 1410236,
+    "archivedSha256": "4b9885728eb5160cfa807665272dca3473166a94e8dfd28ea1f4ecf96cece9d5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-1a26e--and-whole-paused-Save-Load\\garbage-room-actual-before-save-canvas.png",
+    "archived": "loaded-hud-green/007-garbage-room-actual-before-save-canvas.png",
+    "sourceBytes": 1451308,
+    "sourceSha256": "949ad171e845b3e7f839e511146c66363d7abeeec0a3d7db4897c5c882a422f5",
+    "archivedBytes": 1451308,
+    "archivedSha256": "949ad171e845b3e7f839e511146c66363d7abeeec0a3d7db4897c5c882a422f5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-1a26e--and-whole-paused-Save-Load\\garbage-room-actual-before-save-fullhd.png",
+    "archived": "loaded-hud-green/008-garbage-room-actual-before-save-fullhd.png",
+    "sourceBytes": 1451308,
+    "sourceSha256": "949ad171e845b3e7f839e511146c66363d7abeeec0a3d7db4897c5c882a422f5",
+    "archivedBytes": 1451308,
+    "archivedSha256": "949ad171e845b3e7f839e511146c66363d7abeeec0a3d7db4897c5c882a422f5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-1a26e--and-whole-paused-Save-Load\\garbage-room-actual-network-and-decoder-receipt.json",
+    "archived": "loaded-hud-green/009-garbage-room-actual-network-and-decoder-receipt.json",
+    "sourceBytes": 64781,
+    "sourceSha256": "309448b9a584bbc309946a52c44ed9c17174ff6b327ca5b00980571860f28a8d",
+    "archivedBytes": 64781,
+    "archivedSha256": "309448b9a584bbc309946a52c44ed9c17174ff6b327ca5b00980571860f28a8d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-1a26e--and-whole-paused-Save-Load\\garbage-room-actual-network.json",
+    "archived": "loaded-hud-green/010-garbage-room-actual-network.json",
+    "sourceBytes": 4187,
+    "sourceSha256": "600d4d17e053b43f5fcdc557b6d33d197484ec1fc4283d8d4bd2f52e862dd953",
+    "archivedBytes": 4187,
+    "archivedSha256": "600d4d17e053b43f5fcdc557b6d33d197484ec1fc4283d8d4bd2f52e862dd953"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-1a26e--and-whole-paused-Save-Load\\garbage-room-actual200-source60-elev40.png",
+    "archived": "loaded-hud-green/011-garbage-room-actual200-source60-elev40.png",
+    "sourceBytes": 7095,
+    "sourceSha256": "a573c065a8733517712fdbecd752a47599b407cd1dcd0847a9fc00470cb9e348",
+    "archivedBytes": 7095,
+    "archivedSha256": "a573c065a8733517712fdbecd752a47599b407cd1dcd0847a9fc00470cb9e348"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-1a26e--and-whole-paused-Save-Load\\garbage-room-native-prepared-route-receipt.json",
+    "archived": "loaded-hud-green/012-garbage-room-native-prepared-route-receipt.json",
+    "sourceBytes": 244866,
+    "sourceSha256": "07c675ea3935517a048b0fddeb718ff91eb552499b7bfb573f3096411a071e33",
+    "archivedBytes": 244866,
+    "archivedSha256": "07c675ea3935517a048b0fddeb718ff91eb552499b7bfb573f3096411a071e33"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-44976--and-whole-paused-Save-Load\\actual-garbage-completed-whole-paused.json",
+    "archived": "loaded-hud-green/013-actual-garbage-completed-whole-paused.json",
+    "sourceBytes": 68482,
+    "sourceSha256": "f3a40bfd29b425dbb805988839a0c4a1391d94d69f2bf831f33a24360daaf58f",
+    "archivedBytes": 68482,
+    "archivedSha256": "f3a40bfd29b425dbb805988839a0c4a1391d94d69f2bf831f33a24360daaf58f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-44976--and-whole-paused-Save-Load\\actual-garbage-queued-whole-paused.json",
+    "archived": "loaded-hud-green/014-actual-garbage-queued-whole-paused.json",
+    "sourceBytes": 60308,
+    "sourceSha256": "4145675508e338d6d593e306b7bb264026d3369c137bbe4497c31a47bba55a1a",
+    "archivedBytes": 60308,
+    "archivedSha256": "4145675508e338d6d593e306b7bb264026d3369c137bbe4497c31a47bba55a1a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-44976--and-whole-paused-Save-Load\\actual-garbage-whole-paused-after-save-load.json",
+    "archived": "loaded-hud-green/015-actual-garbage-whole-paused-after-save-load.json",
+    "sourceBytes": 68482,
+    "sourceSha256": "2a3a91db93e82df242f295a9b4a1c4020531c270050054c31eeb8b0fea2701cc",
+    "archivedBytes": 68482,
+    "archivedSha256": "2a3a91db93e82df242f295a9b4a1c4020531c270050054c31eeb8b0fea2701cc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-44976--and-whole-paused-Save-Load\\garbage-room-actual-after-load-canvas.png",
+    "archived": "loaded-hud-green/016-garbage-room-actual-after-load-canvas.png",
+    "sourceBytes": 1386909,
+    "sourceSha256": "c0c46f9b26fad64be1027c6b18e20fad7351c980e1a8e2c609e431f0b3e7d386",
+    "archivedBytes": 1386909,
+    "archivedSha256": "c0c46f9b26fad64be1027c6b18e20fad7351c980e1a8e2c609e431f0b3e7d386"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-44976--and-whole-paused-Save-Load\\garbage-room-actual-after-load-fullhd.png",
+    "archived": "loaded-hud-green/017-garbage-room-actual-after-load-fullhd.png",
+    "sourceBytes": 1386909,
+    "sourceSha256": "c0c46f9b26fad64be1027c6b18e20fad7351c980e1a8e2c609e431f0b3e7d386",
+    "archivedBytes": 1386909,
+    "archivedSha256": "c0c46f9b26fad64be1027c6b18e20fad7351c980e1a8e2c609e431f0b3e7d386"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-44976--and-whole-paused-Save-Load\\garbage-room-actual-before-save-canvas.png",
+    "archived": "loaded-hud-green/018-garbage-room-actual-before-save-canvas.png",
+    "sourceBytes": 1411371,
+    "sourceSha256": "b2a332a757d913ab1d0043bf07db3b9142b36459bc018b7593e4a067ed614448",
+    "archivedBytes": 1411371,
+    "archivedSha256": "b2a332a757d913ab1d0043bf07db3b9142b36459bc018b7593e4a067ed614448"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-44976--and-whole-paused-Save-Load\\garbage-room-actual-before-save-fullhd.png",
+    "archived": "loaded-hud-green/019-garbage-room-actual-before-save-fullhd.png",
+    "sourceBytes": 1411371,
+    "sourceSha256": "b2a332a757d913ab1d0043bf07db3b9142b36459bc018b7593e4a067ed614448",
+    "archivedBytes": 1411371,
+    "archivedSha256": "b2a332a757d913ab1d0043bf07db3b9142b36459bc018b7593e4a067ed614448"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-44976--and-whole-paused-Save-Load\\garbage-room-actual-network-and-decoder-receipt.json",
+    "archived": "loaded-hud-green/020-garbage-room-actual-network-and-decoder-receipt.json",
+    "sourceBytes": 56108,
+    "sourceSha256": "1ded5fd8282627778c9d3dfb2c8f7d531daf5017fe58579ad70099bf2d7fc6ba",
+    "archivedBytes": 56108,
+    "archivedSha256": "1ded5fd8282627778c9d3dfb2c8f7d531daf5017fe58579ad70099bf2d7fc6ba"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-44976--and-whole-paused-Save-Load\\garbage-room-actual-network.json",
+    "archived": "loaded-hud-green/021-garbage-room-actual-network.json",
+    "sourceBytes": 2726,
+    "sourceSha256": "29fa11113e7a2a317d62bc180ec6559f677337d22f95c1493e6cbb8db97fd9ee",
+    "archivedBytes": 2726,
+    "archivedSha256": "29fa11113e7a2a317d62bc180ec6559f677337d22f95c1493e6cbb8db97fd9ee"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-44976--and-whole-paused-Save-Load\\garbage-room-actual200-source60-elev40.png",
+    "archived": "loaded-hud-green/022-garbage-room-actual200-source60-elev40.png",
+    "sourceBytes": 7095,
+    "sourceSha256": "a573c065a8733517712fdbecd752a47599b407cd1dcd0847a9fc00470cb9e348",
+    "archivedBytes": 7095,
+    "archivedSha256": "a573c065a8733517712fdbecd752a47599b407cd1dcd0847a9fc00470cb9e348"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-44976--and-whole-paused-Save-Load\\garbage-room-native-prepared-route-receipt.json",
+    "archived": "loaded-hud-green/023-garbage-room-native-prepared-route-receipt.json",
+    "sourceBytes": 235538,
+    "sourceSha256": "1564c64a1a210ed49828a49eb492aa7e394c760c7d4b72d237c9720b6e041459",
+    "archivedBytes": 235538,
+    "archivedSha256": "1564c64a1a210ed49828a49eb492aa7e394c760c7d4b72d237c9720b6e041459"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-garbage-loaded-hud-native-20261003\\native-garbage-room.recipe-7fa7d-otstrap-for-refuse-handling\\actual-public-capacity-whole-paused.json",
+    "archived": "loaded-hud-green/024-actual-public-capacity-whole-paused.json",
+    "sourceBytes": 54466,
+    "sourceSha256": "60c04fbe937463ad473d05f8ef389000befd6bf017a46ff43c7a4eacfae76ad0",
+    "archivedBytes": 54466,
+    "archivedSha256": "60c04fbe937463ad473d05f8ef389000befd6bf017a46ff43c7a4eacfae76ad0"
+  }
+]
