@@ -112,6 +112,28 @@ const armReport = hudSource.match(/const reportArmed = \(\): void => ([^\r\n]+);
 const armCase = source.match(/case 'arm-build-tool': \{([\s\S]*?)\r?\n        \}\r?\n\r?\n        case 'arm-room-tool':/);
 if (marker < 0 || activation === null || armReport === null || armCase === null) throw Error('Unique actual HUD/main arming callbacks absent');
 const applyArm = new Function('intent', 'roomTemplateTool', 'tool', 'objects', 'objectFootprintOf', 'BUILDABLE_REGISTRY', 'worldScene', armCase[1]!);
+const catalogueActivation = hudSource.slice(hudSource.indexOf('const row = createListRow({'))
+  .match(/onActivate: \(\) => \{([\s\S]*?)\r?\n      \},/);
+if (catalogueActivation === null) throw Error('Actual catalogue row activation absent');
+function selectCatalogueRow(h: Awaited<ReturnType<typeof setup>>, definitionId: string): void {
+  const objectFootprintOf = (id: string) => {
+    const objectId = BUILDABLE_REGISTRY.get(id)?.placesObjectId;
+    return objectId === undefined ? undefined : defaultObjectRegistry.getById(objectId)?.footprint;
+  };
+  const options = { onArm: (armed: boolean, selected: string, removing: boolean, quarterTurns: 0 | 1 | 2 | 3) => {
+    applyArm({ armed, definitionId: selected, removing, quarterTurns }, undefined,
+      h.tools.wall, h.tools.object, objectFootprintOf, BUILDABLE_REGISTRY, h.actual);
+  } };
+  // The exact row callback and exact reportArmed closure share their actual
+  // selection variables. Only DOM paint is replaced; no command is fabricated.
+  const activate = new Function('buildable', 'options', 'paintCatalogue', 'paintPlacement', 'paintBuy', 'paintArmed',
+    `let armed=true, selectedId='wall-brick', removing=false, quarterTurns=0;
+     const reportArmed=()=>${armReport![1]};
+     return ()=>{${catalogueActivation![1]}};`)(
+    { definitionId }, options, () => undefined, () => undefined, () => undefined, () => undefined,
+  ) as () => void;
+  activate();
+}
 function armButton(h: Awaited<ReturnType<typeof setup>>, selected: 'wall' | 'object' | 'room') {
   h.tools.wall.setArmed(false); h.tools.object.setArmed(false);
   h.tools.room.setArmed(false);
@@ -176,5 +198,37 @@ for (const [mode, button, buttons] of [['world', 1, 4], ['oblique', 1, 4], ['obl
     expect(h.actual.captureCameraView()).not.toEqual(before);
     expect(h.actors.submitted()).toHaveLength(0); expect(h.roomReports).toHaveLength(0);
     h.mouse('up', button, 0, 970);
+  });
+}
+
+for (const mode of ['world', 'oblique'] as const) {
+  it(`${mode}: actual Door catalogue selection withdraws the held old square-wall press`, async () => {
+    const h = await setup(mode, 'wall'); armButton(h, 'wall');
+    h.mouse('down', 0, 1); h.mouse('move', 0, 1, 940);
+    selectCatalogueRow(h, 'door-wooden');
+    expect(h.tools.wall.selectedDefinitionId).toBe('door-wooden');
+    expect(h.tools.wall.usesSquareFootprint()).toBe(false);
+    expect(h.pointer.primaryDown).toBe(true);
+    h.mouse('up', 0, 0, 940);
+    console.log('CATALOGUE_OLD_RELEASE', JSON.stringify({ mode,
+      commands: h.actors.submitted().map(message => message.payload.command.data) }));
+    expect(h.actors.submitted(), 'new selection cannot buy from the unfinished old wall press').toHaveLength(0);
+    h.mouse('down', 0, 1); h.mouse('up', 0, 0);
+    expect(h.actors.submitted()).toHaveLength(1);
+    expect(h.actors.submitted()[0]!.payload.command.data).toMatchObject({ type: 'PlaceBuildOrder', definitionId: 'door-wooden' });
+  });
+  it(`${mode}: reselecting the same Wall row preserves the genuine held wall gesture`, async () => {
+    const h = await setup(mode, 'wall'); armButton(h, 'wall');
+    h.mouse('down', 0, 1); h.mouse('move', 0, 1, 940);
+    selectCatalogueRow(h, 'wall-brick'); h.mouse('up', 0, 0, 940);
+    expect(h.actors.submitted().length).toBeGreaterThan(0);
+    for (const message of h.actors.submitted()) expect(message.payload.command.data)
+      .toMatchObject({ type: 'PlaceBuildOrder', definitionId: 'wall-brick', footprint: 'square' });
+  });
+  it(`${mode}: publicly selecting Door before a fresh primary press still submits the actual Door`, async () => {
+    const h = await setup(mode, 'wall'); armButton(h, 'wall');
+    selectCatalogueRow(h, 'door-wooden'); h.mouse('down', 0, 1); h.mouse('up', 0, 0);
+    expect(h.actors.submitted()).toHaveLength(1);
+    expect(h.actors.submitted()[0]!.payload.command.data).toMatchObject({ type: 'PlaceBuildOrder', definitionId: 'door-wooden' });
   });
 }

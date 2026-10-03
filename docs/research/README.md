@@ -100,6 +100,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [2026-10-04 Held wall catalogue selection](./2026-10-04-held-wall-catalogue-selection/README.md) | Can changing Wall to Door buy from the unfinished old wall press? | Real catalogue/Phaser/worker source2RED/25legal; narrow selection-owned withdrawal, preserving same-selection and fresh Door controls. Native timing not claimed. |
 | [2026-10-04 Canteen wooden bench: retained soft Cycles](./2026-10-04-canteen-bench-retained-cycles/README.md) | Can the actual grounded46-part Canteen bench reveal its original timber shaders while preserving2x1 geometry and other room skins? | Genuine retained-source comparison/contact guards; complete exports and native boundary recorded separately. |
 | [2026-10-04 Canteen dining table: retained soft Cycles](./2026-10-04-canteen-dining-table-retained-cycles/README.md) | Can the actual65-part Canteen table reveal its ten authored shader graphs without changing occupied3x2 assembly? | Genuine saved-source comparison and physical guards; full exports/native boundary recorded separately. |
 | [2026-10-04 Empty construction order ID](./2026-10-04-empty-construction-order-id/README.md) | Can an accepted empty order ID make an ordinary save invalid? | #2027 actual packed kernel2RED/2legal, corrected17-case baseline14RED/3legal, and lossless V1–V10 opaque queue boundary. Narrow current input guards; no native claim. |
