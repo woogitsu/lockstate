@@ -19,3 +19,5 @@ The original historical #550 description remains in the spec, followed by an exp
 [Existing real tool/readout controls](./raw/tool-readout-controls.txt): **27 GREEN across2 files** (including edge/whole-square modes, withdrawal, removal feedback and exact formatted coordinates). [Actual no-browser collection](./raw/collection.txt): **1 test/1 file**. [Strict application/tools compiler receipt](./raw/types.txt): both exit0.
 
 No browser/server launched, native GREEN, producer-negative or timing improvement claimed. This is a consumer repair supported by actual original hosted failure and current source, not a product-source fix. Root retains the sole browser lease and must run the corrected specific public pointer case before native acceptance. Existing w1/r0/60s/expect10 and all pointer/visibility/origin/removal checks remain intact; the coordinate oracle is stricter.
+
+Terminal [own research-index check](./raw/research-index.txt): 5 GREEN. Production/workflow/runner/config diff against exact a7db source is empty; native acceptance remains pending.
