@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-reception-armchair-native-prep-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  14:20:38
+   Duration  2.89s (transform 799ms, setup 0ms, import 2.44s, tests 340ms, environment 0ms)
+
+$ vitest run "tests/integration/native-reception-room-preparation.test.ts"
