@@ -18,10 +18,16 @@ interface ImageProbe { read(): Promise<LoadedImage[]> }
 export async function observeCanteenImages(page: Page) {
   const responses: { url: string; status: number; sha256: string; width: number; height: number }[] = [];
   const errors: string[] = [];
+  const redirects: { url: string; status: number; location: string | undefined }[] = [];
   const pendingResponses: Promise<void>[] = [];
   page.on('response', response => {
     if (!response.url().includes('/assets/environment/oblique/furniture.dining.table.wooden-')) return;
+    if (response.status() >= 300 && response.status() < 400) {
+      redirects.push({ url: response.url(), status: response.status(), location: response.headers().location });
+      return;
+    }
     pendingResponses.push((async () => {
+      expect(response.status(), 'terminal canonical PNG response').toBe(200);
       const bytes = await response.body();
       expect(bytes.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
       responses.push({ url: response.url(), status: response.status(),
@@ -65,7 +71,7 @@ export async function observeCanteenImages(page: Page) {
   return async () => {
     await Promise.all(pendingResponses);
     const images = await page.evaluate(() => (Reflect.get(window, 'canteenLoadedImages') as ImageProbe).read());
-    return { responses, images, errors };
+    return { responses, images, errors, redirects };
   };
 }
 

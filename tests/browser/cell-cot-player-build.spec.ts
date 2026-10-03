@@ -204,8 +204,8 @@ test(`player builds the existing bed in a Basic cell q${quarterTurns} and keeps 
     { message: 'real cot loader decodes the canonical source-visible headboard PNG' }).toBe(true);
   const images = await readImages();
   expect(images.errors).toEqual([]);
-  expect(images.responses).toContainEqual({ url: new URL(HEADBOARD_FRAME.url, page.url()).href,
-    status: 200, sha256: HEADBOARD_FRAME.sha256, width: 256, height: 256 });
+  expect(images.responses.some(response => decodeURIComponent(new URL(response.url).pathname) === HEADBOARD_FRAME.url
+    && response.status === 200 && response.sha256 === HEADBOARD_FRAME.sha256 && response.width === 256 && response.height === 256)).toBe(true);
   const descriptor = images.descriptors.find(row => row.status === 200)?.data as {
     assetId: string; sourceSha256: string; frames: { image: string; sha256: string }[];
   } | undefined;

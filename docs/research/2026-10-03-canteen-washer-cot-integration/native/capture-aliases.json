@@ -1,0 +1,202 @@
+[
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003.json",
+    "archived": "initial/report.json",
+    "sourceBytes": 43473,
+    "sourceSha256": "5bb8d7fd0af7dc417966feaa006418b75508dc7c986ca27ffa6d6369665c8c5a",
+    "archivedBytes": 43473,
+    "archivedSha256": "5bb8d7fd0af7dc417966feaa006418b75508dc7c986ca27ffa6d6369665c8c5a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\.last-run.json",
+    "archived": "initial/001-.last-run.json",
+    "sourceBytes": 194,
+    "sourceSha256": "7c1a889bc3f0cb522dc535c5831d4a49b419353264e80a7d832f220d5c35dad2",
+    "archivedBytes": 194,
+    "archivedSha256": "7c1a889bc3f0cb522dc535c5831d4a49b419353264e80a7d832f220d5c35dad2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\dining-loaded-fullhd.png",
+    "archived": "initial/002-dining-loaded-fullhd.png",
+    "sourceBytes": 1508075,
+    "sourceSha256": "17c775355daf69189c442a6d632d1159779776c81d7e165161eaa0b7f6e81e33",
+    "archivedBytes": 1508075,
+    "archivedSha256": "17c775355daf69189c442a6d632d1159779776c81d7e165161eaa0b7f6e81e33"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\dining-worker-completed-fullhd.png",
+    "archived": "initial/003-dining-worker-completed-fullhd.png",
+    "sourceBytes": 1544527,
+    "sourceSha256": "012d56bb074ed98d259812251ac9c2270bdda7f505878a0993be1bf43b4330fd",
+    "archivedBytes": 1544527,
+    "archivedSha256": "012d56bb074ed98d259812251ac9c2270bdda7f505878a0993be1bf43b4330fd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\error-context.md",
+    "archived": "initial/004-error-context.md",
+    "sourceBytes": 9519,
+    "sourceSha256": "0be28c963943ceccdab2c1df2aac91facf080802f774c94551bd84cd5d33b22a",
+    "archivedBytes": 9519,
+    "archivedSha256": "0be28c963943ceccdab2c1df2aac91facf080802f774c94551bd84cd5d33b22a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\failed-construction-fullhd.png",
+    "archived": "initial/005-failed-construction-fullhd.png",
+    "sourceBytes": 1222232,
+    "sourceSha256": "450ca90c1605565886a54c588fe530f669108324d871727f7e84626e0be7774a",
+    "archivedBytes": 1222232,
+    "archivedSha256": "450ca90c1605565886a54c588fe530f669108324d871727f7e84626e0be7774a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\failed-construction-worker-snapshot.json",
+    "archived": "initial/006-failed-construction-worker-snapshot.json",
+    "sourceBytes": 86149,
+    "sourceSha256": "2287065c0f41bdd593de59c42f61dd05f0a2bf7c81c736d32c955e15799eb1a9",
+    "archivedBytes": 86149,
+    "archivedSha256": "2287065c0f41bdd593de59c42f61dd05f0a2bf7c81c736d32c955e15799eb1a9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "initial/007-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 344,
+    "sourceSha256": "80ea903db4af22bb6affc7996e7330e8bc65b5e0ed12c9c0343b9cbbc48e3d65",
+    "archivedBytes": 344,
+    "archivedSha256": "80ea903db4af22bb6affc7996e7330e8bc65b5e0ed12c9c0343b9cbbc48e3d65"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-loaded-fullhd.png",
+    "archived": "initial/008-cell-cot-loaded-fullhd.png",
+    "sourceBytes": 1430234,
+    "sourceSha256": "2d6d2c9e6d0ae40ecf137398e490361a0296a81dd4ea61843e15a25e5a28ce3c",
+    "archivedBytes": 1430234,
+    "archivedSha256": "2d6d2c9e6d0ae40ecf137398e490361a0296a81dd4ea61843e15a25e5a28ce3c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-worker-completed-fullhd.png",
+    "archived": "initial/009-cell-cot-worker-completed-fullhd.png",
+    "sourceBytes": 1460719,
+    "sourceSha256": "e6aa2d821b47fe55b7c305d854c072e9e0b6560239b68d8cbc878b8b696dfe1c",
+    "archivedBytes": 1460719,
+    "archivedSha256": "e6aa2d821b47fe55b7c305d854c072e9e0b6560239b68d8cbc878b8b696dfe1c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\error-context.md",
+    "archived": "initial/010-error-context.md",
+    "sourceBytes": 9574,
+    "sourceSha256": "77a21ba65f8bfcc6dcec61c9e88d887cf0852120d1f93b2ba740121db8380223",
+    "archivedBytes": 9574,
+    "archivedSha256": "77a21ba65f8bfcc6dcec61c9e88d887cf0852120d1f93b2ba740121db8380223"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\failed-cot-fullhd.png",
+    "archived": "initial/011-failed-cot-fullhd.png",
+    "sourceBytes": 1598421,
+    "sourceSha256": "96f2755f1de5a9ec524c50afc7dda34053be771858fa30cb1b9eecdc36f2fd2a",
+    "archivedBytes": 1598421,
+    "archivedSha256": "96f2755f1de5a9ec524c50afc7dda34053be771858fa30cb1b9eecdc36f2fd2a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\failed-cot-worker-snapshot.json",
+    "archived": "initial/012-failed-cot-worker-snapshot.json",
+    "sourceBytes": 58756,
+    "sourceSha256": "b3945af42473a542dc0cc4bc336c464077fd8886f0d119e1efbeeb6479498c58",
+    "archivedBytes": 58756,
+    "archivedSha256": "b3945af42473a542dc0cc4bc336c464077fd8886f0d119e1efbeeb6479498c58"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "initial/013-completed-worker-snapshot.json",
+    "sourceBytes": 75853,
+    "sourceSha256": "d5300726a320caf87be0189d7d9ab299f72bd5f79c3fd3baa014cf254f058b87",
+    "archivedBytes": 75853,
+    "archivedSha256": "d5300726a320caf87be0189d7d9ab299f72bd5f79c3fd3baa014cf254f058b87"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\dedicated-laundry-washing-machine-loaded-fullhd.png",
+    "archived": "initial/014-dedicated-laundry-washing-machine-loaded-fullhd.png",
+    "sourceBytes": 1410025,
+    "sourceSha256": "cb722e639033f516e041ae035c65333dc9268fc9264608f5ba6e6c7047545fa5",
+    "archivedBytes": 1410025,
+    "archivedSha256": "cb722e639033f516e041ae035c65333dc9268fc9264608f5ba6e6c7047545fa5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\dedicated-laundry-washing-machine-worker-completed-fullhd.png",
+    "archived": "initial/015-dedicated-laundry-washing-machine-worker-completed-fullhd.png",
+    "sourceBytes": 1441993,
+    "sourceSha256": "0eae7b7a2b66ee08130a726cb94b6019f2ec926077a913f716bd50c9ea90ea43",
+    "archivedBytes": 1441993,
+    "archivedSha256": "0eae7b7a2b66ee08130a726cb94b6019f2ec926077a913f716bd50c9ea90ea43"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\error-context.md",
+    "archived": "initial/016-error-context.md",
+    "sourceBytes": 9519,
+    "sourceSha256": "55087be701edd1d2aeed147a3fc3a6d3227f773f5e36cc1c6e6e040612ba37db",
+    "archivedBytes": 9519,
+    "archivedSha256": "55087be701edd1d2aeed147a3fc3a6d3227f773f5e36cc1c6e6e040612ba37db"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "initial/017-failed-player-fullhd.png",
+    "sourceBytes": 288402,
+    "sourceSha256": "5e3b3e0d8790b98f0d38e77be197b89d14c6640794a7fbfb7acc856792184c38",
+    "archivedBytes": 288402,
+    "archivedSha256": "5e3b3e0d8790b98f0d38e77be197b89d14c6640794a7fbfb7acc856792184c38"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\failed-player-worker-snapshot.json",
+    "archived": "initial/018-failed-player-worker-snapshot.json",
+    "sourceBytes": 75853,
+    "sourceSha256": "52abd7255513123ce436eaaa754e935559a66e20fc303f7abd2f0ad1ed879580",
+    "archivedBytes": 75853,
+    "archivedSha256": "52abd7255513123ce436eaaa754e935559a66e20fc303f7abd2f0ad1ed879580"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "initial/019-loaded-worker-snapshot.json",
+    "sourceBytes": 75853,
+    "sourceSha256": "5bae5143788eacac1f3391faead691c140941ac1585e4859e2bb94b03fcc9bc7",
+    "archivedBytes": 75853,
+    "archivedSha256": "5bae5143788eacac1f3391faead691c140941ac1585e4859e2bb94b03fcc9bc7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "initial/020-worker-and-completed-save-evidence.json",
+    "sourceBytes": 350,
+    "sourceSha256": "122ed84b887f71b3be7a64e633524d4f17efbc09407b64444458d38f493ddcae",
+    "archivedBytes": 350,
+    "archivedSha256": "122ed84b887f71b3be7a64e633524d4f17efbc09407b64444458d38f493ddcae"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\room-template-second-touch-9333f-h-primary-tap-remains-legal\\fresh-primary-one-actual-pending-plan.png",
+    "archived": "initial/021-fresh-primary-one-actual-pending-plan.png",
+    "sourceBytes": 1716386,
+    "sourceSha256": "965cc5dbafb06bde968ff02c9d1f75c314e7dbcce3af564201d5ed4bb53d2336",
+    "archivedBytes": 1716386,
+    "archivedSha256": "965cc5dbafb06bde968ff02c9d1f75c314e7dbcce3af564201d5ed4bb53d2336"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\room-template-second-touch-9333f-h-primary-tap-remains-legal\\two-finger-release-plan-still-armed.png",
+    "archived": "initial/022-two-finger-release-plan-still-armed.png",
+    "sourceBytes": 1698434,
+    "sourceSha256": "18165afab1aa6fc8542089233aec9ba3d4e3acadd26237effa07b8c7bbf8f0de",
+    "archivedBytes": 1698434,
+    "archivedSha256": "18165afab1aa6fc8542089233aec9ba3d4e3acadd26237effa07b8c7bbf8f0de"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\room-template-second-touch-d5c57-h-primary-tap-remains-legal\\fresh-primary-one-actual-pending-plan.png",
+    "archived": "initial/023-fresh-primary-one-actual-pending-plan.png",
+    "sourceBytes": 276999,
+    "sourceSha256": "2cb047e80bdba1b9187ef39c4c8c02bca4899081967931a0ff7e2f558e4e1ff4",
+    "archivedBytes": 276999,
+    "archivedSha256": "2cb047e80bdba1b9187ef39c4c8c02bca4899081967931a0ff7e2f558e4e1ff4"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-initial-20261003\\room-template-second-touch-d5c57-h-primary-tap-remains-legal\\two-finger-release-plan-still-armed.png",
+    "archived": "initial/024-two-finger-release-plan-still-armed.png",
+    "sourceBytes": 252681,
+    "sourceSha256": "83064356e8cdaa67e01e1653baceb4b54bd9ca4604613112d7ae5e39e26ce05e",
+    "archivedBytes": 252681,
+    "archivedSha256": "83064356e8cdaa67e01e1653baceb4b54bd9ca4604613112d7ae5e39e26ce05e"
+  }
+]

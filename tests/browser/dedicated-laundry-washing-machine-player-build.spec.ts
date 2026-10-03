@@ -256,7 +256,7 @@ test(`player builds Laundry at quarterTurns${quarterTurns} and retains washing m
   // service-grip pixels must be calibrated from the actual screenshot by root.
   const cameraControls = await publicGripPose(page, quarterTurns);
   await expect.poll(async () => (await loadedImages()).responses.some(response =>
-    new URL(response.url).pathname === GRIP_FRAME.url && response.sha256 === GRIP_FRAME.sha256)).toBe(true);
+    decodeURIComponent(new URL(response.url).pathname) === GRIP_FRAME.url && response.sha256 === GRIP_FRAME.sha256)).toBe(true);
   await expect.poll(async () => (await loadedImages()).images.some(image =>
     image.sha256 === GRIP_FRAME.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);
   const pngLoading = await loadedImages();
@@ -268,7 +268,7 @@ test(`player builds Laundry at quarterTurns${quarterTurns} and retains washing m
         image: GRIP_FRAME.url, sha256: GRIP_FRAME.sha256 })]),
     }),
   }));
-  const actualLoadedFrame = pngLoading.responses.find(response => new URL(response.url).pathname === GRIP_FRAME.url);
+  const actualLoadedFrame = pngLoading.responses.find(response => decodeURIComponent(new URL(response.url).pathname) === GRIP_FRAME.url);
   expect(actualLoadedFrame).toMatchObject({ status: 200, sha256: GRIP_FRAME.sha256, width: 256, height: 256 });
   const gripPoseWorker = await workerSnapshot(page);
   expect(gripPoseWorker).toEqual(pausedAfter);

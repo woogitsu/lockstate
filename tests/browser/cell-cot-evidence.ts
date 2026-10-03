@@ -20,6 +20,7 @@ export async function observeCotImages(page: Page) {
   const responses: { url: string; status: number; sha256: string; width: number; height: number }[] = [];
   const descriptors: { url: string; status: number; data: unknown }[] = [];
   const errors: string[] = [];
+  const redirects: { url: string; status: number; location: string | undefined }[] = [];
   const pendingResponses: Promise<void>[] = [];
   page.on('response', response => {
     if (new URL(response.url()).pathname === '/game-content/oblique-furniture.cell-cot.v1.json') {
@@ -29,7 +30,12 @@ export async function observeCotImages(page: Page) {
       return;
     }
     if (!response.url().includes('/assets/environment/oblique/furniture.cell.cot.single-')) return;
+    if (response.status() >= 300 && response.status() < 400) {
+      redirects.push({ url: response.url(), status: response.status(), location: response.headers().location });
+      return;
+    }
     pendingResponses.push((async () => {
+      expect(response.status(), 'terminal canonical PNG response').toBe(200);
       const bytes = await response.body();
       expect(bytes.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
       responses.push({ url: response.url(), status: response.status(),
@@ -73,7 +79,7 @@ export async function observeCotImages(page: Page) {
   return async () => {
     await Promise.all(pendingResponses);
     const images = await page.evaluate(() => (Reflect.get(window, 'cotLoadedImages') as ImageProbe).read());
-    return { responses, images, descriptors, errors };
+    return { responses, images, descriptors, errors, redirects };
   };
 }
 

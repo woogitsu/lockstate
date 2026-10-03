@@ -1,0 +1,67 @@
+{
+  "sourceFreeze": "4443da6c8888e44430e01c516fb971173270ce2c",
+  "actualHead": "4443da6c8888e44430e01c516fb971173270ce2c",
+  "worker": {
+    "file": "worker-DvdTnMXd.js",
+    "bytes": 441796,
+    "sha256": "9f49ff87dbf34697b927aff454b871d5dd9b1f601745220984fb703a42b75cc0"
+  },
+  "sourceTests": {
+    "files": 10,
+    "passed": 52,
+    "exit": 0
+  },
+  "nativeTypesExit": 0,
+  "buildExit": 0,
+  "initialNative": {
+    "requestedCases": 11,
+    "workers": 1,
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "status": "running; no terminal acceptance claim"
+  },
+  "models": {
+    "canteen": {
+      "sourceSha256": "5f27967600a64ce4ded10a01fe6217ea849c2be9b57ff92353fd60b97af4ede1",
+      "partsBefore": 62,
+      "partsAfter": 65,
+      "materialGraphs": 10,
+      "footprint": [
+        3,
+        2
+      ]
+    },
+    "washer": {
+      "sourceSha256": "4c4b52811935cb5fe44ee4ad09bbee1b5179484aecdb7eb001c71047c4a493c0",
+      "partsBefore": 80,
+      "partsAfter": 82,
+      "materialGraphs": 5,
+      "footprint": [
+        2,
+        1
+      ]
+    },
+    "cot": {
+      "sourceSha256": "ca8ed38a7250dd941b542a93b6e371ccdd692f6a0829d3646401d53d43a561ef",
+      "partsBefore": 23,
+      "partsAfter": 25,
+      "materialGraphs": 9,
+      "footprint": [
+        1,
+        2
+      ]
+    },
+    "guard": {
+      "sourceSha256": "b1f402e1096c49e1ea65c2e7727df2b6c498a77d09fc485679f1dcf72c95b456",
+      "partsBefore": 68,
+      "partsAfter": 69,
+      "materialGraphs": 11,
+      "genuineHiredNative": "separate pending fixture"
+    }
+  },
+  "privateBoundObjectTextureObserved": false,
+  "newHardwareContactROICalibration": "pending actual captures",
+  "fullHostedRelease": "pending"
+}

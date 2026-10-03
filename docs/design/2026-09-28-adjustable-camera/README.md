@@ -1525,3 +1525,7 @@ existing owners/palette gates and genuine decoded-loader evidence. Three
 agents model the visibly missing rear Guard belt, correct an actual terminal
 predecessor CI contract failure, and audit held-plan rotation/mirror ownership.
 Do not mistake local acceptance for full exact-head hosted green/deployment.
+
+## 2026-10-03 active model integration
+
+Current frozen built-client4443da6c integrates retained Canteen rail arms, Washer grip mounts, Cell headboard uprights and Guard rear band. Real public q0/q1room purchases, whole paused Save/Load and trusted two-touch ownership are under one-worker FullHD acceptance. [Integration record](../../research/2026-10-03-canteen-washer-cot-integration/README.md) holds exact sources and honest pending hardware/hosted boundaries. Three independent agents continue actual hired-Guard acceptance preparation, Prisoner source-scale measurement and stationary ghost invalidation after real Undo/Redo.

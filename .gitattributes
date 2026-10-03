@@ -39,3 +39,7 @@ docs/research/2026-10-03-kitchen-construction-session-integration/native/**/*.pn
 docs/research/2026-10-03-bookshelf-hover-integration/native/**/*.png filter=lfs diff=lfs merge=lfs -text
 
 docs/research/2026-10-03-bookshelf-hover-integration/native/** -text
+
+# Exact actual model integration evidence
+docs/research/2026-10-03-canteen-washer-cot-integration/native/** -text
+docs/research/2026-10-03-canteen-washer-cot-integration/native/**/*.png filter=lfs diff=lfs merge=lfs -text

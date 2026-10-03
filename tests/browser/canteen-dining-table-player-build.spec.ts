@@ -210,12 +210,12 @@ test(`player builds Canteen at quarterTurns${quarterTurns} and retains authored 
   // low camera capture is pending native support-pixel calibration by root.
   const cameraControls = await publicSupportPose(page, quarterTurns);
   await expect.poll(async () => (await loadedImages()).responses.some(response =>
-    new URL(response.url).pathname === SUPPORT_FRAME.url && response.sha256 === SUPPORT_FRAME.sha256)).toBe(true);
+    decodeURIComponent(new URL(response.url).pathname) === SUPPORT_FRAME.url && response.sha256 === SUPPORT_FRAME.sha256)).toBe(true);
   await expect.poll(async () => (await loadedImages()).images.some(image =>
     image.sha256 === SUPPORT_FRAME.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);
   const pngLoading = await loadedImages();
   expect(pngLoading.errors).toEqual([]);
-  const actualLoadedFrame = pngLoading.responses.find(response => new URL(response.url).pathname === SUPPORT_FRAME.url);
+  const actualLoadedFrame = pngLoading.responses.find(response => decodeURIComponent(new URL(response.url).pathname) === SUPPORT_FRAME.url);
   expect(actualLoadedFrame).toMatchObject({
     status: 200, sha256: SUPPORT_FRAME.sha256, width: 256, height: 256,
   });
