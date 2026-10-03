@@ -207,5 +207,366 @@
     "sourceSha256": "83064356e8cdaa67e01e1653baceb4b54bd9ca4604613112d7ae5e39e26ce05e",
     "archivedBytes": 252681,
     "archivedSha256": "83064356e8cdaa67e01e1653baceb4b54bd9ca4604613112d7ae5e39e26ce05e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003.json",
+    "archived": "corrected/report.json",
+    "sourceBytes": 31781,
+    "sourceSha256": "8805d54f9fb8062384964014ba50d13fd0dc42a7f4129493d2a9162a2aeb0787",
+    "archivedBytes": 31781,
+    "archivedSha256": "8805d54f9fb8062384964014ba50d13fd0dc42a7f4129493d2a9162a2aeb0787"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003.txt",
+    "archived": "corrected/console.txt",
+    "sourceBytes": 27838,
+    "sourceSha256": "1909a048525b467fcfaf97f721505360201c54c3e9b26fffff159bf90c483656",
+    "archivedBytes": 13950,
+    "archivedSha256": "82b81e692c5710e62c2b74800a97354381cf47eb40461522c7e3398b13f868b4",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\.last-run.json",
+    "archived": "corrected/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\attachments\\dining-worker-and-pixel-evidence-b8cb29bcc0d284e901b5d8be76f0f4fb9e880371.json",
+    "archived": "corrected/002-dining-worker-and-pixel-evidence-b8cb29bcc0d284e901b5d8be76f0f4fb9e880371.json",
+    "sourceBytes": 341000,
+    "sourceSha256": "8182e5481feec2e0bae63d82902643510259bb11a76dbf2bc497efb4561f3b37",
+    "archivedBytes": 341000,
+    "archivedSha256": "8182e5481feec2e0bae63d82902643510259bb11a76dbf2bc497efb4561f3b37"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\dining-loaded-fullhd.png",
+    "archived": "corrected/003-dining-loaded-fullhd.png",
+    "sourceBytes": 1508055,
+    "sourceSha256": "bb8937f4fe4152040391e19ff1469d0f18ec0f379213037b0ce0a4b79eb50d5c",
+    "archivedBytes": 1508055,
+    "archivedSha256": "bb8937f4fe4152040391e19ff1469d0f18ec0f379213037b0ce0a4b79eb50d5c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\dining-support-angle-pending-calibration-fullhd.png",
+    "archived": "corrected/004-dining-support-angle-pending-calibration-fullhd.png",
+    "sourceBytes": 1222089,
+    "sourceSha256": "f0a4b0c0ad121d972835ac46afb2fb82f5fea5414f52542c5354e3d046a89437",
+    "archivedBytes": 1222089,
+    "archivedSha256": "f0a4b0c0ad121d972835ac46afb2fb82f5fea5414f52542c5354e3d046a89437"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\dining-worker-and-pixel-evidence.json",
+    "archived": "corrected/005-dining-worker-and-pixel-evidence.json",
+    "sourceBytes": 341000,
+    "sourceSha256": "8182e5481feec2e0bae63d82902643510259bb11a76dbf2bc497efb4561f3b37",
+    "archivedBytes": 341000,
+    "archivedSha256": "8182e5481feec2e0bae63d82902643510259bb11a76dbf2bc497efb4561f3b37"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\dining-worker-completed-fullhd.png",
+    "archived": "corrected/006-dining-worker-completed-fullhd.png",
+    "sourceBytes": 1544520,
+    "sourceSha256": "ca1b28cf88e5e87a56fb8ce7f6700d386aee62ef414110903cf8ae70c283a646",
+    "archivedBytes": 1544520,
+    "archivedSha256": "ca1b28cf88e5e87a56fb8ce7f6700d386aee62ef414110903cf8ae70c283a646"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "corrected/007-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 344,
+    "sourceSha256": "80ea903db4af22bb6affc7996e7330e8bc65b5e0ed12c9c0343b9cbbc48e3d65",
+    "archivedBytes": 344,
+    "archivedSha256": "80ea903db4af22bb6affc7996e7330e8bc65b5e0ed12c9c0343b9cbbc48e3d65"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\attachments\\dining-worker-and-pixel-evidence-8635d9167173ff2e10dd14d8a642bad1af65f44c.json",
+    "archived": "corrected/008-dining-worker-and-pixel-evidence-8635d9167173ff2e10dd14d8a642bad1af65f44c.json",
+    "sourceBytes": 333812,
+    "sourceSha256": "295d558c8f1a324d3281deba013459bf1ee7a4149cbf2d3fa24cf94dab9d2143",
+    "archivedBytes": 333812,
+    "archivedSha256": "295d558c8f1a324d3281deba013459bf1ee7a4149cbf2d3fa24cf94dab9d2143"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\dining-loaded-fullhd.png",
+    "archived": "corrected/009-dining-loaded-fullhd.png",
+    "sourceBytes": 1495541,
+    "sourceSha256": "6e0fc03c76e3489b1274eff509753f7262f9b619ebcace6e6a663a0f9e72a6be",
+    "archivedBytes": 1495541,
+    "archivedSha256": "6e0fc03c76e3489b1274eff509753f7262f9b619ebcace6e6a663a0f9e72a6be"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\dining-support-angle-pending-calibration-fullhd.png",
+    "archived": "corrected/010-dining-support-angle-pending-calibration-fullhd.png",
+    "sourceBytes": 1253730,
+    "sourceSha256": "ead558d578a895f1d09b1f0d408f90c50a876624803daf2e9e9928b329222948",
+    "archivedBytes": 1253730,
+    "archivedSha256": "ead558d578a895f1d09b1f0d408f90c50a876624803daf2e9e9928b329222948"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\dining-worker-and-pixel-evidence.json",
+    "archived": "corrected/011-dining-worker-and-pixel-evidence.json",
+    "sourceBytes": 333812,
+    "sourceSha256": "295d558c8f1a324d3281deba013459bf1ee7a4149cbf2d3fa24cf94dab9d2143",
+    "archivedBytes": 333812,
+    "archivedSha256": "295d558c8f1a324d3281deba013459bf1ee7a4149cbf2d3fa24cf94dab9d2143"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\dining-worker-completed-fullhd.png",
+    "archived": "corrected/012-dining-worker-completed-fullhd.png",
+    "sourceBytes": 1531209,
+    "sourceSha256": "f2fb48aa1bec26887150852e9aa8d753c0f3737af9a5e17bcd7e36ab606f78fa",
+    "archivedBytes": 1531209,
+    "archivedSha256": "f2fb48aa1bec26887150852e9aa8d753c0f3737af9a5e17bcd7e36ab606f78fa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "corrected/013-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 369,
+    "sourceSha256": "24f7fa088b4030a1e7b651aa57f0901fbf26a06b451e49d96db70689e38cad15",
+    "archivedBytes": 369,
+    "archivedSha256": "24f7fa088b4030a1e7b651aa57f0901fbf26a06b451e49d96db70689e38cad15"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\attachments\\cell-cot-owner-loader-save-evidence-ca8cf401f9f22fa20716fae980043ad10c5c99fc.json",
+    "archived": "corrected/014-cell-cot-owner-loader-save-evidence-ca8cf401f9f22fa20716fae980043ad10c5c99fc.jso",
+    "sourceBytes": 191265,
+    "sourceSha256": "dff1675e7b635b6e4fdb7c984defd4942a6802c628aef327dd67130991e0b162",
+    "archivedBytes": 191265,
+    "archivedSha256": "dff1675e7b635b6e4fdb7c984defd4942a6802c628aef327dd67130991e0b162"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-headboard-pending-calibration-fullhd.png",
+    "archived": "corrected/015-cell-cot-headboard-pending-calibration-fullhd.png",
+    "sourceBytes": 1499698,
+    "sourceSha256": "fe07d5838c6a8a060434fc217f04e08523eace8473cef5d8136b92aaf8920be3",
+    "archivedBytes": 1499698,
+    "archivedSha256": "fe07d5838c6a8a060434fc217f04e08523eace8473cef5d8136b92aaf8920be3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-loaded-fullhd.png",
+    "archived": "corrected/016-cell-cot-loaded-fullhd.png",
+    "sourceBytes": 1374330,
+    "sourceSha256": "ad706a4ab6f75eda086e2b8cdfd48c67b19a03140137fdbf76b8c41aef9c0f21",
+    "archivedBytes": 1374330,
+    "archivedSha256": "ad706a4ab6f75eda086e2b8cdfd48c67b19a03140137fdbf76b8c41aef9c0f21"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-owner-loader-save-evidence.json",
+    "archived": "corrected/017-cell-cot-owner-loader-save-evidence.json",
+    "sourceBytes": 191265,
+    "sourceSha256": "dff1675e7b635b6e4fdb7c984defd4942a6802c628aef327dd67130991e0b162",
+    "archivedBytes": 191265,
+    "archivedSha256": "dff1675e7b635b6e4fdb7c984defd4942a6802c628aef327dd67130991e0b162"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\cell-cot-worker-completed-fullhd.png",
+    "archived": "corrected/018-cell-cot-worker-completed-fullhd.png",
+    "sourceBytes": 1405815,
+    "sourceSha256": "15aac9eca386a5c930287f7d2cce99c79d893265ebec0ea8aab78ab23dd85813",
+    "archivedBytes": 1405815,
+    "archivedSha256": "15aac9eca386a5c930287f7d2cce99c79d893265ebec0ea8aab78ab23dd85813"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\attachments\\cell-cot-owner-loader-save-evidence-ce1998ead6d493425e0965c92d2ffcffb720fddc.json",
+    "archived": "corrected/019-cell-cot-owner-loader-save-evidence-ce1998ead6d493425e0965c92d2ffcffb720fddc.jso",
+    "sourceBytes": 203198,
+    "sourceSha256": "7cd68497324c565b9cc92eaa1d4155c4c1f2e8ddc19adf86e2be895ab0a0759e",
+    "archivedBytes": 203198,
+    "archivedSha256": "7cd68497324c565b9cc92eaa1d4155c4c1f2e8ddc19adf86e2be895ab0a0759e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-headboard-pending-calibration-fullhd.png",
+    "archived": "corrected/020-cell-cot-headboard-pending-calibration-fullhd.png",
+    "sourceBytes": 1598363,
+    "sourceSha256": "5a731bd68df8ff8069da6064e20136fc933dda7b8a78ecce83da6a7be5b657c8",
+    "archivedBytes": 1598363,
+    "archivedSha256": "5a731bd68df8ff8069da6064e20136fc933dda7b8a78ecce83da6a7be5b657c8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-loaded-fullhd.png",
+    "archived": "corrected/021-cell-cot-loaded-fullhd.png",
+    "sourceBytes": 1430170,
+    "sourceSha256": "04778bd584b4ff9f5900c2b1b3a3010c08b0ec5bb5bf7d47eb45c30fa5bf44de",
+    "archivedBytes": 1430170,
+    "archivedSha256": "04778bd584b4ff9f5900c2b1b3a3010c08b0ec5bb5bf7d47eb45c30fa5bf44de"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-owner-loader-save-evidence.json",
+    "archived": "corrected/022-cell-cot-owner-loader-save-evidence.json",
+    "sourceBytes": 203198,
+    "sourceSha256": "7cd68497324c565b9cc92eaa1d4155c4c1f2e8ddc19adf86e2be895ab0a0759e",
+    "archivedBytes": 203198,
+    "archivedSha256": "7cd68497324c565b9cc92eaa1d4155c4c1f2e8ddc19adf86e2be895ab0a0759e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\cell-cot-worker-completed-fullhd.png",
+    "archived": "corrected/023-cell-cot-worker-completed-fullhd.png",
+    "sourceBytes": 1460653,
+    "sourceSha256": "d3a834fef7b8297d1349da270f4224d451338d2a327f852329ed264206bf98ae",
+    "archivedBytes": 1460653,
+    "archivedSha256": "d3a834fef7b8297d1349da270f4224d451338d2a327f852329ed264206bf98ae"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\attachments\\dedicated-laundry-washing-machine-worker-and-save-evidence-341761e0772fd60b7e68f478f5fb4dd4e344201a.json",
+    "archived": "corrected/024-dedicated-laundry-washing-machine-worker-and-save-evidence-341761e0772fd60b7e68f",
+    "sourceBytes": 321079,
+    "sourceSha256": "097b87a2088cd1bf5a522089d34a72399850a81b780953f4cc416d0a44328f17",
+    "archivedBytes": 321079,
+    "archivedSha256": "097b87a2088cd1bf5a522089d34a72399850a81b780953f4cc416d0a44328f17"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "corrected/025-completed-worker-snapshot.json",
+    "sourceBytes": 75848,
+    "sourceSha256": "6057e67cffdd477ec89dfe31adeb7c73e07e845ed1a658de45e4311ffc9fcbd3",
+    "archivedBytes": 75848,
+    "archivedSha256": "6057e67cffdd477ec89dfe31adeb7c73e07e845ed1a658de45e4311ffc9fcbd3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\dedicated-laundry-washing-machine-loaded-fullhd.png",
+    "archived": "corrected/026-dedicated-laundry-washing-machine-loaded-fullhd.png",
+    "sourceBytes": 1409945,
+    "sourceSha256": "1d3e2de49d1c1f1f25580141c4bf3063f7ca63ec01d8a664787c9238a7f3a200",
+    "archivedBytes": 1409945,
+    "archivedSha256": "1d3e2de49d1c1f1f25580141c4bf3063f7ca63ec01d8a664787c9238a7f3a200"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\dedicated-laundry-washing-machine-worker-and-save-evidence.json",
+    "archived": "corrected/027-dedicated-laundry-washing-machine-worker-and-save-evidence.json",
+    "sourceBytes": 321079,
+    "sourceSha256": "097b87a2088cd1bf5a522089d34a72399850a81b780953f4cc416d0a44328f17",
+    "archivedBytes": 321079,
+    "archivedSha256": "097b87a2088cd1bf5a522089d34a72399850a81b780953f4cc416d0a44328f17"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\dedicated-laundry-washing-machine-worker-completed-fullhd.png",
+    "archived": "corrected/028-dedicated-laundry-washing-machine-worker-completed-fullhd.png",
+    "sourceBytes": 1441908,
+    "sourceSha256": "58405fd5b84162dd77e716938af361c72a5e8e5318d1bd5ae16419c334de6f32",
+    "archivedBytes": 1441908,
+    "archivedSha256": "58405fd5b84162dd77e716938af361c72a5e8e5318d1bd5ae16419c334de6f32"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "corrected/029-loaded-worker-snapshot.json",
+    "sourceBytes": 75848,
+    "sourceSha256": "e886f2b7a000fc5f0b85c547e137c6a17840f0e49c4df833f867f44c68a9863d",
+    "archivedBytes": 75848,
+    "archivedSha256": "e886f2b7a000fc5f0b85c547e137c6a17840f0e49c4df833f867f44c68a9863d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\washer-service-grip-pending-calibration-fullhd.png",
+    "archived": "corrected/030-washer-service-grip-pending-calibration-fullhd.png",
+    "sourceBytes": 288252,
+    "sourceSha256": "92333b705ae6990fe8962d3c1b78a980a07ac3b56fe706a0cf5b7fc65d163f05",
+    "archivedBytes": 288252,
+    "archivedSha256": "92333b705ae6990fe8962d3c1b78a980a07ac3b56fe706a0cf5b7fc65d163f05"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "corrected/031-worker-and-completed-save-evidence.json",
+    "sourceBytes": 350,
+    "sourceSha256": "122ed84b887f71b3be7a64e633524d4f17efbc09407b64444458d38f493ddcae",
+    "archivedBytes": 350,
+    "archivedSha256": "122ed84b887f71b3be7a64e633524d4f17efbc09407b64444458d38f493ddcae"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\attachments\\dedicated-laundry-washing-machine-worker-and-save-evidence-c5eeafded64e294b41d444583662e900514e2ecb.json",
+    "archived": "corrected/032-dedicated-laundry-washing-machine-worker-and-save-evidence-c5eeafded64e294b41d44",
+    "sourceBytes": 321195,
+    "sourceSha256": "f31f700035c4d25485b0f6342418a43eedd53b0ac82a4cf88caa8086fbd92231",
+    "archivedBytes": 321195,
+    "archivedSha256": "f31f700035c4d25485b0f6342418a43eedd53b0ac82a4cf88caa8086fbd92231"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "corrected/033-completed-worker-snapshot.json",
+    "sourceBytes": 75647,
+    "sourceSha256": "91ff5ad2d5d29fd38b206998d075c75e00fbcc3d49827a7ceadb2ba3fd39b5c5",
+    "archivedBytes": 75647,
+    "archivedSha256": "91ff5ad2d5d29fd38b206998d075c75e00fbcc3d49827a7ceadb2ba3fd39b5c5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\dedicated-laundry-washing-machine-loaded-fullhd.png",
+    "archived": "corrected/034-dedicated-laundry-washing-machine-loaded-fullhd.png",
+    "sourceBytes": 1407871,
+    "sourceSha256": "15b406c85322c8c16781b46cb38584ae73788256d33baab993d3b9314158866f",
+    "archivedBytes": 1407871,
+    "archivedSha256": "15b406c85322c8c16781b46cb38584ae73788256d33baab993d3b9314158866f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\dedicated-laundry-washing-machine-worker-and-save-evidence.json",
+    "archived": "corrected/035-dedicated-laundry-washing-machine-worker-and-save-evidence.json",
+    "sourceBytes": 321195,
+    "sourceSha256": "f31f700035c4d25485b0f6342418a43eedd53b0ac82a4cf88caa8086fbd92231",
+    "archivedBytes": 321195,
+    "archivedSha256": "f31f700035c4d25485b0f6342418a43eedd53b0ac82a4cf88caa8086fbd92231"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\dedicated-laundry-washing-machine-worker-completed-fullhd.png",
+    "archived": "corrected/036-dedicated-laundry-washing-machine-worker-completed-fullhd.png",
+    "sourceBytes": 1438543,
+    "sourceSha256": "f1d42ba947888927f16e648a42f2fc0bbfa5022bda678613b3fe3776e14a0483",
+    "archivedBytes": 1438543,
+    "archivedSha256": "f1d42ba947888927f16e648a42f2fc0bbfa5022bda678613b3fe3776e14a0483"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "corrected/037-loaded-worker-snapshot.json",
+    "sourceBytes": 75647,
+    "sourceSha256": "1394c620dfe121a1c1d42c692f72dfa13314dfcd13b9f0936400fba078847a9b",
+    "archivedBytes": 75647,
+    "archivedSha256": "1394c620dfe121a1c1d42c692f72dfa13314dfcd13b9f0936400fba078847a9b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\washer-service-grip-pending-calibration-fullhd.png",
+    "archived": "corrected/038-washer-service-grip-pending-calibration-fullhd.png",
+    "sourceBytes": 311839,
+    "sourceSha256": "ecd345a3c5c3e85411934b096809fc9e1d8486ceb5c70c827f688976b77a15e2",
+    "archivedBytes": 311839,
+    "archivedSha256": "ecd345a3c5c3e85411934b096809fc9e1d8486ceb5c70c827f688976b77a15e2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "corrected/039-worker-and-completed-save-evidence.json",
+    "sourceBytes": 377,
+    "sourceSha256": "d0b5a22ee5e791d53c5ef3ade6931a83f10fd12dc0e4bcefae16908012a033f5",
+    "archivedBytes": 377,
+    "archivedSha256": "d0b5a22ee5e791d53c5ef3ade6931a83f10fd12dc0e4bcefae16908012a033f5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\room-template-second-touch-9333f-h-primary-tap-remains-legal\\fresh-primary-one-actual-pending-plan.png",
+    "archived": "corrected/040-fresh-primary-one-actual-pending-plan.png",
+    "sourceBytes": 1716330,
+    "sourceSha256": "ef3dfcd1b73cdce8219faff35a47060de8bc09f53cefd63706b74eb5da091e68",
+    "archivedBytes": 1716330,
+    "archivedSha256": "ef3dfcd1b73cdce8219faff35a47060de8bc09f53cefd63706b74eb5da091e68"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\room-template-second-touch-9333f-h-primary-tap-remains-legal\\two-finger-release-plan-still-armed.png",
+    "archived": "corrected/041-two-finger-release-plan-still-armed.png",
+    "sourceBytes": 1698482,
+    "sourceSha256": "e3a6cb517afdb4a89bd5d6f6fad2ce93c0573ef1ec5f9a68299b6c74304e38bc",
+    "archivedBytes": 1698482,
+    "archivedSha256": "e3a6cb517afdb4a89bd5d6f6fad2ce93c0573ef1ec5f9a68299b6c74304e38bc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\room-template-second-touch-d5c57-h-primary-tap-remains-legal\\fresh-primary-one-actual-pending-plan.png",
+    "archived": "corrected/042-fresh-primary-one-actual-pending-plan.png",
+    "sourceBytes": 276876,
+    "sourceSha256": "7e8de5dadf67045d33b57232182276416e12d2f96506c168a8dae8806e2d31dd",
+    "archivedBytes": 276876,
+    "archivedSha256": "7e8de5dadf67045d33b57232182276416e12d2f96506c168a8dae8806e2d31dd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\room-template-second-touch-d5c57-h-primary-tap-remains-legal\\two-finger-release-plan-still-armed.png",
+    "archived": "corrected/043-two-finger-release-plan-still-armed.png",
+    "sourceBytes": 252652,
+    "sourceSha256": "97513acc3c956188d9b3c736619228bde1ec7c7f30bc1d4a6e88d8cb6341b29e",
+    "archivedBytes": 252652,
+    "archivedSha256": "97513acc3c956188d9b3c736619228bde1ec7c7f30bc1d4a6e88d8cb6341b29e"
   }
 ]

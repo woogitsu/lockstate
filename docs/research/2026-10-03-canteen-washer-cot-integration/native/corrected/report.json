@@ -1,0 +1,525 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-washer-cot-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-three-models-corrected-20261003",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-washer-cot-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build|dedicated-security-console-player-build|dedicated-medical-bed-player-build|dedicated-loading-dock-door-player-build|dedicated-camera-pan-player|oblique-pending-wall-player|room-template-renderer-stationary-hover|world-construction-chord-release|room-template-session-preflight|world-build-session-ownership|cell-cot-player-build|room-template-second-touch-ownership)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5184 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-canteen-washer-cot-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5184/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "canteen-dining-table-player-build.spec.ts",
+      "file": "canteen-dining-table-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Canteen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 42506,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T05:59:47.548Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b692cd9cd048f51d3b66-472b23b7516399244e0f",
+          "file": "canteen-dining-table-player-build.spec.ts",
+          "line": 167,
+          "column": 1
+        },
+        {
+          "title": "player builds Canteen at quarterTurns0 and retains authored plates after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 58703,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T06:00:30.127Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dining-worker-and-pixel-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\attachments\\dining-worker-and-pixel-evidence-b8cb29bcc0d284e901b5d8be76f0f4fb9e880371.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b692cd9cd048f51d3b66-e7a386b8238d58647434",
+          "file": "canteen-dining-table-player-build.spec.ts",
+          "line": 231,
+          "column": 3
+        },
+        {
+          "title": "player builds Canteen at quarterTurns1 and retains authored plates after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 55076,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T06:01:28.838Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dining-worker-and-pixel-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\attachments\\dining-worker-and-pixel-evidence-8635d9167173ff2e10dd14d8a642bad1af65f44c.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b692cd9cd048f51d3b66-4f16157b13aab1e63149",
+          "file": "canteen-dining-table-player-build.spec.ts",
+          "line": 231,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "cell-cot-player-build.spec.ts",
+      "file": "cell-cot-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player furnishes delivery and storage plans before the cot test",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43814,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T06:02:23.991Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "aa9a0c8e618a314db016-382f61b31fea1074e287",
+          "file": "cell-cot-player-build.spec.ts",
+          "line": 167,
+          "column": 1
+        },
+        {
+          "title": "player builds the existing bed in a Basic cell q0 and keeps it after Save/Load at Full HD",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 45517,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T06:03:07.813Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "cell-cot-owner-loader-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\cell-cot-player-build-play-91da0--after-Save-Load-at-Full-HD\\attachments\\cell-cot-owner-loader-save-evidence-ce1998ead6d493425e0965c92d2ffcffb720fddc.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "aa9a0c8e618a314db016-3a166a38e6c65b7c5f6d",
+          "file": "cell-cot-player-build.spec.ts",
+          "line": 232,
+          "column": 3
+        },
+        {
+          "title": "player builds the existing bed in a Basic cell q1 and keeps it after Save/Load at Full HD",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 38899,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T06:03:53.336Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "cell-cot-owner-loader-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\cell-cot-player-build-play-30d8c--after-Save-Load-at-Full-HD\\attachments\\cell-cot-owner-loader-save-evidence-ca8cf401f9f22fa20716fae980043ad10c5c99fc.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "aa9a0c8e618a314db016-66dd97464410eebf5057",
+          "file": "cell-cot-player-build.spec.ts",
+          "line": 232,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "dedicated-laundry-washing-machine-player-build.spec.ts",
+      "file": "dedicated-laundry-washing-machine-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Laundry",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43029,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T06:04:32.264Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b2134c71373b9d15230c-6e89ff704e523d72e54c",
+          "file": "dedicated-laundry-washing-machine-player-build.spec.ts",
+          "line": 193,
+          "column": 1
+        },
+        {
+          "title": "player builds Laundry at quarterTurns0 and retains washing machine palettes and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 48317,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T06:05:15.299Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-laundry-washing-machine-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\dedicated-laundry-washing--5d714-and-anchors-after-Save-Load\\attachments\\dedicated-laundry-washing-machine-worker-and-save-evidence-341761e0772fd60b7e68f478f5fb4dd4e344201a.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b2134c71373b9d15230c-516dce1d19226ea8d68c",
+          "file": "dedicated-laundry-washing-machine-player-build.spec.ts",
+          "line": 257,
+          "column": 3
+        },
+        {
+          "title": "player builds Laundry at quarterTurns1 and retains washing machine palettes and anchors after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 46061,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T06:06:03.625Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dedicated-laundry-washing-machine-worker-and-save-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-three-models-corrected-20261003\\dedicated-laundry-washing--941dc-and-anchors-after-Save-Load\\attachments\\dedicated-laundry-washing-machine-worker-and-save-evidence-c5eeafded64e294b41d444583662e900514e2ecb.json"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b2134c71373b9d15230c-9439ca6c0d49b5535d43",
+          "file": "dedicated-laundry-washing-machine-player-build.spec.ts",
+          "line": 257,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "room-template-second-touch-ownership.spec.ts",
+      "file": "room-template-second-touch-ownership.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "world FullHD: second touch release abandons room-template press; fresh primary tap remains legal",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4833,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "TEMPLATE_SECOND_TOUCH {\"mode\":\"world\",\"uiScale\":1,\"first\":{\"x\":900,\"y\":460,\"id\":202},\"second\":{\"x\":930,\"y\":460,\"id\":101},\"before\":{\"orders\":[],\"balance\":25000},\"events\":[{\"type\":\"pointerdown\",\"id\":2,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[2]},{\"type\":\"pointerdown\",\"id\":3,\"primary\":false,\"trusted\":true,\"canvas\":true,\"active\":[2,3]},{\"type\":\"pointerup\",\"id\":3,\"primary\":false,\"trusted\":true,\"canvas\":true,\"active\":[2]},{\"type\":\"pointerup\",\"id\":2,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[]}],\"after\":{\"orders\":[],\"balance\":25000},\"fresh\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":15,\"y\":14},\"quarterTurns\":1},\"ok\":true},\"quote\":\"Click map to place; Esc cancels. | This footprint is clear. | Brick × 35 · Wood Plank × 2 · Materials catalogue value: 1,530\",\"commands\":[{\"type\":\"PlaceRoomTemplate\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":15,\"y\":14},\"quarterTurns\":1}],\"final\":{\"orders\":[{\"id\":\"room-template-000000000000-0-wall-000\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":21,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-001\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":21,\"y\":15},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-002\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":21,\"y\":16},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-003\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":21,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-004\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":20,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-005\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":20,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-006\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":19,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-007\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":19,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-008\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":18,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-009\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":18,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-010\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":17,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-011\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":17,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-012\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":16,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-013\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":16,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-014\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":15,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-015\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":15,\"y\":16},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-016\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":15,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-1-door-000\",\"definitionId\":\"door-wooden\",\"location\":{\"x\":16,\"y\":15},\"edge\":\"west\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]}],\"pending\":[{\"templateId\":\"cell-basic\",\"origin\":{\"x\":15,\"y\":14},\"mirrorX\":false,\"quarterTurns\":1,\"sequence\":0}],\"balance\":25000},\"finalPointers\":[{\"type\":\"pointerdown\",\"id\":2,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[2]},{\"type\":\"pointerdown\",\"id\":3,\"primary\":false,\"trusted\":true,\"canvas\":true,\"active\":[2,3]},{\"type\":\"pointerup\",\"id\":3,\"primary\":false,\"trusted\":true,\"canvas\":true,\"active\":[2]},{\"type\":\"pointerup\",\"id\":2,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[]},{\"type\":\"pointerdown\",\"id\":4,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[4]},{\"type\":\"pointerup\",\"id\":4,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[]}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T06:06:49.714Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f5122c813361ac71c1e2-1886600e46df1dc21f1f",
+          "file": "room-template-second-touch-ownership.spec.ts",
+          "line": 104,
+          "column": 42
+        },
+        {
+          "title": "oblique FullHD: second touch release abandons room-template press; fresh primary tap remains legal",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6614,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "TEMPLATE_SECOND_TOUCH {\"mode\":\"oblique\",\"uiScale\":1,\"first\":{\"x\":900,\"y\":460,\"id\":202},\"second\":{\"x\":930,\"y\":460,\"id\":101},\"before\":{\"orders\":[],\"balance\":25000},\"events\":[{\"type\":\"pointerdown\",\"id\":2,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[2]},{\"type\":\"pointerdown\",\"id\":3,\"primary\":false,\"trusted\":true,\"canvas\":true,\"active\":[2,3]},{\"type\":\"pointerup\",\"id\":3,\"primary\":false,\"trusted\":true,\"canvas\":true,\"active\":[2]},{\"type\":\"pointerup\",\"id\":2,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[]}],\"after\":{\"orders\":[],\"balance\":25000},\"fresh\":{\"target\":{\"kind\":\"room-template\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":16,\"y\":14},\"quarterTurns\":1},\"ok\":true},\"quote\":\"Click map to place; Esc cancels. | This footprint is clear. | Brick × 35 · Wood Plank × 2 · Materials catalogue value: 1,530\",\"commands\":[{\"type\":\"PlaceRoomTemplate\",\"templateId\":\"cell-basic\",\"origin\":{\"x\":16,\"y\":14},\"quarterTurns\":1}],\"final\":{\"orders\":[{\"id\":\"room-template-000000000000-0-wall-000\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":22,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-001\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":22,\"y\":15},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-002\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":22,\"y\":16},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-003\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":22,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-004\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":21,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-005\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":21,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-006\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":20,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-007\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":20,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-008\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":19,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-009\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":19,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-010\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":18,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-011\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":18,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-012\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":17,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-013\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":17,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-014\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":16,\"y\":14},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-015\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":16,\"y\":16},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-0-wall-016\",\"definitionId\":\"wall-brick\",\"location\":{\"x\":16,\"y\":17},\"footprint\":\"square\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]},{\"id\":\"room-template-000000000000-1-door-000\",\"definitionId\":\"door-wooden\",\"location\":{\"x\":17,\"y\":15},\"edge\":\"west\",\"placementSequence\":0,\"state\":\"approved\",\"progress\":0,\"materialsAllocated\":[]}],\"pending\":[{\"templateId\":\"cell-basic\",\"origin\":{\"x\":16,\"y\":14},\"mirrorX\":false,\"quarterTurns\":1,\"sequence\":0}],\"balance\":25000},\"finalPointers\":[{\"type\":\"pointerdown\",\"id\":2,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[2]},{\"type\":\"pointerdown\",\"id\":3,\"primary\":false,\"trusted\":true,\"canvas\":true,\"active\":[2,3]},{\"type\":\"pointerup\",\"id\":3,\"primary\":false,\"trusted\":true,\"canvas\":true,\"active\":[2]},{\"type\":\"pointerup\",\"id\":2,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[]},{\"type\":\"pointerdown\",\"id\":4,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[4]},{\"type\":\"pointerup\",\"id\":4,\"primary\":true,\"trusted\":true,\"canvas\":true,\"active\":[]}]}\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T06:06:54.553Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f5122c813361ac71c1e2-3b64aaae651427c53549",
+          "file": "room-template-second-touch-ownership.spec.ts",
+          "line": 104,
+          "column": 42
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T05:59:44.875Z",
+    "duration": 436919.40499999997,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
