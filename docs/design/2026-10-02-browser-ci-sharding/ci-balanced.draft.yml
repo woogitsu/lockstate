@@ -1,219 +1,43 @@
+# OWNER REVIEW DRAFT: not activated; no workflow or protection change.
 name: CI
-
 on:
   push:
-    branches: [main]
-  pull_request:
-  workflow_dispatch:
-
+    branches:
+      - main
+  pull_request: null
+  workflow_dispatch: null
 permissions:
   contents: read
-
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  # Cancel superseded PR runs. For a push to `main` the ref is constant, so
-  # `true` meant two merges landing close together cancelled the earlier
-  # commit's CI -- while that commit was already live, since a merge deploys.
-  # It left a shipped commit with no completed gate result and nothing
-  # reporting the hole. A merge queue of one is worth the extra minutes.
-  #
-  # THIS DOES NOT MEAN A RUN ON `main` IS NEVER CANCELLED, and the sentence
-  # above used to say that it did. `cancel-in-progress` governs the run that is
-  # ALREADY RUNNING; GitHub separately keeps at most one PENDING run per
-  # concurrency group, whatever this setting says. So a third push arriving
-  # while one run is in progress and a second waits cancels the second -- which
-  # never starts, and records no jobs at all. Runs 33004940891 and 33005035205
-  # are both that: pushes to `main` on 2026-08-26, both `cancelled`, both with
-  # zero jobs. `main` sees this often enough to matter -- eight of the sixty
-  # most recent completed CI runs started by a push to `main`, measured over
-  # 2026-08-25T18:08Z to 2026-08-26T19:45Z.
-  #
-  # The consequence is a deployment one, and it is now reported rather than
-  # inferred: deploy.yml triggers on this workflow's COMPLETION and its
-  # `staging` job requires `conclusion == 'success'`, so a commit whose CI was
-  # cancelled here is never published as itself. deploy.yml's `staging-blocked`
-  # job says so out loud (#424); before it, that was silent.
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-
 env:
   CI: true
   COREPACK_ENABLE_DOWNLOAD_PROMPT: 0
-
 jobs:
   verify:
-    # Fork pull requests remain skipped until the deployment trust path is
-    # redesigned. The runner is now a fresh GitHub-hosted VM, but a CI run
-    # started by a fork still belongs to this repository and can trigger the
-    # workflow_run deploy workflow.
-    #
-    # The deployment, and read this before treating the guard as sufficient.
-    # This workflow triggers on a bare `pull_request`, so a fork's pull request
-    # starts a CI run that belongs to THIS repository, and deploy.yml triggers
-    # on a completed run of it. Skipping every job here does NOT establish that
-    # such a run cannot deploy: that depends on what GitHub reports as the
-    # run's `conclusion` when all of its jobs were skipped, which nothing in
-    # this repository establishes. deploy.yml's `staging` job therefore tests
-    # `workflow_run.event` and `workflow_run.head_repository.full_name` itself,
-    # and its comment explains why the requirement belongs there rather than
-    # here. Stated in both files because the connection is invisible from
-    # either one alone.
-    #
-    # Every job in this workflow carries this term, and
-    # tests/foundation/ci-configuration-contract.test.ts requires that of a new
-    # one. `needs:` is not a substitute: a dependent job is skipped when its
-    # dependency is, but that is the shape of today's graph rather than a
-    # property of the workflow, and a job added with no `needs:` chain to
-    # `verify`, or with `if: always()`, carries no protection at all.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           persist-credentials: false
-          # ALL HISTORY, BECAUSE `pnpm verify` READS HISTORY.
-          # tests/foundation/documentation-commit-citation-contract.test.ts
-          # resolves every commit sha this repository cites in `docs/**` and
-          # `tests/**` through `git rev-parse`, which is the only mechanical
-          # answer to a *fabricated* sha in prose. That is not hypothetical:
-          # `0269665` shipped a `d0b6e18` that names nothing, in the very commit
-          # whose subject was dating an undated count, and
-          # docs/HANDOVER-2026-08-26.md records a second fabrication in its own
-          # draft, caught by hand before the push.
-          #
-          # At the action's default depth of 1 the checkout holds one commit, so
-          # that check would fail for every citation in the corpus for a reason
-          # that has nothing to do with whether the citation is right. That is
-          # why the handover concluded the gate could not be built here, and why
-          # a gate that skipped itself on a shallow clone was the wrong answer
-          # to it: it would never run where it matters. The test fails, loudly
-          # and naming this setting, if it ever finds itself on a shallow
-          # checkout -- so deleting this line does not quietly disable it.
-          #
-          # WHAT THE DEPTH COSTS, MEASURED RATHER THAN FEARED -- AND EVERY
-          # NUMBER BELOW CARRIES THE COMMAND THAT PRODUCES IT, BECAUSE THE
-          # ABSOLUTES ROT AND THE COMMANDS DO NOT.
-          #
-          # They rot fast. The figures that first stood here were about five
-          # commits stale in the commit that landed them, and re-taking them
-          # only restarts the clock. So: run these, do not trust the numerals.
-          # Taken at `4ae2e39`, GIT_LFS_SKIP_SMUDGE=1 so the number is about
-          # the git pack alone, against github.com and therefore including
-          # round trips. All refs, because that is what `fetch-depth: 0`
-          # fetches.
-          #
-          #   git clone --no-local https://github.com/matmaxalez/lockstate
-          #     -> in-pack 9440   size-pack 7.39 MiB
-          #   git clone --no-local --depth 1 https://github.com/matmaxalez/lockstate
-          #     -> in-pack  922   size-pack 3.29 MiB
-          #   git rev-list --count --remotes=origin --tags   -> 1086
-          #
-          # So the depth costs about 4.1 MiB and 8,500 objects for 1,086
-          # commits. This repository's bulk is the ~55 MB of art in Git LFS,
-          # which never enters the git pack; that is why history is this cheap
-          # and it is the fact to re-check if the number ever jumps.
-          #
-          # One of those counts is NOT monotonic and reads as a mistake
-          # otherwise: commits-across-every-ref went DOWN, 1,115 -> 1,086,
-          # because delete-branches.yml removes merged branches and their
-          # unmerged commits stop being reachable. A falling count here is the
-          # cleanup working.
-          #
-          # A narrower fetch was costed and rejected, and that conclusion has
-          # survived every re-measurement so far:
-          #
-          #   git rev-list --count 4ae2e39            -> 845     (branch length)
-          #   git rev-list --count b904a1b..4ae2e39   -> 794     (deepest cited)
-          #
-          # `b904a1b` is the oldest commit the documentation cites, so a
-          # `fetch-depth` answering today's corpus needs 795 of 845 and saves
-          # 50 commits -- and would go stale the first time anything cited an
-          # older one. The gate collects those tokens itself
-          # (tests/foundation/documentation-commit-citation-contract.test.ts);
-          # re-derive with `git rev-list --count <token>..<tip>` over them
-          # rather than trusting `b904a1b` to still be the deepest.
-          #
-          # HISTORICAL MEASUREMENT ON THE SELF-HOSTED POOL: the workspace used
-          # to be reused between jobs. GitHub-hosted jobs start on fresh VMs,
-          # so the full history fetch now happens for each verify job. The
-          # documentation-citation gate above still requires that history.
-          #
-          # The `assets` and `browser` jobs keep the default depth, because
-          # neither reads history -- and so does deploy.yml's `staging` job.
-          # That re-shallows this workspace after this job, and it is measured
-          # rather than assumed to be harmless. TWO SEPARATE FETCHES, and the
-          # sentence that used to stand here ran them together:
-          #
-          #   1. THE RE-SHALLOW, which is cheap and leaves the objects alone.
-          #      Against the COMPLETE clone above:
-          #
-          #        git fetch --no-tags --prune --no-recurse-submodules \
-          #          --depth=1 origin <sha>
-          #          rev-list --count HEAD   845 -> 1
-          #          .git/shallow            written
-          #          in-pack / size-pack     unchanged, not one object deleted
-          #          wall 0.553 s over file://, 1.082 s over https
-          #
-          #   2. THE `--unshallow` THE NEXT RUN OF THIS JOB PAYS, which is the
-          #      more expensive of the two and is where the old sentence was
-          #      wrong. It read "the next run's `--unshallow` finds everything
-          #      already local -- 0.055 s and no change to the pack"; that
-          #      figure belongs to the fetch in (1), and the `--unshallow` does
-          #      not reliably reuse what is on disk:
-          #
-          #        git fetch --unshallow
-          #          over file://   wall 0.296 s, pack unchanged
-          #          over https     wall 2.180 s, pack 7863 -> 8315 objects,
-          #                                        6.99 -> 7.78 MiB
-          #
-          #      Transport decides it, so a single number for this one would be
-          #      a fiction. Both were taken here; the runner pays the https
-          #      shape. Still small in absolute terms -- which is the point --
-          #      but it is a real fetch and not a no-op, so do not cite it as
-          #      free.
-          #
-          # A local transport keeps the round trips to github.com out of the
-          # number; the object transfer, which is the part that could have been
-          # large, is in both.
           fetch-depth: 0
-
       - name: Setup Node
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
-          node-version-file: '.node-version'
+          node-version-file: .node-version
           package-manager-cache: false
-
       - name: Enable Corepack
         run: corepack enable
-
       - name: Activate pnpm
         run: corepack prepare pnpm@11.22.0 --activate
-
       - name: Verify toolchain versions
         run: |
           test "$(node --version)" = "v$(cat .node-version)"
           test "$(pnpm --version)" = "11.22.0"
-
-      # Three pull requests -- #98, #100 and #101 -- committed `node_modules`
-      # as a tracked symlink (mode 120000) pointing at a path that exists only
-      # on the machine they were authored on. On checkout git recreates the
-      # symlink, and `pnpm install` then dies with
-      # `ENOTDIR: not a directory, mkdir .../node_modules` before one line of
-      # project code runs, so the pull request wears a failure that has nothing
-      # to do with its diff. Runs 32663976393, 32665157556, 32665179804.
-      #
-      # `.gitignore` did not stop it, and that is the root cause: it listed
-      # `node_modules/`, with a trailing slash, which matches a *directory*. A
-      # symlink named `node_modules` is a file, so it was never ignored and
-      # `git add node_modules` succeeded. The slash is gone now, which is the
-      # real fix; this step is the safety net for a ref that predates it, and
-      # for a checkout of an older ref that still carries one.
-      #
-      # A *tracked* node_modules is reported rather than removed: deleting it
-      # would let the install succeed and then fail the clean-tree gate at the
-      # end of this job as an unexplained deleted file, five steps away from
-      # the cause. Fail here, and say why.
       - name: Reject or clear a node_modules that is not a real install
         run: |
           set -uo pipefail
@@ -227,10 +51,8 @@ jobs:
             ls -ld node_modules
             rm -rf node_modules
           fi
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
       - name: Hydrate Blender sources and angled frames for verification
         env:
           LFS_TOKEN: ${{ github.token }}
@@ -243,73 +65,18 @@ jobs:
           git config --local 'http.https://github.com/.extraheader' \
             "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$LFS_TOKEN" | base64 -w0)"
           git lfs pull --include="assets/source/blender/*.blend,public/assets/environment/oblique/*.png" --exclude=""
-
-
       - name: Verify project
         run: pnpm verify
-
-      # The measurement harness under `tests/perf/` sits outside `pnpm test` on
-      # purpose: its files are named `*.perf.ts` so the ordinary suite never
-      # pays for building multi-hundred-chunk prisons. Until #1083 nothing else
-      # ran it either -- no `package.json` script, no step here -- so it was
-      # read by `tsc` and executed by nobody, and nothing would have said if it
-      # stopped passing. Three files and 35 tests when that was measured.
-      #
-      # `pnpm test:perf` and not a bare `vitest run`, and the config is the
-      # load-bearing part. `tests/perf/vitest.perf.config.ts` sets its own
-      # `testTimeout: 900_000` where the root `vitest.config.ts` sets `5_000`,
-      # and on the five-second budget these files go red on time rather than on
-      # anything about the code: #1083 hit six `Test timed out in 5000ms`
-      # failures with an ad-hoc config, and re-running the harness with
-      # `--testTimeout=5000` and nothing else changed produced 12 of 35. The
-      # count follows the machine; that there is one is why the script exists
-      # rather than the command being typed here.
-      #
-      # It asserts schema, bytes and round-trips and never elapsed time
-      # (`docs/BENCHMARKING.md`), so a slow runner makes this step long and not
-      # flaky. ~85s where #1083 was filed; 143s on a four-way-shared container.
-      # The whole `verify` job finished in 50s on `lockstate-wsl-DOM-NEW-03`
-      # (run 34328735520) and 1m54s on `woogitsu-linux-03` (run 34284035100)
-      # against this job's 30-minute cap, so the step fits with room to spare.
-      # That matters because the cap is NOT what was authorised below: if this
-      # job ever approaches 30 minutes, that is a decision for the owner and
-      # not a number to nudge.
-      #
-      # AUTHORISED BY THE OWNER ON 2026-09-09, as one step in this job and
-      # nothing else in this file. The provenance is the weaker kind and
-      # `AGENTS.md` records it as such: the label of a clickable option the
-      # integrator wrote -- "Dodaj bramkę w CI" -- and not a sentence the owner
-      # typed. `tests/foundation/ci-configuration-contract.test.ts` pins the
-      # step and the script together, so deleting either one is red.
       - name: Verify measurement harness
         run: pnpm test:perf
-
       - name: Verify benchmark harness
         run: pnpm verify:benchmark
-
       - name: Verify Cloudflare deployment packages
         run: pnpm verify:deployment
-
-      # The pgTAP suite is the only thing in this repository that executes
-      # the SQL under supabase/. It was skipped through issues #20 and #36
-      # and, when finally run, found three real defects (docs/CLOUD_SAVE.md).
-      # Provisioning is a repository-owned script rather than a service
-      # container: verify:sql shells out to a local psql, no published
-      # Postgres image ships pgTAP, and the whole point of this check is that
-      # it survives an environment where container images cannot be pulled.
       - name: Provision PostgreSQL and pgTAP
         run: bash scripts/provision-postgres.sh
-
       - name: Verify Supabase SQL (migrations + pgTAP)
         run: pnpm verify:sql
-
-      # A bare `test -z` exits 1 and says nothing, so a failure here is
-      # undiagnosable from the log -- which is exactly what happened on pull
-      # requests #98 and #101, where the same verification chain leaves the
-      # tree clean locally. The gate is unchanged; it now prints the evidence.
-      #
-      # The extra probes preserve diagnostic evidence if a generated file or
-      # LFS pointer unexpectedly changes the checkout.
       - name: Verify generated output did not modify tracked files
         run: |
           set -uo pipefail
@@ -328,48 +95,18 @@ jobs:
           echo "--- what filter do the runtime atlases declare? ---"
           git check-attr filter -- public/assets/actors/actor.cook.base.idle.png || true
           exit 1
-
-  # Issue #32 requires that missing, inconsistent or oversized assets fail
-  # validation before build/release. `tooling/validate-runtime-atlas.mjs` reads
-  # the PNGs themselves, and `.gitattributes` routes every one of them through
-  # Git LFS, so this is the one job that needs LFS content.
-  #
-  # It is a separate job on purpose. LFS bandwidth is metered and this repository
-  # will keep growing, so the `verify` job above stays on a pointer-only checkout
-  # and never pays for it. That also keeps a pointer-only run honest rather than
-  # vacuous: the validator recognises a pointer file and fails with that message
-  # instead of treating it as valid art.
-  #
-  # Separate does not mean optional -- same precedent as `verify:sql`
-  # (docs/TESTING.md), which found three real defects the first time it was run.
   assets:
-    # Same fork guard as `verify`, for the same two reasons; see the comment
-    # there. Repeated rather than inherited because `needs:` does not imply it.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    # Only so a failing build does not spend metered LFS bandwidth. Nothing in
-    # this job depends on `verify` having provisioned anything.
     needs: verify
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      # Deliberately not `lfs: true`: checkout would fetch every LFS object on
-      # this fresh runner, including source sheets this job never opens. The
-      # explicit filtered pull below materialises only runtime atlases and is
-      # followed by a PNG signature check.
       - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           persist-credentials: false
-
       - name: Provision Git LFS
         run: bash scripts/provision-git-lfs.sh
-
-      # Only the runtime atlases (~17 MB), not the ~36 MB of source sheets under
-      # public/game-content/ that this gate never opens.
-      #
-      # The credential is scoped to this command and removed on exit, rather
-      # than relaxing `persist-credentials` above. The same workflow works
-      # while a visibility change is in progress and with private forks.
       - name: Fetch runtime art from Git LFS
         env:
           LFS_TOKEN: ${{ github.token }}
@@ -382,13 +119,6 @@ jobs:
           git config --local 'http.https://github.com/.extraheader' \
             "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$LFS_TOKEN" | base64 -w0)"
           git lfs pull --include="public/assets/actors,public/assets/environment/oblique/*.png"
-
-      # A green run must mean the validator saw pixels. `pnpm verify:assets`
-      # already refuses a pointer file, but this asserts it up front and prints
-      # the evidence, so the log answers "did LFS actually materialise?" without
-      # anyone having to trust that the later step would have caught it. A job
-      # that silently validates 3-line text stubs is worse than no job, because
-      # it manufactures confidence.
       - name: Confirm the runtime art is image data, not LFS pointers
         run: |
           set -euo pipefail
@@ -422,41 +152,17 @@ jobs:
             exit 1
           fi
           echo "OK: $count atlases, $total bytes of real image data"
-
       - name: Setup Node
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
-          node-version-file: '.node-version'
+          node-version-file: .node-version
           package-manager-cache: false
-
       - name: Enable Corepack
         run: corepack enable
-
       - name: Activate pnpm
         run: corepack prepare pnpm@11.22.0 --activate
-
-      # Uses no dependencies, so it deliberately runs without pnpm install.
       - name: Validate runtime atlases against the authored contract
         run: pnpm verify:assets
-
-  # `tests/browser/` is the only layer in this repository that can settle
-  # durability across a real page navigation, what a real browser's
-  # `DOMException`s are actually named, behaviour under a genuinely exhausted
-  # quota, and what a *computed* style, `elementFromPoint` or a decoded PNG
-  # really is. It has earned its keep: a real adapter defect (#19,
-  # docs/PERSISTENCE.md) and two real HUD layout defects that no unit test
-  # could have found (docs/TESTING.md).
-  #
-  # And until this job it did not run in CI. `pnpm test:browser` was opt-in, so
-  # the layer that keeps finding real defects only ran when a human remembered
-  # to type it. That is the same failure as CI passing because someone had
-  # installed something by hand, wearing a different costume.
-  #
-  # Separate job, not a merged step. docs/TESTING.md requires `pnpm test:browser`
-  # to stay out of `pnpm test` and `pnpm verify`, and that separation is correct:
-  # the ordinary suite must stay fast and browser-free. A required job is how the
-  # check becomes non-optional without becoming part of them -- the same
-  # precedent as `verify:sql` and `verify:assets`.
   browser:
     name: browser
     if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
@@ -493,7 +199,7 @@ jobs:
       tested_sha: ${{ steps.subject.outputs.sha }}
     steps:
       - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           persist-credentials: false
       - name: Provision Git LFS
@@ -579,7 +285,7 @@ jobs:
             assert_decoded "$file" "rendered.$id"
           done
       - name: Setup Node
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version-file: .node-version
           package-manager-cache: false
@@ -604,7 +310,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Provision Playwright's Chromium
         run: bash scripts/provision-playwright-browsers.sh
-      - name: Record exact checked-out subject
+      - &a1
+        name: Record exact checked-out subject
         id: subject
         run: |
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
@@ -612,7 +319,7 @@ jobs:
       - name: Collect and partition whole source files without launching a browser
         run: |
           node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite browser --list --reporter=json --workers=1 > source-all.json
-          node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/partition-source-files.ts source-all.json source-files
+          node docs/design/2026-10-02-browser-ci-sharding/partition-source-files.mjs source-all.json source-files
       - name: Run the real-browser suite
         run: |
           set -euo pipefail
@@ -631,7 +338,7 @@ jobs:
           fi
       - name: Upload the browser suite's failure evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: browser-source-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -648,7 +355,7 @@ jobs:
       tested_sha: ${{ steps.subject.outputs.sha }}
     steps:
       - name: Checkout
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           persist-credentials: false
       - name: Provision Git LFS
@@ -734,7 +441,7 @@ jobs:
             assert_decoded "$file" "rendered.$id"
           done
       - name: Setup Node
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version-file: .node-version
           package-manager-cache: false
@@ -759,11 +466,7 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Provision Playwright's Chromium
         run: bash scripts/provision-playwright-browsers.sh
-      - name: Record exact checked-out subject
-        id: subject
-        run: |
-          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          printf "sha=%s\n" "$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - *a1
       - name: Build the production client
         run: node scripts/cloudflare-task.mjs build production
       - name: Run the built client in a browser
@@ -787,7 +490,7 @@ jobs:
           fi
       - name: Upload the browser suite's failure evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: browser-artifact-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
