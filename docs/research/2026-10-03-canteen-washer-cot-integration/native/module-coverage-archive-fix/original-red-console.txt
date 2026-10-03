@@ -1,0 +1,10 @@
+pnpm : $ vitest run "tests/foundation/typecheck-coverage-contract.test.ts" "--maxWorkers=2" "--reporter=json" "--output
+File=C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-evidence-module-coverage-original-red-20261003.json"
+At line:3 char:1
++ pnpm --config.verify-deps-before-run=false test tests/foundation/type ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...-20261003.json":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+JSON report written to C:/Users/matma/AppData/Local/Temp/lockstate-evidence-module-coverage-original-red-20261003.json
+[ELIFECYCLE] Test failed. See above for more details.
