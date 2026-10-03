@@ -25,7 +25,7 @@ dist/client/assets/index-B2_cOI6Z.js       1,933.74 kB │ gzip: 512.01 kB
 Verified Cloudflare production output: dist\lockstate_development\wrangler.json -> dist\client
 $ pnpm typecheck && node scripts/cloudflare-task.mjs build production
 $ tsc -b --pretty false && tsc -b tsconfig.tools.json --pretty false
-[plugin builtin:vite-reporter] 
+[plugin builtin:vite-reporter]
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
 - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
