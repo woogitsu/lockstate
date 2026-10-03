@@ -2338,7 +2338,7 @@ export class ConstructionSystem implements SystemRegistration {
     return {
       orders,
       newerActionThanTheStackTop: this.newerActionThanTheStackTop,
-      orderRevisions: Object.fromEntries(this.orderRevisions),
+      orderRevisions: Object.fromEntries([...this.orderRevisions].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)),
       undoStack: this.undoStack.map((transaction) => [...transaction]),
       redoStack: this.redoStack.map((transaction) => [...transaction]),
       // The open gesture is emitted, not committed: capture reads state and
@@ -2385,6 +2385,13 @@ export class ConstructionSystem implements SystemRegistration {
    * duplicating a semantic rule into it).
    */
   public restore(data: ConstructionSnapshot): void {
+    if (data.newerActionThanTheStackTop !== undefined && typeof data.newerActionThanTheStackTop !== 'boolean') {
+      throw new SnapshotRefusedError('damaged-payload', 'Construction snapshot "newerActionThanTheStackTop" must be a boolean.');
+    }
+    if (data.orderRevisions !== undefined && (typeof data.orderRevisions !== 'object' ||
+      data.orderRevisions === null || Array.isArray(data.orderRevisions))) {
+      throw new SnapshotRefusedError('damaged-payload', 'Construction snapshot "orderRevisions" must be an object.');
+    }
     for (const [field, value] of [
       ['orders', data.orders],
       ['undoStack', data.undoStack],

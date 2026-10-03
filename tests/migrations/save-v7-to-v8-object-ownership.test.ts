@@ -25,17 +25,18 @@ const yardV6 = migrateSaveEnvelopeV5ToV6(yardV5);
 historical.push(yard as unknown as SaveEnvelopeV4, yardV5, yardV6, migrateSaveEnvelopeV6ToV7(yardV6));
 
 it.each(historical.map((envelope, index) => ({ envelope, version: envelope.saveSchemaVersion, index })))
-  ('V$version historical data case $index survives through V8 without guessing ownership', ({ envelope }) => {
+  ('V$version historical data case $index survives through V9 without guessing ownership', ({ envelope }) => {
     const input = JSON.parse(JSON.stringify(envelope));
     const before = JSON.stringify(input);
     const result = decodeSaveEnvelope(input);
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error(result.error.message);
-    expect(result.value.saveSchemaVersion).toBe(8);
+    expect(result.value.saveSchemaVersion).toBe(9);
     expect(result.value.prisonId).toBe(envelope.prisonId);
     expect(result.value.payload.kernel).toEqual(envelope.payload.kernel);
     expect(result.value.payload.world).toEqual(envelope.payload.world);
-    expect(result.value.payload.construction).toEqual(envelope.payload.construction);
+    expect(result.value.payload.construction).toEqual({ ...envelope.payload.construction,
+      newerActionThanTheStackTop: false, orderRevisions: {} });
     expect(result.value.payload.simulation?.objects?.placedObjects.every(object => object.sourceOrderId === undefined) ?? true).toBe(true);
     expect(JSON.stringify(input)).toBe(before);
   });
@@ -72,6 +73,8 @@ it('V7 to V8 preserves and independently clones live completed, undone and pendi
   const bundle = captureSessionSnapshot(runtime);
   const v7 = JSON.parse(JSON.stringify(createSaveEnvelope({ gameVersion: 'test', prisonId: 'v7-rich-data', revision: 7, createdAt: 2, updatedAt: 3, ...bundle })));
   v7.saveSchemaVersion = 7;
+  delete v7.payload.construction.newerActionThanTheStackTop;
+  delete v7.payload.construction.orderRevisions;
   for (const object of v7.payload.simulation.objects.placedObjects) delete object.sourceOrderId;
   v7.checksum = computeSaveChecksum(v7.payload);
   expect(v7.payload.simulation.roomTemplates.completed).toHaveLength(1);
@@ -82,7 +85,8 @@ it('V7 to V8 preserves and independently clones live completed, undone and pendi
   const decoded = decodeSaveEnvelope(v7);
   expect(decoded.ok).toBe(true);
   if (!decoded.ok) throw new Error(decoded.error.message);
-  expect(decoded.value.payload).toStrictEqual(v7.payload);
+  expect(decoded.value.payload).toStrictEqual({ ...v7.payload, construction: { ...v7.payload.construction,
+    newerActionThanTheStackTop: false, orderRevisions: {} } });
   const direct = migrateSaveEnvelopeV7ToV8(v7 as SaveEnvelopeV7);
   expect(direct.payload).toStrictEqual(v7.payload);
   expect(direct.payload).not.toBe(v7.payload);
