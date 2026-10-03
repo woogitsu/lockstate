@@ -5,6 +5,16 @@
         "sha256":  "fd13dad2ecae9b5cdde18e56b396b87ce73a5e3d9c05455bb00a1afc2c424106"
     },
     {
+        "path":  "existing-issue-controls.txt",
+        "bytes":  562,
+        "sha256":  "f7acee2faff269ef819591f3f85d21b5c64d3b3fc1f9886d5459901ce4327812"
+    },
+    {
+        "path":  "final-docs.txt",
+        "bytes":  564,
+        "sha256":  "d013f1901f5ac2d3e33b0861d4774b255be5111212acfcb1df4afbb990553fe1"
+    },
+    {
         "path":  "final-measurement.txt",
         "bytes":  5966,
         "sha256":  "c2a55f728c7b724124c3c76ce83fdf221cbfb31406290f916edd0cb8edfd84ec"
@@ -51,8 +61,8 @@
     },
     {
         "path":  "README.md",
-        "bytes":  6667,
-        "sha256":  "57dc3384e55edd8048eff0959602732a0b840c9db33bbe176928a933a6f8aedd"
+        "bytes":  7937,
+        "sha256":  "c49ba207ae82788583be769a6be1a4d42b258618e50b5e4eae4115d1b79c7651"
     },
     {
         "path":  "run-required-fixture-measurement.cjs.txt",
