@@ -1,0 +1,36 @@
+{
+  "nativeRevision": "21dba6ee55823ff1283c0b47254ff8d01e2a6ca9",
+  "observerBase": "e03cc47d38068ba48723d5a1e0b622df9891ba34",
+  "actualNativePrefix": "lockstate-modern-integrated-21d-cot-native-20261004",
+  "actualPngSha256": "817eea096d0bd361607dc7f0e498f4b2a5eef9dd80d4f5624019116cc16f9273",
+  "actualPngDimensions": [
+    1920,
+    1080
+  ],
+  "actualNativeStatus": {
+    "capacity": "GREEN",
+    "q0": "RED before Save/Load",
+    "q1": "not run"
+  },
+  "originalRoi": [
+    925,
+    490,
+    75,
+    50
+  ],
+  "originalAcceptance": "strictly greater than700",
+  "originalOchreRangePixels": 72,
+  "exactSourceBlanketRgbPixels": 1033,
+  "sourceBlanketRgbKeyCount": 86,
+  "initialPublicCamera": {
+    "yaw": -45,
+    "elevation": 45
+  },
+  "selectedSourcePose": {
+    "yawDegrees": 300,
+    "elevationDegrees": 40,
+    "image": "/assets/environment/oblique/furniture.cell.cot.single-yaw+300-elev40.0c46d3637182.png",
+    "sha256": "0c46d3637182dee0254f34de2789f113c4273e1bc061799899c5ffac9d3e4123"
+  },
+  "nativeRerunPerformed": false
+}
