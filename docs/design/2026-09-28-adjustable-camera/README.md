@@ -1604,3 +1604,28 @@ Three agents continue Reception registration-desk models, authoritative object
 preflight and concrete gameplay fixes. Root owns integration and one browser.
 Approved sharding remains merged with terminal successful main CI; the angled
 release still needs exact full hosted CI and serial landing of its dependencies.
+
+### 2026-10-03 authoritative ordinary placement and consolidated delivery
+
+Actual combined student/teacher purchases in both turns, whole paused Save/Load,
+six minimap publication states and World grouped-radio held-arrow ownership are
+published GREEN, with the genuine World producer omission and byte-exact source
+and9383compiled-file restoration. The full a7db local gate passes8229tests/698files,
+two explicit skips, strict application/tools types and production build.
+
+The [next coherent integration](../../research/2026-10-03-authoritative-object-model-integration/README.md)
+mounts the actual worker object preflight and new Reception registration-desk
+Blender model. A confirmed pre-release #2022 lifecycle regression was recorded
+and repaired: New/Load cancel old gestures/previews while retaining the public
+tool mode. Four genuine compiled player cases on2023be9 pass, including a fresh
+post-Load placement without rearming, exact square-wall/removal coordinates and
+visible Yard bench before/after Save/Load. Dedicated stationary ghost and combined
+Reception acceptance are next. No pending V9/rotation-control draft is imported.
+
+Independent review confirms main and own stacked dependencies are already
+ancestors, allowing one consolidated own PR to receive the full exact-head gate.
+Old runs/PRs stay intact; partial green never permits release. Three agents
+continue retained north-door full-angle completion, concrete rotation-control
+review and actual construction lifecycle fixes while root integrates. Each
+coherent result is pushed; top priority remains a genuinely playable adjustable
+camera/full-square/templates/model product in FullHD, not screenshots alone.
