@@ -220,7 +220,7 @@ const LEAVES_THE_UNDO_HISTORY_CURRENT: ReadonlySet<SimulationCommand['type']> = 
 // These reversals may refuse atomically. Their actual success branches mark
 // the newer action; an attempted cancellation is not an accepted change.
 const MARKS_UNDO_ELIGIBILITY_ON_SUCCESS: ReadonlySet<SimulationCommand['type']> = new Set([
-  'CancelBuildOrder', 'CancelMaterialPurchase', 'RemoveObject', 'RemoveWall',
+  'CancelBuildOrder', 'CancelMaterialPurchase', 'RemoveObject', 'RemoveWall', 'UnzoneRoom',
 ]);
 
 export function createSessionCommandHandler(
@@ -406,6 +406,7 @@ export function createSessionCommandHandler(
         // retry once something was zoned there, `room-occupied` once the
         // occupants have gone -- is withdrawn rather than left to answer a
         // request that has since succeeded.
+        construction.noteActionThatDoesNotWriteTheUndoStack();
         refusals.supersede(unzoneKey);
         // Issue #1006 finding 5: the other half of `rooms.zoned`'s
         // acknowledgement, on the command that undoes it. Before this line a

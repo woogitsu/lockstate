@@ -39,8 +39,11 @@ it('retains the original authored wooden chair mesh set and exports the authorit
   const footprint = defaultObjectRegistry.getById('object.chair')!.footprint;
   expect(provenance.footprintTiles).toEqual([footprint.width, footprint.height]);
   expect(catalog.assetId).toBe('furniture.chair.wooden');
-  expect(catalog.source).toBe(provenance.source);
-  expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+  const refined = JSON.parse(readFileSync(new URL('assets/source/blender/furniture.chair.wooden.angled-detail.provenance.json', root), 'utf8')) as { originalSource: string; originalSourceSha256: string; source: string; sourceSha256: string };
+  expect(refined.originalSource).toBe(provenance.source);
+  expect(refined.originalSourceSha256).toBe(provenance.sourceSha256);
+  expect(catalog.source).toBe(refined.source);
+  expect(catalog.sourceSha256).toBe(refined.sourceSha256);
   expect(catalog.cameraTargetTiles).toEqual([footprint.width / 2, footprint.height / 2, 0.6600000262260437]);
   expect(catalog.nominalPixelsPerTile).toBe(64);
   expect(catalog.resolutionPx).toEqual([256, 256]);

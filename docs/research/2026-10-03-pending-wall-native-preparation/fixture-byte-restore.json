@@ -1,0 +1,7 @@
+{
+  "path": "tests\\browser\\fixtures\\pending-wall-guards.ts",
+  "originalSha256": "752133c6b9051be3d1d0c67742ded7e6e3245a6faefb23e3d77ec03dbc686105",
+  "restoredSha256": "752133c6b9051be3d1d0c67742ded7e6e3245a6faefb23e3d77ec03dbc686105",
+  "uniqueMatches": 1,
+  "mutation": "omit second legal HireStaff producer, fixture only; not production depth mutation"
+}

@@ -1,0 +1,20 @@
+{
+  "controls": [
+    {
+      "control": "actual-source-producer-omits-stretcher",
+      "exitCode": 1,
+      "error": "ValueError: Expected sixteen retained/thirty-six physical connections",
+      "rejectedBeforeSourceSave": true
+    },
+    {
+      "control": "actual-source-producer-reverses-joints",
+      "exitCode": 1,
+      "error": "ValueError: Evaluated wooden chair geometric surfaces face inward: angled-wooden-chair.front leg triangular gusset -0.32",
+      "rejectedBeforeSourceSave": true
+    }
+  ],
+  "sourceProvenanceBuilderExactlyRestored": true,
+  "originalSourceBytesUnchanged": true,
+  "exactRestoredProductionVerifyExitCode": 0,
+  "sourceSha256": "acd0e9decb3bb451b44e8354e797fb5656825f4748bbed832bab61659f06cd88"
+}

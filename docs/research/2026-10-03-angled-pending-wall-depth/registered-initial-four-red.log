@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-angled-cutaway-occupancy-audit-20261003
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'behind partially loaded wall, actor P…'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":0,"elevation":45,"behind":true,"wall":false,"actor":true,"sorted":[{"id":1,"kind":"actor","depth":307.2},{"id":"square-wall:5:5","kind":"structure","depth":352}],"actual":{"actor":2,"wall":1,"actorMode":"PNG","wallMode":"fallback"},"picked":[{"x":5,"y":4}]}
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'behind partially loaded wall, actor f…'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":0,"elevation":45,"behind":true,"wall":false,"actor":false,"sorted":[{"id":1,"kind":"actor","depth":307.2},{"id":"square-wall:5:5","kind":"structure","depth":352}],"actual":{"actor":2,"wall":1,"actorMode":"fallback","wallMode":"fallback"},"picked":[{"x":5,"y":4}]}
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'behind partially loaded wall, actor P…'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":180,"elevation":65,"behind":true,"wall":false,"actor":true,"sorted":[{"id":1,"kind":"actor","depth":-396.79999999999995},{"id":"square-wall:5:5","kind":"structure","depth":-351.99999999999994}],"actual":{"actor":2,"wall":1,"actorMode":"PNG","wallMode":"fallback"},"picked":[{"x":5,"y":6}]}
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'behind partially loaded wall, actor f…'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":180,"elevation":65,"behind":true,"wall":false,"actor":false,"sorted":[{"id":1,"kind":"actor","depth":-396.79999999999995},{"id":"square-wall:5:5","kind":"structure","depth":-351.99999999999994}],"actual":{"actor":2,"wall":1,"actorMode":"fallback","wallMode":"fallback"},"picked":[{"x":5,"y":6}]}
+
+ ❯ tests/unit/oblique-pending-wall-depth.test.ts (14 tests | 4 failed) 31ms
+   × actual scene yaw0 elevation45 'behind partially loaded wall, actor P…' 9ms
+   × actual scene yaw0 elevation45 'behind partially loaded wall, actor f…' 2ms
+   × actual scene yaw180 elevation65 'behind partially loaded wall, actor P…' 2ms
+   × actual scene yaw180 elevation65 'behind partially loaded wall, actor f…' 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'behind partially loaded wall, actor P…'
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'behind partially loaded wall, actor f…'
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'behind partially loaded wall, actor P…'
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'behind partially loaded wall, actor f…'
+AssertionError: actor behind a full fallback wall must paint below that wall: expected 2 to be less than 1
+ ❯ tests/unit/oblique-pending-wall-depth.test.ts:103:100
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 10 passed (14)
+   Start at  04:15:43
+   Duration  850ms (transform 257ms, setup 0ms, import 684ms, tests 31ms, environment 0ms)
+

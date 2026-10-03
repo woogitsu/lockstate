@@ -1,0 +1,41 @@
+{
+  "uniqueProducerMatches": 1,
+  "sha256Before": "b139c022545ac3c0b24ab9fc0954510ea932e2a77600c6b64401bb29b919be5f",
+  "sha256After": "b139c022545ac3c0b24ab9fc0954510ea932e2a77600c6b64401bb29b919be5f",
+  "byteExactRestored": true,
+  "results": [
+    {
+      "name": "fixed-source-baseline",
+      "exitCode": 0,
+      "command": [
+        "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/unit/oblique-pending-wall-depth.test.ts",
+        "--maxWorkers=2"
+      ]
+    },
+    {
+      "name": "producer-original-depth-mutation",
+      "exitCode": 1,
+      "command": [
+        "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/unit/oblique-pending-wall-depth.test.ts",
+        "--maxWorkers=2"
+      ]
+    },
+    {
+      "name": "exact-restored-source",
+      "exitCode": 0,
+      "command": [
+        "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/unit/oblique-pending-wall-depth.test.ts",
+        "--maxWorkers=2"
+      ]
+    }
+  ]
+}

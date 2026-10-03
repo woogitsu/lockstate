@@ -1,5 +1,6 @@
 // Genuine native generic rack routes, calibrated independent pixels and Save/Load.
 import { writeFile } from 'node:fs/promises';
+import { assertOwnedObjectOrders, recordOwnedObjectSnapshot, type ExpectedOwnedObject } from './owned-object-worker-evidence';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { buy, installTee, sentCommands } from './playtest-harness';
 
@@ -56,8 +57,12 @@ async function rackPixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promise
     // Actual native FullHD calibration at b61518d4e1, after full public LFS
     // hydration. The retained timber diffuseRGBA(.45,.27,.12,1) gives different
     // lit faces at native orientation0/1: RGB93,69,42 versus117,88,55.
-    // Isolated non-overlapping regions: normal275/339, rotated362/93.
+    // Isolated non-overlapping regions: historical normal275/339, rotated362/93.
     // Rotated rear rack is partly behind the wall; only visible timber counts.
+    // Physical supports change shading at b90c8b3: exact normal153/214, with
+    // one 8-bit channel step360/423. Retain the original regions and >200/>70
+    // thresholds; a1/255 tolerance counts the authored timber's adjacent
+    // sampled shades, not metal, ground, masonry, or another furniture palette.
     const rects = quarterTurns === 0
       ? [[820, 330, 110, 160], [935, 330, 110, 160]]
       : [[820, 300, 110, 190], [935, 400, 90, 100]];
@@ -66,7 +71,8 @@ async function rackPixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promise
       const pixels = context.getImageData(...rect as [number, number, number, number]).data;
       let count = 0;
       for (let i = 0; i < pixels.length; i += 4) {
-        if (pixels[i] === colour[0] && pixels[i + 1] === colour[1] && pixels[i + 2] === colour[2]) count++;
+        if (Math.abs(pixels[i]! - colour[0]!) <= 1 && Math.abs(pixels[i + 1]! - colour[1]!) <= 1
+          && Math.abs(pixels[i + 2]! - colour[2]!) <= 1) count++;
       }
       return count;
     });
@@ -226,6 +232,17 @@ test(`player reaches default generic racks at quarterTurns${quarterTurns} and re
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
   await page.mouse.move(1300, 700);
   const completed = await page.screenshot({ path: info.outputPath('generic-wooden-rack-worker-completed-fullhd.png') });
+  const bought = (await sentCommands(page)).filter(command => command.type === 'PlaceObject');
+  for (const command of bought) expect(typeof command.orderId).toBe('string');
+  const owned: readonly ExpectedOwnedObject[] = quarterTurns === 0 ? [
+    { anchorTile: { x: 23, y: 6 }, orientation: 0, sourceOrderId: String(bought[0]!.orderId) },
+    { anchorTile: { x: 24, y: 7 }, orientation: 0, sourceOrderId: String(bought[1]!.orderId) },
+  ] : [
+    { anchorTile: { x: 23, y: 6 }, orientation: 1, sourceOrderId: 'room-template-000000000002-2-object-000' },
+    { anchorTile: { x: 23, y: 8 }, orientation: 1, sourceOrderId: 'room-template-000000000002-2-object-001' },
+  ];
+  const completedData = await recordOwnedObjectSnapshot(page, info.outputPath('completed-worker-snapshot.json'));
+  assertOwnedObjectOrders(completedData, 'object.storage-rack', 'storage-rack-wooden', owned);
   const beforePixels = await rackPixels(page, completed, quarterTurns);
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => ['PlaceRoomTemplate', 'PlaceObject', 'UnzoneRoom'].includes(String(c.type))),
@@ -243,6 +260,9 @@ test(`player reaches default generic racks at quarterTurns${quarterTurns} and re
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('generic-wooden-rack-loaded-fullhd.png') });
+  const loadedData = await recordOwnedObjectSnapshot(page, info.outputPath('loaded-worker-snapshot.json'));
+  assertOwnedObjectOrders(loadedData, 'object.storage-rack', 'storage-rack-wooden', owned);
+  expect(loadedData).toEqual(completedData);
   const afterPixels = await rackPixels(page, loaded, quarterTurns);
   afterPixels.forEach((count, index) => expect.soft(count, `rack${index + 1} authored timber after Load`)
     .toBeGreaterThan(quarterTurns === 0 ? 200 : 70));
@@ -253,6 +273,11 @@ test(`player reaches default generic racks at quarterTurns${quarterTurns} and re
     commands: (await sentCommands(page)).filter(c => ['PlaceRoomTemplate', 'PlaceObject', 'UnzoneRoom'].includes(String(c.type))),
   }, null, 2));
   await info.attach('generic-wooden-rack-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
+
+  // Real native pose changes expose the authored support hardware after Load.
+  for (let step = 0; step < 3; step++) await page.getByRole('button', { name: quarterTurns === 0 ? 'Rotate camera right' : 'Rotate camera left', exact: true }).click();
+  await page.mouse.move(1300, 700);
+  await page.screenshot({ path: info.outputPath('physical-hardware-loaded-fullhd.png') });
 
 });
 }

@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-next-search-lifecycle-audit-20261003
+
+ ❯ tests/integration/search-target-departure.test.ts (14 tests | 2 failed) 610ms
+   × domain queued order validates the full recycled ID, saved=false 46ms
+   × domain queued order validates the full recycled ID, saved=true 58ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 12 passed (14)
+   Start at  04:22:23
+   Duration  3.02s (transform 864ms, setup 0ms, import 2.28s, tests 610ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/search-target-departure.test.ts > domain queued order validates the full recycled ID, saved=false
+ FAIL  tests/integration/search-target-departure.test.ts > domain queued order validates the full recycled ID, saved=true
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/integration/search-target-departure.test.ts:168:56
+    166|   if (saved) runtime = reload(runtime);
+    167|   for (let tick = 0; tick < 30; tick++) runtime.kernel.step();
+    168|   expect(runtime.searchSystem.isQueued('stale-owner')).toBe(false);
+       |                                                        ^
+    169|   expect(runtime.searchSystem.isQueued('new-owner')).toBe(true);
+    170|   expect(runtime.searchSystem.getMetrics().searchesCancelled).toBe(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+

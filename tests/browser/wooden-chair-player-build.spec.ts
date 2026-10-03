@@ -1,5 +1,6 @@
 // Real worker-built Staff Room, calibrated independent chair pixels and Save/Load.
 import { writeFile } from 'node:fs/promises';
+import { assertOwnedObjectOrders, recordOwnedObjectSnapshot, type ExpectedOwnedObject } from './owned-object-worker-evidence';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 
@@ -171,6 +172,17 @@ test(`player builds Staff Room at quarterTurns${quarterTurns} and retains both a
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
   await page.mouse.move(1300, 700);
   const completed = await page.screenshot({ path: info.outputPath('wooden-chair-worker-completed-fullhd.png') });
+  const owned: readonly ExpectedOwnedObject[] = quarterTurns === 0 ? [
+    { anchorTile: { x: 21, y: 7 }, orientation: 0, sourceOrderId: 'room-template-000000000002-2-object-001' },
+    { anchorTile: { x: 23, y: 8 }, orientation: 0, sourceOrderId: 'room-template-000000000002-2-object-002' },
+  ] : [
+    // Authored index001 at local(1,2) rotates to(3,1); index002 at(3,3)
+    // rotates to(2,3) in this6x6 template. Sorted anchors do not reorder owners.
+    { anchorTile: { x: 22, y: 8 }, orientation: 1, sourceOrderId: 'room-template-000000000002-2-object-002' },
+    { anchorTile: { x: 23, y: 6 }, orientation: 1, sourceOrderId: 'room-template-000000000002-2-object-001' },
+  ];
+  const completedData = await recordOwnedObjectSnapshot(page, info.outputPath('completed-worker-snapshot.json'));
+  assertOwnedObjectOrders(completedData, 'object.chair', 'chair-wooden', owned);
   const beforePixels = await timberPixels(page, completed, quarterTurns);
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
@@ -187,6 +199,9 @@ test(`player builds Staff Room at quarterTurns${quarterTurns} and retains both a
   await minimap.click({ position: { x: bounds.width * 23 / 32, y: bounds.height * 8 / 32 } });
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('wooden-chair-loaded-fullhd.png') });
+  const loadedData = await recordOwnedObjectSnapshot(page, info.outputPath('loaded-worker-snapshot.json'));
+  assertOwnedObjectOrders(loadedData, 'object.chair', 'chair-wooden', owned);
+  expect(loadedData).toEqual(completedData);
   const afterPixels = await timberPixels(page, loaded, quarterTurns);
   afterPixels.forEach((count, index) => expect.soft(count, `chair${index + 1} authored timber after Load`)
     .toBeGreaterThan(40));
@@ -197,6 +212,11 @@ test(`player builds Staff Room at quarterTurns${quarterTurns} and retains both a
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   await info.attach('wooden-chair-worker-and-save-evidence', { path: evidencePath, contentType: 'application/json' });
+
+  // Real native pose changes expose the authored support hardware after Load.
+  for (let step = 0; step < 3; step++) await page.getByRole('button', { name: quarterTurns === 0 ? 'Rotate camera right' : 'Rotate camera left', exact: true }).click();
+  await page.mouse.move(1300, 700);
+  await page.screenshot({ path: info.outputPath('physical-hardware-loaded-fullhd.png') });
 
 });
 }

@@ -1,0 +1,22 @@
+pnpm : $ vitest run "tests/unit/oblique-wooden-chair-detail-integrity.test.ts" "tests/unit/oblique-generic-rack-detail-
+integrity.test.ts" "tests/unit/oblique-shower-head-detail-integrity.test.ts" "tests/unit/oblique-pending-wall-depth.tes
+t.ts" "tests/unit/pending-wall-guards-fixture.test.ts" "tests/integration/search-target-departure.test.ts" "tests/integ
+ration/refused-unzone-template-undo.test.ts" "tests/foundation/browser-suite-partition-contract.test.ts" "tests/foundat
+ion/research-index-contract.test.ts" "tests/foundation/documentation-commit-citation-contract.test.ts" "tests/foundatio
+n/adr-quotation-verbatim-contract.test.ts" "tests/foundation/documentation-anchor-quotation-contract.test.ts" "--maxWor
+kers=2"
+At line:4 char:1
++ pnpm --config.verify-deps-before-run=false test tests/unit/oblique-wo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-chair-rack-depth-integration-20261003
+
+
+ Test Files  12 passed (12)
+      Tests  86 passed (86)
+   Start at  05:08:42
+   Duration  5.07s (transform 1.14s, setup 0ms, import 7.08s, tests 1.61s, environment 1ms)
+

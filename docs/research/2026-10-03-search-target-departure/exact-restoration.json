@@ -1,0 +1,20 @@
+{
+  "statuses": {
+    "consumer": 1,
+    "wire": 1,
+    "identity": 1,
+    "restored": 0
+  },
+  "sources": [
+    {
+      "file": "src/simulation/contraband/search-system.ts",
+      "byteExact": true,
+      "sha256": "7829aa500b0901d0962de3a0326df8ac67966e6abf8c1e27855101fb3f24d208"
+    },
+    {
+      "file": "src/simulation/runtime/new-session.ts",
+      "byteExact": true,
+      "sha256": "c346e2065d07e60cc1fdc35c3619647b8fc60076456fa8c9f26c870408924b5f"
+    }
+  ]
+}

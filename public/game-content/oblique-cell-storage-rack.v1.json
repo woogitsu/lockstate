@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "assetId": "furniture.storage.rack.wooden",
-  "source": "assets/source/blender/furniture.storage.rack.wooden.blend",
-  "sourceSha256": "3806d996ce473e166aaa00bef379655aac2c41ef4d45f7f32b48a893ff4b4eed",
+  "source": "assets/source/blender/furniture.storage.rack.wooden.angled-detail.blend",
+  "sourceSha256": "600d62b3b5708081445b6ba84b5f38fc8534922f6a128b448e1585c97e95c212",
   "resolutionPx": [
     256,
     256
@@ -44,434 +44,434 @@
     {
       "yawDegrees": 0,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+00-elev20.72a34a9a7f49.png",
-      "sha256": "72a34a9a7f49c419fa278a7a57d0f8e2835bfcb679aab5dcdf896615a93b7449"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+00-elev20.8c734424ada1.png",
+      "sha256": "8c734424ada121bdc0709a8c8c3ad210f86390c67741a0df337f977bdd761c07"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+00-elev30.815bb34ccebf.png",
-      "sha256": "815bb34ccebfc8e78fdb2e2b406a2101bacc155d3ba7e1df7af955fa0117893d"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+00-elev30.8a374acba137.png",
+      "sha256": "8a374acba137b69e92cca8820f751a4ceb0f8a089e459f8e2ebece3eddb0ee28"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+00-elev40.6a5411f6a30e.png",
-      "sha256": "6a5411f6a30e444c6a1edc62f4853b87d6f1ef4ad2a6301ba092115a169ca134"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+00-elev40.b6987105bbe0.png",
+      "sha256": "b6987105bbe07fea084db94881cc9d56cdbb2a1140c57825e2cf3d4dd16bcfa1"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+00-elev50.d7defdff31c3.png",
-      "sha256": "d7defdff31c32c33128d8b247b8cc1cb61c4dc3b11aebe3186e999fa147b27be"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+00-elev50.dfccff502bed.png",
+      "sha256": "dfccff502bed7ce06c693aaa4556ad4b05dbd26ea79d56c8ec1a52a299883fc4"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+00-elev60.273ef7480b03.png",
-      "sha256": "273ef7480b03d5955bde7159bf6584a8b100490e244f125a7a33456ba3a7b192"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+00-elev60.436561f5b347.png",
+      "sha256": "436561f5b3470a6eca13f3d5ab9cda51cab219486dbefea969cd78c59307fed8"
     },
     {
       "yawDegrees": 0,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+00-elev70.6f62a4a0e98f.png",
-      "sha256": "6f62a4a0e98f0528d168310db451b30551ecb2a1bd9e3ac0179d61ee12ccffc4"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+00-elev70.818588e3c317.png",
+      "sha256": "818588e3c317358eccffdcadc02747f8a03c07aa2df71a14b42ba14f05208647"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+30-elev20.dc451245c30b.png",
-      "sha256": "dc451245c30b73273beb76f5decfe2ec983ec6b9095f4c15d1adfa7d1994ea34"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+30-elev20.fa23d2bed966.png",
+      "sha256": "fa23d2bed966d323313ad041bfc62aebf08e4dd1e0ccbf2ad30fdfd3706071e5"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+30-elev30.3639f96d595a.png",
-      "sha256": "3639f96d595a5a8c08a85db8fd27b4bfd514bba03a152be514e6c1ad8bb9b5ff"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+30-elev30.2b5a4ce1f754.png",
+      "sha256": "2b5a4ce1f754f9ac84826d20425ba74f8d84ce3a5c9c7d3acc237506118f3a5f"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+30-elev40.202442426b0b.png",
-      "sha256": "202442426b0b2ce783a842dde469dfc26b646001c77fe2888511837772e40629"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+30-elev40.7a6866f5ca17.png",
+      "sha256": "7a6866f5ca17b1fc9d569ff99782f156b7180217389db0956c32050ac4d49695"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+30-elev50.ec62ca1c4f91.png",
-      "sha256": "ec62ca1c4f91a89215d6140848eed79af40d836405eb7ca7926ed3c3fce9822f"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+30-elev50.0dd131e1a822.png",
+      "sha256": "0dd131e1a822fb840df4ed338fe0516c83cc9313f88b500e2cfc40faf92620f5"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+30-elev60.b9d177a1cb73.png",
-      "sha256": "b9d177a1cb733d7ac0481a0fe3fced59165a5477bb03954a734406584bba09df"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+30-elev60.c8e98c10ee73.png",
+      "sha256": "c8e98c10ee73fa9ae1f7da63ff2fd356334f69865172612bae0264a0a7312337"
     },
     {
       "yawDegrees": 30,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+30-elev70.70fb92f693ea.png",
-      "sha256": "70fb92f693ea17ad7eb7c206e39e668121104120314db518304818943f065e4b"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+30-elev70.c48d7b04d797.png",
+      "sha256": "c48d7b04d7973e6721a2acf26694648a79c04095d19b1b4c11ee4cc014e46838"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+60-elev20.63455e4ba751.png",
-      "sha256": "63455e4ba751c6472f00944ab2f576d8d1adab77896f701ac213a009512f505a"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+60-elev20.ef85814dbc9e.png",
+      "sha256": "ef85814dbc9e7a49318114c5212026f853df2f9566857b2a91454f8f0a91f802"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+60-elev30.83a8f9d5bc79.png",
-      "sha256": "83a8f9d5bc79b7e64a142e06ed6ff91091b19087b6f41d4cc69bb400f8612348"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+60-elev30.0c8baa3196c2.png",
+      "sha256": "0c8baa3196c251c9537371ae4cacb64cf3b23088b3a8dccdf0c4597c7e5cd33a"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+60-elev40.3ddb9f3e6d1c.png",
-      "sha256": "3ddb9f3e6d1c4ea3780e4a91688f0ff45ffa09df1f2286b0aa4ca06c67e26009"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+60-elev40.c7488e2ca937.png",
+      "sha256": "c7488e2ca93786eba47dff9146a2834693fdfe01744b828829cf4969f92bcaef"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+60-elev50.c86107fbaf47.png",
-      "sha256": "c86107fbaf47a45d2a08066c84f83aa4fa705a4b637bc02cec9017970d704bd8"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+60-elev50.839949d656af.png",
+      "sha256": "839949d656af2805ebeb7ff2fc67ee20f69f5473337f8f97a918e12ee02db4d0"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+60-elev60.352d11c78e3e.png",
-      "sha256": "352d11c78e3e8c29898c657a9f6c587abc257fa902d45c52384b61206e7f52ed"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+60-elev60.1eee372e8d6d.png",
+      "sha256": "1eee372e8d6da1741bdc61af6cf4613106dec00e13968fff66280a092706a4fd"
     },
     {
       "yawDegrees": 60,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+60-elev70.7d52eec7c03d.png",
-      "sha256": "7d52eec7c03dd5c0ac0d384f133336511269669d0970bf7cd8c0e34ef548aad1"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+60-elev70.aaf74042e86e.png",
+      "sha256": "aaf74042e86e6fc95f3f6fa5c9cd494111bc77678e6b2211c8e11dc046720301"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+90-elev20.52e971050c52.png",
-      "sha256": "52e971050c5281a0540430238a5c3ade37f72806f6944ac28df486d37e9f1784"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+90-elev20.56744c2ab4b5.png",
+      "sha256": "56744c2ab4b5677c884e58480ee87be3d771c99808bd576f6d37f65f26e34baf"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+90-elev30.0e410290f98b.png",
-      "sha256": "0e410290f98b1b5c4239195cf046a3b9e10fbf5c2ccb813db1780e6eb6f7e57a"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+90-elev30.10b4d45ea7ac.png",
+      "sha256": "10b4d45ea7ac1c70f3fc576f4134c47d7e550054952f0d76ef4c3568c269ab73"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+90-elev40.7c73b10a5f3a.png",
-      "sha256": "7c73b10a5f3aaa7dc33601bcaebf3e9b0d2b344892088d48f70eb61b6d4eb391"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+90-elev40.d36ad5ac536d.png",
+      "sha256": "d36ad5ac536d0d83c7500f539def757c7070ea69f993e8f15af406f08526b326"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+90-elev50.979b56f79c3a.png",
-      "sha256": "979b56f79c3a9cb1c348a8f1e5f6c5bce1de07b8babde28dfd71ab3cfe5cc2d4"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+90-elev50.56ee6282e7a8.png",
+      "sha256": "56ee6282e7a887fb3a2f59595da44b11801cd3c657ca9cfa8decd1d41bc68b83"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+90-elev60.97aa39953dd9.png",
-      "sha256": "97aa39953dd9917943c1f2ac222b6b30a7301203a29c6a79a9944eab15286d03"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+90-elev60.96c9e5226b99.png",
+      "sha256": "96c9e5226b99f57134d55ec778f2451d84ba49037ebfa94bedaf1fe479954bef"
     },
     {
       "yawDegrees": 90,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+90-elev70.eace18e06b1d.png",
-      "sha256": "eace18e06b1dc29ab95a349c29ba3e786cf1e53d9b5a59958e2b7f0314f5fea1"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+90-elev70.1cea4ed321ff.png",
+      "sha256": "1cea4ed321ff5805acb90c04c29fee0c320d1d3a8ef7273733531abbc6a75289"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+120-elev20.662c5aaa3abf.png",
-      "sha256": "662c5aaa3abf81deefaad4ffcf25559cb32d9b7f1785cb83b1f4a43f3141cd84"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+120-elev20.dd0f748a8ca5.png",
+      "sha256": "dd0f748a8ca5d0e18828dd0a219be569217396c70d5e275a6aa7f8bcf3b843e1"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+120-elev30.b228fd87e205.png",
-      "sha256": "b228fd87e2050a7a4289c6e71cad8189b8a5895a4eb3678a02525c90a4d31c90"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+120-elev30.b40287c113a5.png",
+      "sha256": "b40287c113a5b8895464f72189ea8e654f0d5101e4aa9763166231b834b22e86"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+120-elev40.bf3d52bbbcb3.png",
-      "sha256": "bf3d52bbbcb32a5848065c2d9c7aa1372d8bfe7aa5a3315400a5fcbb02464084"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+120-elev40.7644717e3ed2.png",
+      "sha256": "7644717e3ed2161a0911579f4745a09463e0d77c0228dc17cd7d3e32ae7c37a0"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+120-elev50.a5673aee8b72.png",
-      "sha256": "a5673aee8b72745f94d19cfe638e537602c16bf98331006afb1f391545c5723b"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+120-elev50.da99b5d9cbf8.png",
+      "sha256": "da99b5d9cbf8bee6c088d885486e76f56001923692e21c2d591737f8daef7330"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+120-elev60.b22b7363e73d.png",
-      "sha256": "b22b7363e73df99f427a9d6b60424454fce50e4cb5ebdd8f893dc477a25dfd30"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+120-elev60.900acee1390d.png",
+      "sha256": "900acee1390de30e8872f922828515a83db3c1be8293dfc86ef2657f07130a1e"
     },
     {
       "yawDegrees": 120,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+120-elev70.58cdf1bcfaa4.png",
-      "sha256": "58cdf1bcfaa4aa6a05b05fbd14d4c69998b3619ac527bb83b744c3403944cde8"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+120-elev70.1a35bfc1f758.png",
+      "sha256": "1a35bfc1f7582ea5b792c9df0a27f72c3f83a0373beab50f35fc706cd532642d"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+150-elev20.6dac0ba24ba9.png",
-      "sha256": "6dac0ba24ba935979d6acb7950d1161a4fb5398d4166d6c54ccb88603f9afa2e"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+150-elev20.8b86a89230dc.png",
+      "sha256": "8b86a89230dc180d9ce13d9a7cc72e5dd9ba367accb4b3e25a3068c92c56070e"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+150-elev30.1d115deeb24f.png",
-      "sha256": "1d115deeb24f2560a776f0c7f067b6b0ad8631527e57ad18e2c69bba6cb61d83"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+150-elev30.cba578138e99.png",
+      "sha256": "cba578138e99f5c1edeede0cdd44b25f15b6f16d80e8b889fa4a62840218df85"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+150-elev40.7591616aa806.png",
-      "sha256": "7591616aa806b516a43b0deca773c6c677d6ff97ed411005544179ae80cb0fc5"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+150-elev40.b5e8d8d7d2a7.png",
+      "sha256": "b5e8d8d7d2a756488b6e0cb2c73a47ec0080bf2da94d3461bc66f91779c7fc4f"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+150-elev50.15913c35e02e.png",
-      "sha256": "15913c35e02e8f32a1cec86d7a5ae507d0e006fd7f28b3570206c7e5b337a86b"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+150-elev50.f1ebf144b911.png",
+      "sha256": "f1ebf144b9114793cdf3f90545f3aec3a7f7181c161846ee27d47f0efb521499"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+150-elev60.fe8d5101fa75.png",
-      "sha256": "fe8d5101fa75fa80a8a9b6c5f941ca8e0ddbfe841c5d7ab04b355b949a66eaf4"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+150-elev60.0b263a30d68d.png",
+      "sha256": "0b263a30d68dae3fd7262589e93c6a7c2044ffaab7ef4092d0ffc2a6ec4a78a8"
     },
     {
       "yawDegrees": 150,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+150-elev70.00cd17977488.png",
-      "sha256": "00cd1797748822e0fd2c0823a388f0b86fbc0933d709848ded87830ad8040afe"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+150-elev70.4d10876fed0e.png",
+      "sha256": "4d10876fed0e0a8f63ef4f2042f79891951597b268d41aa1b4391e5a08f2070b"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+180-elev20.b391a3423ea4.png",
-      "sha256": "b391a3423ea489951e3622e5e50ed6d7156ba6e672b392ffab9915c0cf51d9c5"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+180-elev20.179e37a40f26.png",
+      "sha256": "179e37a40f2677ce846f47c0dd5154941053d651987af08b4067048ce96f1720"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+180-elev30.6e7c0b23a3be.png",
-      "sha256": "6e7c0b23a3bedce76c83f2397ccf0127af10ccf60f3c0c2cb3c59acc61e91430"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+180-elev30.a622436962a2.png",
+      "sha256": "a622436962a23c51941ffa70000f3be5ba19bd383b906f7657c19b50ff578c84"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+180-elev40.30c9bd4fc3a5.png",
-      "sha256": "30c9bd4fc3a59fd9bc35be0d0a34bf70c03eb747f647c9886a7acf5c34e293e6"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+180-elev40.65933dd9e69a.png",
+      "sha256": "65933dd9e69ad92724b434c0e690a9605bdcb55d197ac6b2a6cec1649c556012"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+180-elev50.19b5b6e0dd6d.png",
-      "sha256": "19b5b6e0dd6d270de2181dddfc8cb91ca4a5ecbf4757d114a23720d11e861a1c"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+180-elev50.50c9ef6c5c80.png",
+      "sha256": "50c9ef6c5c8017131d21fcb5e458f8ba4e2de773dfb60e6cf8c1002c765bac34"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+180-elev60.386f454cfe50.png",
-      "sha256": "386f454cfe508b99b1eedbf0691ea82dceb5fca8b1de6e5aea6881acbe780642"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+180-elev60.f625aa976ad2.png",
+      "sha256": "f625aa976ad2bbd9618b20d1e0395e2d59ceff0d6c9ce3a0707ede2c45793b50"
     },
     {
       "yawDegrees": 180,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+180-elev70.90f3d3bf4139.png",
-      "sha256": "90f3d3bf41396ffacefe4348aa28fc2af05feb9143daac466081d5da09ce317c"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+180-elev70.9c7c126c97df.png",
+      "sha256": "9c7c126c97df806e585b1a1884c1df16e1c8439c8772f937ddd35d280bbcf96e"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+210-elev20.d8701124f951.png",
-      "sha256": "d8701124f9515a5439af47590290db922f7ad609e26c6bee71cfa0ae1715b219"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+210-elev20.ec1b62e2279c.png",
+      "sha256": "ec1b62e2279c9f7cf3f0f6bf57b623250b084bf2277912f3d0086c2efd184b50"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+210-elev30.d41b4b686197.png",
-      "sha256": "d41b4b68619744b26985ec9add721f409efaefa51775694745119c9f43a56ed6"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+210-elev30.4ff13febcf0a.png",
+      "sha256": "4ff13febcf0acf44a878cd5bfae2d653f8190fc23e251b394a4498f31e8c0095"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+210-elev40.482d5ea7ccba.png",
-      "sha256": "482d5ea7ccba4b0ed10a86e2061b600d7145189755567247500a9702af65fe15"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+210-elev40.2c8ea143982c.png",
+      "sha256": "2c8ea143982cf2654f5d5613d0b5dd069bb05ebfdcaeb03a3bafc3cb9ca67b18"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+210-elev50.59fe6c59b2cf.png",
-      "sha256": "59fe6c59b2cf0564fd5e08888f43bc9f7f17449cd4174fd3159b7f8b26d769d6"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+210-elev50.bdff1bf14d53.png",
+      "sha256": "bdff1bf14d53cfe0af0a9a4ffc363700c10bc0a621500b24f522f5e91e65f217"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+210-elev60.acd83f41c9f6.png",
-      "sha256": "acd83f41c9f680ebca5276a210fca28938d95d483ac6c11113568cca8ce8f389"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+210-elev60.867dff8c7767.png",
+      "sha256": "867dff8c7767ef6494951a1e771734e14e7184e04a71c25ead23659f33569d8c"
     },
     {
       "yawDegrees": 210,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+210-elev70.a1a1296ac065.png",
-      "sha256": "a1a1296ac0651801164c31ced3b404b5d17d0c89250caaed0d77bff24df8bb8e"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+210-elev70.8bd923048576.png",
+      "sha256": "8bd923048576898fbed5ef91e8819758db2cde3d5f9f1167345e2c0486523f99"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+240-elev20.aa9474e2d39c.png",
-      "sha256": "aa9474e2d39cbc289a1372100ec8be2e3d62f81eac7e34cedf82ce2d92d29ec5"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+240-elev20.757f3f3cc39d.png",
+      "sha256": "757f3f3cc39d89091507f884cb69bf990a637cba45a8eec72f6117b2a0d3a25e"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+240-elev30.d5a67414f1db.png",
-      "sha256": "d5a67414f1db0724f7078b787a2a9b817f5de00916d22bac3bef9811e7222099"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+240-elev30.146cf42629c4.png",
+      "sha256": "146cf42629c43315bdab074377f3bd953de5bfa280ee30d31cb3876f891bf334"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+240-elev40.e5430c4b4e47.png",
-      "sha256": "e5430c4b4e4721eaf3b9ee785ba3a8da5d9c145c0462528acab77cf6e91add8c"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+240-elev40.8725befe5278.png",
+      "sha256": "8725befe5278fd803921bcef062f406a885ab60517bc9a7ac6c2d530d31bf9aa"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+240-elev50.45409f1fc091.png",
-      "sha256": "45409f1fc091713f387732ef9098de21bd21805081af5e6ae4f418b7ee8ab8da"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+240-elev50.bf9c4f9f69ea.png",
+      "sha256": "bf9c4f9f69ea151dbfa3daa33af70e3710ca1f3e272ef651bb34ad9750b7731c"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+240-elev60.b905e5b72bb5.png",
-      "sha256": "b905e5b72bb5b424d9ff93376973b306d3811ff377370994d1479bc0406e3cec"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+240-elev60.4e7ffb53fd7f.png",
+      "sha256": "4e7ffb53fd7feb0885183b2ef5f11297bd21f67adc93fd11915acb81194fd513"
     },
     {
       "yawDegrees": 240,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+240-elev70.f31a9d659163.png",
-      "sha256": "f31a9d659163de8789373f3b2af1e88d7b020d891ba22af8a7cee10c4eb7b709"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+240-elev70.5fdfe48b881a.png",
+      "sha256": "5fdfe48b881ad59830d82ec0c1a837c6731a9cfcbad2d220280ae28a98576822"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+270-elev20.645e9edc9caa.png",
-      "sha256": "645e9edc9caaaef7798a2f9a3c23fe3addf263a0c9c01f91a54e143c3dcf9167"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+270-elev20.067050ef4fd2.png",
+      "sha256": "067050ef4fd27d648611ff7140402325ef5d9fd5ed8fea38c1b652108a432809"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+270-elev30.85e878de2474.png",
-      "sha256": "85e878de2474b7d6a6788deb15b7743bb252960ec87fd39eb2dd073dfb2675b3"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+270-elev30.210438561700.png",
+      "sha256": "21043856170007427ac800a45683df1eb62923fdbc7e67ee19f6be91048d970e"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+270-elev40.6dc262bb438f.png",
-      "sha256": "6dc262bb438fbafc368fabb1a71fb8180894d134c5765168343cf9009e958c55"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+270-elev40.1ed7a2f9b138.png",
+      "sha256": "1ed7a2f9b138dd2721228e738bdaddbd2086394eac41d5a816c7d4f651351f69"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+270-elev50.3179948f0869.png",
-      "sha256": "3179948f086907085d5e9dd0053e069821eac7c8a6725993f0e89359419cfd35"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+270-elev50.b63e249c5204.png",
+      "sha256": "b63e249c5204bee8d0f414487e5406bf888fb153e9bb786895d1d1c6389dd999"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+270-elev60.1fa1e9625504.png",
-      "sha256": "1fa1e962550424c5a006944f05d5683a15aee7e7bdaf062e7e7cf92bd843d14a"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+270-elev60.80c3bbcd37e0.png",
+      "sha256": "80c3bbcd37e0f8e64f06918f7e868f7a087ab00b93e4706fe86f301e20b013dd"
     },
     {
       "yawDegrees": 270,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+270-elev70.abc2f7cd523d.png",
-      "sha256": "abc2f7cd523d16fde88151733722b7489b048bd8153ae655b2004de6d5e3ca1d"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+270-elev70.ed609bb54851.png",
+      "sha256": "ed609bb548516240e22b052131a19d41d0ed247e1367adb8cff87d3d18e1f688"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+300-elev20.b535a1e937ff.png",
-      "sha256": "b535a1e937ffe8e685367193da9b74fe4f294a2c9959235857b5b6e10d86eb36"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+300-elev20.46fb336c74af.png",
+      "sha256": "46fb336c74af16ba7f68e0b61027a61c5b4399501b8b62210b9e17b1b7e9abb1"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+300-elev30.2b1d20d21567.png",
-      "sha256": "2b1d20d2156782a005f1ae1336f52cdfbad30ad7599f12f41b364140abc3b5d2"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+300-elev30.6823202f7814.png",
+      "sha256": "6823202f781469fb4d937a9226c1fd3576c3bd2091115a13fad003768950d872"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+300-elev40.de6f3cefa916.png",
-      "sha256": "de6f3cefa9167bf24ec6422d2603bd89207b2ef3d72dc13b97b97121e3a76267"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+300-elev40.8846d69e2316.png",
+      "sha256": "8846d69e23162f459677865a6c62f7772b3d189630380323bd6ed7267363dd12"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+300-elev50.7c494e4bf9e8.png",
-      "sha256": "7c494e4bf9e81f27fa453bebf6340566a54d9bb535536acbd0f767b6fec86bd8"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+300-elev50.76afdf85a487.png",
+      "sha256": "76afdf85a487d4f595d4a6a76ce5f514062513e46ce0889b7ba1849ef658c870"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+300-elev60.2708744f3620.png",
-      "sha256": "2708744f362025583e0022fa2465b92e73b988703a6132604e3ec552d32f84d8"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+300-elev60.af6a5185c477.png",
+      "sha256": "af6a5185c477497898ee3d5586a5d5265575a7b96474857dc81923dbc635abd3"
     },
     {
       "yawDegrees": 300,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+300-elev70.aa7ef77f278f.png",
-      "sha256": "aa7ef77f278f7119a93c95db8b62329261fb89a6e6f46a70d174dcf7fdc1ba35"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+300-elev70.7de5eb922cd9.png",
+      "sha256": "7de5eb922cd9afafd1fb48b8e0389544b99a22366bdde043ff432626fbb37ca3"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 20,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+330-elev20.28b63aa5b61d.png",
-      "sha256": "28b63aa5b61d8e0e4d40fe0c577670da5e1df13f3e8fc2e4f938bed5a84ebf78"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+330-elev20.b1afcf876f9a.png",
+      "sha256": "b1afcf876f9a24644700d15e33834fe827bfcb613837ecb5dc4daa1b1782bc52"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 30,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+330-elev30.7cba4d973921.png",
-      "sha256": "7cba4d973921c3f29dfd9ed897cabf8791d4eb8c5c271df6e7bf799e8736e976"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+330-elev30.d0f94ee8def1.png",
+      "sha256": "d0f94ee8def1453e58ae6546e56067473fce13c0bdf2efe880ac56f72c25aea4"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 40,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+330-elev40.2f69e35add66.png",
-      "sha256": "2f69e35add6641ed18380ccb4b53933c825c372f1b7840bf1255d751206bd612"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+330-elev40.d66dc0819531.png",
+      "sha256": "d66dc08195313dcfe632cbed335db3d5d84788a9d8e185e09d13974dcf99f309"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 50,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+330-elev50.a7374ed8b54f.png",
-      "sha256": "a7374ed8b54f28779a3ad7eaa0350c273456bfc84c8dff2dc54fca07d0b3f0bf"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+330-elev50.333e9b56f50c.png",
+      "sha256": "333e9b56f50c927505caae8e30052010b3947ddfa855d633d75009796e00b6f4"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 60,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+330-elev60.e827b505a27a.png",
-      "sha256": "e827b505a27af08cb75a25eca0c512cc9b1460ab557358a4b82e46e1b1e5fe20"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+330-elev60.5821b9db3398.png",
+      "sha256": "5821b9db339803a92834305f328b9e1e4266511a5585e762d80a1355d5397e31"
     },
     {
       "yawDegrees": 330,
       "elevationDegrees": 70,
-      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+330-elev70.1fcb6b71cdb5.png",
-      "sha256": "1fcb6b71cdb512fc390c365a9df5af428a0502146f8aa8fa9114452cccb926e6"
+      "image": "/assets/environment/oblique/furniture.storage.rack.wooden-yaw+330-elev70.8ad58eb7adbd.png",
+      "sha256": "8ad58eb7adbd1079c37dfd6f396bc8fb4464337453d0880e11b0727cafdda47f"
     }
   ]
 }

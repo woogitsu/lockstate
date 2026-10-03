@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-next-construction-audit-20261003
+
+
+ Test Files  7 passed (7)
+      Tests  265 passed (265)
+   Start at  04:44:16
+   Duration  24.94s (transform 1.73s, setup 0ms, import 5.52s, tests 34.43s, environment 0ms)
+

@@ -1,0 +1,52 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-angled-cutaway-occupancy-audit-20261003
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'behind partially loaded wall, actor P…'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":0,"elevation":45,"behind":true,"wall":false,"actor":true,"sorted":[{"id":1,"kind":"actor","depth":307.2},{"id":"square-wall:5:5","kind":"structure","depth":352}],"actual":{"actor":2,"wall":1,"actorMode":"PNG","wallMode":"fallback"},"picked":[{"x":5,"y":4}]}
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'behind partially loaded wall, actor f…'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":0,"elevation":45,"behind":true,"wall":false,"actor":false,"sorted":[{"id":1,"kind":"actor","depth":307.2},{"id":"square-wall:5:5","kind":"structure","depth":352}],"actual":{"actor":2,"wall":1,"actorMode":"fallback","wallMode":"fallback"},"picked":[{"x":5,"y":4}]}
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'behind partially loaded wall, actor P…'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":180,"elevation":65,"behind":true,"wall":false,"actor":true,"sorted":[{"id":1,"kind":"actor","depth":-396.79999999999995},{"id":"square-wall:5:5","kind":"structure","depth":-351.99999999999994}],"actual":{"actor":2,"wall":1,"actorMode":"PNG","wallMode":"fallback"},"picked":[{"x":5,"y":6}]}
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'behind partially loaded wall, actor f…'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":180,"elevation":65,"behind":true,"wall":false,"actor":false,"sorted":[{"id":1,"kind":"actor","depth":-396.79999999999995},{"id":"square-wall:5:5","kind":"structure","depth":-351.99999999999994}],"actual":{"actor":2,"wall":1,"actorMode":"fallback","wallMode":"fallback"},"picked":[{"x":5,"y":6}]}
+
+ ❯ tests/unit/oblique-pending-wall-depth.test.ts (17 tests | 5 failed) 92ms
+   × actual scene yaw0 elevation45 'behind partially loaded wall, actor P…' 12ms
+   × actual scene yaw0 elevation45 'behind partially loaded wall, actor f…' 3ms
+   × actual scene yaw180 elevation65 'behind partially loaded wall, actor P…' 2ms
+   × actual scene yaw180 elevation65 'behind partially loaded wall, actor f…' 2ms
+   × reuses one fallback wall while actors cross depth, then destroys a removed wall 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'behind partially loaded wall, actor P…'
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'behind partially loaded wall, actor f…'
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'behind partially loaded wall, actor P…'
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'behind partially loaded wall, actor f…'
+AssertionError: actor behind a full fallback wall must paint below that wall: expected 2 to be less than 1
+ ❯ tests/unit/oblique-pending-wall-depth.test.ts:125:100
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  tests/unit/oblique-pending-wall-depth.test.ts > reuses one fallback wall while actors cross depth, then destroys a removed wall
+AssertionError: expected 2 to be less than 1
+ ❯ tests/unit/oblique-pending-wall-depth.test.ts:150:38
+    148|     expect(state.graphics.filter(graphic => !graphic.destroyed && grap…
+    149|     const actual = depths(scene);
+    150|     if (behind) expect(actual.actor).toBeLessThan(actual.wall); else e…
+       |                                      ^
+    151|   }
+    152|   publish({ ...snapshot(4.3,false), revision:2 }); scene.update(30,0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 12 passed (17)
+   Start at  04:25:41
+   Duration  1.56s (transform 624ms, setup 0ms, import 1.27s, tests 92ms, environment 0ms)
+
