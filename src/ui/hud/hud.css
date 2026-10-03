@@ -7443,3 +7443,21 @@
   object-fit: contain;
 }
 .hud-build__object-thumbnail[hidden], .hud-build__list > .ui-row > svg[hidden] { display: none; }
+
+/* UNAPPROVED #2019 review candidate: keep every object action in its existing
+ * row. Native 6edb4f2 measured Buy at39.109375/40.546875px at UI100. These
+ * minima restore44/88px targets without a new row or shortened visible copy.
+ * Enlarged FullHD Arm returns from the header to the same action group;
+ * panel/card allocation is a separate review decision, not solved here. */
+@media (min-width: 1920px) and (min-height: 1080px) {
+  .hud-build:has(.hud-build__rotate-object:not([hidden])) .hud-build__actions > .ui-action {
+    min-width: var(--tap-target);
+  }
+
+  :root[data-ui-scale-step='200'] .hud[data-active-tab='build']
+    .hud-build:has(.hud-build__rotate-object:not([hidden])) .hud-build__actions > .hud-build__arm {
+    position: static;
+    inset: auto;
+    width: auto;
+  }
+}
