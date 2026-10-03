@@ -1,0 +1,122 @@
+[
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-camera-native-20261003.json",
+    "archived": "original-modern-pl/report.json",
+    "sourceBytes": 17066,
+    "sourceSha256": "af3456de816f3bf0a653d8a9abef3e0435054c4bca3f1a14454d44a441c09306",
+    "archivedBytes": 17066,
+    "archivedSha256": "af3456de816f3bf0a653d8a9abef3e0435054c4bca3f1a14454d44a441c09306"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-camera-native-20261003.txt",
+    "archived": "original-modern-pl/console.txt",
+    "sourceBytes": 0,
+    "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "archivedBytes": 0,
+    "archivedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-camera-native-20261003\\.last-run.json",
+    "archived": "original-modern-pl/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "dc219badf867561c15e3048dc9e89655be071a086e1c862a4cd15911729c86df",
+    "archivedBytes": 96,
+    "archivedSha256": "dc219badf867561c15e3048dc9e89655be071a086e1c862a4cd15911729c86df"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-camera-native-20261003\\camera-controls.native.ts--22c1b--with-a-real-worker-refusal\\actual-paused-after-camera-whole.json",
+    "archived": "original-modern-pl/002-actual-paused-after-camera-whole.json",
+    "sourceBytes": 15874,
+    "sourceSha256": "f82a7edfc0f6687cb295361d057d2cec9b07ebafa035af835424fffbb1d6b544",
+    "archivedBytes": 15874,
+    "archivedSha256": "f82a7edfc0f6687cb295361d057d2cec9b07ebafa035af835424fffbb1d6b544"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-camera-native-20261003\\camera-controls.native.ts--22c1b--with-a-real-worker-refusal\\actual-paused-before-camera-whole.json",
+    "archived": "original-modern-pl/003-actual-paused-before-camera-whole.json",
+    "sourceBytes": 15874,
+    "sourceSha256": "8156d105b8cfc60381f8c36fc3c9753f66547d76963ac475250b474726b5d77f",
+    "archivedBytes": 15874,
+    "archivedSha256": "8156d105b8cfc60381f8c36fc3c9753f66547d76963ac475250b474726b5d77f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-camera-native-20261003\\camera-controls.native.ts--22c1b--with-a-real-worker-refusal\\actual-public-camera-interactions.json",
+    "archived": "original-modern-pl/004-actual-public-camera-interactions.json",
+    "sourceBytes": 2943,
+    "sourceSha256": "67ede17549c4619185c137d6c129723909ecd1ef472e952a7b99da2f5ba0c386",
+    "archivedBytes": 2943,
+    "archivedSha256": "67ede17549c4619185c137d6c129723909ecd1ef472e952a7b99da2f5ba0c386"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-camera-native-20261003\\camera-controls.native.ts--22c1b--with-a-real-worker-refusal\\actual-ui100-active-status-all-camera-geometry.json",
+    "archived": "original-modern-pl/005-actual-ui100-active-status-all-camera-geometry.json",
+    "sourceBytes": 6556,
+    "sourceSha256": "a575153290c54250a80bb843d10502014920cce5e1cc7a1cdd4dc7f0bc720720",
+    "archivedBytes": 6556,
+    "archivedSha256": "a575153290c54250a80bb843d10502014920cce5e1cc7a1cdd4dc7f0bc720720"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-camera-native-20261003\\camera-controls.native.ts--22c1b--with-a-real-worker-refusal\\actual-ui100-active-status-all-camera.png",
+    "archived": "original-modern-pl/006-actual-ui100-active-status-all-camera.png",
+    "sourceBytes": 1484711,
+    "sourceSha256": "61a64a49ead81f80e9479147443ed9e019b9639da0ae486c533babd1ba83f2de",
+    "archivedBytes": 1484711,
+    "archivedSha256": "61a64a49ead81f80e9479147443ed9e019b9639da0ae486c533babd1ba83f2de"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-camera-native-20261003\\camera-controls.native.ts--22c1b--with-a-real-worker-refusal\\actual-ui100-disclosure-closed.png",
+    "archived": "original-modern-pl/007-actual-ui100-disclosure-closed.png",
+    "sourceBytes": 212760,
+    "sourceSha256": "c134c5dfc909363849257ca3a1e5ff271ec407172f8b147aa8562608162013ec",
+    "archivedBytes": 212760,
+    "archivedSha256": "c134c5dfc909363849257ca3a1e5ff271ec407172f8b147aa8562608162013ec"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-camera-native-20261003\\camera-controls.native.ts--22c1b--with-a-real-worker-refusal\\actual-ui100-returned-world-active-status.png",
+    "archived": "original-modern-pl/008-actual-ui100-returned-world-active-status.png",
+    "sourceBytes": 252824,
+    "sourceSha256": "1fe61d6f704c2c1b8e9417e4c59a1f58ddba9c0ddb604459da84416b13fae4fb",
+    "archivedBytes": 252824,
+    "archivedSha256": "1fe61d6f704c2c1b8e9417e4c59a1f58ddba9c0ddb604459da84416b13fae4fb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-camera-native-20261003\\camera-controls.native.ts--f91ae--with-a-real-worker-refusal\\actual-paused-before-camera-whole.json",
+    "archived": "original-modern-pl/009-actual-paused-before-camera-whole.json",
+    "sourceBytes": 15876,
+    "sourceSha256": "6137c7fbdb2d84f2c6e60d00066b9002389eeb6c4ce9521a655ea475f5b9dca7",
+    "archivedBytes": 15876,
+    "archivedSha256": "6137c7fbdb2d84f2c6e60d00066b9002389eeb6c4ce9521a655ea475f5b9dca7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-camera-native-20261003\\camera-controls.native.ts--f91ae--with-a-real-worker-refusal\\actual-ui200-disclosure-closed.png",
+    "archived": "original-modern-pl/010-actual-ui200-disclosure-closed.png",
+    "sourceBytes": 263194,
+    "sourceSha256": "d5b7b5742d828c53a0c5cc68f5907cb4563d29b90ce92516a8c2975b797f1b2c",
+    "archivedBytes": 263194,
+    "archivedSha256": "d5b7b5742d828c53a0c5cc68f5907cb4563d29b90ce92516a8c2975b797f1b2c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-camera-native-20261003\\camera-controls.native.ts--f91ae--with-a-real-worker-refusal\\error-context.md",
+    "archived": "original-modern-pl/011-error-context.md",
+    "sourceBytes": 9582,
+    "sourceSha256": "94575a49b9868b21d58b71b0ab526ee61fe6071814fb170f3f10dd67d62cf673",
+    "archivedBytes": 9582,
+    "archivedSha256": "94575a49b9868b21d58b71b0ab526ee61fe6071814fb170f3f10dd67d62cf673"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-camera-native-20261003\\camera-controls.native.ts--f91ae--with-a-real-worker-refusal\\test-failed-1.png",
+    "archived": "original-modern-pl/012-test-failed-1.png",
+    "sourceBytes": 562299,
+    "sourceSha256": "16cbcc2e171c07cea6d70090c630142c0274cb5f79299f8a70b270b6d4eb0e39",
+    "archivedBytes": 562299,
+    "archivedSha256": "16cbcc2e171c07cea6d70090c630142c0274cb5f79299f8a70b270b6d4eb0e39"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-camera-native-20261003\\camera-controls.native.ts--f91ae--with-a-real-worker-refusal\\trace.zip",
+    "archived": "original-modern-pl/013-trace.zip",
+    "sourceBytes": 38659951,
+    "sourceSha256": "f84cc151b2017855bde549e781ccc4155217db2017ca7ecb12f726b100499781",
+    "archivedBytes": 38659951,
+    "archivedSha256": "f84cc151b2017855bde549e781ccc4155217db2017ca7ecb12f726b100499781"
+  }
+]

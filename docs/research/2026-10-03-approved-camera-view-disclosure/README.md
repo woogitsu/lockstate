@@ -1,5 +1,19 @@
 # Owner-selected camera A integration
 
+## First actual combined modern built-client result
+
+On the frozen integrated product 94b923a6d0, strict types and the real
+Cloudflare production build exit 0. The original two serial PL Full HD cases
+retain 60s/expect10s/workers1/retries0. UI100 passes: all 12 controls, physical
+pan/pose/renderer input, full genuine worker refusal and alert row, Escape/focus
+and entire paused V9 state equality. UI200 fails `Camera target is covered`:
+the open Angled panel covers the existing Zoom/View row. Both actual Full HD
+screenshots were opened. This is an actual layout defect, not visual acceptance
+for UI200. The original report, console, screenshots, whole bundles and trace
+are preserved with original/archived hashes in
+[capture aliases](./native/capture-aliases.json). A separate correction must
+retain every control floor and full alert row; no budget or assertion is relaxed.
+
 ## Selected option and exact limits
 
 On 2026-10-03 the coordinator relayed the owner's clicked #1292 option:

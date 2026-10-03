@@ -59,3 +59,6 @@ docs/research/2026-10-03-authoritative-object-model-integration/native/**/*.zip 
 # Actual Staff model acceptance, including the original exposed-timber failure.
 docs/research/2026-10-03-staff-room-padded-chair/native/** -text
 docs/research/2026-10-03-staff-room-padded-chair/native/**/*.png filter=lfs diff=lfs merge=lfs -text
+docs/research/2026-10-03-approved-camera-view-disclosure/native/** -text
+docs/research/2026-10-03-approved-camera-view-disclosure/native/**/*.png filter=lfs diff=lfs merge=lfs -text
+docs/research/2026-10-03-approved-camera-view-disclosure/native/**/*.zip filter=lfs diff=lfs merge=lfs -text
