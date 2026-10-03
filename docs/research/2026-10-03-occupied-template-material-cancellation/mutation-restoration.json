@@ -1,0 +1,23 @@
+{
+  "proofs": [
+    {
+      "name": "negative-reader.txt",
+      "path": "src/simulation/construction/system.ts",
+      "exit": 1,
+      "restoredSha256": "84af76aae865c64bf3ffebe20f1c5c3679da978b41935c52e525cd1572368bfa"
+    },
+    {
+      "name": "negative-command.txt",
+      "path": "src/simulation/runtime/session-commands.ts",
+      "exit": 1,
+      "restoredSha256": "94252207e53711062a2a3da4fc4c14e20dbd0cb5dfa6a45a4476b68d77b7ee0e"
+    },
+    {
+      "name": "negative-collective.txt",
+      "path": "src/simulation/construction/room-template-coordinator.ts",
+      "exit": 1,
+      "restoredSha256": "e8768eb50ccc91416cee56f426980be11c1edbd25b98daa17c611fb586a170b3"
+    }
+  ],
+  "restoredExit": 0
+}
