@@ -10989,11 +10989,10 @@ test.describe('the assembled application', () => {
    * the *panel* does with a shape in `ui-shell.spec.ts`, and what the
    * *application* claims the shape is here.
    *
-   * A wall first, deliberately. The panel retains one edge across selections,
-   * so choosing *West* on a wall and then selecting the door is exactly the
-   * sequence that used to submit a west door with nothing on screen saying so.
-   * Here the chooser stays up and keeps the choice, which is what makes the
-   * edge the player's rather than the last row's.
+   * A door first: canonical walls now occupy whole squares and correctly
+   * hide the edge chooser. Choose *West* on the actual edge door, visit the
+   * square wall, then return to the door. The retained choice must reappear
+   * with its control, rather than silently becoming a hidden setting.
    */
   test('the Build catalogue offers a door its edge chooser, from the real registry (#531)', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
@@ -11006,19 +11005,26 @@ test.describe('the assembled application', () => {
     await coordinates.locator('> .ui-section__header').click();
     await expect(coordinates).toHaveAttribute('data-collapsed', 'false');
 
-    // The wall first, where the chooser is undisputed -- so a hidden chooser
-    // below is a fact about the door row rather than about the whole panel.
+    // Only an actual edge buildable offers this choice. Use the real door
+    // catalogue row rather than the canonical full-square wall.
     const chooser = page.locator('.hud-build .ui-choice');
+    await page.locator('.hud-build__list [data-buildable="door-wooden"]').click();
+    await expect(
+      page.locator('.hud-build__list [data-buildable="door-wooden"][data-selected="true"]'),
+      'the initial door row did not become the selection',
+    ).toHaveCount(1);
+    await expect(chooser).toBeVisible();
+    await chooser.locator('[data-choice="west"]').click();
+    await expect(chooser.locator('[data-choice="west"]')).toHaveAttribute('aria-checked', 'true');
+
+    // A square wall legitimately hides orientation. Returning to the edge
+    // door must restore the player's retained visible choice.
     await page.locator('.hud-build__list [data-buildable="wall-brick"]').click();
     await expect(
       page.locator('.hud-build__list [data-buildable="wall-brick"][data-selected="true"]'),
-      'the wall row did not become the selection',
+      'the square wall row did not become the selection',
     ).toHaveCount(1);
-    await expect(chooser).toBeVisible();
-
-    // The retained edge the defect leaked. Chosen on the wall, where the
-    // control is undisputed.
-    await chooser.locator('[data-choice="west"]').click();
+    await expect(chooser).toBeHidden();
 
     // And the row this issue is about. A door is edge geometry -- it writes
     // `DOOR_EDGE_NUMERIC_ID` onto a tile edge -- so the chooser must survive
