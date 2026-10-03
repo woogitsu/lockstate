@@ -1,0 +1,19 @@
+{
+  "safe": {
+    "left": 846,
+    "right": 1184,
+    "width": 338
+  },
+  "box": {
+    "x": 846,
+    "y": 267,
+    "width": 338,
+    "height": 298,
+    "left": 846,
+    "top": 267,
+    "right": 1184,
+    "bottom": 565
+  },
+  "text": "Click map to place; Esc cancels. | This footprint is clear. | Brick × 35 · Wood Plank × 2 · Materials catalogue value: 1,530",
+  "placementCommands": 0
+}

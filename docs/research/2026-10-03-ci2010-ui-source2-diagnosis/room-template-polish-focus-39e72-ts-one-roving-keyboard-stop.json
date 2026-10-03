@@ -2,3185 +2,1001 @@
   {
     "start": 2827982.009,
     "ms": 157.03799999970943,
-    "method": "newPage",
-    "params": {},
-    "result": {
-      "page": "<Page>"
-    }
+    "method": "newPage"
   },
   {
     "start": 2828140.855,
     "ms": 0.5830000001005828,
-    "method": "addInitScript",
-    "params": {
-      "source": "(() => {\n    const RealWorker = Worker;\n    const sent = [];\n    const received = [];\n    class TeeWorker extends RealWorker {\n      constructor(url, options) {\n        super(url, options);\n        super.addEventListener('message', event => {\n          var _kind, _event$data;\n          const kind = (_kind = (_event$data = event.data) === null || _event$data === void 0 ? void 0 : _event$data.kind) !== null && _kind !== void 0 ? _kind : '';\n          // Only the small messages, so the array cannot grow without bound.\n          if (kind === 'simulation/delta' || kind === 'simulation/snapshot' || kind === 'simulation/projection') return;\n          received.push(event.data);\n        });\n      }\n      postMessage(message, transfer) {\n        sent.push(message);\n        if (transfer === undefined) super.postMessage(message);else if (Array.isArray(transfer)) super.postMessage(message, transfer);else super.postMessage(message, transfer);\n      }\n    }\n    window.Worker = TeeWorker;\n    window.lockstateSentToWorker = sent;\n    window.lockstateFromWorker = received;\n\n    /*\n     * The Build panel intent recorder (#1017). See `BuildIntentRecord`.\n     *\n     * On `window` and in the **capture** phase, which is the earliest point in\n     * the propagation path: it therefore observes a click even when something\n     * further down stops the event before the panel's own handler runs, and\n     * that is exactly the state this recorder exists to make visible.\n     *\n     * Removal clears `buildableId` rather than setting a flag the checks\n     * consult, because `.hud-build__remove` *toggles*: a second press turns\n     * removal off again and the panel goes back to placing the row that is\n     * still selected, which this listener cannot see. Clearing is the\n     * conservative direction -- the checks below skip rather than accuse when\n     * they do not know what was asked.\n     */\n    const intent = {\n      buildableId: undefined,\n      removing: false,\n      at: 0\n    };\n    window.addEventListener('click', event => {\n      const target = event.target;\n      if (!(target instanceof Element)) return;\n      const row = target.closest('.hud-build__list [data-buildable]');\n      if (row !== null) {\n        var _row$getAttribute;\n        intent.buildableId = (_row$getAttribute = row.getAttribute('data-buildable')) !== null && _row$getAttribute !== void 0 ? _row$getAttribute : undefined;\n        intent.removing = false;\n        intent.at = Date.now();\n        return;\n      }\n      if (target.closest('.hud-build__remove') !== null) {\n        intent.buildableId = undefined;\n        intent.removing = true;\n        intent.at = Date.now();\n      }\n    }, true);\n    window.lockstateBuildIntent = intent;\n  })(undefined)"
-    }
+    "method": "addInitScript"
   },
   {
     "start": 2828142.009,
     "ms": 0.27099999971687794,
-    "method": "addInitScript",
-    "params": {
-      "source": "(() => {\n    Object.defineProperty(navigator, 'languages', {\n      get: () => ['pl-PL']\n    });\n    Object.defineProperty(navigator, 'language', {\n      get: () => 'pl-PL'\n    });\n  })(undefined)"
-    }
+    "method": "addInitScript"
   },
   {
     "start": 2828142.789,
     "ms": 2.083000000100583,
-    "method": "setViewportSize",
-    "params": {
-      "viewportSize": {
-        "width": 1920,
-        "height": 1080
-      }
-    }
+    "method": "setViewportSize"
   },
   {
     "start": 2828146.029,
     "ms": 1172.8279999997467,
-    "method": "goto",
-    "params": {
-      "url": "/?renderer=oblique",
-      "timeout": 0,
-      "waitUntil": "load"
-    },
-    "result": {
-      "response": "<Response>"
-    }
+    "method": "goto"
   },
   {
     "start": 2829351.661,
     "ms": 44.20999999996275,
     "method": "expect",
-    "params": {
-      "selector": "html",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "lang",
-      "expectedText": [
-        {
-          "string": "pl"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "pl"
-      }
-    }
+    "selector": "html"
   },
   {
     "start": 2829404.121,
     "ms": 1792.4610000001267,
     "method": "click",
-    "params": {
-      "selector": "internal:role=button[name=\"Nowe więzienie\"s]",
-      "strict": true,
-      "timeout": 0
-    }
+    "selector": "internal:role=button[name=\"Nowe więzienie\"s]"
   },
   {
     "start": 2831246.924,
     "ms": 1271.1289999997243,
     "method": "click",
-    "params": {
-      "selector": "internal:role=button[name=\"Buduj\"s]",
-      "strict": true,
-      "timeout": 0
-    }
+    "selector": "internal:role=button[name=\"Buduj\"s]"
   },
   {
     "start": 2832693.594,
     "ms": 2199.4909999999218,
     "method": "click",
-    "params": {
-      "selector": "internal:role=button[name=\"Wzory pomieszczeń\"s]",
-      "strict": true,
-      "timeout": 0
-    }
+    "selector": "internal:role=button[name=\"Wzory pomieszczeń\"s]"
   },
   {
     "start": 2835071.259,
     "ms": 338.51299999980256,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id]",
-      "expression": "to.have.count",
-      "expectedNumber": 20,
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "n": 20
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id]"
   },
   {
     "start": 2835582.868,
     "ms": 840.0260000000708,
     "method": "evalOnSelectorAll",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id]",
-      "expression": "elements => elements.map(el => {\n    const box = el.getBoundingClientRect();\n    const label = el.querySelector('strong');\n    return {\n      text: label.textContent,\n      accessible: el.getAttribute('aria-label'),\n      fits: label.scrollWidth <= label.clientWidth,\n      top: box.top,\n      bottom: box.bottom,\n      hit: el.contains(document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2))\n    };\n  })",
-      "isFunction": true,
-      "arg": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      }
-    },
-    "result": {
-      "value": {
-        "a": [
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Cela podstawowa"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Cela podstawowa"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 171
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 229
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 2
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Cela duża"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Cela duża"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 171
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 229
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 3
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Łaźnia"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Łaźnia"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 171
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 229
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 4
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Blok czterech cel"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Blok czterech cel"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 171
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 229
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 5
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Stołówka"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Stołówka"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 237
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 295
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 6
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Kuchnia"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Kuchnia"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 237
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 295
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 7
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Cela przejściowa"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Cela przejściowa"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 237
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 295
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 8
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Cela izolacyjna"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Cela izolacyjna"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 237
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 295
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 9
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Punkt przyjęć"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Punkt przyjęć"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 303
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 361
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 10
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Pralnia"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Pralnia"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 303
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 361
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 11
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Plac spacerowy"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Plac spacerowy"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 303
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 361
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 12
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Świetlica"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Świetlica"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 303
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 361
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 13
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Sala lekcyjna"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Sala lekcyjna"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 369
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 427
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 14
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Ambulatorium"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Ambulatorium"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 369
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 427
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 15
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Dyżurka ochrony"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Dyżurka ochrony"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 369
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 427
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 16
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Pokój socjalny"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Pokój socjalny"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 369
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 427
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 17
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Magazyn"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Magazyn"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 435
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 501
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 18
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Rampa dostawcza"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Rampa dostawcza"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 435
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 501
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 19
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Śmietnik"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Śmietnik"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 435
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 501
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 20
-          },
-          {
-            "o": [
-              {
-                "k": "text",
-                "v": {
-                  "s": "Pomieszczenie techniczne"
-                }
-              },
-              {
-                "k": "accessible",
-                "v": {
-                  "s": "Pomieszczenie techniczne"
-                }
-              },
-              {
-                "k": "fits",
-                "v": {
-                  "b": true
-                }
-              },
-              {
-                "k": "top",
-                "v": {
-                  "n": 435
-                }
-              },
-              {
-                "k": "bottom",
-                "v": {
-                  "n": 501
-                }
-              },
-              {
-                "k": "hit",
-                "v": {
-                  "b": true
-                }
-              }
-            ],
-            "id": 21
-          }
-        ],
-        "id": 1
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id]"
   },
   {
     "start": 2836596.872,
     "ms": 1388.6699999999255,
-    "method": "screenshot",
-    "params": {
-      "timeout": 0,
-      "type": "png"
-    },
-    "result": {
-      "binary": "<Buffer>"
-    }
+    "method": "screenshot"
   },
   {
     "start": 2838167.214,
     "ms": 837.1280000000261,
     "method": "focus",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "strict": true,
-      "timeout": 0
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2839180.044,
     "ms": 499.7989999996498,
-    "method": "keyboardPress",
-    "params": {
-      "key": "End"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2839856.771,
     "ms": 337.4169999998994,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=-1",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=-1"
   },
   {
     "start": 2840376.579,
     "ms": 341.910000000149,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2840891.175,
     "ms": 510.219000000041,
     "method": "evalOnSelectorAll",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id]",
-      "expression": "items => items.filter(item => item.tabIndex === 0).length",
-      "isFunction": true,
-      "arg": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      }
-    },
-    "result": {
-      "value": {
-        "n": 1
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id]"
   },
   {
     "start": 2841574.013,
     "ms": 511.3670000000857,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2842257.87,
     "ms": 341.1710000000894,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2842772.425,
     "ms": 504.44900000002235,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowLeft"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2843453.75,
     "ms": 342.0679999999702,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=-1",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=-1"
   },
   {
     "start": 2843971.327,
     "ms": 503.5449999999255,
-    "method": "keyboardPress",
-    "params": {
-      "key": "Home"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2844653.279,
     "ms": 333.9550000000745,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2845159.633,
     "ms": 495.82800000021234,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2845829.113,
     "ms": 333.3880000002682,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=1",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=1"
   },
   {
     "start": 2846336.882,
     "ms": 340.68199999956414,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2846849.646,
     "ms": 498.8519999999553,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2847526.76,
     "ms": 333.4550000000745,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=2",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=2"
   },
   {
     "start": 2848035.779,
     "ms": 334.37899999972433,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2848541.843,
     "ms": 506.4850000003353,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2849227.806,
     "ms": 339.0570000000298,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=3",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=3"
   },
   {
     "start": 2849744.711,
     "ms": 362.2050000000745,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2850278.406,
     "ms": 505.3300000000745,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2850960.97,
     "ms": 333.8479999997653,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=4",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=4"
   },
   {
     "start": 2851468.292,
     "ms": 334.035000000149,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2851973.101,
     "ms": 498.0490000001155,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2852646.141,
     "ms": 333.88500000024214,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=5",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=5"
   },
   {
     "start": 2853154.141,
     "ms": 339.09000000031665,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2853667.483,
     "ms": 507.97200000006706,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2854350.681,
     "ms": 333.0120000001043,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=6",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=6"
   },
   {
     "start": 2854857.238,
     "ms": 336.97500000009313,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2855367.071,
     "ms": 498.2919999998994,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2856040.717,
     "ms": 337.3969999998808,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=7",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=7"
   },
   {
     "start": 2856550.474,
     "ms": 332.43699999991804,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2857053.798,
     "ms": 501.37699999986216,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2857730.05,
     "ms": 336.5460000000894,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=8",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=8"
   },
   {
     "start": 2858239.639,
     "ms": 338.6669999998994,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2858750.378,
     "ms": 497.69900000002235,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2859424.027,
     "ms": 336.9480000003241,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=9",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=9"
   },
   {
     "start": 2859934.856,
     "ms": 340.6329999999143,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2860449.072,
     "ms": 502.1129999998957,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2861127.527,
     "ms": 338.3220000001602,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=10",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=10"
   },
   {
     "start": 2861644.059,
     "ms": 338.1219999999739,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2862154.768,
     "ms": 494.47899999981746,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2862822.24,
     "ms": 335.73999999975786,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=11",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=11"
   },
   {
     "start": 2863334.428,
     "ms": 339.14199999999255,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2863886.754,
     "ms": 531.9199999999255,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2864594.02,
     "ms": 332.6480000000447,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=12",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=12"
   },
   {
     "start": 2865098.135,
     "ms": 340.29300000006333,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2865613.795,
     "ms": 506.0120000001043,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2866296.556,
     "ms": 336.7550000003539,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=13",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=13"
   },
   {
     "start": 2866817.916,
     "ms": 332.45699999993667,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2867326.454,
     "ms": 501.62999999988824,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2868009.431,
     "ms": 334.9240000001155,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=14",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=14"
   },
   {
     "start": 2868519.684,
     "ms": 362.46100000012666,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2869056.071,
     "ms": 507.26299999980256,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2869740.673,
     "ms": 336.8300000000745,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=15",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=15"
   },
   {
     "start": 2870252.159,
     "ms": 344.24599999981,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2870772.324,
     "ms": 504.280999999959,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2871452.86,
     "ms": 334.22500000009313,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=16",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=16"
   },
   {
     "start": 2871960.352,
     "ms": 332.2949999999255,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2872466.196,
     "ms": 501.52799999993294,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2873143.971,
     "ms": 333.7050000000745,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=17",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=17"
   },
   {
     "start": 2873649.888,
     "ms": 335.3350000004284,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2874158.157,
     "ms": 496.85699999984354,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2874829.226,
     "ms": 338.1630000001751,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=18",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=18"
   },
   {
     "start": 2875343.617,
     "ms": 339.54300000006333,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2875855.598,
     "ms": 502.69799999985844,
-    "method": "keyboardPress",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2876533.783,
     "ms": 334.21400000015274,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=19",
-      "expression": "to.be.focused",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "focused"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=19"
   },
   {
     "start": 2877044.578,
     "ms": 338.5540000000037,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2877555.871,
     "ms": 1378.722000000067,
-    "method": "screenshot",
-    "params": {
-      "timeout": 0,
-      "type": "png"
-    },
-    "result": {
-      "binary": "<Buffer>"
-    }
+    "method": "screenshot"
   },
   {
     "start": 2879106.815,
     "ms": 511.38200000021607,
-    "method": "keyboardPress",
-    "params": {
-      "key": "Enter"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2879785.898,
     "ms": 337.5910000000149,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=-1",
-      "expression": "to.have.attribute.value",
-      "expressionArg": "aria-pressed",
-      "expectedText": [
-        {
-          "string": "true"
-        }
-      ],
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": false,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": true,
-      "received": {
-        "s": "true"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=-1"
   },
   {
     "start": 2880294.958,
     "ms": 337.37099999981,
     "method": "expect",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> .hud-template__quote",
-      "expression": "to.be.empty",
-      "expectedValue": {
-        "value": {
-          "v": "undefined"
-        },
-        "handles": []
-      },
-      "isNot": true,
-      "timeout": 10000
-    },
-    "result": {
-      "matches": false,
-      "received": {
-        "s": "notEmpty"
-      }
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> .hud-template__quote"
   },
   {
     "start": 2880808.171,
     "ms": 511.5379999997094,
-    "method": "keyboardPress",
-    "params": {
-      "key": "Tab"
-    }
+    "method": "keyboardPress"
   },
   {
     "start": 2827951.138,
     "ms": 24.291000000201166,
-    "method": "pw:api",
-    "params": {
-      "acceptDownloads": "accept",
-      "bypassCSP": "false",
-      "colorScheme": "light",
-      "hasTouch": "false",
-      "ignoreHTTPSErrors": "false",
-      "isMobile": "false",
-      "javaScriptEnabled": "true",
-      "locale": "en-US",
-      "offline": "false",
-      "viewport": "Object",
-      "baseURL": "http://127.0.0.1:42161",
-      "serviceWorkers": "allow",
-      "selectorEngines": "[]",
-      "testIdAttributeName": "data-testid",
-      "noDefaultViewport": "false",
-      "extraHTTPHeaders": "undefined",
-      "storageState": "undefined",
-      "reducedMotion": "undefined",
-      "forcedColors": "undefined",
-      "contrast": "undefined",
-      "clientCertificates": "undefined"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2827950.082,
     "ms": 26.63800000026822,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 2827980.057,
     "ms": 0.8050000001676381,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 2827981.814,
     "ms": 157.97700000042096,
-    "method": "pw:api",
-    "params": {}
+    "method": "pw:api"
   },
   {
     "start": 2827981.073,
     "ms": 158.75400000019,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 2827940.101,
     "ms": 199.7550000003539,
-    "method": "hook",
-    "params": {}
+    "method": "hook"
   },
   {
     "start": 2828140.661,
     "ms": 0.8470000000670552,
-    "method": "pw:api",
-    "params": {
-      "source": "(() => {\n    const RealWorker = Worker;\n    const sent = [];\n    const received = [];\n    class TeeWorker extends RealWorker {\n      constructor(url, options) {\n        super(url, options);\n        super.addEventListener('message', event => {\n          var _kind, _event$data;\n          const kind = (_kind = (_event$data = event.data) === null || _event$data === void 0 ? void 0 : _event$data.kind) !== null && _kind !== void 0 ? _kind : '';\n          // Only the small messages, so the array cannot grow without bound.\n          if (kind === 'simulation/delta' || kind === 'simulation/snapshot' || kind === 'simulation/projection') return;\n          received.push(event.data);\n        });\n      }\n      postMessage(message, transfer) {\n        sent.push(message);\n        if (transfer === undefined) super.postMessage(message);else if (Array.isArray(transfer)) super.postMessage(message, transfer);else super.postMessage(message, transfer);\n      }\n    }\n    window.Worker = TeeWorker;\n    window.lockstateSentToWorker = sent;\n    window.lockstateFromWorker = received;\n\n    /*\n     * The Build panel intent recorder (#1017). See `BuildIntentRecord`.\n     *\n     * On `window` and in the **capture** phase, which is the earliest point in\n     * the propagation path: it therefore observes a click even when something\n     * further down stops the event before the panel's own handler runs, and\n     * that is exactly the state this recorder exists to make visible.\n     *\n     * Removal clears `buildableId` rather than setting a flag the checks\n     * consult, because `.hud-build__remove` *toggles*: a second press turns\n     * removal off again and the panel goes back to placing the row that is\n     * still selected, which this listener cannot see. Clearing is the\n     * conservative direction -- the checks below skip rather than accuse when\n     * they do not know what was asked.\n     */\n    const intent = {\n      buildableId: undefined,\n      removing: false,\n      at: 0\n    };\n    window.addEventListener('click', event => {\n      const target = event.target;\n      if (!(target instanceof Element)) return;\n      const row = target.closest('.hud-build__list [data-buildable]');\n      if (row !== null) {\n        var _row$getAttribute;\n        intent.buildableId = (_row$getAttribute = row.getAttribute('data-buildable')) !== null && _row$getAttribute !== void 0 ? _row$getAttribute : undefined;\n        intent.removing = false;\n        intent.at = Date.now();\n        return;\n      }\n      if (target.closest('.hud-build__remove') !== null) {\n        intent.buildableId = undefined;\n        intent.removing = true;\n        intent.at = Date.now();\n      }\n    }, true);\n    window.lockstateBuildIntent = intent;\n  })(undefined)"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2828141.888,
     "ms": 0.4420000002719462,
-    "method": "pw:api",
-    "params": {
-      "source": "(() => {\n    Object.defineProperty(navigator, 'languages', {\n      get: () => ['pl-PL']\n    });\n    Object.defineProperty(navigator, 'language', {\n      get: () => 'pl-PL'\n    });\n  })(undefined)"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2828142.699,
     "ms": 2.6630000001750886,
-    "method": "pw:api",
-    "params": {
-      "viewportSize": "Object"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2828145.902,
     "ms": 1202.4200000003912,
-    "method": "pw:api",
-    "params": {
-      "url": "/?renderer=oblique",
-      "waitUntil": "load",
-      "timeout": "0"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2829349.591,
     "ms": 53.166000000201166,
-    "method": "expect",
-    "params": {
-      "expected": "lang"
-    }
+    "method": "expect"
   },
   {
     "start": 2829403.888,
     "ms": 1842.1140000000596,
     "method": "pw:api",
-    "params": {
-      "selector": "internal:role=button[name=\"Nowe więzienie\"s]",
-      "strict": "true",
-      "timeout": "0"
-    }
+    "selector": "internal:role=button[name=\"Nowe więzienie\"s]"
   },
   {
     "start": 2831246.756,
     "ms": 1445.8969999998808,
     "method": "pw:api",
-    "params": {
-      "selector": "internal:role=button[name=\"Buduj\"s]",
-      "strict": "true",
-      "timeout": "0"
-    }
+    "selector": "internal:role=button[name=\"Buduj\"s]"
   },
   {
     "start": 2832693.423,
     "ms": 2376.157999999821,
     "method": "pw:api",
-    "params": {
-      "selector": "internal:role=button[name=\"Wzory pomieszczeń\"s]",
-      "strict": "true",
-      "timeout": "0"
-    }
+    "selector": "internal:role=button[name=\"Wzory pomieszczeń\"s]"
   },
   {
     "start": 2835070.383,
     "ms": 511.03899999987334,
-    "method": "expect",
-    "params": {
-      "expected": "20"
-    }
+    "method": "expect"
   },
   {
     "start": 2835582.673,
     "ms": 1012.101000000257,
     "method": "pw:api",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id]",
-      "expression": "elements => elements.map(el => {\n    const box = el.getBoundingClientRect();\n    const label = el.querySelector('strong');\n    return {\n      text: label.textContent,\n      accessible: el.getAttribute('aria-label'),\n      fits: label.scrollWidth <= label.clientWidth,\n      top: box.top,\n      bottom: box.bottom,\n      hit: el.contains(document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2))\n    };\n  })",
-      "isFunction": "true",
-      "arg": "Object"
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id]"
   },
   {
     "start": 2836595.659,
     "ms": 0.09700000006705523,
-    "method": "expect",
-    "params": {
-      "expected": "true"
-    }
+    "method": "expect"
   },
   {
     "start": 2836596.646,
     "ms": 1566.0439999997616,
-    "method": "pw:api",
-    "params": {
-      "path": "/home/runner/work/lockstate/lockstate/test-results/room-template-polish-focus-39e72-ts-one-roving-keyboard-stop/polish-catalogue.png",
-      "mask": "undefined",
-      "timeout": "0",
-      "type": "png"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2838165.662,
     "ms": 1012.7050000000745,
     "method": "pw:api",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0",
-      "strict": "true",
-      "timeout": "0"
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id] >> nth=0"
   },
   {
     "start": 2839179.348,
     "ms": 675.4169999998994,
-    "method": "pw:api",
-    "params": {
-      "key": "End"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2839855.769,
     "ms": 509.48400000017136,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2840366.199,
     "ms": 523.5989999999292,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2840890.922,
     "ms": 681.3280000002123,
     "method": "pw:api",
-    "params": {
-      "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id]",
-      "expression": "items => items.filter(item => item.tabIndex === 0).length",
-      "isFunction": "true",
-      "arg": "Object"
-    }
+    "selector": "internal:role=dialog[name=\"Wzory pomieszczeń\"i] >> [data-template-id]"
   },
   {
     "start": 2841573.059,
     "ms": 0.10800000000745058,
-    "method": "expect",
-    "params": {
-      "expected": "1"
-    }
+    "method": "expect"
   },
   {
     "start": 2841573.765,
     "ms": 682.6399999996647,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2842257.141,
     "ms": 514.2950000003912,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2842772.294,
     "ms": 680.2589999996126,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowLeft"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2843453.184,
     "ms": 517.1929999999702,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2843971.155,
     "ms": 680.9290000000037,
-    "method": "pw:api",
-    "params": {
-      "key": "Home"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2844652.649,
     "ms": 506.03599999984726,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2845159.509,
     "ms": 668.057999999728,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2845828.401,
     "ms": 506.91800000006333,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2846336.061,
     "ms": 512.5159999998286,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2846849.511,
     "ms": 676.101000000257,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2847526.194,
     "ms": 508.054999999702,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2848034.998,
     "ms": 505.1779999998398,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2848540.976,
     "ms": 685.3379999999888,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2849227.089,
     "ms": 516.4389999997802,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2849744.126,
     "ms": 533.5139999999665,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2850278.305,
     "ms": 681.4320000000298,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2850960.34,
     "ms": 506.2740000002086,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2851467.362,
     "ms": 504.7789999996312,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2851972.97,
     "ms": 671.6569999996573,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2852645.405,
     "ms": 507.2050000000745,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2853153.394,
     "ms": 513.0320000001229,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2853667.297,
     "ms": 681.9270000001416,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2854349.963,
     "ms": 505.839999999851,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2854856.527,
     "ms": 509.55500000016764,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2855366.906,
     "ms": 672.3059999998659,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2856040.018,
     "ms": 509.05799999972805,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2856549.781,
     "ms": 503.0470000002533,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2857053.62,
     "ms": 675.0370000000112,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2857729.355,
     "ms": 508.8330000001006,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2858238.919,
     "ms": 510.4879999998957,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2858750.241,
     "ms": 672.3420000001788,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2859423.366,
     "ms": 510.07800000021234,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2859934.17,
     "ms": 513.8939999998547,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2860448.919,
     "ms": 677.2899999995716,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2861126.967,
     "ms": 515.7319999998435,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2861643.282,
     "ms": 510.4419999998063,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2862154.554,
     "ms": 666.2900000000373,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2862821.59,
     "ms": 511.4210000000894,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2863333.675,
     "ms": 552.1660000002012,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2863886.595,
     "ms": 706.0439999997616,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2864593.397,
     "ms": 503.16600000020117,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2865097.402,
     "ms": 515.594000000041,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2865613.613,
     "ms": 681.5819999999367,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2866295.925,
     "ms": 510.9860000000335,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2866807.512,
     "ms": 518.1620000000112,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2867326.291,
     "ms": 682.027999999933,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2868008.87,
     "ms": 509.429999999702,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2868518.992,
     "ms": 536.027999999933,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2869055.799,
     "ms": 683.5019999998622,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2869740.012,
     "ms": 510.4169999998994,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2870251.12,
     "ms": 520.3999999999069,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2870772.145,
     "ms": 679.2349999998696,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2871452.189,
     "ms": 506.8070000000298,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2871959.663,
     "ms": 505.51599999982864,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2872466.019,
     "ms": 676.5679999999702,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2873143.311,
     "ms": 505.1620000000112,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2873649.208,
     "ms": 507.9350000000559,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2874157.974,
     "ms": 669.8730000001378,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2874828.58,
     "ms": 513.9399999999441,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2875343.077,
     "ms": 511.530999999959,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2875855.42,
     "ms": 676.1850000000559,
-    "method": "pw:api",
-    "params": {
-      "key": "ArrowRight"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2876532.327,
     "ms": 510.92299999995157,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2877043.907,
     "ms": 510.90199999976903,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2877555.726,
     "ms": 1549.3350000004284,
-    "method": "pw:api",
-    "params": {
-      "path": "/home/runner/work/lockstate/lockstate/test-results/room-template-polish-focus-39e72-ts-one-roving-keyboard-stop/polish-catalogue-focus.png",
-      "mask": "undefined",
-      "timeout": "0",
-      "type": "png"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2879106.684,
     "ms": 677.7090000002645,
-    "method": "pw:api",
-    "params": {
-      "key": "Enter"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2879785.13,
     "ms": 508.219000000041,
-    "method": "expect",
-    "params": {
-      "expected": "aria-pressed"
-    }
+    "method": "expect"
   },
   {
     "start": 2880294.112,
     "ms": 513.0389999998733,
-    "method": "expect",
-    "params": {}
+    "method": "expect"
   },
   {
     "start": 2880807.973,
     "ms": 692.4489999995567,
-    "method": "pw:api",
-    "params": {
-      "key": "Tab"
-    }
+    "method": "pw:api"
   },
   {
     "start": 2887953.96,
     "ms": 0.04199999989941716,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 2887954.157,
     "ms": 5.112999999895692,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 2881501.032,
     "ms": 7083.30700000003,
     "method": "expect",
-    "params": {},
-    "error": {
-      "name": "",
-      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('dialog', { name: 'Wzory pomieszczeń' }).getByRole('button', { name: 'Postaw na mapie', exact: true })\nExpected: focused\nReceived: inactive\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Wzory pomieszczeń' }).getByRole('button', { name: 'Postaw na mapie', exact: true })\u001b[22m\n\u001b[2m    9 × locator resolved to <button type=\"button\">Postaw na mapie</button>\u001b[22m\n\u001b[2m      - unexpected value \"inactive\"\u001b[22m\n",
-      "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('dialog', { name: 'Wzory pomieszczeń' }).getByRole('button', { name: 'Postaw na mapie', exact: true })\nExpected: focused\nReceived: inactive\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Wzory pomieszczeń' }).getByRole('button', { name: 'Postaw na mapie', exact: true })\u001b[22m\n\u001b[2m    9 × locator resolved to <button type=\"button\">Postaw na mapie</button>\u001b[22m\n\u001b[2m      - unexpected value \"inactive\"\u001b[22m\n\n    at /home/runner/work/lockstate/lockstate/tests/browser/room-template-polish-focus.spec.ts:44:80"
-    }
+    "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('dialog', { name: 'Wzory pomieszczeń' }).getByRole('button', { name: 'Postaw na mapie', exact: true })\nExpected: focused\nReceived: inactive\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Wzory pomieszczeń' }).getByRole('button', { name: 'Postaw na mapie', exact: true })\u001b[22m\n\u001b[2m    9 × locator resolved to <button type=\"button\">Postaw na mapie</button>\u001b[22m\n\u001b[2m      - unexpected value \"inactive\"\u001b[22m\n"
   },
   {
     "start": 2888579.295,
     "ms": 5.862999999895692,
-    "method": "pw:api",
-    "params": {
-      "reason": "Test timeout of 60000ms exceeded."
-    }
+    "method": "pw:api"
   },
   {
     "start": 2887959.465,
     "ms": 625.7330000000075,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 2888586.442,
     "ms": 0.009000000078231096,
-    "method": "test.attach",
-    "params": {}
+    "method": "test.attach"
   },
   {
     "start": 2888587.768,
     "ms": 0.015999999828636646,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 2887953.555,
     "ms": 637.776999999769,
-    "method": "hook",
-    "params": {}
+    "method": "hook"
   },
   {
     "start": 2888592.199,
     "ms": 31.884999999776483,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 2888624.522,
     "ms": 0.01000000024214387,
-    "method": "fixture",
-    "params": {}
+    "method": "fixture"
   },
   {
     "start": 2888591.544,
     "ms": 33.50399999972433,
-    "method": "hook",
-    "params": {}
+    "method": "hook"
   }
 ]

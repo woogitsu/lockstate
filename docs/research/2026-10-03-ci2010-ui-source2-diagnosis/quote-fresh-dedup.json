@@ -1,0 +1,92 @@
+{
+  "at": "2026-10-03T10:51:48.254Z",
+  "results": [
+    {
+      "search": "room plan label clipped",
+      "results": [
+        {
+          "number": 1953,
+          "state": "OPEN",
+          "title": "Full HD Build target clips whole-square coordinates and catalogue value",
+          "url": "https://github.com/woogitsu/lockstate/issues/1953"
+        },
+        {
+          "number": 604,
+          "state": "OPEN",
+          "title": "HANDOVER 2026-08-29 late — main red three times, five PRs became six, and the design search landed",
+          "url": "https://github.com/woogitsu/lockstate/issues/604"
+        }
+      ]
+    },
+    {
+      "search": "room label safe width",
+      "results": [
+        {
+          "number": 703,
+          "state": "OPEN",
+          "title": "OWNER RULINGS 2026-08-31: four of the five questions Part E put to the owner",
+          "url": "https://github.com/woogitsu/lockstate/issues/703"
+        },
+        {
+          "number": 890,
+          "state": "OPEN",
+          "title": "The sharpest incentive in the game is invisible: two thirds of the state grant is withheld and nothing says so",
+          "url": "https://github.com/woogitsu/lockstate/issues/890"
+        },
+        {
+          "number": 604,
+          "state": "OPEN",
+          "title": "HANDOVER 2026-08-29 late — main red three times, five PRs became six, and the design search landed",
+          "url": "https://github.com/woogitsu/lockstate/issues/604"
+        }
+      ]
+    },
+    {
+      "search": "room footprint readout",
+      "results": [
+        {
+          "number": 1925,
+          "state": "OPEN",
+          "title": "Room-plan construction readout obscures the fitted angled footprint",
+          "url": "https://github.com/woogitsu/lockstate/issues/1925"
+        },
+        {
+          "number": 2008,
+          "state": "OPEN",
+          "title": "Blocked room anchor repeatedly wins action selection and starves a housed prisoner",
+          "url": "https://github.com/woogitsu/lockstate/issues/2008"
+        },
+        {
+          "number": 1971,
+          "state": "OPEN",
+          "title": "Angled canvas-origin wall drag freezes its preview and quote under the HUD while release orders a longer run",
+          "url": "https://github.com/woogitsu/lockstate/issues/1971"
+        },
+        {
+          "number": 641,
+          "state": "OPEN",
+          "title": "Just-in-time materials makes ADR 0075's hard lock reachable by a drag gesture: wall 312 leaves 40",
+          "url": "https://github.com/woogitsu/lockstate/issues/641"
+        },
+        {
+          "number": 1031,
+          "state": "CLOSED",
+          "title": "roomCapacity and accommodationCapacity count a bed the instant it is ordered, while the world honestly draws it as a construction ghost",
+          "url": "https://github.com/woogitsu/lockstate/issues/1031"
+        },
+        {
+          "number": 516,
+          "state": "CLOSED",
+          "title": "A pointer gesture stays open when the release never arrives — #202's blur fix covers the keyboard and not the three drag state machines",
+          "url": "https://github.com/woogitsu/lockstate/issues/516"
+        },
+        {
+          "number": 604,
+          "state": "OPEN",
+          "title": "HANDOVER 2026-08-29 late — main red three times, five PRs became six, and the design search landed",
+          "url": "https://github.com/woogitsu/lockstate/issues/604"
+        }
+      ]
+    }
+  ]
+}

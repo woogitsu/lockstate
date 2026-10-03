@@ -1,0 +1,7 @@
+{
+  "extends": "../../../tsconfig.json",
+  "include": [
+    "./quote-clamp-dom.test.ts",
+    "./vitest.config.ts"
+  ]
+}
