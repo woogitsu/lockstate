@@ -997,5 +997,296 @@
     "sourceSha256": "d8adcb50875b1e9426b26e2f601bd92ba6e561b60a2b25668e7cab5871b122d6",
     "archivedBytes": 468884,
     "archivedSha256": "d8adcb50875b1e9426b26e2f601bd92ba6e561b60a2b25668e7cab5871b122d6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-negative-20261003.json",
+    "archived": "context-negative/report.json",
+    "sourceBytes": 12639,
+    "sourceSha256": "2ca4d009e2654c57c06695afa3ff02dd3b2f3f352413a12a5d61cb6f14534e1a",
+    "archivedBytes": 12639,
+    "archivedSha256": "2ca4d009e2654c57c06695afa3ff02dd3b2f3f352413a12a5d61cb6f14534e1a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-negative-20261003.txt",
+    "archived": "context-negative/console.txt",
+    "sourceBytes": 9512,
+    "sourceSha256": "5a38430ff15ce2f35af700f32f2f8579b6eac24d083c5a534d21c01ebed80093",
+    "archivedBytes": 4769,
+    "archivedSha256": "387d5c84058b4bdd8dd24f0091394205324ec8db6cfbc2a21b910908e0283bdc",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-negative-20261003\\.last-run.json",
+    "archived": "context-negative/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "47d3a2b26c7ec6f997c4d3b479586b45e836d6e0d9ced3111601a444dd00cd5f",
+    "archivedBytes": 96,
+    "archivedSha256": "47d3a2b26c7ec6f997c4d3b479586b45e836d6e0d9ced3111601a444dd00cd5f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-negative-20261003\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\common-room-actual-completed-fullhd.png",
+    "archived": "context-negative/002-common-room-actual-completed-fullhd.png",
+    "sourceBytes": 1554542,
+    "sourceSha256": "bc062e44af1554aa23e35250e10b2331f848e3a5001e6cf034182f860f1ef4e6",
+    "archivedBytes": 1554542,
+    "archivedSha256": "bc062e44af1554aa23e35250e10b2331f848e3a5001e6cf034182f860f1ef4e6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-negative-20261003\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\error-context.md",
+    "archived": "context-negative/003-error-context.md",
+    "sourceBytes": 14319,
+    "sourceSha256": "71c180a857cd7a72a0a3b3a22058291d69c3b0197a1c893d9dfac9b38d113fe9",
+    "archivedBytes": 14319,
+    "archivedSha256": "71c180a857cd7a72a0a3b3a22058291d69c3b0197a1c893d9dfac9b38d113fe9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-negative-20261003\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\failed-common-room-fullhd.png",
+    "archived": "context-negative/004-failed-common-room-fullhd.png",
+    "sourceBytes": 1554542,
+    "sourceSha256": "bc062e44af1554aa23e35250e10b2331f848e3a5001e6cf034182f860f1ef4e6",
+    "archivedBytes": 1554542,
+    "archivedSha256": "bc062e44af1554aa23e35250e10b2331f848e3a5001e6cf034182f860f1ef4e6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-negative-20261003\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\failed-common-room-network.json",
+    "archived": "context-negative/005-failed-common-room-network.json",
+    "sourceBytes": 1461,
+    "sourceSha256": "8666bad9f06047e4bedeb09dd58287eb41556aa484946c0b33eaf756fb74cd14",
+    "archivedBytes": 1461,
+    "archivedSha256": "8666bad9f06047e4bedeb09dd58287eb41556aa484946c0b33eaf756fb74cd14"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-negative-20261003\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\failed-common-room-worker.json",
+    "archived": "context-negative/006-failed-common-room-worker.json",
+    "sourceBytes": 68215,
+    "sourceSha256": "8a12e1e14f57baf5efdaeab6b5999119ce907e004817f012feb82e835b32c8f5",
+    "archivedBytes": 68215,
+    "archivedSha256": "8a12e1e14f57baf5efdaeab6b5999119ce907e004817f012feb82e835b32c8f5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-negative-20261003\\common-room-upholstered-pl-ba98c-fore-Common-Room-upholstery\\actual-capacity-completed-worker.json",
+    "archived": "context-negative/007-actual-capacity-completed-worker.json",
+    "sourceBytes": 42755,
+    "sourceSha256": "4bda2e044937fdea22a97025c0b08f8685f82555100b5871545a50bd2696913e",
+    "archivedBytes": 42755,
+    "archivedSha256": "4bda2e044937fdea22a97025c0b08f8685f82555100b5871545a50bd2696913e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-rotated-negative-20261003.json",
+    "archived": "context-q1-negative/report.json",
+    "sourceBytes": 11535,
+    "sourceSha256": "6c46effb883adeb9ae8c33a3c1819280b8bb8fda762b9a4ef691f554d365da42",
+    "archivedBytes": 11535,
+    "archivedSha256": "6c46effb883adeb9ae8c33a3c1819280b8bb8fda762b9a4ef691f554d365da42"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-rotated-negative-20261003.txt",
+    "archived": "context-q1-negative/console.txt",
+    "sourceBytes": 9128,
+    "sourceSha256": "cb02fbf38598723a7d8a7a7e864cfbc8e699bc04b3eb20fd46b709fcb834c9ad",
+    "archivedBytes": 4575,
+    "archivedSha256": "721c2cf33ed6f389f10962bcc90d577fcdca9cb9a248bf8293bc99599f465ccd",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-rotated-negative-20261003\\.last-run.json",
+    "archived": "context-q1-negative/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "4ca30dec12962b052dc53a665b5ce155fd3c3cda1a2410287aa9264f936f1c6e",
+    "archivedBytes": 96,
+    "archivedSha256": "4ca30dec12962b052dc53a665b5ce155fd3c3cda1a2410287aa9264f936f1c6e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-rotated-negative-20261003\\common-room-upholstered-pl-ba98c-fore-Common-Room-upholstery\\actual-capacity-completed-worker.json",
+    "archived": "context-q1-negative/002-actual-capacity-completed-worker.json",
+    "sourceBytes": 42755,
+    "sourceSha256": "eea9deddfa45a31a614a69ef2bc7d3d9381b2530f080681805aa9e7b6c2af4b7",
+    "archivedBytes": 42755,
+    "archivedSha256": "eea9deddfa45a31a614a69ef2bc7d3d9381b2530f080681805aa9e7b6c2af4b7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-rotated-negative-20261003\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\common-room-actual-completed-fullhd.png",
+    "archived": "context-q1-negative/003-common-room-actual-completed-fullhd.png",
+    "sourceBytes": 1544760,
+    "sourceSha256": "b773e5f9f5af7e11a2cb1a0a00adbf6b9b5ae7e70056c93b1077b61e370740c2",
+    "archivedBytes": 1544760,
+    "archivedSha256": "b773e5f9f5af7e11a2cb1a0a00adbf6b9b5ae7e70056c93b1077b61e370740c2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-rotated-negative-20261003\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\error-context.md",
+    "archived": "context-q1-negative/004-error-context.md",
+    "sourceBytes": 14319,
+    "sourceSha256": "7db59c50beaa4668bd3c907163340979c016d19087ddf60b135a209face4c557",
+    "archivedBytes": 14319,
+    "archivedSha256": "7db59c50beaa4668bd3c907163340979c016d19087ddf60b135a209face4c557"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-rotated-negative-20261003\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\failed-common-room-fullhd.png",
+    "archived": "context-q1-negative/005-failed-common-room-fullhd.png",
+    "sourceBytes": 1544760,
+    "sourceSha256": "b773e5f9f5af7e11a2cb1a0a00adbf6b9b5ae7e70056c93b1077b61e370740c2",
+    "archivedBytes": 1544760,
+    "archivedSha256": "b773e5f9f5af7e11a2cb1a0a00adbf6b9b5ae7e70056c93b1077b61e370740c2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-rotated-negative-20261003\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\failed-common-room-network.json",
+    "archived": "context-q1-negative/006-failed-common-room-network.json",
+    "sourceBytes": 1461,
+    "sourceSha256": "8666bad9f06047e4bedeb09dd58287eb41556aa484946c0b33eaf756fb74cd14",
+    "archivedBytes": 1461,
+    "archivedSha256": "8666bad9f06047e4bedeb09dd58287eb41556aa484946c0b33eaf756fb74cd14"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-rotated-negative-20261003\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\failed-common-room-worker.json",
+    "archived": "context-q1-negative/007-failed-common-room-worker.json",
+    "sourceBytes": 68089,
+    "sourceSha256": "217b40815350c5f3dc5e0d29489691747ebdda1426beed3d2ef65ee313087352",
+    "archivedBytes": 68089,
+    "archivedSha256": "217b40815350c5f3dc5e0d29489691747ebdda1426beed3d2ef65ee313087352"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-restored-20261003.json",
+    "archived": "context-restored-green/report.json",
+    "sourceBytes": 776832,
+    "sourceSha256": "9758fb24db15657f6d38c786c349818c707a96672f816cb407bac6c5248161b3",
+    "archivedBytes": 776832,
+    "archivedSha256": "9758fb24db15657f6d38c786c349818c707a96672f816cb407bac6c5248161b3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-restored-20261003.txt",
+    "archived": "context-restored-green/console.txt",
+    "sourceBytes": 4550,
+    "sourceSha256": "da4419952dc3a99bea208552f48ead60478197e7f978fd6743e44f76f67644df",
+    "archivedBytes": 2282,
+    "archivedSha256": "c822d579ca0bcca4896b7a6f16f1608fde6e971274b68ecc82e57fffbfdf790f",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-restored-20261003\\.last-run.json",
+    "archived": "context-restored-green/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-restored-20261003\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\common-room-actual-completed-fullhd.png",
+    "archived": "context-restored-green/002-common-room-actual-completed-fullhd.png",
+    "sourceBytes": 1549696,
+    "sourceSha256": "aa6cc0ce8b8c4784d58d18a32d34671a8774d510a5513b23ca593f5b2848ad32",
+    "archivedBytes": 1549696,
+    "archivedSha256": "aa6cc0ce8b8c4784d58d18a32d34671a8774d510a5513b23ca593f5b2848ad32"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-restored-20261003\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\common-room-actual-loaded-fullhd.png",
+    "archived": "context-restored-green/003-common-room-actual-loaded-fullhd.png",
+    "sourceBytes": 1518898,
+    "sourceSha256": "e9bf26689b30a07ae82544da2e20dbb06f002799015c689a2f68cbae99025820",
+    "archivedBytes": 1518898,
+    "archivedSha256": "e9bf26689b30a07ae82544da2e20dbb06f002799015c689a2f68cbae99025820"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-restored-20261003\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\common-room-actual-local60-elev40-fullhd.png",
+    "archived": "context-restored-green/004-common-room-actual-local60-elev40-fullhd.png",
+    "sourceBytes": 1614947,
+    "sourceSha256": "f844246c22c99d1989d0288298e596a0b7d8c3f7498f7a4d50cd0d7d82b936ba",
+    "archivedBytes": 1614947,
+    "archivedSha256": "f844246c22c99d1989d0288298e596a0b7d8c3f7498f7a4d50cd0d7d82b936ba"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-restored-20261003\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\common-room-actual-worker-pixels-and-provenance.json",
+    "archived": "context-restored-green/005-common-room-actual-worker-pixels-and-provenance.json",
+    "sourceBytes": 289376,
+    "sourceSha256": "e42f0d38f2ef7f65a9310537b0fd29b95491f0d21eff6613ec26adabbb1015f5",
+    "archivedBytes": 289376,
+    "archivedSha256": "e42f0d38f2ef7f65a9310537b0fd29b95491f0d21eff6613ec26adabbb1015f5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-restored-20261003\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\common-room-bench-actual-network-and-htmlimage-evidence.json",
+    "archived": "context-restored-green/006-common-room-bench-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 26757,
+    "sourceSha256": "8efcf990d3e48026b25346dbab1a6e02712a047bba8990b8c03ad1025090b9b5",
+    "archivedBytes": 26757,
+    "archivedSha256": "8efcf990d3e48026b25346dbab1a6e02712a047bba8990b8c03ad1025090b9b5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-restored-20261003\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\common-room-bench-actual200-exposed-frame.png",
+    "archived": "context-restored-green/007-common-room-bench-actual200-exposed-frame.png",
+    "sourceBytes": 11547,
+    "sourceSha256": "5941441c6168900b1cf2eb6110b9bdb51708d8f2ff2b25c93629c6b3f1d6409a",
+    "archivedBytes": 11547,
+    "archivedSha256": "5941441c6168900b1cf2eb6110b9bdb51708d8f2ff2b25c93629c6b3f1d6409a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-restored-20261003\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\common-room-bench-raw-response-provenance.json",
+    "archived": "context-restored-green/008-common-room-bench-raw-response-provenance.json",
+    "sourceBytes": 5133,
+    "sourceSha256": "13f87b1e4cadde8b50a6340d1be687b9f81e5934f0b9fe83555ff0360d19a0d6",
+    "archivedBytes": 5133,
+    "archivedSha256": "13f87b1e4cadde8b50a6340d1be687b9f81e5934f0b9fe83555ff0360d19a0d6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-restored-20261003\\common-room-upholstered-pl-ba98c-fore-Common-Room-upholstery\\actual-capacity-completed-worker.json",
+    "archived": "context-restored-green/009-actual-capacity-completed-worker.json",
+    "sourceBytes": 42752,
+    "sourceSha256": "2e60c06146e8ffae0c799dbb448697329515759c4493e9d3fd3df3dedca6501f",
+    "archivedBytes": 42752,
+    "archivedSha256": "2e60c06146e8ffae0c799dbb448697329515759c4493e9d3fd3df3dedca6501f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-restored-20261003\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\common-room-actual-completed-fullhd.png",
+    "archived": "context-restored-green/010-common-room-actual-completed-fullhd.png",
+    "sourceBytes": 1540257,
+    "sourceSha256": "eab31da5017113c97f73cdb4b16814c09c20fa37dfa155c36d9b4c1fe0b82b88",
+    "archivedBytes": 1540257,
+    "archivedSha256": "eab31da5017113c97f73cdb4b16814c09c20fa37dfa155c36d9b4c1fe0b82b88"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-restored-20261003\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\common-room-actual-loaded-fullhd.png",
+    "archived": "context-restored-green/011-common-room-actual-loaded-fullhd.png",
+    "sourceBytes": 1509477,
+    "sourceSha256": "c216ee288fdc0aa4bd07086442d395eb2e8f4e4ff792225dcbcec1dcd3500e6a",
+    "archivedBytes": 1509477,
+    "archivedSha256": "c216ee288fdc0aa4bd07086442d395eb2e8f4e4ff792225dcbcec1dcd3500e6a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-restored-20261003\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\common-room-actual-local60-elev40-fullhd.png",
+    "archived": "context-restored-green/012-common-room-actual-local60-elev40-fullhd.png",
+    "sourceBytes": 1602176,
+    "sourceSha256": "402f7cc63d5fbb22465a6bc6a31aa5025a48b0838a89b83214658898ea0614fe",
+    "archivedBytes": 1602176,
+    "archivedSha256": "402f7cc63d5fbb22465a6bc6a31aa5025a48b0838a89b83214658898ea0614fe"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-restored-20261003\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\common-room-actual-worker-pixels-and-provenance.json",
+    "archived": "context-restored-green/013-common-room-actual-worker-pixels-and-provenance.json",
+    "sourceBytes": 287156,
+    "sourceSha256": "a8e7c92b81e2b28257b09e0725e3f212593e3498ce5973159d3f2898bf8d1d7a",
+    "archivedBytes": 287156,
+    "archivedSha256": "a8e7c92b81e2b28257b09e0725e3f212593e3498ce5973159d3f2898bf8d1d7a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-restored-20261003\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\common-room-bench-actual-network-and-htmlimage-evidence.json",
+    "archived": "context-restored-green/014-common-room-bench-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 24995,
+    "sourceSha256": "608c408b6abbdf8f84ef9a9d964acd6a6922cff71d6060e09da6841eb5ae1eb1",
+    "archivedBytes": 24995,
+    "archivedSha256": "608c408b6abbdf8f84ef9a9d964acd6a6922cff71d6060e09da6841eb5ae1eb1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-restored-20261003\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\common-room-bench-actual200-exposed-frame.png",
+    "archived": "context-restored-green/015-common-room-bench-actual200-exposed-frame.png",
+    "sourceBytes": 11547,
+    "sourceSha256": "5941441c6168900b1cf2eb6110b9bdb51708d8f2ff2b25c93629c6b3f1d6409a",
+    "archivedBytes": 11547,
+    "archivedSha256": "5941441c6168900b1cf2eb6110b9bdb51708d8f2ff2b25c93629c6b3f1d6409a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-common-room-context-restored-20261003\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\common-room-bench-raw-response-provenance.json",
+    "archived": "context-restored-green/016-common-room-bench-raw-response-provenance.json",
+    "sourceBytes": 3431,
+    "sourceSha256": "aca765407b8214e9b118b68108bc970a76dfa2881ece5e179be92f94a4d60883",
+    "archivedBytes": 3431,
+    "archivedSha256": "aca765407b8214e9b118b68108bc970a76dfa2881ece5e179be92f94a4d60883"
   }
 ]

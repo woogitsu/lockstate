@@ -1,0 +1,67 @@
+$ErrorActionPreference='Stop'
+$env:PATH=(Join-Path $env:TEMP 'lockstate-pnpm-11-22-20261002')+';C:/Users/matma/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin;'+$env:PATH
+$controlBranch=(git -c core.longpaths=true branch --show-current).Trim()
+$controlFrozen=(git -c core.longpaths=true rev-parse HEAD).Trim()
+if($controlBranch -ne 'codex/integrate-common-room-connectivity-20261003'){throw 'Unexpected own control branch'}
+if(@(git -c core.longpaths=true status --porcelain).Count -ne 0){throw 'Control requires clean own tree'}
+$controlFile='src/rendering/assets/oblique-object-mapping.ts'
+$controlBytes=[IO.File]::ReadAllBytes((Join-Path $PWD $controlFile))
+$controlUtf8=[Text.UTF8Encoding]::new($false)
+$controlReceipt=@{frozen=$controlFrozen;branch=$controlBranch;sourceBefore=(Get-FileHash -LiteralPath $controlFile -Algorithm SHA256).Hash.ToLower();sourceAfter=$null;buildBefore=@{};buildAfter=@{};negativeExit=$null;rotatedNegativeExit=$null;restoredExit=$null}
+function Build-Control([string]$controlLabel){
+ $ErrorActionPreference='Continue'
+ pnpm --config.verify-deps-before-run=false build *> (Join-Path $env:TEMP ('lockstate-common-room-'+$controlLabel+'-build-20261003.txt'))
+ $controlBuildCode=$LASTEXITCODE
+ $ErrorActionPreference='Stop'
+ if($controlBuildCode -ne 0){throw ('Actual build failed: '+$controlLabel)}
+}
+function Read-Compiled {
+ $result=@{}
+ foreach($file in (Get-ChildItem -LiteralPath dist/client/assets -File | Where-Object {$_.Name -match '^(index|worker)-.*\.js$'})){
+  $result[$file.Name]=@{sha256=(Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLower();bytes=$file.Length}
+ }
+ if($result.Count -ne 2){throw 'Actual compiled client/worker absent'}
+ return $result
+}
+Build-Control 'context-frozen'
+$controlReceipt.buildBefore=Read-Compiled
+git -c core.longpaths=true switch --detach $controlFrozen
+if($LASTEXITCODE -ne 0){throw 'Actual detach failed'}
+try {
+ $controlText=[Text.Encoding]::UTF8.GetString($controlBytes)
+ $controlNeedle="    'object.bench': 'furniture.common-room.upholstered-bench',"
+ if([regex]::Matches($controlText,[regex]::Escape($controlNeedle)).Count -ne 1){throw 'Actual context consumer not unique'}
+ [IO.File]::WriteAllText((Join-Path $PWD $controlFile),$controlText.Replace($controlNeedle,''),$controlUtf8)
+ Build-Control 'context-negative'
+ $ErrorActionPreference='Continue'
+ $env:PLAYWRIGHT_JSON_OUTPUT_NAME=Join-Path $env:TEMP 'lockstate-common-room-context-negative-20261003.json'
+ node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite artifact common-room-upholstered-player-build.spec.ts --workers=1 --reporter=list,json --output (Join-Path $env:TEMP 'lockstate-common-room-context-negative-20261003') *> (Join-Path $env:TEMP 'lockstate-common-room-context-negative-20261003.txt')
+ $controlReceipt.negativeExit=$LASTEXITCODE
+ $env:PLAYWRIGHT_JSON_OUTPUT_NAME=Join-Path $env:TEMP 'lockstate-common-room-context-rotated-negative-20261003.json'
+ node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite artifact common-room-upholstered-player-build.spec.ts --workers=1 --reporter=list,json --grep 'capacity before Common Room|quarterTurns1' --output (Join-Path $env:TEMP 'lockstate-common-room-context-rotated-negative-20261003') *> (Join-Path $env:TEMP 'lockstate-common-room-context-rotated-negative-20261003.txt')
+ $controlReceipt.rotatedNegativeExit=$LASTEXITCODE
+ $ErrorActionPreference='Stop'
+} finally {
+ try {
+  [IO.File]::WriteAllBytes((Join-Path $PWD $controlFile),$controlBytes)
+  $controlReceipt.sourceAfter=(Get-FileHash -LiteralPath $controlFile -Algorithm SHA256).Hash.ToLower()
+  if($controlReceipt.sourceBefore -ne $controlReceipt.sourceAfter){throw 'Actual source restoration mismatch'}
+  Build-Control 'context-restored'
+  $controlReceipt.buildAfter=Read-Compiled
+  foreach($name in $controlReceipt.buildBefore.Keys){
+   if($controlReceipt.buildBefore[$name].sha256 -ne $controlReceipt.buildAfter[$name].sha256){throw 'Actual compiled restoration mismatch'}
+  }
+  $ErrorActionPreference='Continue'
+  $env:PLAYWRIGHT_JSON_OUTPUT_NAME=Join-Path $env:TEMP 'lockstate-common-room-context-restored-20261003.json'
+  node --experimental-transform-types --disable-warning=ExperimentalWarning tests/browser/run-suite.ts --suite artifact common-room-upholstered-player-build.spec.ts --workers=1 --reporter=list,json --output (Join-Path $env:TEMP 'lockstate-common-room-context-restored-20261003') *> (Join-Path $env:TEMP 'lockstate-common-room-context-restored-20261003.txt')
+  $controlReceipt.restoredExit=$LASTEXITCODE
+  $ErrorActionPreference='Stop'
+ } finally {
+  [IO.File]::WriteAllText((Join-Path $env:TEMP 'lockstate-common-room-context-restoration-20261003.json'),($controlReceipt|ConvertTo-Json -Depth 7)+"`n",$controlUtf8)
+  git -c core.longpaths=true switch $controlBranch
+  if($LASTEXITCODE -ne 0){throw 'Named branch restoration failed'}
+ }
+}
+if(@(git -c core.longpaths=true status --porcelain).Count -ne 0){throw 'Actual restored tree is not clean'}
+if($controlReceipt.negativeExit -ne 1 -or $controlReceipt.rotatedNegativeExit -ne 1 -or $controlReceipt.restoredExit -ne 0){throw 'Unexpected real native control result'}
+$controlReceipt|ConvertTo-Json -Depth 7 -Compress

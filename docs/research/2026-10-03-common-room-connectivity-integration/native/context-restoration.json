@@ -1,0 +1,29 @@
+{
+    "branch":  "codex/integrate-common-room-connectivity-20261003",
+    "sourceAfter":  "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+    "sourceBefore":  "a9eada806ff523bc9933da9b7a2e8a731c5a896286e33b0551119d8e389dd2d4",
+    "buildBefore":  {
+                        "worker-CFWvqujf.js":  {
+                                                   "bytes":  442752,
+                                                   "sha256":  "0d359e6623405b3bd1be06d9d63e3ef7975a19ba95a9831942c4772fc4fc2c49"
+                                               },
+                        "index-BJZSZRqS.js":  {
+                                                  "bytes":  1932422,
+                                                  "sha256":  "09fbdca7f14f42c0e92a0fffed67ee8cdf48faf1a47f242d6f31a5eb37b35273"
+                                              }
+                    },
+    "rotatedNegativeExit":  1,
+    "restoredExit":  0,
+    "frozen":  "1bf8ba482be97dfd149daa3281c5c95d44fb9fb5",
+    "buildAfter":  {
+                       "worker-CFWvqujf.js":  {
+                                                  "bytes":  442752,
+                                                  "sha256":  "0d359e6623405b3bd1be06d9d63e3ef7975a19ba95a9831942c4772fc4fc2c49"
+                                              },
+                       "index-BJZSZRqS.js":  {
+                                                 "bytes":  1932422,
+                                                 "sha256":  "09fbdca7f14f42c0e92a0fffed67ee8cdf48faf1a47f242d6f31a5eb37b35273"
+                                             }
+                   },
+    "negativeExit":  1
+}
