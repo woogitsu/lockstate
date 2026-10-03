@@ -24,13 +24,15 @@ function reload(runtime: Runtime): Runtime {
   return restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
 }
 
-it.each([false, true].flatMap(saved => [false, true].map(refused => ({ saved, refused }))))(
-  'occupied template refusal leaves independent Undo selected: saved=$saved refused=$refused', ({ saved, refused }) => {
+it.each([false, true].flatMap(saved => ['none', 'refused', 'successful'].map(surface => ({ saved, surface }))))(
+  'manual template unzone preserves truthful independent Undo: saved=$saved surface=$surface', ({ saved, surface }) => {
     let runtime = createNewSimulationRuntime(73);
     send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 5, y: 5 }, mirrorX: true, quarterTurns: 1 });
     until(runtime, () => runtime.roomTemplates.snapshot().pending.length === 0 && runtime.construction.allOrders().every(order => order.state === 'completed'));
-    send(runtime, { type: 'AdmitPrisoner', sentenceLengthTicks: 1_000_000, priorIncidents: 0, x: 16, y: 16 });
-    until(runtime, () => runtime.prisoners.roomInstances.totalOccupancy === 1);
+    if (surface !== 'successful') {
+      send(runtime, { type: 'AdmitPrisoner', sentenceLengthTicks: 1_000_000, priorIncidents: 0, x: 16, y: 16 });
+      until(runtime, () => runtime.prisoners.roomInstances.totalOccupancy === 1);
+    }
     send(runtime, { type: 'PlaceBuildOrder', orderId: 'latest-independent-wall', definitionId: 'wall-brick', x: 2, y: 2, footprint: 'square' });
     until(runtime, () => runtime.construction.getOrder('latest-independent-wall')?.state === 'completed');
     if (saved) runtime = reload(runtime);
@@ -39,11 +41,25 @@ it.each([false, true].flatMap(saved => [false, true].map(refused => ({ saved, re
     const templates = runtime.roomTemplates.snapshot();
     const funds = runtime.treasury.balanceMinorUnits;
     const { kernel: _beforeKernel, ...before } = captureSessionSnapshot(runtime);
-    if (refused) {
+    if (surface === 'refused') {
       send(runtime, { type: 'UnzoneRoom', ...room.anchorTile, width: room.width!, height: room.height! });
       expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-occupied' });
       const { kernel: _afterKernel, ...after } = captureSessionSnapshot(runtime);
       expect(after).toEqual(before);
+    }
+    if (surface === 'successful') {
+      send(runtime, { type: 'UnzoneRoom', ...room.anchorTile, width: room.width!, height: room.height! });
+      expect(runtime.refusals.count).toBe(0);
+      expect(runtime.prisoners.roomInstances.allByRoomCatalogId('room.cell')).toHaveLength(0);
+      const successful = captureSessionSnapshot(runtime);
+      send(runtime, { type: 'Undo' });
+      expect(runtime.construction.getOrder('latest-independent-wall')?.state).toBe('completed');
+      const afterUndo = captureSessionSnapshot(runtime);
+      expect(afterUndo.world).toEqual(successful.world);
+      expect(afterUndo.construction).toEqual(successful.construction);
+      expect(runtime.placedObjects.getSnapshot()).toEqual(owners);
+      expect(runtime.treasury.balanceMinorUnits).toBe(funds);
+      return;
     }
     send(runtime, { type: 'Undo' });
     expect(runtime.construction.getOrder('latest-independent-wall')?.state).toBe('cancelled');
