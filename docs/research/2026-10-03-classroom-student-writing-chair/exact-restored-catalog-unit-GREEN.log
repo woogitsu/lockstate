@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-classroom-student-chair-model-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  15:01:30
+   Duration  672ms (transform 57ms, setup 0ms, import 153ms, tests 400ms, environment 0ms)
+
+$ vitest run "tests/unit/oblique-classroom-student-chair-art.test.ts"
