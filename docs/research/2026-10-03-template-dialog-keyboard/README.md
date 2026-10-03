@@ -21,7 +21,9 @@ Fresh open-Issue search covers coordinates/numeric/room-plan keyboard. #1918 alr
 ## Verification
 
 - Final source6GREEN; rawbaseline plus original setup errors retained.
-- Strict fixture TypeScript pending final receipt.
-- Temporary actual focus/coordinate producer negatives pending approval/execution; initialGREEN alone is not load-bearing proof.
+- Strict fixture TypeScript exit0; canonical research index5/5GREEN.
+- Detached subjectdf0ff3f8a7: shared actual activeKeyboardContexts temporarily returns world unconditionally. Four keyboard cases RED (World centre moves144world units; Angled inverse-ground centre moves), two actual placement controls GREEN. Entire focus.ts bytes restored in finally;6/6GREEN.
+- Separately actual numeric origin reader temporarily returns0,0 for legal fields. Two placement cases RED on actual transmitted old origin0,0 versus20,5; four keyboard controls GREEN. Entire room-template-preview.ts bytes restored in finally;6/6GREEN.
+- Both unique replacement counts and complete-file before/mutant/restored SHA256 hashes are retained in producer-restoration.json. No lasting production diff. Baseline measurements are retained in measured-six-cases.jsonl; commands/real authored order bounds are independent of ghost output.
 
 Exact command: `node node_modules/vitest/vitest.mjs run tests/unit/ui-template-dialog-keyboard-consumers.test.ts --maxWorkers=2`.

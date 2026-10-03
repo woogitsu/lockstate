@@ -1,0 +1,48 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-dialog-keyboard-audit-20261003
+
+ ❯ tests/unit/ui-template-dialog-keyboard-consumers.test.ts (6 tests | 2 failed) 111ms
+   × world: real numeric input/rotation supersedes delayed verdict; one activation buys one current plan 19ms
+   × oblique: real numeric input/rotation supersedes delayed verdict; one activation buys one current plan 12ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-dialog-keyboard-consumers.test.ts > world: real numeric input/rotation supersedes delayed verdict; one activation buys one current plan
+ FAIL  tests/unit/ui-template-dialog-keyboard-consumers.test.ts > oblique: real numeric input/rotation supersedes delayed verdict; one activation buys one current plan
+AssertionError: expected { …(4) } to match object { command: { data: { …(4) } } }
+(6 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -1,11 +1,11 @@
+  {
+    "command": {
+      "data": {
+        "origin": {
+-         "x": 20,
+-         "y": 5,
++         "x": 0,
++         "y": 0,
+        },
+        "quarterTurns": 1,
+        "templateId": "cell-basic",
+        "type": "PlaceRoomTemplate",
+      },
+
+ ❯ tests/unit/ui-template-dialog-keyboard-consumers.test.ts:237:36
+    235|   place.focus();place.dispatchEvent(new Event('click'));place.dispatch…
+    236|   expect(submitted(h)).toHaveLength(1);
+    237|   expect(submitted(h)[0]!.payload).toMatchObject({command:{data:{type:…
+       |                                    ^
+    238|   const snapshot=h.actors.snapshot();expect(snapshot.construction.orde…
+    239|   expect(snapshot.simulation?.roomTemplates?.pending).toMatchObject([{…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 4 passed (6)
+   Start at  09:02:42
+   Duration  3.50s (transform 1.25s, setup 0ms, import 3.27s, tests 111ms, environment 0ms)
+

@@ -1,0 +1,72 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-dialog-keyboard-audit-20261003
+
+ ❯ tests/unit/ui-template-dialog-keyboard-consumers.test.ts (6 tests | 4 failed) 100ms
+   × world/default: numeric X/Y and rotation own public keys without camera/commands; Escape preserves armed tool 44ms
+   × world/legal remaps: numeric X/Y and rotation own public keys without camera/commands; Escape preserves armed tool 10ms
+   × oblique/default: numeric X/Y and rotation own public keys without camera/commands; Escape preserves armed tool 11ms
+   × oblique/legal remaps: numeric X/Y and rotation own public keys without camera/commands; Escape preserves armed tool 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-template-dialog-keyboard-consumers.test.ts > world/default: numeric X/Y and rotation own public keys without camera/commands; Escape preserves armed tool
+ FAIL  tests/unit/ui-template-dialog-keyboard-consumers.test.ts > world/legal remaps: numeric X/Y and rotation own public keys without camera/commands; Escape preserves armed tool
+AssertionError: INPUT/ArrowUp must not reach world camera: expected { …(2) } to deeply equal { …(2) }
+
+- Expected
++ Received
+
+  {
+    "centre": Vector2 {
+      "x": 768,
+-     "y": 768,
++     "y": 624,
+    },
+    "zoom": 1.25,
+  }
+
+ ❯ tests/unit/ui-template-dialog-keyboard-consumers.test.ts:209:98
+    207|    for(const code of ['ArrowUp','ArrowDown','Home','End','Enter']) {
+    208|     key(control,code);h.scene.update(500,300);if(h.scene instanceof Wo…
+    209|     expect(h.scene.captureCameraView(),`${control.tagName}/${code} mus…
+       |                                                                                                  ^
+    210|     expect(submitted(h)).toHaveLength(0);expect(h.tool.isArmed()).toBe…
+    211|    }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/unit/ui-template-dialog-keyboard-consumers.test.ts > oblique/default: numeric X/Y and rotation own public keys without camera/commands; Escape preserves armed tool
+ FAIL  tests/unit/ui-template-dialog-keyboard-consumers.test.ts > oblique/legal remaps: numeric X/Y and rotation own public keys without camera/commands; Escape preserves armed tool
+AssertionError: INPUT/ArrowUp must not reach world camera: expected { centre: { …(2) }, …(3) } to deeply equal { centre: { …(2) }, …(3) }
+
+- Expected
++ Received
+
+  {
+    "centre": {
+-     "x": 744.1667172517061,
+-     "y": 788.1061183488854,
++     "x": 661.0242721721173,
++     "y": 669.3664011328049,
+    },
+    "elevationRadians": 1.1344640137963142,
+    "yawRadians": 0.6108652381980153,
+    "zoom": 1.3701411275336106,
+  }
+
+ ❯ tests/unit/ui-template-dialog-keyboard-consumers.test.ts:209:98
+    207|    for(const code of ['ArrowUp','ArrowDown','Home','End','Enter']) {
+    208|     key(control,code);h.scene.update(500,300);if(h.scene instanceof Wo…
+    209|     expect(h.scene.captureCameraView(),`${control.tagName}/${code} mus…
+       |                                                                                                  ^
+    210|     expect(submitted(h)).toHaveLength(0);expect(h.tool.isArmed()).toBe…
+    211|    }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 2 passed (6)
+   Start at  09:02:34
+   Duration  3.70s (transform 1.25s, setup 0ms, import 3.48s, tests 100ms, environment 0ms)
+

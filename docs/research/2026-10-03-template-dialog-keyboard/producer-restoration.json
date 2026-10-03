@@ -1,0 +1,24 @@
+[
+  {
+    "name": "focus-world-only",
+    "subject": "df0ff3f8a7efe3f303fec6f04e4b0b0cbbb16cf9",
+    "path": "src/input/focus.ts",
+    "originalSha256": "6a9c0d47468401a0051d5ae0f4113f55987859b723614b565e81c32802f485d3",
+    "uniqueCount": 1,
+    "mutantSha256": "ca860b9a36c0217a33520f8e8a13d6df5f1a526e73591fc775620cd84cf50d1a",
+    "negativeExit": 1,
+    "restoredSha256": "6a9c0d47468401a0051d5ae0f4113f55987859b723614b565e81c32802f485d3",
+    "bytesExact": true
+  },
+  {
+    "name": "numeric-old-origin",
+    "subject": "df0ff3f8a7efe3f303fec6f04e4b0b0cbbb16cf9",
+    "path": "src/ui/hud/room-template-preview.ts",
+    "originalSha256": "e90afb8a4af22ac787de82862cb030406a244ba4278ae461c311c6809158ce24",
+    "uniqueCount": 1,
+    "mutantSha256": "7af0b6556604382a82209e954a87f83c3c457d53ee051a8a0f1ae5131c2ff29c",
+    "negativeExit": 1,
+    "restoredSha256": "e90afb8a4af22ac787de82862cb030406a244ba4278ae461c311c6809158ce24",
+    "bytesExact": true
+  }
+]

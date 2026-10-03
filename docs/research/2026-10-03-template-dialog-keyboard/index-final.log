@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-template-dialog-keyboard-audit-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  09:03:51
+   Duration  287ms (transform 15ms, setup 0ms, import 32ms, tests 77ms, environment 0ms)
+
+
+EXIT 0
