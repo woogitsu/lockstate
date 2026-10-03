@@ -45,6 +45,7 @@ const test = base.extend({
   storageState: async ({}, use) => { await use(routeStorage ?? { cookies: [], origins: [] }); },
 });
 test.describe.configure({ mode: 'serial' });
+test.skip(process.env['LOCKSTATE_LAUNDRY_LINEN_NATIVE'] !== '1', 'explicit root built-client lease required');
 test.afterEach(async ({ page }, info) => {
   if (info.status === info.expectedStatus) return;
   await recordLaundryNetworkFailure(page, info.outputPath('failed-actual-network.json'));
@@ -155,6 +156,8 @@ for (const turns of [0, 1] as const) {
     const built = await captureLaundryWholePaused(page, info.outputPath('laundry-whole-V9-paused-before-save.json'));
     expect(built.simulation?.economy?.treasury.balanceMinorUnits).toBe(20015);
     assertLaundryNativeOwners(built, turns, paidOrderId);
+    expect(built.simulation?.objects?.placedObjects.filter(object => object.anchorTile.x < 20))
+      .toEqual(beforePurchase.simulation?.objects?.placedObjects.filter(object => object.anchorTile.x < 20));
     expect(built.simulation?.objects?.placedObjects.filter(object => object.objectId === 'object.washing-machine'))
       .toEqual(beforePurchase.simulation?.objects?.placedObjects.filter(object => object.objectId === 'object.washing-machine'));
     const region = page.getByRole('region', { name: 'Minimap', exact: true });
