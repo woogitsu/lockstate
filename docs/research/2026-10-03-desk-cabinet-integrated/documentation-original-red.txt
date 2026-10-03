@@ -1,0 +1,47 @@
+pnpm : $ vitest run "tests/foundation/research-index-contract.test.ts" "tests/foundation/documentation-links-contract.t
+est.ts" "tests/foundation/typecheck-coverage-contract.test.ts" "tests/foundation/browser-suite-partition-contract.test.
+ts" "--maxWorkers=2"
+At line:2 char:161
++ ... +$env:PATH; pnpm --config.verify-deps-before-run=false test tests/fou ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-desk-camera-integration-20261003
+
+ ❯ tests/foundation/documentation-links-contract.test.ts (10 tests | 1 failed) 631ms
+     × resolves every link target 49ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-links-contract.test.ts > every relative markdown link points at a file that exist
+s > resolves every link target
+AssertionError: these markdown links name a file that does not exist: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-02-utility-panel-angled/native-player-acceptance.md -> q0",
++   "docs/research/2026-10-02-utility-panel-angled/native-player-acceptance.md -> q1",
++ ]
+
+ ❯ tests/foundation/documentation-links-contract.test.ts:127:76
+    125|       .map(({ source, target }) => `${source} -> ${target}`);
+    126|
+    127|     expect(broken, 'these markdown links name a file that does not exi…
+       |                                                                            ^
+    128|   });
+    129| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 20 passed (21)
+   Start at  03:21:26
+   Duration  9.56s (transform 69ms, setup 0ms, import 8.87s, tests 1.77s, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.

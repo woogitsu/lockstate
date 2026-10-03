@@ -1,0 +1,18 @@
+pnpm : $ vitest run "tests/foundation/research-index-contract.test.ts" "tests/foundation/documentation-links-contract.t
+est.ts" "tests/foundation/typecheck-coverage-contract.test.ts" "tests/foundation/browser-suite-partition-contract.test.
+ts" "--maxWorkers=2"
+At line:8 char:1
++ pnpm --config.verify-deps-before-run=false test tests/foundation/rese ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=2":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-desk-camera-integration-20261003
+
+
+ Test Files  4 passed (4)
+      Tests  21 passed (21)
+   Start at  03:30:02
+   Duration  1.93s (transform 72ms, setup 0ms, import 1.16s, tests 884ms, environment 0ms)
+
