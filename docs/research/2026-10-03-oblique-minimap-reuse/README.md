@@ -21,6 +21,7 @@ The real scene publisher, immutable world and projection math execute; only Phas
 - Exact source restoration: **5 GREEN**; Buffer equality true, production diff exit 0, branch restoration exit 0.
 - Bounded neighboring minimap/camera gates: **51 GREEN / 5 files**.
 - Application and tools strict types: both exit 0.
+- Research index, documentation links and published-commit citations: **23 GREEN / 3 files**. The first invocation was **1 RED / 22 GREEN** because this local checkout lacked named published remote references, including the separate diagnosis branch. One bounded fetch of the actual named branches restored the gate; no document guard, budget or allowlist changed.
 
 The mutation script ran from detached source checkpoint 2576a651683ded686e58411517664a9385d11313, restored the exact original bytes in `finally`, and returned to the owned branch. Its executed inert copy, raw outputs and receipt are retained here. Source SHA-256 during mutation/restoration: `3be01ce4aea9c7c9f8fdecc1acced68a53cc3752c97709cb5f36f9a105cdc68e`.
 
