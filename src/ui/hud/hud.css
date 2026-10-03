@@ -7431,9 +7431,9 @@
   gap: var(--space-2);
   box-sizing: border-box;
   padding: var(--space-2);
-  border: var(--hairline) solid var(--border);
+  border: var(--hairline) solid var(--border-panel);
   border-radius: var(--radius-md);
-  background: var(--surface-raised);
+  background: var(--surface-panel);
   color: var(--text-body);
   pointer-events: auto;
 }
