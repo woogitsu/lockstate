@@ -1,0 +1,74 @@
+{
+  "controls": [
+    {
+      "control": "omit-real-connecting-stem",
+      "exitCode": 1,
+      "error": "ValueError: Shower head retained/authored mesh set changed"
+    },
+    {
+      "control": "move-real-mount",
+      "exitCode": 1,
+      "error": "ValueError: Shower head actual evaluated authored geometry changed"
+    },
+    {
+      "control": "move-retained-arm",
+      "exitCode": 1,
+      "error": "ValueError: Shower head actual evaluated authored geometry changed"
+    },
+    {
+      "control": "change-retained-bevel",
+      "exitCode": 1,
+      "error": "ValueError: Shower head actual authored topology/material assignment/modifier data changed"
+    },
+    {
+      "control": "change-retained-material-graph",
+      "exitCode": 1,
+      "error": "ValueError: Shower head retained ten material graphs changed"
+    },
+    {
+      "control": "change-added-joint-material",
+      "exitCode": 1,
+      "error": "ValueError: Shower head actual authored topology/material assignment/modifier data changed"
+    },
+    {
+      "control": "actual-reversed-joint-winding",
+      "exitCode": 1,
+      "error": "ValueError: Evaluated wall-mounted shower geometric surfaces face inward: angled-shower-head.head outlet connecting stem"
+    },
+    {
+      "control": "actual-reversed-retained-torus",
+      "exitCode": 1,
+      "error": "ValueError: Evaluated wall-mounted shower geometric surfaces face inward: Teal rolled head ring"
+    },
+    {
+      "control": "wrong-loaded-fit",
+      "exitCode": 1,
+      "error": "ValueError: Shower head declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-accepted-target",
+      "exitCode": 1,
+      "error": "ValueError: Shower head declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-canonical-descriptor",
+      "exitCode": 1,
+      "error": "ValueError: Shower head exporter targets the wrong canonical descriptor"
+    },
+    {
+      "control": "wrong-camera-span",
+      "exitCode": 1,
+      "error": "ValueError: Shower head actual camera pitch differs from64pixels per tile"
+    },
+    {
+      "control": "wrong-camera-vector",
+      "exitCode": 1,
+      "error": "ValueError: Shower head actual camera ground basis differs from world projection"
+    }
+  ],
+  "exactRestoredNativeVerifyExitCode": 0,
+  "sourceBytesUnchanged": true,
+  "wrapperSha256": "d0bb073103a59cad3ba8e2d82e2d5930be4a486c9e5ed73c3a6d0a366f8cfcd5",
+  "sourceSha256": "0a375563958f382d6b1d8dde1a6252ace7ed3883f4994a78d040361a65397ea1",
+  "originalSourceSha256": "ac0cbe6a3673dd8db19c76375ddeb3d6f23d0cab6aa2e56b298ad8a8e70806fe"
+}
