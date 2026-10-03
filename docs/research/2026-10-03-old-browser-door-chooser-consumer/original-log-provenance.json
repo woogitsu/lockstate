@@ -1,0 +1,20 @@
+﻿[
+    {
+        "sha256":  "b6f49acc16ac383e296da3b84d97e0ebe1615fd7723f8faa850d38a76405a77c",
+        "name":  "source1",
+        "failures":  35,
+        "length":  631130
+    },
+    {
+        "sha256":  "ffe845b3d89a8d82dedd13db7874dcd9717e41f886209d185769a268be3cef18",
+        "name":  "source2",
+        "failures":  22,
+        "length":  628832
+    },
+    {
+        "sha256":  "fd6940f2daec10619cb4b46213b2c1ebcb631c4ebd3a4f11174eea407909c4e2",
+        "name":  "artifact",
+        "failures":  11,
+        "length":  246430
+    }
+]
