@@ -62,3 +62,7 @@ docs/research/2026-10-03-staff-room-padded-chair/native/**/*.png filter=lfs diff
 docs/research/2026-10-03-approved-camera-view-disclosure/native/** -text
 docs/research/2026-10-03-approved-camera-view-disclosure/native/**/*.png filter=lfs diff=lfs merge=lfs -text
 docs/research/2026-10-03-approved-camera-view-disclosure/native/**/*.zip filter=lfs diff=lfs merge=lfs -text
+
+docs/research/2026-10-03-camera-a-scale-fit/native/** -text
+docs/research/2026-10-03-camera-a-scale-fit/native/**/*.png filter=lfs diff=lfs merge=lfs -text
+docs/research/2026-10-03-camera-a-scale-fit/native/**/*.zip filter=lfs diff=lfs merge=lfs -text

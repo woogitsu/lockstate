@@ -1,0 +1,54 @@
+{
+  "compiledSource": "c28d4815844af9081c4d16925bbf498eb3df2ff1",
+  "saveVersion": 9,
+  "buildExit": 0,
+  "typesExit": 0,
+  "compiled": [
+    {
+      "path": "dist/client/assets/catalog-BmAUL2aa.js",
+      "bytes": 86421,
+      "sha256": "5bf7814b1b3d9594f14de199ee72c834e187ccbd039f34d9dbb318d7f826071a"
+    },
+    {
+      "path": "dist/client/assets/index-BesuyXLu.js",
+      "bytes": 1942173,
+      "sha256": "eb9c43853cb4ad63bf5c30dca57f0c36dd0c7a93c82f2ad5fc52bdc6796c8323"
+    },
+    {
+      "path": "dist/client/assets/index-DF-CVpEY.css",
+      "bytes": 87527,
+      "sha256": "3a4691084df33c0816ab91c54d52b4df02386910bb9fdc169f5a9e20b81f01a9"
+    },
+    {
+      "path": "dist/client/assets/pl-catalog-uiQLsxnQ.js",
+      "bytes": 51303,
+      "sha256": "38045b769adc3cb3fa48b007c42ac3be8204307fa6745ec3fe2060daf36b8e33"
+    },
+    {
+      "path": "dist/client/assets/worker-WcGkBU2M.js",
+      "bytes": 444899,
+      "sha256": "89e135f6d8a1de2f903ae33bbcbe88a7d32ba1519c0c8ba03df46371b13d6105"
+    },
+    {
+      "path": "dist/client/index.html",
+      "bytes": 1718,
+      "sha256": "3c3c7b46d50228e55ecf0473f24b89b062131cb5b65629ac489ead58394c5b33"
+    }
+  ],
+  "reportSHA256": "2c285d3dfff49fe4774392576c0a6dc4afbb8019389b6a00d5f512ee97c6834d",
+  "stats": {
+    "startTime": "2026-10-03T20:56:42.547Z",
+    "duration": 45956.450000000004,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "originalBudgets": {
+    "timeoutMs": 60000,
+    "expectMs": 10000,
+    "workers": 1,
+    "retries": 0
+  },
+  "inspection": "Actual UI200 open-camera image inspected; original full-alert and all twelve target assertions GREEN. Broader layout and production release not claimed."
+}

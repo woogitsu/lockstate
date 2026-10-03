@@ -21,3 +21,27 @@ The current enlarged corner has maxHeight528 (`6 × 88`), height528, list scroll
 ## Appearance observation
 
 The actual screenshots retain nine top readings and existing status colors. Filled navigation and a quiet paper/navy hierarchy are visible; the camera now shares the panel surface tone. The larger corner and two-column camera consume considerable map area at 200%; this is a concrete layout tradeoff for the separate review, not evidence of an AI concept being shipped.
+
+## Owner-approved corner in the current combined game
+
+The owner subsequently approved the larger UI200 corner, preserving the full
+message and moving Zoom upward. The actual combined Cloudflare client
+`c28d4815844af9081c4d16925bbf498eb3df2ff1` now completes **both original cases:
+2 GREEN, no skipped or retried cases, 45.956s**. The genuine installed Chromium
+run retains the original 60s/expect10s/worker1/retries0 budgets.
+
+At Full HD and UI100/UI200, all twelve targets retain their original physical
+hit floors, viewport reachability, notice separation and horizontal or vertical
+separation. The unchanged full-alert-row assertion now passes. Public camera
+interactions preserve the entire paused V9 worker state and issue no additional
+simulation commands. Root inspected the actual UI200 open-panel capture; it
+shows the complete refusal message, all camera controls and all nine top
+readings. UI200 still devotes considerable space to controls; this is the
+approved concrete allocation, not a claim that the broader layout is finished.
+
+[Raw report, captures and geometry](./native/modern-approved/report.json),
+[exact compiled subject](./native/modern-approved/compiled-subject.json) and
+[capture hashes](./native/capture-aliases.json) retain the current evidence.
+The earlier original and corrected-but-unapproved RED results remain above;
+they were not replaced by the later accepted run. This subject is still V9,
+not the separately approved V10 migration or a released production version.
