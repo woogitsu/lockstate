@@ -62,7 +62,11 @@ it.each((['PlaceObject', 'PlaceBuildOrder'] as const).flatMap(type =>
       const { kernel: _beforeKernel, ...beforeGameplay } = before;
       const { kernel: _afterKernel, ...afterGameplay } = after;
       expect({ ...afterGameplay, construction: { ...afterGameplay.construction,
-        orders: afterGameplay.construction.orders.filter(order => order.id !== 'later-bed') } }).toEqual(beforeGameplay);
+        orders: afterGameplay.construction.orders.filter(order => order.id !== 'later-bed') } }).toEqual({
+          ...beforeGameplay, construction: { ...beforeGameplay.construction,
+            orderRevisions: { ...beforeGameplay.construction.orderRevisions, ...(type === 'PlaceBuildOrder' ? { 'later-bed': 1 } : {}) },
+          },
+        });
     } else {
       expect(runtime.construction.getOrder('later-bed')?.state).toBe('approved');
       finish(runtime);
@@ -86,7 +90,11 @@ it.each((['PlaceObject', 'PlaceBuildOrder'] as const).flatMap(type =>
       else expect(runtime.construction.getOrder('later-desk')).toMatchObject({ state: 'failed', failReason: 'unbuildable' });
       const { kernel: _afterKernel, ...after } = captureSessionSnapshot(runtime);
       expect({ ...after, construction: { ...after.construction,
-        orders: after.construction.orders.filter(order => order.id !== 'later-desk') } }).toEqual(before);
+        orders: after.construction.orders.filter(order => order.id !== 'later-desk') } }).toEqual({
+          ...before, construction: { ...before.construction,
+            orderRevisions: { ...before.construction.orderRevisions, ...(type === 'PlaceBuildOrder' ? { 'later-desk': 1 } : {}) },
+          },
+        });
     } else {
       expect(runtime.construction.getOrder('later-desk')?.state).toBe('approved');
       finish(runtime);
@@ -133,7 +141,11 @@ it.each((['PlaceObject', 'PlaceBuildOrder'] as const).flatMap(type => [false, tr
       else expect(runtime.construction.getOrder('partial-later-bed')).toMatchObject({ state: 'failed', failReason: 'unbuildable' });
       const { kernel: _afterKernel, ...after } = captureSessionSnapshot(runtime);
       expect({ ...after, construction: { ...after.construction,
-        orders: after.construction.orders.filter(order => order.id !== 'partial-later-bed') } }).toEqual(before);
+        orders: after.construction.orders.filter(order => order.id !== 'partial-later-bed') } }).toEqual({
+          ...before, construction: { ...before.construction,
+            orderRevisions: { ...before.construction.orderRevisions, ...(type === 'PlaceBuildOrder' ? { 'partial-later-bed': 1 } : {}) },
+          },
+        });
       finish(runtime);
       expect(runtime.placedObjects.getSnapshot()).toHaveLength(2);
     } else {

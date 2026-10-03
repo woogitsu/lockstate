@@ -75,7 +75,11 @@ it.each(poses.flatMap(pose => [false, true].flatMap(saved => [false, true].map(l
     const { kernel: _beforeKernel, ...beforeState } = before;
     const { kernel: _afterKernel, ...afterState } = captureSessionSnapshot(runtime);
     expect({ ...afterState, construction: { ...afterState.construction,
-      orders: afterState.construction.orders.filter(row => row.id !== order.id) } }).toEqual(beforeState);
+      orders: afterState.construction.orders.filter(row => row.id !== order.id) } }).toEqual({
+        ...beforeState, construction: { ...beforeState.construction,
+          orderRevisions: { ...beforeState.construction.orderRevisions, 'later-toilet': 1 },
+        },
+      });
   });
 
 it.each([false, true])('ordinary separately built doorway retains its existing furniture policy, saved=%s', saved => {

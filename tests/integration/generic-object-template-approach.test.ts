@@ -79,5 +79,9 @@ it.each(poses.flatMap(pose => [false, true].flatMap(saved => [false, true].map(l
   expect(runtime.treasury.snapshot()).toEqual(fundsBefore);
   const { kernel: _beforeKernel, ...beforeState } = before;
   const { kernel: _afterKernel, ...afterState } = captureSessionSnapshot(runtime);
-  expect({ ...afterState, construction: { ...afterState.construction, orders: afterState.construction.orders.filter(row => row.id !== order.id) } }).toEqual(beforeState);
+  expect({ ...afterState, construction: { ...afterState.construction, orders: afterState.construction.orders.filter(row => row.id !== order.id) } }).toEqual({
+    ...beforeState, construction: { ...beforeState.construction,
+      orderRevisions: { ...beforeState.construction.orderRevisions, 'independent-object': 1 },
+    },
+  });
 });
