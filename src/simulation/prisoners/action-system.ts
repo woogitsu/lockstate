@@ -1962,11 +1962,11 @@ export class ActionSystem implements SystemRegistration {
     // -- it resolves by id -- which is why a prisoner who holds a cell keeps
     // sleeping, eating in cell and using the toilet whatever stands in the
     // room, and why the first bed placed buys three needs rather than one.
-    const instance = this.roomInstances.findAvailableForUse(action.target.roomCatalogId, action.requiredObjectCapability);
     // A registered capacity is not a navigable destination. Use the router's
-    // current graph membership before committing this action, so a blocked
-    // anchor can follow ADR 0041's existing next-candidate fallback.
-    if (instance !== undefined && !this.navigation.getGraph().tileToRegion.has(tileKey(instance.anchorTile))) return undefined;
+    // current graph membership while selecting an instance, so a blocked
+    // anchor cannot hide a later eligible room of the same action.
+    const instance = this.roomInstances.findAvailableForUse(action.target.roomCatalogId, action.requiredObjectCapability,
+      (candidate) => this.navigation.getGraph().tileToRegion.has(tileKey(candidate.anchorTile)));
     return instance === undefined ? undefined : { kind: 'room', instance };
   }
 
