@@ -1,0 +1,53 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-pending-square-wall-incoming-object-audit-20261003
+
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts (28 tests | 4 failed) 1507ms
+   × released square and pending legacy edge keep furniture legal: type='PlaceObject' load=false stage='cancelled square' 52ms
+   × released square and pending legacy edge keep furniture legal: type='PlaceObject' load=true stage='cancelled square' 46ms
+   × released square and pending legacy edge keep furniture legal: type='PlaceBuildOrder' load=false stage='cancelled square' 46ms
+   × released square and pending legacy edge keep furniture legal: type='PlaceBuildOrder' load=true stage='cancelled square' 40ms
+node : 
+At line:2 char:1
++ node node_modules/vitest/vitest.mjs run --maxWorkers=2 tests/integrat ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > released square and pending legacy edge keep fur
+niture legal: type='PlaceObject' load=false stage='cancelled square'
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > released square and pending legacy edge keep fur
+niture legal: type='PlaceObject' load=true stage='cancelled square'
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > released square and pending legacy edge keep fur
+niture legal: type='PlaceBuildOrder' load=false stage='cancelled square'
+ FAIL  tests/integration/pending-square-wall-incoming-object.test.ts > released square and pending legacy edge keep fur
+niture legal: type='PlaceBuildOrder' load=true stage='cancelled square'
+ZodError: [
+  {
+    "expected": "number",
+    "code": "invalid_type",
+    "path": [
+      "expectedRevision"
+    ],
+    "message": "Invalid input: expected number, received undefined"
+  }
+]
+ ❯ packCommand src/simulation/protocol/commands.ts:933:42
+    931|
+    932| export function packCommand(command: SimulationCommand): VersionedPayl…
+    933|   const parsed = simulationCommandSchema.parse(command);
+       |                                          ^
+    934|
+    935|   return {
+ ❯ send tests/integration/pending-square-wall-incoming-object.test.ts:12:93
+ ❯ tests/integration/pending-square-wall-incoming-object.test.ts:107:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 24 passed (28)
+   Start at  02:01:55
+   Duration  4.17s (transform 892ms, setup 0ms, import 2.53s, tests 1.51s, environment 0ms)
+
