@@ -1,0 +1,11 @@
+﻿const fs=require('node:fs'),cp=require('node:child_process'),crypto=require('node:crypto'),path=require('node:path');
+const root=process.cwd(),out=__dirname,file=path.join(root,'src/ui/hud/renderer-selection-control.ts');
+const node='C:/Users/matma/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe';
+const args=['node_modules/vitest/vitest.mjs','run','tests/unit/ui-camera-controls-presentation.test.ts','tests/unit/ui-renderer-selection-control.test.ts','tests/unit/ui-design-tokens.test.ts','--maxWorkers=4'];
+const before=fs.readFileSync(file);let negative; const original=before.toString('utf8');const needle='if (sideWidth >= 112 * scale + 2)';if(!original.includes(needle))throw Error('mutation target absent');
+try {fs.writeFileSync(file,original.replace(needle,'if (false && sideWidth >= 112 * scale + 2)'));negative=cp.spawnSync(node,args,{cwd:root,encoding:'utf8'});fs.writeFileSync(path.join(out,'producer-negative.txt'),negative.stdout+negative.stderr);}
+finally {fs.writeFileSync(file,before);}
+const after=fs.readFileSync(file);if(!before.equals(after))throw Error('restore mismatch');
+const restored=cp.spawnSync(node,args,{cwd:root,encoding:'utf8'});fs.writeFileSync(path.join(out,'source-restored.txt'),restored.stdout+restored.stderr);
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const receipt={head:cp.execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),negativeStatus:negative.status,restoredStatus:restored.status,beforeSha256:sha(before),afterSha256:sha(after),byteExact:before.equals(after),sourceDiff:cp.execFileSync('git',['diff','--name-only','--','src'],{cwd:root,encoding:'utf8'}).trim()};fs.writeFileSync(path.join(out,'source-mutation.json'),JSON.stringify(receipt,null,2)+'\n');console.log(receipt);if(negative.status!==1||restored.status!==0)process.exitCode=1;

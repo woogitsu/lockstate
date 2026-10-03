@@ -16,7 +16,12 @@ templates, Full HD minimum and all nine readings visible at the top.
   calibration and the accepted room palette.
 - Camera **A** is approved: the existing View/Widok button opens its controls.
   Individual **Rotate object/Obróć obiekt** and0/90/180/270 labels are approved.
-  The wider Build/Save allocation at200% remains a separate decision.
+  The wider Build/Save allocation at200% remains a separate decision. The owner
+  separately approved the concrete UI200 corner-height correction on2026-10-03:
+  "Tak — pełny komunikat i większy panel przy 200% (zalecane)". This permits
+  the prepared actual-height bound for the minimap/alerts corner, not a wider
+  Build/Save relocation. Its native before/after evidence remains published in
+  the [original review](https://github.com/woogitsu/lockstate/blob/c8d459457a5020e49264eb29614fabde7adede3e/docs/research/2026-10-03-camera200-corner-height-review/README.md).
 - No generated concept is a runtime screenshot, asset-delivery proof or release
   acceptance. Genuine source renders, actual built-client photos and verified
   public construction/Save/Load remain necessary.

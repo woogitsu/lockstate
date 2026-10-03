@@ -1,0 +1,55 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-camera-a-scale-fit-20261003
+
+ ❯ tests/unit/ui-camera-controls-presentation.test.ts (8 tests | 2 failed) 10ms
+   × fits the expanded Angled panel beside the unchanged 200% corner when measured vertical space is insufficient 4ms
+   × keeps the ordinary above-corner fit and follows actual World/Angled height changes without moving Zoom 1ms
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  2 failed | 93 passed (95)
+   Start at  21:28:14
+   Duration  992ms (transform 168ms, setup 0ms, import 346ms, tests 715ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ui-camera-controls-presentation.test.ts > fits the expanded Angled panel beside the unchanged 200% corner when measured vertical space is insufficient
+AssertionError: expected { left: '280px', top: '356px', …(1) } to match object { left: '871.34375px', …(2) }
+
+- Expected
++ Received
+
+  {
+-   "left": "871.34375px",
++   "left": "280px",
+    "top": "356px",
+-   "width": "296.65625px",
++   "width": "792px",
+  }
+
+ ❯ tests/unit/ui-camera-controls-presentation.test.ts:86:25
+     84|   s.panel.bounds.height = 258;
+     85|   s.trigger!.dispatchEvent(new Event('click'));
+     86|   expect(s.panel.style).toMatchObject({ left: '871.34375px', top: '356…
+       |                         ^
+     87|   expect(s.zoom.children).toEqual([s.trigger]);
+     88| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/ui-camera-controls-presentation.test.ts > keeps the ordinary above-corner fit and follows actual World/Angled height changes without moving Zoom
+AssertionError: expected '280px' to be '871.34375px' // Object.is equality
+
+Expected: "871.34375px"
+Received: "280px"
+
+ ❯ tests/unit/ui-camera-controls-presentation.test.ts:98:30
+     96|   expect(s.panel.style).toMatchObject({ left: '280px', top: '356px', w…
+     97|   s.panel.bounds.height = 258; s.pose.hidden = false; ObserverStub.lat…
+     98|   expect(s.panel.style.left).toBe('871.34375px');
+       |                              ^
+     99|   s.panel.bounds.height = 146; s.pose.hidden = true; ObserverStub.late…
+    100|   expect(s.panel.style).toMatchObject({ left: '280px', top: '356px', w…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
