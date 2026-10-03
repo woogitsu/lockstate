@@ -55,7 +55,14 @@ export function createCameraControlsPresentation(options: {
     // Expanded Angled controls can outgrow the space above the corner at
     // enlarged UI scale. Use the free map corridor beside that same corner;
     // its Zoom/View nodes and minimap/alert allocation remain where they are.
-    const corner = options.hud.querySelector('.hud__corner')?.getBoundingClientRect();
+    const cornerElement = options.hud.querySelector<HTMLElement>('.hud__corner');
+    // REVIEW DRAFT: enlarged corner allocation needs a separate owner choice.
+    // Its maximum follows the actual available playfield below the notices;
+    // ordinary UI retains its existing allocation without an inline override.
+    if (cornerElement !== null) cornerElement.style.maxHeight =
+      document.documentElement.dataset['uiScaleStep'] === '200'
+        ? `${Math.max(0, window.innerHeight - top - gap)}px` : '';
+    const corner = cornerElement?.getBoundingClientRect();
     if (!panel.hidden && corner !== undefined && top + gap + panel.getBoundingClientRect().height > corner.top) {
       const sideLeft = corner.right + gap;
       const sideWidth = rail.left - gap - sideLeft;
