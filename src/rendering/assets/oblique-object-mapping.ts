@@ -48,6 +48,7 @@ const ROOM_VISUAL_VARIANTS: readonly {
   }) },
   { roomCatalogId: 'room.reception', objectAssets: Object.freeze({
     'object.chair': 'furniture.reception.waiting-armchair',
+    'object.desk': 'furniture.reception.registration-desk',
   }) },
   { roomCatalogId: 'room.garbage-room', objectAssets: Object.freeze({
     'object.waste-bin': 'fixture.garbage-room.waste-bin',

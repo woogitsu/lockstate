@@ -1,0 +1,50 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-reception-registration-desk-model-20261003
+
+ ❯ tests/unit/oblique-reception-registration-desk-context.test.ts (7 tests | 3 failed) 18ms
+     × selects literal completed Reception desk with both retained waiting chairs q0 with their canonical source60/e40 frame 7ms
+     × selects literal completed Reception desk with both retained waiting chairs q1 with their canonical source60/e40 frame 2ms
+     × preserves default/Classroom/Staff desk contexts and refuses any partial occupied footprint 3ms
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 4 passed (7)
+   Start at  15:57:07
+   Duration  678ms (transform 178ms, setup 0ms, import 525ms, tests 18ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+$ vitest run "tests/unit/oblique-reception-registration-desk-context.test.ts"
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-reception-registration-desk-context.test.ts > Reception registration ObjectDesk context in the actual world projection > selects literal completed Reception desk with both retained waiting chairs q0 with their canonical source60/e40 frame
+ FAIL  tests/unit/oblique-reception-registration-desk-context.test.ts > Reception registration ObjectDesk context in the actual world projection > selects literal completed Reception desk with both retained waiting chairs q1 with their canonical source60/e40 frame
+AssertionError: actual Reception registration desk context selector: expected 'furniture.office.desk.generic' to be 'furniture.reception.registration-desk' // Object.is equality
+
+Expected: "furniture.reception.registration-desk"
+Received: "furniture.office.desk.generic"
+
+ ❯ tests/unit/oblique-reception-registration-desk-context.test.ts:51:85
+     49|     {
+     50|       const solid = projected.raised.find(item => item.id === structur…
+     51|       expect(solid?.assetId, 'actual Reception registration desk conte…
+       |                                                                                     ^
+     52|       if (solid === undefined) throw new Error('Literal purchased Rece…
+     53|       if (solid.kind === 'actor') throw new Error('Desk projected as a…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/unit/oblique-reception-registration-desk-context.test.ts > Reception registration ObjectDesk context in the actual world projection > preserves default/Classroom/Staff desk contexts and refuses any partial occupied footprint
+AssertionError: expected 'furniture.office.desk.generic' to be 'furniture.reception.registration-desk' // Object.is equality
+
+Expected: "furniture.reception.registration-desk"
+Received: "furniture.office.desk.generic"
+
+ ❯ tests/unit/oblique-reception-registration-desk-context.test.ts:90:132
+     88|       [[{ ...reception, width: 3 }, { ...reception, instanceId: 'room.…
+     89|     ] satisfies [readonly RenderRoom[], RenderStructure, string][]) {
+     90|       expect(projectObliqueWorldFrame(frame([structure], rooms), camer…
+       |                                                                                                                                    ^
+     91|     }
+     92|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
