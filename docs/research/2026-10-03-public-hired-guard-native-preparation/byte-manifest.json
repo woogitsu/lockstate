@@ -1,0 +1,92 @@
+{
+  "base": "c1459094256c42704d266fd0ff422597de389faf",
+  "representation": "isolated working-tree bytes; text checkout line endings may differ; .txt archives preserved with local -text",
+  "scope": "offline public UI fixture preparation; native/HW acceptance HOLD",
+  "inheritedIndexRows": 272,
+  "unchangedInheritedRows": 271,
+  "exactGuardEvidencePreserved": true,
+  "ownRowInsideContinuousTable": true,
+  "productionDiffBytes": 0,
+  "files": [
+    {
+      "file": "docs\\research\\2026-10-03-public-hired-guard-native-preparation\\.gitattributes",
+      "bytes": 12,
+      "sha256": "fd13dad2ecae9b5cdde18e56b396b87ce73a5e3d9c05455bb00a1afc2c424106"
+    },
+    {
+      "file": "docs\\research\\2026-10-03-public-hired-guard-native-preparation\\bounded-source-controls.txt",
+      "bytes": 554,
+      "sha256": "ed208761b1ab678fce087b0c62f8f635fe68a68e4bb57f22219c2abd4e87720d"
+    },
+    {
+      "file": "docs\\research\\2026-10-03-public-hired-guard-native-preparation\\documentation-after-guard-row.txt",
+      "bytes": 70094,
+      "sha256": "1ffe9403defaed348466eaacc5be99eb99a943803fb4d2a5ca3b96346d1a0608"
+    },
+    {
+      "file": "docs\\research\\2026-10-03-public-hired-guard-native-preparation\\documentation-gates.txt",
+      "bytes": 70570,
+      "sha256": "79705dc6248530e09c37c9b2589efb908cd8a8dbb3eae1ee9f7f00f0a011b160"
+    },
+    {
+      "file": "docs\\research\\2026-10-03-public-hired-guard-native-preparation\\index-edit-fixture-error.txt",
+      "bytes": 449,
+      "sha256": "565f1102fb916e8f572cc0f96ef338e3c309d2c2d408d88d996174a4417505ff"
+    },
+    {
+      "file": "docs\\research\\2026-10-03-public-hired-guard-native-preparation\\initial-probe-module-resolution-error.txt",
+      "bytes": 3216,
+      "sha256": "b06741e6fe4107eeb3fd3f974c488beecea020a6672864099380277d5f40699a"
+    },
+    {
+      "file": "docs\\research\\2026-10-03-public-hired-guard-native-preparation\\initial-run-genuine-guard.cjs.txt",
+      "bytes": 2332,
+      "sha256": "1cb4e49c505eb7788a5f8ff948c18533db54f7545286cb7b555ff6f86b53797c"
+    },
+    {
+      "file": "docs\\research\\2026-10-03-public-hired-guard-native-preparation\\packed-guard-control.txt",
+      "bytes": 2786,
+      "sha256": "6860af43dd52f8b2a5b8e63bf6d0c3e64f298477b1dcf369cf613c9d15a2fbdd"
+    },
+    {
+      "file": "docs\\research\\2026-10-03-public-hired-guard-native-preparation\\README.md",
+      "bytes": 7511,
+      "sha256": "1156c6b9597d4d132ce954bf32b35ea88d35f14553b8a7303c10a649bd543e25"
+    },
+    {
+      "file": "docs\\research\\2026-10-03-public-hired-guard-native-preparation\\run-genuine-guard.cjs.txt",
+      "bytes": 2453,
+      "sha256": "debbfd859725f81eeabbfee2640e8c3daf3d17d1459d18f02cce4e013b7c724b"
+    },
+    {
+      "file": "docs\\research\\2026-10-03-public-hired-guard-native-preparation\\seal-guard-receipt.cjs.txt",
+      "bytes": 2249,
+      "sha256": "22917ff5952d69a95f8a8700b3c297f39c98286839599cbbc23649aff9bc737e"
+    },
+    {
+      "file": "docs\\research\\2026-10-03-public-hired-guard-native-preparation\\source-collection.txt",
+      "bytes": 362,
+      "sha256": "7fbc74b23e354776f9763ddce231f72f382f6ad8c8ac2e262a590abbaf83f7c9"
+    },
+    {
+      "file": "docs\\research\\2026-10-03-public-hired-guard-native-preparation\\strict-types.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "tests/browser/hired-guard-evidence.ts",
+      "bytes": 10571,
+      "sha256": "cae04cb4625a78b08ede2f08cca2dd3a55098ef7c269aa637c98486d50b5f9e1"
+    },
+    {
+      "file": "tests/browser/hired-guard-player-build.spec.ts",
+      "bytes": 7236,
+      "sha256": "f77e194b7f43256cd59411b4af0a9bae6e944650a1faedbed55f1597c5ec6a3b"
+    },
+    {
+      "file": "docs/research/README.md",
+      "bytes": 371141,
+      "sha256": "ce9c2b8ef48ceba4b24659523018ae9dcbca7edef67ea79143d10916394c2869"
+    }
+  ]
+}

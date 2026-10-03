@@ -76,7 +76,7 @@ test('a publicly hired Guard keeps actual identity and visible authored body thr
     await page.getByRole('button', { name: 'Rotate camera left', exact: true }).click();
   }
   await expect.poll(async () => (await loadedImages()).responses.some(response =>
-    new URL(response.url).pathname === GUARD_REAR_FRAME.url && response.sha256 === GUARD_REAR_FRAME.sha256)).toBe(true);
+    decodeURIComponent(new URL(response.url).pathname) === GUARD_REAR_FRAME.url && response.sha256 === GUARD_REAR_FRAME.sha256)).toBe(true);
   await expect.poll(async () => (await loadedImages()).images.some(image =>
     image.sha256 === GUARD_REAR_FRAME.sha256 && image.sha256 === GUARD_INITIAL_FRAME.sha256 && image.complete && !image.error && image.width === 512 && image.height === 512)).toBe(true);
   const pngLoading = await loadedImages();
@@ -89,7 +89,7 @@ test('a publicly hired Guard keeps actual identity and visible authored body thr
         image: GUARD_REAR_FRAME.url, sha256: GUARD_REAR_FRAME.sha256 })]),
     }),
   }));
-  const actualLoadedFrame = pngLoading.responses.find(response => new URL(response.url).pathname === GUARD_REAR_FRAME.url);
+  const actualLoadedFrame = pngLoading.responses.find(response => decodeURIComponent(new URL(response.url).pathname) === GUARD_REAR_FRAME.url);
   expect(actualLoadedFrame).toMatchObject({ status: 200, sha256: GUARD_REAR_FRAME.sha256, width: 512, height: 512 });
   const rearPoseWorker = await guardSnapshot(page);
   expect(rearPoseWorker).toEqual(pausedAfter);

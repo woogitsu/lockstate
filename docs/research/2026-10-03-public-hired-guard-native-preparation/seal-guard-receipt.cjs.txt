@@ -1,0 +1,16 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),cp=require('node:child_process'),assert=require('node:assert/strict');
+const root=process.cwd(),base='c1459094256c42704d266fd0ff422597de389faf';
+const rec='docs/research/2026-10-03-public-hired-guard-native-preparation';
+const old=cp.execFileSync('git',['show',base+':docs/research/README.md'],{encoding:'utf8'}).split(/\r?\n/).filter(x=>x.startsWith('|'));
+const now=fs.readFileSync(path.join(root,'docs/research/README.md'),'utf8').split(/\r?\n/).filter(x=>x.startsWith('|'));
+const guard=old.find(x=>x.includes('[Guard rear duty-belt connection]'));
+assert(guard);
+for(const row of old.filter(x=>x!==guard))assert.equal(now.filter(x=>x===row).length,old.filter(x=>x===row).length,'inherited row changed');
+const amended=now.find(x=>x.includes('[2026-10-03 Guard rear duty-belt connection]'));
+assert(amended);assert.equal(amended.split('|')[3].trim(),guard.split('|')[3].trim());
+const production=cp.execFileSync('git',['diff',base,'--','src','public','assets','.github','scripts','package.json','pnpm-lock.yaml'],{encoding:'utf8'});assert.equal(production,'');
+const files=fs.readdirSync(path.join(root,rec)).filter(x=>x!=='byte-manifest.json').map(x=>path.join(rec,x));
+files.push('tests/browser/hired-guard-evidence.ts','tests/browser/hired-guard-player-build.spec.ts','docs/research/README.md');
+const manifest={base,representation:'isolated working-tree bytes; text checkout line endings may differ; .txt archives preserved with local -text',scope:'offline public UI fixture preparation; native/HW acceptance HOLD',inheritedIndexRows:old.length,unchangedInheritedRows:old.length-1,exactGuardEvidencePreserved:true,ownRowInsideContinuousTable:true,productionDiffBytes:production.length,
+ files:files.map(file=>{const bytes=fs.readFileSync(path.join(root,file));return {file,bytes:bytes.length,sha256:crypto.createHash('sha256').update(bytes).digest('hex')}})};
+fs.writeFileSync(path.join(root,rec,'byte-manifest.json'),JSON.stringify(manifest,null,2)+'\n');console.log(JSON.stringify({inheritedIndexRows:old.length,unchangedInheritedRows:old.length-1,ownGuardAmendmentPreservesEvidence:true,productionDiffBytes:production.length,files:files.length},null,2));
