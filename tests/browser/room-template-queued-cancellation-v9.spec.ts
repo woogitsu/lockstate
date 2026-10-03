@@ -36,9 +36,9 @@ async function center(control: Locator) {
   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
 }
 
-test('Full HD real queued Cell cancellation retains its exact V9 token through paused public Save/Load and Resume', async ({ page }, info) => {
+test('Full HD real queued Cell cancellation retains its exact V10 token through paused public Save/Load and Resume', async ({ page }, info) => {
   // Existing 60s/expect10s/r0/w1 limits. No retry to manufacture the pending boundary.
-  const receipt: Record<string, unknown> = { sourceBase: 'cf30af90679a600cddc1d7237e0a6f5217ce6e1c', origin, shellSpend };
+  const receipt: Record<string, unknown> = { sourceBase: '85f4471ebebc08f50400ee606c613197999be39a', origin, shellSpend };
   try {
   await installTee(page);
   await observeQueuedCancellation(page);
@@ -99,10 +99,11 @@ test('Full HD real queued Cell cancellation retains its exact V9 token through p
   expect(queued.kernel.commands).toHaveLength(1);
   const command = queued.kernel.commands[0]!;
   expect(command.executeAtTick, 'Cancel must genuinely remain queued beyond the paused tick').toBeGreaterThan(queued.kernel.tick);
-  const packed = command.payload as { schemaId: string; schemaVersion: number; data: { type: string; orderId: string; expectedRevision: number } };
+  const packed = command.payload as { schemaId: string; schemaVersion: number; data: { type: string; orderId: string; expectedRevision: string } };
   expect(packed.schemaId).toBe('lockstate.simulation.command');
+  expect(packed.schemaVersion).toBe(2);
   expect(packed.data).toEqual({ type: 'CancelBuildOrder', orderId: target.id, expectedRevision: queued.construction.orderRevisions![target.id] });
-  expect(packed.data.expectedRevision).toBe(2);
+  expect(packed.data.expectedRevision).toBe('2');
   expect(queued.construction.newerActionThanTheStackTop).toBe(false);
   const transportBeforeLoad = await cancellationTransportReceipt(page);
   receipt['transportBeforeLoad'] = transportBeforeLoad;
@@ -110,22 +111,22 @@ test('Full HD real queued Cell cancellation retains its exact V9 token through p
     { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin, quarterTurns: 1 }, packed.data,
   ]);
   expect(transportBeforeLoad.submissions[1]).toEqual({ commandId: command.id, sequence: command.sequence, executeAtTick: command.executeAtTick, command: command.payload });
-  await page.screenshot({ path: info.outputPath('actual-queued-cell-before-v9-save.png') });
+  await page.screenshot({ path: info.outputPath('actual-queued-cell-before-v10-save.png') });
   await page.getByRole('button', { name: 'Save now', exact: true }).click();
   await expect(page.locator('.save-panel__status')).toContainText('Saved (generation ');
   expect(await cancellationSnapshot(page)).toEqual(queued);
   const savedGeneration = await queuedCancellationSavedGeneration(page);
   receipt['savedGeneration'] = savedGeneration;
-  expect(savedGeneration.envelope.saveSchemaVersion).toBe(9);
+  expect(savedGeneration.envelope.saveSchemaVersion).toBe(10);
   expect(savedGeneration.envelope.payload).toEqual(queued);
   await page.reload();
   await page.locator('.save-panel__item button').filter({ hasText: 'Load' }).first().click();
   await expect.poll(() => currentClock(page)).toEqual({ mode: 'paused' });
   const loaded = await cancellationSnapshot(page);
   receipt['loaded'] = loaded;
-  expect(loaded, 'Whole actual worker bundle must survive public V9 Save/Load').toEqual(queued);
+  expect(loaded, 'Whole actual worker bundle must survive public V10 Save/Load').toEqual(queued);
   expect((await cancellationTransportReceipt(page)).submissions).toEqual([]);
-  await page.screenshot({ path: info.outputPath('actual-queued-cell-restored-v9.png') });
+  await page.screenshot({ path: info.outputPath('actual-queued-cell-restored-v10.png') });
   await page.getByRole('button', { name: 'Play at normal speed', exact: true }).click();
   await expect.poll(async () => (await cancellationSnapshot(page)).construction.orders.filter(order => order.state === 'cancelled').length).toBe(18);
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
@@ -138,7 +139,7 @@ test('Full HD real queued Cell cancellation retains its exact V9 token through p
   expect(dispatched.construction.undoStack).toEqual(loaded.construction.undoStack);
   expect(dispatched.construction.redoStack).toEqual(loaded.construction.redoStack);
   expect(dispatched.construction.newerActionThanTheStackTop).toBe(true);
-  expect(dispatched.construction.orderRevisions).toEqual(Object.fromEntries(Object.entries(loaded.construction.orderRevisions!).map(([id, revision]) => [id, revision + 1])));
+  expect(dispatched.construction.orderRevisions).toEqual(Object.fromEntries(Object.entries(loaded.construction.orderRevisions!).map(([id, revision]) => [id, (BigInt(revision) + 1n).toString(10)])));
   expect(balance(dispatched)).toBe(25000);
   expect(objects(dispatched)).toEqual(objects(initial));
   expect(dispatched.simulation?.prisoners.roomInstanceDefinitions).toEqual(initial.simulation?.prisoners.roomInstanceDefinitions);
@@ -152,6 +153,6 @@ test('Full HD real queued Cell cancellation retains its exact V9 token through p
   expect(transportAfterLoad.submissions).toEqual([]); // Resume dispatches the saved command, no fresh cancellation.
   } finally {
     // Preserve actual reached states even when a later assertion fails.
-    await writeFile(info.outputPath('actual-v9-queued-cancellation-receipt.json'), JSON.stringify(receipt, null, 2));
+    await writeFile(info.outputPath('actual-v10-queued-cancellation-receipt.json'), JSON.stringify(receipt, null, 2));
   }
 });

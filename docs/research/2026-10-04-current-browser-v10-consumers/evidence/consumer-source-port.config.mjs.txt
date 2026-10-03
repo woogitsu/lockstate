@@ -1,0 +1,1 @@
+﻿export default { test: { globals: true, root: 'C:/Users/matma/Documents/Rozwój gier/ls-v10-browser-consumers-20261004', include: ['C:/Users/matma/AppData/Local/Temp/lockstate-current-browser-v10-consumers.research.ts'], maxWorkers: 4, environment: 'node' } };

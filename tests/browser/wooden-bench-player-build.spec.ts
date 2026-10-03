@@ -43,7 +43,7 @@ async function recordBenchSnapshot(page: Page, path: string): Promise<BenchSnaps
   const reply = await page.evaluate(async () => (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' }));
   await writeFile(path, JSON.stringify(reply, null, 2));
   const snapshot = (reply as { payload: { snapshot: { schemaVersion: number; data: BenchSnapshotData } } }).payload.snapshot;
-  expect(snapshot.schemaVersion).toBe(3);
+  expect(snapshot.schemaVersion).toBe(4);
   return snapshot.data;
 }
 

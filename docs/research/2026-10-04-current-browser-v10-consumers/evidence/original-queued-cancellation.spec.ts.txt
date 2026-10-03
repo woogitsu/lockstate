@@ -1,0 +1,157 @@
+import { writeFile } from 'node:fs/promises';
+import { expect, test, type Locator } from './network-changed-fixture';
+import { currentClock, installTee } from './playtest-harness';
+import { cancellationSnapshot, cancellationTransportReceipt, observeQueuedCancellation, queuedCancellationSavedGeneration } from './queued-template-cancellation-observer';
+import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
+
+const origin = { x: 20, y: 5 };
+const shellSpend = 1425; // 17 square walls × 2 bricks + door: 1 brick/1 plank; 35×40 + 1×25.
+const balance = (data: SessionSnapshotBundle) => data.simulation?.economy?.treasury.balanceMinorUnits;
+const objects = (data: SessionSnapshotBundle) => data.simulation?.objects?.placedObjects;
+
+function assertAuthoredShell(data: SessionSnapshotBundle): void {
+  const expected: string[] = [];
+  for (let y = 5; y <= 8; y++) for (let x = 20; x <= 26; x++) {
+    if ((y === 5 || y === 8 || x === 20 || x === 26) && !(x === 20 && y === 6)) expected.push(`wall-brick@${x},${y}:square`);
+  }
+  expected.push('door-wooden@21,6:west');
+  expect(data.construction.orders.map(order => `${order.definitionId}@${order.location.x},${order.location.y}:${order.footprint ?? order.edge}`).sort()).toEqual(expected.sort());
+  expect(data.construction.orders).toHaveLength(18);
+  expect(data.construction.orders.every(order => order.state === 'materials-pending')).toBe(true);
+  expect(data.construction.orders.every(order => order.objectOrientation === undefined)).toBe(true);
+  expect(data.construction.orders.filter(order => order.definitionId === 'wall-brick').every(order => order.footprint === 'square' && order.edge === undefined)).toBe(true);
+  expect(data.construction.orders.filter(order => order.definitionId === 'door-wooden')).toMatchObject([{ edge: 'west', location: { x: 21, y: 6 } }]);
+  expect(objects(data)).toEqual([]); // No capacity/stock bootstrap: no fabricated furniture or completed owner.
+  expect(data.simulation?.prisoners.roomInstanceDefinitions).toEqual([]);
+  expect(data.simulation?.roomTemplates?.pending).toMatchObject([{ templateId: 'cell-basic', origin, mirrorX: false, quarterTurns: 1 }]);
+  expect(data.simulation?.roomTemplates?.pending).toHaveLength(1);
+  expect(data.simulation?.roomTemplates?.completed ?? []).toEqual([]);
+  const sequence = data.simulation!.roomTemplates!.pending[0]!.sequence;
+  expect(data.construction.orders.every(order => order.placementSequence === sequence)).toBe(true);
+}
+
+async function center(control: Locator) {
+  const rect = await control.boundingBox();
+  if (rect === null) throw Error('Actual public control absent');
+  return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+}
+
+test('Full HD real queued Cell cancellation retains its exact V9 token through paused public Save/Load and Resume', async ({ page }, info) => {
+  // Existing 60s/expect10s/r0/w1 limits. No retry to manufacture the pending boundary.
+  const receipt: Record<string, unknown> = { sourceBase: 'cf30af90679a600cddc1d7237e0a6f5217ce6e1c', origin, shellSpend };
+  try {
+  await installTee(page);
+  await observeQueuedCancellation(page);
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/index.html');
+  await page.getByRole('button', { name: 'New prison', exact: true }).click();
+  await expect.poll(() => currentClock(page)).toEqual({ mode: 'paused' });
+  const initial = await cancellationSnapshot(page);
+  receipt['initial'] = initial;
+  expect(initial.construction.orders).toEqual([]);
+  expect(initial.kernel.commands).toEqual([]);
+  expect(balance(initial)).toBe(25000);
+  await page.getByRole('button', { name: 'Build', exact: true }).click();
+  await page.getByRole('button', { name: 'Room plans', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Room plans' });
+  await dialog.getByRole('button', { name: 'Basic cell', exact: true }).click();
+  const rotation = dialog.getByRole('combobox', { name: 'Room plan rotation (clockwise)' });
+  await rotation.focus(); await page.keyboard.press('Home'); await page.keyboard.press('ArrowDown');
+  await expect(rotation).toHaveValue('1');
+  const x = dialog.getByRole('spinbutton', { name: 'Plan origin X' });
+  if (!await x.isVisible()) await dialog.getByText('Enter coordinates', { exact: true }).click();
+  await x.fill(String(origin.x)); await dialog.getByRole('spinbutton', { name: 'Plan origin Y' }).fill(String(origin.y));
+  await expect(dialog.getByRole('status')).toContainText('clear');
+  await dialog.getByRole('button', { name: 'Place room plan', exact: true }).click();
+  await expect(dialog.getByRole('status')).toContainText('submitted');
+  await page.keyboard.press('Escape');
+  const queueHeader = page.locator('.hud-build__queue > .ui-section__header');
+  if ((await queueHeader.getAttribute('aria-expanded')) === 'false') await queueHeader.click();
+  await page.getByRole('button', { name: 'Play at normal speed', exact: true }).click();
+  await expect.poll(async () => (await cancellationSnapshot(page)).construction.orders.filter(order => order.state === 'materials-pending').length).toBe(18);
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await expect.poll(() => currentClock(page)).toEqual({ mode: 'paused' });
+  const pending = await cancellationSnapshot(page);
+  receipt['pending'] = pending;
+  assertAuthoredShell(pending);
+  expect(balance(pending)).toBe(25000 - shellSpend);
+  expect(pending.construction.newerActionThanTheStackTop).toBe(false);
+  expect(pending.kernel.commands).toEqual([]);
+  const target = pending.construction.orders[0]!;
+  const row = page.locator(`.hud-build__queue-row[data-order="${target.id}"]`);
+  await expect(row).toHaveAttribute('data-state', 'materials-pending');
+  const cancel = row.locator('button');
+  await expect(cancel).toBeEnabled();
+  const cancelRect = await cancel.boundingBox();
+  if (cancelRect === null) throw Error('Actual Cancel row absent');
+  const pause = await center(page.getByRole('button', { name: 'Pause', exact: true }));
+  // Both are native mouse inputs, with no evaluate click/transport delay/private command.
+  // Measure centers before Play so no DOM inspection consumes the existing 600ms lead.
+  await page.getByRole('button', { name: 'Play at normal speed', exact: true }).click();
+  await expect.poll(() => currentClock(page)).toEqual({ mode: 'running', speed: 1 });
+  await page.mouse.click(cancelRect.x + cancelRect.width / 2, cancelRect.y + cancelRect.height / 2);
+  await page.mouse.click(pause.x, pause.y);
+  await expect.poll(() => currentClock(page)).toEqual({ mode: 'paused' });
+  const queued = await cancellationSnapshot(page);
+  receipt['queued'] = queued;
+  assertAuthoredShell(queued);
+  expect(balance(queued)).toBe(balance(pending));
+  expect(queued.kernel.commands).toHaveLength(1);
+  const command = queued.kernel.commands[0]!;
+  expect(command.executeAtTick, 'Cancel must genuinely remain queued beyond the paused tick').toBeGreaterThan(queued.kernel.tick);
+  const packed = command.payload as { schemaId: string; schemaVersion: number; data: { type: string; orderId: string; expectedRevision: number } };
+  expect(packed.schemaId).toBe('lockstate.simulation.command');
+  expect(packed.data).toEqual({ type: 'CancelBuildOrder', orderId: target.id, expectedRevision: queued.construction.orderRevisions![target.id] });
+  expect(packed.data.expectedRevision).toBe(2);
+  expect(queued.construction.newerActionThanTheStackTop).toBe(false);
+  const transportBeforeLoad = await cancellationTransportReceipt(page);
+  receipt['transportBeforeLoad'] = transportBeforeLoad;
+  expect(transportBeforeLoad.submissions.map(s => s.command.data)).toEqual([
+    { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin, quarterTurns: 1 }, packed.data,
+  ]);
+  expect(transportBeforeLoad.submissions[1]).toEqual({ commandId: command.id, sequence: command.sequence, executeAtTick: command.executeAtTick, command: command.payload });
+  await page.screenshot({ path: info.outputPath('actual-queued-cell-before-v9-save.png') });
+  await page.getByRole('button', { name: 'Save now', exact: true }).click();
+  await expect(page.locator('.save-panel__status')).toContainText('Saved (generation ');
+  expect(await cancellationSnapshot(page)).toEqual(queued);
+  const savedGeneration = await queuedCancellationSavedGeneration(page);
+  receipt['savedGeneration'] = savedGeneration;
+  expect(savedGeneration.envelope.saveSchemaVersion).toBe(9);
+  expect(savedGeneration.envelope.payload).toEqual(queued);
+  await page.reload();
+  await page.locator('.save-panel__item button').filter({ hasText: 'Load' }).first().click();
+  await expect.poll(() => currentClock(page)).toEqual({ mode: 'paused' });
+  const loaded = await cancellationSnapshot(page);
+  receipt['loaded'] = loaded;
+  expect(loaded, 'Whole actual worker bundle must survive public V9 Save/Load').toEqual(queued);
+  expect((await cancellationTransportReceipt(page)).submissions).toEqual([]);
+  await page.screenshot({ path: info.outputPath('actual-queued-cell-restored-v9.png') });
+  await page.getByRole('button', { name: 'Play at normal speed', exact: true }).click();
+  await expect.poll(async () => (await cancellationSnapshot(page)).construction.orders.filter(order => order.state === 'cancelled').length).toBe(18);
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await expect.poll(() => currentClock(page)).toEqual({ mode: 'paused' });
+  const dispatched = await cancellationSnapshot(page);
+  receipt['dispatched'] = dispatched;
+  expect(dispatched.kernel.commands).toEqual([]);
+  expect(dispatched.kernel.expectedSequence).toBe(loaded.kernel.expectedSequence);
+  expect(dispatched.construction.orders).toEqual(loaded.construction.orders.map(order => ({ ...order, state: 'cancelled' })));
+  expect(dispatched.construction.undoStack).toEqual(loaded.construction.undoStack);
+  expect(dispatched.construction.redoStack).toEqual(loaded.construction.redoStack);
+  expect(dispatched.construction.newerActionThanTheStackTop).toBe(true);
+  expect(dispatched.construction.orderRevisions).toEqual(Object.fromEntries(Object.entries(loaded.construction.orderRevisions!).map(([id, revision]) => [id, revision + 1])));
+  expect(balance(dispatched)).toBe(25000);
+  expect(objects(dispatched)).toEqual(objects(initial));
+  expect(dispatched.simulation?.prisoners.roomInstanceDefinitions).toEqual(initial.simulation?.prisoners.roomInstanceDefinitions);
+  expect(dispatched.simulation?.roomTemplates?.pending ?? []).toEqual([]); // Canonical empty coordinator section may be absent.
+  expect(dispatched.simulation?.roomTemplates?.completed ?? []).toEqual([]);
+  expect(dispatched.world).toEqual(initial.world);
+  expect(dispatched.entities).toEqual(initial.entities);
+  expect(dispatched.identity).toEqual(initial.identity);
+  const transportAfterLoad = await cancellationTransportReceipt(page);
+  receipt['transportAfterLoad'] = transportAfterLoad;
+  expect(transportAfterLoad.submissions).toEqual([]); // Resume dispatches the saved command, no fresh cancellation.
+  } finally {
+    // Preserve actual reached states even when a later assertion fails.
+    await writeFile(info.outputPath('actual-v9-queued-cancellation-receipt.json'), JSON.stringify(receipt, null, 2));
+  }
+});

@@ -1,0 +1,41 @@
+﻿import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
+import { stripTypeScriptTypes } from 'node:module';
+import { SimulationWorkerStateMachine } from 'C:/Users/matma/Documents/Rozwój gier/ls-v10-browser-consumers-20261004/src/simulation/worker/state-machine.ts';
+import { createNewSimulationRuntime } from 'C:/Users/matma/Documents/Rozwój gier/ls-v10-browser-consumers-20261004/src/simulation/runtime/new-session.ts';
+import { captureSessionSnapshot } from 'C:/Users/matma/Documents/Rozwój gier/ls-v10-browser-consumers-20261004/src/simulation/runtime/restore-session.ts';
+import { createSaveEnvelope } from 'C:/Users/matma/Documents/Rozwój gier/ls-v10-browser-consumers-20261004/src/persistence/save-schema.ts';
+import { packCommand } from 'C:/Users/matma/Documents/Rozwój gier/ls-v10-browser-consumers-20261004/src/simulation/protocol/commands.ts';
+const root = 'C:/Users/matma/Documents/Rozwój gier/ls-v10-browser-consumers-20261004/';
+const source = (file) => readFileSync(root + 'tests/browser/' + file, 'utf8');
+function actualLine(file, pattern) {
+ const line = source(file).split(/\r?\n/).find(line => pattern.test(line));
+ if (line === undefined) throw Error(`Missing executed consumer line in ${file}`);
+ return stripTypeScriptTypes(line.trim(), { mode: 'strip' });
+}
+const messages = [];
+const machine = new SimulationWorkerStateMachine({postMessage:message=>messages.push(message)}, 'consumer-audit', () => 0);
+machine.handleMessage({protocolVersion:1,messageId:'handshake',kind:'protocol/handshake',payload:{clientBuildId:'consumer-audit',supportedProtocolVersions:[1],capabilities:[]}});
+machine.handleMessage({protocolVersion:1,messageId:'init',kind:'simulation/initialize',payload:{sessionId:'consumer-audit',source:{kind:'new',masterSeed:73}}});
+machine.handleMessage({protocolVersion:1,messageId:'actual-snapshot',kind:'simulation/request-snapshot',payload:{reason:'consistency-check'}});
+const message = messages.find(message=>message.kind==='simulation/snapshot');
+const runtime = createNewSimulationRuntime(73);
+runtime.kernel.submitCommand('actual-template',0,runtime.kernel.tick,packCommand({type:'PlaceRoomTemplate',templateId:'cell-basic',origin:{x:20,y:5},quarterTurns:1}));
+runtime.kernel.step();
+const pending = captureSessionSnapshot(runtime);
+const target = pending.construction.orders[0];
+const packed = packCommand({type:'CancelBuildOrder',orderId:target.id,expectedRevision:runtime.construction.revisionOf(target.id)});
+runtime.kernel.submitCommand('genuine-held-cancel',runtime.kernel.expectedSequence,runtime.kernel.tick,packed);
+const loaded = captureSessionSnapshot(runtime);
+const envelope = createSaveEnvelope({gameVersion:'consumer-audit',prisonId:'actual-export-input',revision:1,createdAt:0,updatedAt:1,...loaded});
+runtime.kernel.dispatchDueCommands();
+const dispatched = captureSessionSnapshot(runtime);
+const scope = {expect,message,snapshot:message.payload.snapshot,raw:envelope,packed,savedGeneration:{envelope},loaded,dispatched,Object,BigInt};
+console.info('ACTUAL_PRODUCER',JSON.stringify({snapshotVersion:message.payload.snapshot.schemaVersion,saveVersion:envelope.saveSchemaVersion,cancellation:packed,loadedCounters:loaded.construction.orderRevisions,dispatchedCounters:dispatched.construction.orderRevisions}));
+it('CommonRoom exact observer guard admits the actual worker snapshot',()=>runInNewContext(actualLine('common-room-upholstered-player-build.spec.ts',/message\.kind !== 'simulation\/snapshot'/),scope));
+it('WoodenBench exact reader guard admits the actual worker snapshot',()=>runInNewContext(actualLine('wooden-bench-player-build.spec.ts',/expect\(snapshot\.schemaVersion\)/),scope));
+it('Public session-preflight exact Export guard admits current writer output',()=>runInNewContext(actualLine('room-template-session-preflight.spec.ts',/expect\(raw\)\.toMatchObject/),scope));
+it('Queued public Cancel exact token oracle admits actual packed text',()=>runInNewContext(actualLine('room-template-queued-cancellation-v9.spec.ts',/expect\(packed\.data\.expectedRevision\)/),scope));
+it('Queued public Save exact version oracle admits current writer output',()=>runInNewContext(actualLine('room-template-queued-cancellation-v9.spec.ts',/expect\(savedGeneration\.envelope\.saveSchemaVersion\)/),scope));
+it('Queued public reversal exact ledger oracle matches actual collective cancellation',()=>runInNewContext(actualLine('room-template-queued-cancellation-v9.spec.ts',/expect\(dispatched\.construction\.orderRevisions\)/),scope));
+
