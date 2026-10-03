@@ -1,0 +1,140 @@
+{
+  "rubber bed foot": {
+    "degenerate": [],
+    "min": 0.025999998673796654,
+    "faces": 54,
+    "negative": 0
+  },
+  "square steel leg": {
+    "degenerate": [],
+    "min": 0.030999988317489624,
+    "faces": 54,
+    "negative": 0
+  },
+  "rubber bed foot.001": {
+    "degenerate": [],
+    "min": 0.025999998673796654,
+    "faces": 54,
+    "negative": 0
+  },
+  "square steel leg.001": {
+    "degenerate": [],
+    "min": 0.03099989891052246,
+    "faces": 54,
+    "negative": 0
+  },
+  "full length side rail": {
+    "degenerate": [],
+    "min": 0.027999967336654663,
+    "faces": 54,
+    "negative": 0
+  },
+  "rubber bed foot.002": {
+    "degenerate": [],
+    "min": 0.025999998673796654,
+    "faces": 54,
+    "negative": 0
+  },
+  "square steel leg.002": {
+    "degenerate": [],
+    "min": 0.030999839305877686,
+    "faces": 54,
+    "negative": 0
+  },
+  "rubber bed foot.003": {
+    "degenerate": [],
+    "min": 0.025999998673796654,
+    "faces": 54,
+    "negative": 0
+  },
+  "square steel leg.003": {
+    "degenerate": [],
+    "min": 0.030999839305877686,
+    "faces": 54,
+    "negative": 0
+  },
+  "full length side rail.001": {
+    "degenerate": [],
+    "min": 0.027999818325042725,
+    "faces": 54,
+    "negative": 0
+  },
+  "north headboard upper bar": {
+    "degenerate": [],
+    "min": 0.025999978184700012,
+    "faces": 54,
+    "negative": 0
+  },
+  "north headboard infill": {
+    "degenerate": [],
+    "min": 0.016999974846839905,
+    "faces": 54,
+    "negative": 0
+  },
+  "south footboard bar": {
+    "degenerate": [],
+    "min": 0.026000022888183594,
+    "faces": 54,
+    "negative": 0
+  },
+  "under mattress cross support": {
+    "degenerate": [],
+    "min": 0.019999951124191284,
+    "faces": 54,
+    "negative": 0
+  },
+  "under mattress cross support.001": {
+    "degenerate": [],
+    "min": 0.019999951124191284,
+    "faces": 54,
+    "negative": 0
+  },
+  "under mattress cross support.002": {
+    "degenerate": [],
+    "min": 0.019999951124191284,
+    "faces": 54,
+    "negative": 0
+  },
+  "under mattress cross support.003": {
+    "degenerate": [],
+    "min": 0.019999951124191284,
+    "faces": 54,
+    "negative": 0
+  },
+  "piped mattress perimeter": {
+    "degenerate": [],
+    "min": 0.07499998807907104,
+    "faces": 54,
+    "negative": 0
+  },
+  "washable mattress main": {
+    "degenerate": [],
+    "min": 0.0709998607635498,
+    "faces": 54,
+    "negative": 0
+  },
+  "mattress top light": {
+    "degenerate": [],
+    "min": 0.0040000081062316895,
+    "faces": 54,
+    "negative": 0
+  },
+  "north pillow": {
+    "degenerate": [],
+    "min": 0.03899991512298584,
+    "faces": 54,
+    "negative": 0
+  },
+  "folded foot blanket": {
+    "degenerate": [],
+    "min": 0.03599989414215088,
+    "faces": 54,
+    "negative": 0
+  },
+  "blanket turned top edge": {
+    "degenerate": [],
+    "min": 0.014999926090240479,
+    "faces": 54,
+    "negative": 0
+  }
+}
