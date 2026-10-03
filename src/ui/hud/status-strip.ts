@@ -200,6 +200,30 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
     metricsRow.append(chip.element);
   }
 
+  // The compact balance and the complete list read the same descriptor. The
+  // disclosure never infers a value from a narrower status summary.
+  const compactFunds = element('div', { className: 'hud-desk__funds' });
+  const compactFundsLabel = element('span', { className: 'hud-desk__funds-label', text: t(HUD_MESSAGE_KEY.funds) });
+  const compactFundsValue = valueText(UNKNOWN_READOUT_TEXT, 'hud-desk__funds-value');
+  const compactFundsBadge = element('span', { className: 'hud-desk__funds-badge' });
+  compactFunds.append(compactFundsLabel, compactFundsValue, compactFundsBadge);
+
+  const statsButton = document.createElement('button');
+  statsButton.type = 'button';
+  statsButton.className = 'hud-desk__stats-button';
+  statsButton.textContent = t(HUD_MESSAGE_KEY.allStats);
+  statsButton.setAttribute('aria-expanded', 'false');
+  const statsPanel = element('div', { className: 'hud-desk__stats-panel', children: [metricsRow] });
+  statsPanel.id = 'hud-desk-all-stats';
+  statsPanel.hidden = true;
+  statsPanel.setAttribute('role', 'region');
+  statsPanel.setAttribute('aria-label', t(HUD_MESSAGE_KEY.allStats));
+  statsButton.setAttribute('aria-controls', statsPanel.id);
+  statsButton.addEventListener('click', () => {
+    statsPanel.hidden = !statsPanel.hidden;
+    statsButton.setAttribute('aria-expanded', String(!statsPanel.hidden));
+  });
+
   // ---- clock and transport -----------------------------------------
   // Both start unknown, because at first paint they are: no session has
   // reported a clock yet, and `--` says so.
@@ -207,6 +231,7 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
   const day = valueText(UNKNOWN_READOUT_TEXT, 'hud-clock__day');
   const speed = valueText('×1', 'hud-clock__speed');
   const speedLabel = screenReaderText('');
+  const speedGroup = element('span', { className: 'hud-clock__speed-group', children: [speedLabel, speed] });
 
   const transport: Readonly<Record<TransportIntentKind, IconButton>> = {
     pause: createIconButton({
@@ -287,6 +312,7 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
       day,
       screenReaderText(t(HUD_MESSAGE_KEY.clockDayProgress)),
       dayProgress,
+      speedGroup,
     ],
   });
 
@@ -297,7 +323,6 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
       transport.pause.element,
       transport.play.element,
       transport['fast-forward'].element,
-      element('span', { className: 'hud-clock__speed-group', children: [speedLabel, speed] }),
     ],
   });
 
@@ -312,7 +337,13 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
   const root = element('div', {
     className: 'hud-strip',
     attributes: { role: 'region', 'aria-label': t(HUD_MESSAGE_KEY.statusRegion) },
-    children: [brandSlot, metricsRow, clockGroup, transportGroup, historyGroup, layoutSlot],
+    children: [brandSlot, compactFunds, statsButton, layoutSlot, clockGroup, transportGroup, historyGroup, statsPanel],
+  });
+  root.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || statsPanel.hidden) return;
+    statsPanel.hidden = true;
+    statsButton.setAttribute('aria-expanded', 'false');
+    statsButton.focus();
   });
 
   /*
@@ -356,6 +387,16 @@ export function createStatusStrip(options: StatusStripOptions): StatusStrip {
      * every other descriptor on this strip.
      */
     for (const descriptor of projectStatusMetrics(viewModel.counts, viewModel.roomNeeds)) {
+      if (descriptor.id === 'funds') {
+        compactFundsValue.textContent = metricValueText(descriptor.value, localizer);
+        compactFunds.dataset['tone'] = descriptor.tone ?? 'neutral';
+        compactFundsBadge.textContent = descriptor.badge === undefined
+          ? ''
+          : t(descriptor.badge.textKey, textParameters(descriptor.badge, localizer));
+        compactFunds.title = descriptor.description === undefined
+          ? ''
+          : t(descriptor.description.textKey, textParameters(descriptor.description, localizer));
+      }
       const parts = metrics.get(descriptor.id);
       if (parts === undefined) continue;
 

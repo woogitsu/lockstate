@@ -2759,7 +2759,15 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
    * remember to check.
    */
   const aside = element('div', { className: 'hud__aside' });
+  aside.id = 'hud-desk-saves';
   const rail = element('div', { className: 'hud__rail', children: [aside, side] });
+
+  const savesButton = element('button', {
+    className: 'hud-desk__saves-button',
+    attributes: { type: 'button', 'aria-controls': aside.id, 'aria-expanded': 'false' },
+    text: t(HUD_MESSAGE_KEY.saveDrawer),
+  });
+  strip.element.insertBefore(savesButton, strip.layoutSlot);
 
   // ---- bottom-centre tab bar ---------------------------------------
   const tabs: TabButton[] = HUD_TABS.map((definition) =>
@@ -2808,11 +2816,27 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
   };
 
   const hud = element('div', {
-    className: 'hud',
+    className: 'hud hud--map-desk',
     // DOM order matches grid order, so reading order and tab order agree with
     // what is painted: the standing "no simulation" band first, then the
     // refusal line about the last press, then the world's furniture.
     children: [strip.element, unavailable, refusal, eventNotice, corner, rail, tabBar],
+  });
+  // Keep the real zoom/minimap controls reachable without a permanent map
+  // overlay. The placeholder continues to describe its current limitation.
+  strip.element.querySelector('.hud-desk__stats-panel')?.append(corner);
+  hud.append(zoomControl);
+  hud.dataset['savesOpen'] = 'false';
+  savesButton.addEventListener('click', () => {
+    const open = hud.dataset['savesOpen'] !== 'true';
+    hud.dataset['savesOpen'] = String(open);
+    savesButton.setAttribute('aria-expanded', String(open));
+  });
+  aside.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    hud.dataset['savesOpen'] = 'false';
+    savesButton.setAttribute('aria-expanded', 'false');
+    savesButton.focus();
   });
 
   /**
@@ -2872,7 +2896,7 @@ export function mountHud(root: HTMLElement, options: MountHudOptions): HudHandle
      * 307.38 to 2.00. Overview is the one tab with room, which is why the
      * ruling names it.
      */
-    onTierChange: placeAlertsFold,
+    onTierChange: () => placeAlertsFold(true),
   });
   strip.layoutSlot.append(layout.menu);
 

@@ -362,6 +362,8 @@ export const HUD_MESSAGE_KEY = {
   layoutShowInspector: 'hud.layout.show-inspector',
   layoutHideMetrics: 'hud.layout.hide-metrics',
   layoutShowMetrics: 'hud.layout.show-metrics',
+  allStats: 'hud.status.all-stats',
+  saveDrawer: 'hud.layout.saves',
   layoutResizeNavigation: 'hud.layout.resize-navigation',
   layoutResizeInspector: 'hud.layout.resize-inspector',
 

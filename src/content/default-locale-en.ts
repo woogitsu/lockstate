@@ -715,6 +715,8 @@ const authoredMessages: Readonly<Record<string, LocalizationEntry>> = {
    *   one thing they cannot.
    */
   'hud.layout.title': 'Settings',
+  'hud.status.all-stats': 'All stats',
+  'hud.layout.saves': 'Saves',
   'hud.layout.menu': 'Open the settings menu',
   'hud.layout.navigation-width': 'Navigation width',
   'hud.layout.inspector-width': 'Panel width',

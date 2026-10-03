@@ -650,6 +650,8 @@ const plMessages: Readonly<Record<string, LocalizationEntry>> = {
    *   one thing they cannot.
    */
   'hud.layout.title': 'Ustawienia',
+  'hud.status.all-stats': 'Wszystkie dane',
+  'hud.layout.saves': 'Zapisy',
   'hud.layout.menu': 'Otwórz menu ustawień',
   'hud.layout.navigation-width': 'Szerokość nawigacji',
   'hud.layout.inspector-width': 'Szerokość panelu',
