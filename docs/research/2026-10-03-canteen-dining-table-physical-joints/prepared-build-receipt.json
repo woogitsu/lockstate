@@ -1,0 +1,19 @@
+{
+  "sourceCommit": "48529a8a373903e239cf679bb01b18824a1cdd36",
+  "typecheckExitCode": 0,
+  "focusedFinalUnit": {
+    "filesPassed": 3,
+    "testsPassed": 7,
+    "testsSkipped": 1
+  },
+  "productionBuildExitCode": 0,
+  "worker": {
+    "path": "dist/client/assets/worker-DswZiFJ8.js",
+    "bytes": 438431,
+    "sha256": "59d150066ae94274f51f58ba75a94ec90e5c854365154a6f2d99ad586449b55d"
+  },
+  "sourceSha256": "5f27967600a64ce4ded10a01fe6217ea849c2be9b57ff92353fd60b97af4ede1",
+  "descriptorSha256": "cdeec41d9ba43c672b20e72ae35aa19f46e035bc5d879e28f3188bfe2c4ece9c",
+  "nativeBrowserStarted": false,
+  "serverStarted": false
+}
