@@ -1,0 +1,19 @@
+{
+  "source": "src\\rendering\\scene\\oblique-world-scene.ts",
+  "SHA256": "b139c022545ac3c0b24ab9fc0954510ea932e2a77600c6b64401bb29b919be5f",
+  "exactRestored": true,
+  "results": [
+    {
+      "name": "original15green",
+      "exitCode": 0
+    },
+    {
+      "name": "stopTurn-cleanup-negative",
+      "exitCode": 1
+    },
+    {
+      "name": "exact-restored15green",
+      "exitCode": 0
+    }
+  ]
+}

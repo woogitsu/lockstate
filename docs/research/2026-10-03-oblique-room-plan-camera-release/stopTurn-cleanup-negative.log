@@ -1,0 +1,85 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-oblique-camera-release-audit-20261003
+
+ ❯ tests/unit/oblique-room-plan-camera-release.test.ts (8 tests | 8 failed) 54ms
+   × armed mirrored q1 template survives camera button1 release outside=false CSSratio1 and fresh placement remains possible 28ms
+   × armed mirrored q1 template survives camera button2 release outside=false CSSratio1 and fresh placement remains possible 6ms
+   × armed mirrored q1 template survives camera button1 release outside=true CSSratio1 and fresh placement remains possible 4ms
+   × armed mirrored q1 template survives camera button2 release outside=true CSSratio1 and fresh placement remains possible 5ms
+   × armed mirrored q1 template survives camera button1 release outside=false CSSratio2 and fresh placement remains possible 3ms
+   × armed mirrored q1 template survives camera button2 release outside=false CSSratio2 and fresh placement remains possible 3ms
+   × armed mirrored q1 template survives camera button1 release outside=true CSSratio2 and fresh placement remains possible 2ms
+   × armed mirrored q1 template survives camera button2 release outside=true CSSratio2 and fresh placement remains possible 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-room-plan-camera-release.test.ts > armed mirrored q1 template survives camera button1 release outside=false CSSratio1 and fresh placement remains possible
+ FAIL  tests/unit/oblique-room-plan-camera-release.test.ts > armed mirrored q1 template survives camera button1 release outside=true CSSratio1 and fresh placement remains possible
+ FAIL  tests/unit/oblique-room-plan-camera-release.test.ts > armed mirrored q1 template survives camera button1 release outside=false CSSratio2 and fresh placement remains possible
+ FAIL  tests/unit/oblique-room-plan-camera-release.test.ts > armed mirrored q1 template survives camera button1 release outside=true CSSratio2 and fresh placement remains possible
+AssertionError: expected { centre: { …(2) }, zoom: 1.25, …(2) } to deeply equal { centre: { …(2) }, zoom: 1.25, …(2) }
+
+- Expected
++ Received
+
+  {
+    "centre": {
+-     "x": 749.5247913859318,
+-     "y": 800,
++     "x": 719.5025773880714,
++     "y": 828,
+    },
+    "elevationRadians": 1.0471975511965976,
+    "yawRadians": 0.5235987755982988,
+    "zoom": 1.25,
+  }
+
+ ❯ tests/unit/oblique-room-plan-camera-release.test.ts:105:38
+    103|   mouse('up', 0, 980, 490);
+    104|   const released = actual.captureCameraView(); mouse('move', 0, 1030, …
+    105|   expect(actual.captureCameraView()).toEqual(released);
+       |                                      ^
+    106|   // The final wheel/tilt changes are legitimate input, and do not rev…
+    107|   plumbing.handlers.get('wheel')!(pointer, [], 0, -1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  tests/unit/oblique-room-plan-camera-release.test.ts > armed mirrored q1 template survives camera button2 release outside=false CSSratio1 and fresh placement remains possible
+ FAIL  tests/unit/oblique-room-plan-camera-release.test.ts > armed mirrored q1 template survives camera button2 release outside=true CSSratio1 and fresh placement remains possible
+ FAIL  tests/unit/oblique-room-plan-camera-release.test.ts > armed mirrored q1 template survives camera button2 release outside=false CSSratio2 and fresh placement remains possible
+ FAIL  tests/unit/oblique-room-plan-camera-release.test.ts > armed mirrored q1 template survives camera button2 release outside=true CSSratio2 and fresh placement remains possible
+AssertionError: expected { centre: { …(2) }, zoom: 1.25, …(2) } to deeply equal { centre: { …(2) }, zoom: 1.25, …(2) }
+
+- Expected
++ Received
+
+  {
+    "centre": {
+-     "x": 775.8226531196639,
+-     "y": 763.476880235573,
++     "x": 794.0716773098237,
++     "y": 762.238635391349,
+    },
+-   "elevationRadians": 1.1471975511965977,
+-   "yawRadians": 0.7235987755982989,
++   "elevationRadians": 1.1971975511965978,
++   "yawRadians": 0.9735987755982989,
+    "zoom": 1.25,
+  }
+
+ ❯ tests/unit/oblique-room-plan-camera-release.test.ts:105:38
+    103|   mouse('up', 0, 980, 490);
+    104|   const released = actual.captureCameraView(); mouse('move', 0, 1030, …
+    105|   expect(actual.captureCameraView()).toEqual(released);
+       |                                      ^
+    106|   // The final wheel/tilt changes are legitimate input, and do not rev…
+    107|   plumbing.handlers.get('wheel')!(pointer, [], 0, -1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  8 failed | 7 passed (15)
+   Start at  05:59:12
+   Duration  3.23s (transform 1.44s, setup 0ms, import 3.77s, tests 58ms, environment 0ms)
+

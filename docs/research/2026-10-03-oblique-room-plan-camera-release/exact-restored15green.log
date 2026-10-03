@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-oblique-camera-release-audit-20261003
+
+
+ Test Files  2 passed (2)
+      Tests  15 passed (15)
+   Start at  05:59:15
+   Duration  3.65s (transform 1.41s, setup 0ms, import 3.73s, tests 524ms, environment 0ms)
+
