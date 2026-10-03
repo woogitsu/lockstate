@@ -1,0 +1,132 @@
+[
+    {
+        "sha256":  "73fe662883f1bfa72445ac400f366e8861feb9b832603931dd68a3eb025af351",
+        "name":  ".gitattributes",
+        "bytes":  25
+    },
+    {
+        "sha256":  "14a741b0ae006d68ffdd219a30d01a7fd792923b1ab745fc5df35be4ab2f879e",
+        "name":  "action-consumer-negative.txt",
+        "bytes":  3565
+    },
+    {
+        "sha256":  "a02c069bfcc0a6829a9a7ab20a2149a46e968d4a14d1ae6e472a896d1a0d122b",
+        "name":  "baseline.txt",
+        "bytes":  5364
+    },
+    {
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "name":  "diagnosis-typecheck.txt",
+        "bytes":  0
+    },
+    {
+        "sha256":  "bbbb4006ebce7a9881f904750135486c7848a1356d7d536648e7817c0894b08c",
+        "name":  "exact-restored.txt",
+        "bytes":  268
+    },
+    {
+        "sha256":  "ec0619aaca32f6de7c230aff629dfc2e88fe37a5bb3c3ee6434c57ecd2c7e951",
+        "name":  "executed-probe.ts.txt",
+        "bytes":  3983
+    },
+    {
+        "sha256":  "a6d2ab6e07d9c90442075847e4c3e7453dc2667cd353154454be28845adfd119",
+        "name":  "final-docs.txt",
+        "bytes":  556
+    },
+    {
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "name":  "final-tools-typecheck.txt",
+        "bytes":  0
+    },
+    {
+        "sha256":  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "name":  "final-typecheck.txt",
+        "bytes":  0
+    },
+    {
+        "sha256":  "07cafac9d660bb6507ae6af16ce3c2df50563af2027d8bddc0f5eca33bb263e0",
+        "name":  "fixed.txt",
+        "bytes":  554
+    },
+    {
+        "sha256":  "ff9de11cedc20c17bb42ef7eedcc9828ded0ee1f078eb149b83ac6d7b76d11c6",
+        "name":  "fixed-measured-results.json",
+        "bytes":  825998
+    },
+    {
+        "sha256":  "a9673c69010929e1cca4b3aa9b8a007183a9c8d9601a540e56e75dc15c345041",
+        "name":  "fixed-measurement.txt",
+        "bytes":  7098
+    },
+    {
+        "sha256":  "7a4e327b7079f3bccc2c3200677c975825be9039665fd674451a6aae4bc77de4",
+        "name":  "fresh-dedup.json",
+        "bytes":  35547
+    },
+    {
+        "sha256":  "e3b19e935b8b3f71ffeff42760e39f0e84115ad8b417ed58c001385303d26354",
+        "name":  "initial-test.ts.txt",
+        "bytes":  6615
+    },
+    {
+        "sha256":  "a87ffd76d88e857247a088d2581c5665ef4f68d9bcf3d5567306e170881e4855",
+        "name":  "initial-typecheck.txt",
+        "bytes":  314
+    },
+    {
+        "sha256":  "b1e3f80b35a53b3c2e1694abb58886410e61215d62365b7015b4b73ab4f8a78b",
+        "name":  "issue-2008.json",
+        "bytes":  5653
+    },
+    {
+        "sha256":  "372fba3e438075667ea157fa3e2fc0f369e8d2e6834d8c50c004286938329844",
+        "name":  "issue-532.json",
+        "bytes":  8132
+    },
+    {
+        "sha256":  "c01efaa1764e8d4668d57d283ad61de2530ce5d9395a88faa6d1d612898dda4f",
+        "name":  "measured-results.json",
+        "bytes":  820036
+    },
+    {
+        "sha256":  "186708bc6c5452ce265b77a154d3a9eaf98092aa031ba04501338f7db919ff53",
+        "name":  "measurement.txt",
+        "bytes":  6938
+    },
+    {
+        "sha256":  "b333179173ba66b4172ec7b204d53848b727ded48e5d125b4d8b9c123b3d8954",
+        "name":  "mutation-restoration.json",
+        "bytes":  970
+    },
+    {
+        "sha256":  "ec0b1684924441a88c4a7c056586fd6a617e994b2a397c59e3f637675da79f2f",
+        "name":  "neighbors.txt",
+        "bytes":  558
+    },
+    {
+        "sha256":  "700690b821b36ee4165fc487e3cc4470956d54add23af0c762af3a70a0a30f1e",
+        "name":  "README.md",
+        "bytes":  7648
+    },
+    {
+        "sha256":  "9d37a06409db6c849350e172e7b0ef6c1a08379595862a8f5725c9f8cf3f8270",
+        "name":  "registry-predicate-negative.txt",
+        "bytes":  3565
+    },
+    {
+        "sha256":  "4652bcd1b78c84d346abb01793a1159ab6b8d312279e9b4c75040a8ef0bffad3",
+        "name":  "run-mutations.cjs.txt",
+        "bytes":  3022
+    },
+    {
+        "sha256":  "bbd331d26b8a57790bf6d0e26e8b100bdefb66439cff65d8719c0800cbbb12d7",
+        "name":  "run-probe.cjs.txt",
+        "bytes":  576
+    },
+    {
+        "sha256":  "4f5c4102ef72673f88b3d435594e60b37232c4bbb26347937700c1dbce8b7f45",
+        "name":  "terminal-receipt.json",
+        "bytes":  1856
+    }
+]
