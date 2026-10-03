@@ -28,4 +28,4 @@ The actual200descriptor must identify existing default furniture.corridor.bench.
 
 ## Prepared checks
 
-App and tools strict TypeScript returned0 after fixture/helper preparation. First coherent checkpoint; full production build and existing canonical artifact --list receipt follow. Current canonical config remains60s test/10s expect/retries0/oneworker. Native baseline, hardware image inspection, actual default-consumer RED and exact-restored final GREEN remain pending for root.
+App and tools strict TypeScript returned0 after fixture/helper preparation. Prepared43e2dfa3459728f5e524c491c7c227cd23b1f0a8 full production build returned0. Existing canonical artifact --list returned0 and collected exactly3cases; it launched no browser or server and ran zero native tests. Original timberPixels function was compared against371c964 and is exact unchanged. Raw list/build outputs and worker identity appear in prepared-strict-build-list-and-worker-receipt.json. Current canonical config remains60s test/10s expect/retries0/oneworker. Native baseline, hardware image inspection, actual default-consumer RED and exact-restored final GREEN remain pending for root.
