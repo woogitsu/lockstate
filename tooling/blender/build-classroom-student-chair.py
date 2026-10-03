@@ -183,4 +183,3 @@ def build():
     print(f'CLASSROOM_STUDENT_CHAIR_AUTHORED {len(rows)} meshes/{len(names)} original/{len(contacts)} actual contacts {bounds}',flush=True)
 
 if __name__=='__main__': build()
-
