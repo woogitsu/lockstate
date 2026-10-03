@@ -1,0 +1,59 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/ls-build-input-command-audit-20261004
+
+stdout | tests/unit/oblique-hud-cancel-rearm.test.ts > world: actual Door catalogue selection withdraws the held old square-wall press
+CATALOGUE_OLD_RELEASE {"mode":"world","commands":[{"type":"PlaceBuildOrder","orderId":"order-90540d03-0cf1-4523-8c9b-bce5191de0f4","definitionId":"door-wooden","x":11,"y":11,"footprint":"square","transactionId":"build-ae96946f-1a78-463f-b22a-54395d4236b2"}]}
+
+stdout | tests/unit/oblique-hud-cancel-rearm.test.ts > oblique: actual Door catalogue selection withdraws the held old square-wall press
+CATALOGUE_OLD_RELEASE {"mode":"oblique","commands":[{"type":"PlaceBuildOrder","orderId":"order-ee2e88f4-221f-4929-a4ab-7d6ed941082c","definitionId":"door-wooden","x":11,"y":11,"edge":"west","transactionId":"build-e0e2d748-6aee-4821-b625-2111ca436b34"}]}
+
+ ❯ tests/unit/oblique-hud-cancel-rearm.test.ts (27 tests | 2 failed) 69ms
+   × world: actual Door catalogue selection withdraws the held old square-wall press 5ms
+   × oblique: actual Door catalogue selection withdraws the held old square-wall press 2ms
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 25 passed (27)
+   Start at  01:22:09
+   Duration  3.29s (transform 1.05s, setup 0ms, import 3.10s, tests 69ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > world: actual Door catalogue selection withdraws the held old square-wall press
+AssertionError: new selection cannot buy from the unfinished old wall press: expected [ { protocolVersion: 1, …(3) } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/oblique-hud-cancel-rearm.test.ts:215:97
+    213|     console.log('CATALOGUE_OLD_RELEASE', JSON.stringify({ mode,
+    214|       commands: h.actors.submitted().map(message => message.payload.co…
+    215|     expect(h.actors.submitted(), 'new selection cannot buy from the un…
+       |                                                                                                 ^
+    216|     h.mouse('down', 0, 1); h.mouse('up', 0, 0);
+    217|     expect(h.actors.submitted()).toHaveLength(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/oblique-hud-cancel-rearm.test.ts > oblique: actual Door catalogue selection withdraws the held old square-wall press
+AssertionError: new selection cannot buy from the unfinished old wall press: expected [ { protocolVersion: 1, …(3) } ] to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/oblique-hud-cancel-rearm.test.ts:215:97
+    213|     console.log('CATALOGUE_OLD_RELEASE', JSON.stringify({ mode,
+    214|       commands: h.actors.submitted().map(message => message.payload.co…
+    215|     expect(h.actors.submitted(), 'new selection cannot buy from the un…
+       |                                                                                                 ^
+    216|     h.mouse('down', 0, 1); h.mouse('up', 0, 0);
+    217|     expect(h.actors.submitted()).toHaveLength(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

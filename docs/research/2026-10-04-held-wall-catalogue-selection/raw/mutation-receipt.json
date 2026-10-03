@@ -1,0 +1,9 @@
+{
+  "sourceCommit": "2fe2c50fb52640f23c7c4097556ac2a1c3006be7",
+  "originalSha256": "4b70efc4735d12d506f07d7857ebbc4d5142aa8360f695a2b77567b72c9de880",
+  "mutatedSha256": "43cf4083bcbb28c04b190a2946a2d53e11be355439e6fb4edfc9f24bb94b9115",
+  "negativeExit": 1,
+  "restoredSha256": "4b70efc4735d12d506f07d7857ebbc4d5142aa8360f695a2b77567b72c9de880",
+  "byteExactRestored": true,
+  "restoredExit": 0
+}
