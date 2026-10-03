@@ -85,7 +85,11 @@ const stages = [
   { title: '01 public Storage Room and Delivery Bay capacity', ordinals: [0, 1] },
   { title: '02 horizontal four-cell wing and two-tile corridor', ordinals: [2] },
   { title: '03 completed Kitchen and Shower room', ordinals: [3, 4] },
-  { title: '04 completed Canteen and outdoor Yard', ordinals: [5, 6] },
+  // The real combined Canteen+Yard journey completed every order and saved,
+  // but its context serialization reached60s. Give each room its own journey
+  // and real Load boundary, keeping the existing60s/expect10s budgets.
+  { title: '04 completed Canteen', ordinals: [5] },
+  { title: '05 completed outdoor Yard', ordinals: [6] },
 ] as const;
 
 for (const [stage, recipe] of stages.entries()) {
@@ -123,7 +127,7 @@ for (const [stage, recipe] of stages.entries()) {
   });
 }
 
-test('05 same completed prison at three public camera poses and whole paused Save/Load', async ({ page }, info) => {
+test('06 same completed prison at three public camera poses and whole paused Save/Load', async ({ page }, info) => {
   await openActualSession(page, false);
   const before = await showcaseSnapshot(page, info.outputPath('whole-paused-before-camera-and-save.json'));
   assertShowcaseStage(before, 6);

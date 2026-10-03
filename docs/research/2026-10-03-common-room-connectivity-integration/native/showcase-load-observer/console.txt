@@ -1,0 +1,58 @@
+node : [2m[WebServer] [22m(node:59412) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:2 char:248
++ ... 1003.json'; node node_modules/@playwright/test/cli.js test --config a ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 5 tests using 1 worker
+
+(node:41512) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41512) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\native-small-prison-showcase.recipe.ts:153:3 › 01 public Storage Room and Delivery Bay capacity (43.7s)
+  ok 2 tests\browser\native-small-prison-showcase.recipe.ts:153:3 › 02 horizontal four-cell wing and two-tile corridor (1.1m)
+  ok 3 tests\browser\native-small-prison-showcase.recipe.ts:153:3 › 03 completed Kitchen and Shower room (59.5s)
+  x  4 tests\browser\native-small-prison-showcase.recipe.ts:153:3 › 04 completed Canteen and outdoor Yard (1.0m)
+  -  5 tests\browser\native-small-prison-showcase.recipe.ts:218:1 › 05 same completed prison at three public camera poses and whole paused Save/Load
+
+
+  1) tests\browser\native-small-prison-showcase.recipe.ts:153:3 › 04 completed Canteen and outdoor Yard 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: browserContext.storageState: Test timeout of 60000ms exceeded.
+
+      79 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+      80 |   lastPaused = await showcaseSnapshot(page);
+    > 81 |   routeStorage = await page.context().storageState({ indexedDB: true });
+         |                                       ^
+      82 | }
+      83 |
+      84 | const stages = [
+        at saveActualStage (C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-connectivity-integration-20261003\tests\browser\native-small-prison-showcase.recipe.ts:81:39)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-common-room-connectivity-integration-20261003\tests\browser\native-small-prison-showcase.recipe.ts:119:5
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-small-prison-load-observer-20261003\native-small-prison-showca-c73f4-ed-Canteen-and-outdoor-Yard\error-context.md
+
+  1 failed
+    tests\browser\native-small-prison-showcase.recipe.ts:153:3 › 04 completed Canteen and outdoor Yard 
+  1 did not run
+  3 passed (3.9m)

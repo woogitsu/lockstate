@@ -265,5 +265,118 @@
     "sourceSha256": "bd087f0fc701c99e62f15df49ff8413ccc7194faf8f096fae5882c1401a10e25",
     "archivedBytes": 54387,
     "archivedSha256": "bd087f0fc701c99e62f15df49ff8413ccc7194faf8f096fae5882c1401a10e25"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-load-observer-20261003.json",
+    "archived": "showcase-load-observer/report.json",
+    "sourceBytes": 10591,
+    "sourceSha256": "47fbfa1b543d2fded5852554ccc4c06f43f3c42d7db614b2b19661dbe6cefa3b",
+    "archivedBytes": 10591,
+    "archivedSha256": "47fbfa1b543d2fded5852554ccc4c06f43f3c42d7db614b2b19661dbe6cefa3b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-load-observer-20261003.txt",
+    "archived": "showcase-load-observer/console.txt",
+    "sourceBytes": 7020,
+    "sourceSha256": "b7101dbe2b21fcfed3fa9f428b6419c34ffadcd595fc13b37b072a75be5f71e3",
+    "archivedBytes": 3527,
+    "archivedSha256": "6eb157b12797afb0134896a8e819a157c756c95983f66f645b3224f63cc3cc75",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-load-observer-20261003\\.last-run.json",
+    "archived": "showcase-load-observer/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "4c0e6c6b2e26fc5ab78cded079ff90915f5b26738ff73ce0699a09ad65b672da",
+    "archivedBytes": 96,
+    "archivedSha256": "4c0e6c6b2e26fc5ab78cded079ff90915f5b26738ff73ce0699a09ad65b672da"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-load-observer-20261003\\native-small-prison-showca-2d3fa-m-and-Delivery-Bay-capacity\\actual-completed-whole-paused-snapshot.json",
+    "archived": "showcase-load-observer/002-actual-completed-whole-paused-snapshot.json",
+    "sourceBytes": 54388,
+    "sourceSha256": "714e71786265ae7229716aeaf7c60283c1f13b77d18ed8a2a5e5cedc4080686c",
+    "archivedBytes": 54388,
+    "archivedSha256": "714e71786265ae7229716aeaf7c60283c1f13b77d18ed8a2a5e5cedc4080686c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-load-observer-20261003\\native-small-prison-showca-2d3fa-m-and-Delivery-Bay-capacity\\actual-public-stage-receipt.json",
+    "archived": "showcase-load-observer/003-actual-public-stage-receipt.json",
+    "sourceBytes": 321353,
+    "sourceSha256": "b93c9756b75de6da0a818c8c9effa6ee6c24fb9c45056a5614649b131ef50600",
+    "archivedBytes": 321353,
+    "archivedSha256": "b93c9756b75de6da0a818c8c9effa6ee6c24fb9c45056a5614649b131ef50600"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-load-observer-20261003\\native-small-prison-showca-7f216-ted-Kitchen-and-Shower-room\\actual-completed-whole-paused-snapshot.json",
+    "archived": "showcase-load-observer/004-actual-completed-whole-paused-snapshot.json",
+    "sourceBytes": 145181,
+    "sourceSha256": "cc87cc641107c7fc2dc6e5f66156cc938d521380352ec5a279ccf3144145089e",
+    "archivedBytes": 145181,
+    "archivedSha256": "cc87cc641107c7fc2dc6e5f66156cc938d521380352ec5a279ccf3144145089e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-load-observer-20261003\\native-small-prison-showca-7f216-ted-Kitchen-and-Shower-room\\actual-public-stage-receipt.json",
+    "archived": "showcase-load-observer/005-actual-public-stage-receipt.json",
+    "sourceBytes": 407660,
+    "sourceSha256": "1d614da7061faba33f2abf521914ce7a4aa0f5c709ae78bc53f88366cbc114cc",
+    "archivedBytes": 407660,
+    "archivedSha256": "1d614da7061faba33f2abf521914ce7a4aa0f5c709ae78bc53f88366cbc114cc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-load-observer-20261003\\native-small-prison-showca-c73f4-ed-Canteen-and-outdoor-Yard\\actual-completed-whole-paused-snapshot.json",
+    "archived": "showcase-load-observer/006-actual-completed-whole-paused-snapshot.json",
+    "sourceBytes": 175297,
+    "sourceSha256": "96f8c48edf85e69bda7e52e4dadc42b4c44be4e3e0bdfaae9a92691fff930797",
+    "archivedBytes": 175297,
+    "archivedSha256": "96f8c48edf85e69bda7e52e4dadc42b4c44be4e3e0bdfaae9a92691fff930797"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-load-observer-20261003\\native-small-prison-showca-c73f4-ed-Canteen-and-outdoor-Yard\\error-context.md",
+    "archived": "showcase-load-observer/007-error-context.md",
+    "sourceBytes": 10057,
+    "sourceSha256": "805ca5940625a3c9396dead105e1d5358048f188ca8b76c93c4af31b6ae3ed3b",
+    "archivedBytes": 10057,
+    "archivedSha256": "805ca5940625a3c9396dead105e1d5358048f188ca8b76c93c4af31b6ae3ed3b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-load-observer-20261003\\native-small-prison-showca-c73f4-ed-Canteen-and-outdoor-Yard\\failed-actual-art-observations.json",
+    "archived": "showcase-load-observer/008-failed-actual-art-observations.json",
+    "sourceBytes": 258315,
+    "sourceSha256": "4189cbd46bfe61952cf9c1dca992441e7d3e1faaf9aba2b58517311b4c7a9410",
+    "archivedBytes": 258315,
+    "archivedSha256": "4189cbd46bfe61952cf9c1dca992441e7d3e1faaf9aba2b58517311b4c7a9410"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-load-observer-20261003\\native-small-prison-showca-c73f4-ed-Canteen-and-outdoor-Yard\\failed-actual-fullhd.png",
+    "archived": "showcase-load-observer/009-failed-actual-fullhd.png",
+    "sourceBytes": 1601037,
+    "sourceSha256": "05ef9a904d7829c6d20bc5c204d42e0fbaf3de161dc6407793c35dd610add1e4",
+    "archivedBytes": 1601037,
+    "archivedSha256": "05ef9a904d7829c6d20bc5c204d42e0fbaf3de161dc6407793c35dd610add1e4"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-load-observer-20261003\\native-small-prison-showca-c73f4-ed-Canteen-and-outdoor-Yard\\failed-actual-worker-snapshot.json",
+    "archived": "showcase-load-observer/010-failed-actual-worker-snapshot.json",
+    "sourceBytes": 175297,
+    "sourceSha256": "357d86c025826bb9409f2970b59ec35198511d8b1e20057c1008253a116d2f45",
+    "archivedBytes": 175297,
+    "archivedSha256": "357d86c025826bb9409f2970b59ec35198511d8b1e20057c1008253a116d2f45"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-load-observer-20261003\\native-small-prison-showca-c851b--wing-and-two-tile-corridor\\actual-completed-whole-paused-snapshot.json",
+    "archived": "showcase-load-observer/011-actual-completed-whole-paused-snapshot.json",
+    "sourceBytes": 110792,
+    "sourceSha256": "a55f435bd77e2a8beab576e463c504c0bb4adbeed693104591bf48a6b4d90c87",
+    "archivedBytes": 110792,
+    "archivedSha256": "a55f435bd77e2a8beab576e463c504c0bb4adbeed693104591bf48a6b4d90c87"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-small-prison-load-observer-20261003\\native-small-prison-showca-c851b--wing-and-two-tile-corridor\\actual-public-stage-receipt.json",
+    "archived": "showcase-load-observer/012-actual-public-stage-receipt.json",
+    "sourceBytes": 375791,
+    "sourceSha256": "1de679de165f37ca03a24d2e7aaca2d21e3821941a899edc56bc4d80ce9fde53",
+    "archivedBytes": 375791,
+    "archivedSha256": "1de679de165f37ca03a24d2e7aaca2d21e3821941a899edc56bc4d80ce9fde53"
   }
 ]
