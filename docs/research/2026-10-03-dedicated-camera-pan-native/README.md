@@ -25,3 +25,11 @@ The four collected cases are World and Angled at accessibility UI scale 100% and
 - Production build: exit 0, including app/tools TypeScript and verified Cloudflare static output. This build neither deploys nor starts a server.
 
 Raw logs, commands/exit codes and reference cases are retained beside this file. The initial offline arithmetic runner failed because TypeScript 7 exposes version metadata rather than its earlier compiler API; that harness setup failure is preserved and was corrected using Node's type stripper. It is not a product failure. Shared research-index and canonical artifact routing are left for root integration. Root can make a meaningful main pan-callback no-op negative, rebuild unchanged assertions, retain four expected movement failures, then restore exact bytes and run the four corrected cases at the existing limits.
+
+## Root archival follow-through
+
+The standalone arithmetic runner is historical evidence, now stored as
+reference-offline-audit.cjs.txt with identical bytes, rather than an active
+tracked module outside all compiler projects. The original receipt's invocation
+names its original filename truthfully; copy the archive to a temporary .cjs
+file to repeat that command. No compiler exclusion or coverage assertion changed.

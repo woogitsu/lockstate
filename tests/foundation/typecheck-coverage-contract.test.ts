@@ -90,8 +90,13 @@ function readProject(relativePath: string): ProjectContract {
 const VENDORED = 'docs/design/';
 
 function trackedModuleFiles(): readonly string[] {
-  const listed = spawnSync('git', ['ls-files', '-z'], { cwd: repositoryRoot, encoding: 'utf8' });
-  expect(listed.status, `git ls-files failed: ${listed.stderr}`).toBe(0);
+  // The complete 2026-10-03 tracked path stream is 1,052,944 bytes: larger
+  // than Node's default 1 MiB stdout buffer. Keep every path/coverage assertion;
+  // reserve bounded metadata capacity instead of truncating or filtering Git.
+  const listed = spawnSync('git', ['ls-files', '-z'], {
+    cwd: repositoryRoot, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024,
+  });
+  expect(listed.status, `git ls-files failed: ${listed.error?.message ?? listed.stderr}`).toBe(0);
   return listed.stdout
     .split('\0')
     .filter((entry) => entry !== '' && CHECKABLE.test(entry) && !entry.startsWith(VENDORED));

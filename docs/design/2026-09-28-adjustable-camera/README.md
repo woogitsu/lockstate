@@ -1439,3 +1439,17 @@ native button acceptance, and reproduce genuine admission/routing issues.
 Keep one native browser active; push coherent checkpoints. Full hosted CI,
 serial main and production release remain separate outstanding gates. Neither
 pending protected sharding nor V9 proposal is silently activated.
+
+## Pan and Dock source integration checkpoint - 2026-10-03
+
+The following isolated integration now includes the actual64-part Loading Dock
+Door and all72 authored camera frames, dedicated genuine capacity/Build/Load
+fixture, four localized screen pan buttons wired to both actual ground consumers,
+and FullHD100/200 native fixtures. It also integrates #1996: refused cancellation
+preserves the latest independent Undo, while actual successful reversals still
+mark the accepted action;24 source cases and real producer controls are retained.
+Existing #1555 now ends a sanction in the resident's own valid solitary template;
+live/V8 release and ordinary relocation controls are real kernel evidence, not
+an assertion that UI exposes the high-risk fixture inputs. Root will build this
+combined subject, run exact native controls once and preserve any original RED.
+Full exact-head hosted CI and serial release gates remain outstanding.
