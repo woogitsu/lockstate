@@ -1,0 +1,65 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-completion-next-audit-20261003
+
+stdout | tests/integration/generic-object-template-approach.test.ts > generic 'desk-wooden' cannot supersede a completed template approach, turn=+0 mirror=false saved=false legal=false
+{"stage":"accepted-conflict","testCase":{"quarterTurns":0,"mirrorX":false,"definitionId":"desk-wooden","x":10,"y":17,"approach":{"x":11,"y":17},"saved":false,"legal":false},"order":{"id":"independent-object","definitionId":"desk-wooden","location":{"x":10,"y":17},"placementSequence":1,"state":"completed","progress":60,"materialsAllocated":[{"itemId":"item.wood-plank","quantity":2}],"assignedWorkerId":"mock-worker-1"},"fundsBefore":{"balanceMinorUnits":23470},"fundsAfter":{"balanceMinorUnits":23340},"approachOccupied":true}
+
+stdout | tests/integration/generic-object-template-approach.test.ts > generic 'desk-wooden' cannot supersede a completed template approach, turn=+0 mirror=false saved=true legal=false
+{"stage":"accepted-conflict","testCase":{"quarterTurns":0,"mirrorX":false,"definitionId":"desk-wooden","x":10,"y":17,"approach":{"x":11,"y":17},"saved":true,"legal":false},"order":{"id":"independent-object","definitionId":"desk-wooden","location":{"x":10,"y":17},"placementSequence":1,"state":"completed","progress":60,"materialsAllocated":[{"itemId":"item.wood-plank","quantity":2}],"assignedWorkerId":"mock-worker-1"},"fundsBefore":{"balanceMinorUnits":23470},"fundsAfter":{"balanceMinorUnits":23340},"approachOccupied":true}
+
+stdout | tests/integration/generic-object-template-approach.test.ts > generic 'bed-wooden' cannot supersede a completed template approach, turn=1 mirror=true saved=false legal=false
+{"stage":"accepted-conflict","testCase":{"quarterTurns":1,"mirrorX":true,"definitionId":"bed-wooden","x":9,"y":11,"approach":{"x":9,"y":12},"saved":false,"legal":false},"order":{"id":"independent-object","definitionId":"bed-wooden","location":{"x":9,"y":11},"placementSequence":1,"state":"completed","progress":30,"materialsAllocated":[{"itemId":"item.wood-plank","quantity":1}],"assignedWorkerId":"mock-worker-1"},"fundsBefore":{"balanceMinorUnits":23470},"fundsAfter":{"balanceMinorUnits":23405},"approachOccupied":true}
+
+stdout | tests/integration/generic-object-template-approach.test.ts > generic 'bed-wooden' cannot supersede a completed template approach, turn=1 mirror=true saved=true legal=false
+{"stage":"accepted-conflict","testCase":{"quarterTurns":1,"mirrorX":true,"definitionId":"bed-wooden","x":9,"y":11,"approach":{"x":9,"y":12},"saved":true,"legal":false},"order":{"id":"independent-object","definitionId":"bed-wooden","location":{"x":9,"y":11},"placementSequence":1,"state":"completed","progress":30,"materialsAllocated":[{"itemId":"item.wood-plank","quantity":1}],"assignedWorkerId":"mock-worker-1"},"fundsBefore":{"balanceMinorUnits":23470},"fundsAfter":{"balanceMinorUnits":23405},"approachOccupied":true}
+
+ ❯ tests/integration/generic-object-template-approach.test.ts (8 tests | 4 failed) 559ms
+   × generic 'desk-wooden' cannot supersede a completed template approach, turn=+0 mirror=false saved=false legal=false 91ms
+   × generic 'desk-wooden' cannot supersede a completed template approach, turn=+0 mirror=false saved=true legal=false 98ms
+   × generic 'bed-wooden' cannot supersede a completed template approach, turn=1 mirror=true saved=false legal=false 53ms
+   × generic 'bed-wooden' cannot supersede a completed template approach, turn=1 mirror=true saved=true legal=false 62ms
+node : 
+At line:5 char:1
++ node node_modules/vitest/vitest.mjs run --maxWorkers=2 tests/integrat ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'desk-wooden' cannot supersede a completed 
+template approach, turn=+0 mirror=false saved=false legal=false
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'desk-wooden' cannot supersede a completed 
+template approach, turn=+0 mirror=false saved=true legal=false
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'bed-wooden' cannot supersede a completed t
+emplate approach, turn=1 mirror=true saved=false legal=false
+ FAIL  tests/integration/generic-object-template-approach.test.ts > generic 'bed-wooden' cannot supersede a completed t
+emplate approach, turn=1 mirror=true saved=true legal=false
+AssertionError: expected { id: 'independent-object', …(7) } to match object { state: 'failed', …(1) }
+(9 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "failReason": "unbuildable",
+-   "state": "failed",
++   "state": "completed",
+  }
+
+ ❯ tests/integration/generic-object-template-approach.test.ts:63:17
+     61|       fundsAfter: runtime.treasury.snapshot(), approachOccupied: runti…
+     62|   }
+     63|   expect(order).toMatchObject({ state: 'failed', failReason: 'unbuilda…
+       |                 ^
+     64|   expect(runtime.treasury.snapshot()).toEqual(fundsBefore);
+     65|   const { kernel: _beforeKernel, ...beforeState } = before;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 4 passed (8)
+   Start at  02:42:57
+   Duration  3.10s (transform 899ms, setup 0ms, import 2.41s, tests 559ms, environment 0ms)
+

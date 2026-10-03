@@ -26,7 +26,7 @@ printed no before value. Correcting that diagnostic to read the real treasury
 does not change the commands or failure: four RED / four legal GREEN,
 tests559ms, total3.10s. That correction is retained as a fixture error; no
 economic observation is derived from the missing value in the original run.
-The corrected terminal output is `baseline.log`.
+The corrected terminal output is `baseline.txt`.
 
 ## Cause and existing rule
 
@@ -52,3 +52,28 @@ claim a navigation failure: no before/after actor route was measured. There is
 no browser, drawn-pixel or hosted CI claim. The scope is this missing generic
 object admission reader, not the already covered160 catalogue lifecycle
 combinations. Fix and production-negative evidence will be recorded separately.
+
+## Scoped correction and producer controls
+
+Issue: https://github.com/woogitsu/lockstate/issues/1994 . Baseline diagnosis
+was committed/pushed as15812fdec4 before production edits. The coordinator and
+its accepted ownership heuristic are unchanged. System receives one optional
+pure approach-tile reader; new-session binds it once. Its existing canonical
+full-footprint admission loop rejects any claimed approach with existing
+`unbuildable`, after duplicate checks and before approval/procurement/history.
+
+VERIFIED: fixed8/8GREEN, total3.31s. Disconnecting only the genuine System
+footprint predicate gives4RED/4legalGREEN, total2.76s. Disconnecting only the
+live session binding gives4RED/4legalGREEN, total2.70s. Both mutations ran
+serially on detachedHEAD with `finally` byte-exact restoration, then return to
+the own branch. Restored8/8GREEN is a separate terminal run. Full failed-order
+snapshot controls exclude only the actual existing diagnostic failed row and
+kernel command bookkeeping; all other world/physical ownership/economy/history
+snapshot bytes agree with the pre-command capture.
+
+Restored production SHA256:
+- System:48fddef4507bc8a2eb020b01a16eccde7e20436d0c3c98e6512306449b2bf7b2
+- new-session:e3d658b24672502df0d45a5167601d4e209af785c66879a3a281162f47eeb27c
+
+Expanded orientation, neighbouring compatibility and documentation gates are
+pending at this first source checkpoint. There is no browser/CI claim.
