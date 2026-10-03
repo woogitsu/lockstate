@@ -75,3 +75,4 @@ docs/research/2026-10-03-laundry-retained-cycles-production/native/** -text
 docs/research/2026-10-03-laundry-retained-cycles-production/native/**/*.png filter=lfs diff=lfs merge=lfs -text
 docs/research/2026-10-03-laundry-retained-cycles-production/native/**/*.zip filter=lfs diff=lfs merge=lfs -text
 docs/research/2026-10-04-canteen-modern-native-observers/raw/** -text
+docs/research/2026-10-04-canteen-modern-native-observers/check-*.cjs.txt -text
