@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-Offline source/preparation only. Parent owns genuine Build/SaveLoad native acceptance; no browser or server was started. Canonical export, repeat and production controls are pending in this first source checkpoint.
+Offline source/export accepted; parent owns genuine Build/SaveLoad native acceptance. No browser or server was started. First source checkpoint d0e87f2a88; canonical publication and controls below now complete.
 
 Existing `object.dining-table` / `dining-table-wooden` default `furniture.dining.table.wooden` is 3?2 (`src/content/object-catalog.ts:108`, mapping line10). Actual `canteen-basic` places it at (1,1)/(4,1), `src/content/room-template-catalog.ts:56-65`. No new identity or template.
 
@@ -14,4 +14,12 @@ New dedicated source SHA256 `5f27967600a64ce4ded10a01fe6217ea849c2be9b57ff92353f
 
 All62 raw vertex/topology/material-index bytes, modifier RNA, matrices and evaluated point hashes preserved. Full bounds unchanged `{'min': [-1.4199999570846558, -0.8600004315376282, 0.0], 'max': [1.4199999570846558, 0.9600005149841309, 0.9449999928474426]}`. Fit[1,1,1], target[1.5,1,.4725],64pixels/tile and all4 occupied rotations unchanged. New source reopened through dedicated wrapper:actual72camera transforms/grounded3?2/all4 orientations GREEN. Blender5.2.1LTS upstream build9e2066aef7ef, executable SHA284f4041f98e113f3dc10654a7193ffaaa9bfdfec8b87fa116620a48b5f6d4cb. One Blender process at a time.
 
-Opened actual original/refined four-yaw comparison `original-versus-connected-rail-four-yaws.png` (source exports, not client acceptance). Original file byte-identical. Canonical standalone tuple/dispatch integration remains next; no shared Kitchen MODELS row exists for this dining asset.
+Opened actual original/refined four-yaw comparison `original-versus-connected-rail-four-yaws.png` (source exports, not client acceptance). Original file byte-identical. Canonical standalone tuple/early dispatch now integrates this source; no shared Kitchen MODELS row exists for this dining asset.
+
+## Canonical publication and real controls
+
+Canonical descriptor SHA256 `cdeec41d9ba43c672b20e72ae35aa19f46e035bc5d879e28f3188bfe2c4ece9c`. All72 normalizedRGBA256px frames independently decoded; minimum transparent margin22pixels. First export, dedicated repeat and existing canonical standalone repeat match all73 file hashes/bytes exactly. Opened `all72-canonical-physical-poses.png`. Original four-angle comparison remains actual source pixels, not a hosted client claim.
+
+23 actual controls RED?exact-restored GREEN:4 source producer omissions/reversed topology/short arm/disconnected post;13 loaded geometry/retained bevel/material graph/material assignment/winding/real contact/fit/target/descriptor/camera guards;3 existing canonical dispatch oldsource/wrongfit/wrongtarget;2 decoded consumer controls including a valid new PNG hash/name with one opaque border pixel and wrong canonical target;1 saved .blend malformed-source + canonical guard consumer removal. The last control recomputes source hash to reach the actual structural gate, confirms real rejection, disables only the canonical detail guard, observes expected-rejection assertion RED, restores guard/rejection, then finally restores source/provenance/wrapper exact bytes and verifies72actual cameras GREEN.
+
+No original topology, palette, target, projection or contextual mapping changed. Historical original thin bevel204 degenerates pinned, all2050 other evaluated polygons outward within documented original thin-tray floating tolerance. Current strict unit source/default/descriptor/decodedPNG suites7PASS/1optionalBlender-on-PATH skip; direct pinned native Blender verification ran separately and GREEN. TypeScript/full production build receipt remains next. New source player acceptance is still pending parent; older dining native proof does not establish new structural source acceptance.
