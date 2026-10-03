@@ -1,5 +1,5 @@
 import { expect, test, type Page } from './network-changed-fixture';
-import type { CDPSession } from '@playwright/test';
+import type { CDPSession } from './network-changed-fixture';
 import { currentClock, installTee, sentCommands } from './playtest-harness';
 import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 
