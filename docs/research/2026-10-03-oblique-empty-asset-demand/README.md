@@ -1,0 +1,21 @@
+# Empty Angled scene image demand
+
+Fresh nonduplicate [Issue #2018](https://github.com/woogitsu/lockstate/issues/2018) records an avoidable eager image batch. This is source/counter evidence, not native latency or GPU profiling.
+
+## Obtained original producer measurement
+
+The unchanged private eager loader ran against the real 64-entry published registry and all parsed catalog descriptors, before any world frame. The actual producer requested 64 selected PNGs. Actual encoded file sizes or committed LFS declared sizes total **738,609 bytes**. Catalog image dimensions correspond to **36,634,624 bytes of full-resolution RGBA**. This last number is a pixel-data equivalent, not a measured GPU allocation. No browser, network image decoder or GPU was launched.
+
+The unchanged demand selector received an empty raised projection and requested **zero images**. It already selects actual item asset IDs and orientation-local camera frames, queues missing textures, tracks failed/loading keys, uses fallback graphics, and repaints on completion. Catalog/HUD skin validation is separately eager and must remain available.
+
+[Full measured entries](./actual-producer-measurement.json) retain selected URL/hash/dimensions/encoded size for every catalog. [Exact executed source probe](./executed-producer-probe.test.ts.txt) is archived inert; its physical source SHA256 is `5e245d32030afec7ec447a2f6bff1fc57d47b464d843c13d0e0c6b616f492446`. The probe observes actual loader calls; it stubs Phaser port completion, not image bytes, verdicts or game state. The producer was not changed. The source subject is `subject=c29cf94da492aa9697d062795b825fe222fab21c`, a descendant of the published minimap-cache chain. Initial counter-only run and repeated capture run each passed the single probe; output is retained in producer-measurement files. The final capture writes its counter JSON directly because console output was absent from the terminal reporter; this is measurement instrumentation, not a production change.
+
+## Compatible bounded implementation plan
+
+Keep the complete eagerly verified descriptor map, including dynamic room skins. Replace unrelated raised-model boot requests with the existing demanded-item queue. Floor textures still determine scene readiness. Serialize floor and demanded-model image batches through the same actual Phaser loader; wait only for required floor keys before readiness. Preserve graphics while any actual demanded texture loads, repaint on completion, use current orientation/skin on subsequent paint, and invalidate late callbacks at shutdown. No new dependency, camera/gameplay/persistence rule, retry, timeout or CI setting.
+
+Coverage will exercise the actual scene loader producer with observed Phaser ports: empty boot excludes unrelated models, floor readiness, required placed/actor/pending models, orientation and skin changes, concurrent floor/demand serialization, failed texture fallback and late completion after shutdown. Native timing remains pending an actual frozen-subject profile.
+
+## Deduplication and boundaries
+
+Fresh issue searches for texture/preload/on-demand found no specific existing eager empty-scene image report. Actor-depth #1913, facing #1927 and the broader asset pipeline #32 describe different defects. Original avoidable request count is preserved before implementation. No production fix, mutation proof or native acceptance is claimed in this initial diagnostic checkpoint.
