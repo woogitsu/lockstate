@@ -1,0 +1,8 @@
+{
+  "actualProductionMutation": "Actual public template BuildOrder producer emits wrong west edge for q0 north door",
+  "redTests": 1,
+  "greenControls": 6,
+  "exactRestoredSourceSha256": "5d84b6fd3162023f4efe7dbbf36f1479db36cf23933c1dc8a49f4733fd855d73",
+  "restoredGreenTests": 7,
+  "exactRestore": true
+}

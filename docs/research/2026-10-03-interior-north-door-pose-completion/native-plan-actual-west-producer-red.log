@@ -1,0 +1,43 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-structural-component-art-audit-20261003
+
+x······
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 6 passed (7)
+   Start at  17:47:04
+   Duration  677ms (transform 190ms, setup 0ms, import 525ms, tests 34ms, environment 0ms)
+
+[ELIFECYCLE] Test failed. See above for more details.
+$ vitest run "tests/unit/oblique-interior-north-door-pose-completion.test.ts" "--reporter=dot"
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-interior-north-door-pose-completion.test.ts > retained interior door descriptor reaches actual back-facing edge consumers > existing public BasicCell q0 recipe really orders the observed21,11 north door owner
+AssertionError: expected [ { …(8) } ] to match object [ { …(6) } ]
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+@@ -1,9 +1,9 @@
+  [
+    {
+      "definitionId": "door-wooden",
+-     "edge": "north",
++     "edge": "west",
+      "id": "room-template-000000000017-1-door-000",
+      "location": {
+        "x": 21,
+        "y": 11,
+      },
+
+ ❯ tests/unit/oblique-interior-north-door-pose-completion.test.ts:24:79
+     22|   it('existing public BasicCell q0 recipe really orders the observed21…
+     23|     const plan = createRoomTemplateBuildPlan('cell-basic', { x: 20, y:…
+     24|     expect(plan.orders.filter(order => order.definitionId === 'door-wo…
+       |                                                                               ^
+     25|       { id: 'room-template-000000000017-1-door-000', definitionId: 'do…
+     26|         edge: 'north', placementSequence: 17, state: 'planned' },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

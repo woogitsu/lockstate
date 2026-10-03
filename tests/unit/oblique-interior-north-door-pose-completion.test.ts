@@ -9,6 +9,7 @@ import { groundToScreen, type ObliqueCameraState } from '../../src/rendering/cam
 import { projectObliqueWorldFrame } from '../../src/rendering/camera/oblique-world-projection';
 import { parseObliqueModuleRegistry } from '../../src/rendering/assets/oblique-module-registry';
 import { parseObliqueModuleCatalog, selectObliqueModuleFrame } from '../../src/rendering/assets/oblique-module-catalog';
+import { createRoomTemplateBuildPlan } from '../../src/simulation/construction/room-template-build-plan';
 
 const root = new URL('../../', import.meta.url);
 const json = (path: string): unknown => JSON.parse(readFileSync(new URL(path, root), 'utf8'));
@@ -18,6 +19,14 @@ const poses = [{ camera: 45, source: 45 }, { camera: 135, source: 135 },
   { camera: 225, source: -135 }, { camera: 315, source: -45 }];
 
 describe('retained interior door descriptor reaches actual back-facing edge consumers', () => {
+  it('existing public BasicCell q0 recipe really orders the observed21,11 north door owner', () => {
+    const plan = createRoomTemplateBuildPlan('cell-basic', { x: 20, y: 5 }, false, 17, 0);
+    expect(plan.orders.filter(order => order.definitionId === 'door-wooden')).toMatchObject([
+      { id: 'room-template-000000000017-1-door-000', definitionId: 'door-wooden', location: { x: 21, y: 11 },
+        edge: 'north', placementSequence: 17, state: 'planned' },
+    ]);
+    expect(plan.orders.filter(order => order.definitionId === 'door-wooden')[0]?.footprint).toBeUndefined();
+  });
   it.each(['north', 'west'] as const)('%s preserves source, complete signed pose grid and all delivered PNG hashes', edge => {
     const assetId = edge === 'north' ? 'door.interior.open.full' : 'door.interior.open.west.full';
     const entry = registry.entries.find(value => value.assetId === assetId);

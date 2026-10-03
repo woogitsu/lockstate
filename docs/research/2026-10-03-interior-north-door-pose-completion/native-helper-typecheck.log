@@ -1,0 +1,6 @@
+pnpm : $ tsc -b --pretty false && tsc -b tsconfig.tools.json --pretty false
+At line:2 char:150
++ ... +$env:PATH; pnpm --config.verify-deps-before-run=false typecheck *> d ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ tsc -b --pret... --pretty false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
