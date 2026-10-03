@@ -89,6 +89,9 @@ export class ObliqueWorldScene extends Phaser.Scene {
   private groundPaints = 0;
   private raisedPaints = 0;
   private minimapSink: ((view: MinimapView | undefined) => void) | undefined;
+  private minimapWorld: RenderFrame['world'] | undefined;
+  private minimapRevision = -1;
+  private minimapProjection: Omit<MinimapView, 'viewport'> | undefined;
   private readonly readyPromise: Promise<void>;
   private resolveReady!: () => void;
   private readonly assetTextureKeys = new Map<string, string>();
@@ -953,7 +956,12 @@ export class ObliqueWorldScene extends Phaser.Scene {
     if (this.minimapSink === undefined) return;
     const frame = this.lastFrame;
     if (frame === undefined) { this.minimapSink(undefined); return; }
-    const projected = projectMinimap(frame.world);
+    if (this.minimapRevision !== frame.revision || this.minimapWorld !== frame.world) {
+      this.minimapRevision = frame.revision;
+      this.minimapWorld = frame.world;
+      this.minimapProjection = projectMinimap(frame.world);
+    }
+    const projected = this.minimapProjection;
     if (projected === undefined) { this.minimapSink(undefined); return; }
     const bounds = frame.world.loadedBounds;
     if (bounds === undefined) { this.minimapSink(undefined); return; }
