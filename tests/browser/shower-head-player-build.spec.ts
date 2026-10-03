@@ -1,4 +1,5 @@
 import { writeFile } from 'node:fs/promises';
+import { assertOwnedObjectOrders, recordOwnedObjectSnapshot, type ExpectedOwnedObject } from './owned-object-worker-evidence';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
 
@@ -167,6 +168,15 @@ test(`player builds Shower Room at quarterTurns${quarterTurns} and retains autho
   await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 7.5 / 32 } });
   await page.mouse.move(1300, 700);
   const completed = await page.screenshot({ path: info.outputPath('shower-worker-completed-fullhd.png') });
+  const owned: readonly ExpectedOwnedObject[] = quarterTurns === 0 ? [
+    { anchorTile: { x: 21, y: 6 }, orientation: 0, sourceOrderId: 'room-template-000000000002-2-object-000' },
+    { anchorTile: { x: 23, y: 6 }, orientation: 0, sourceOrderId: 'room-template-000000000002-2-object-001' },
+  ] : [
+    { anchorTile: { x: 23, y: 6 }, orientation: 1, sourceOrderId: 'room-template-000000000002-2-object-000' },
+    { anchorTile: { x: 23, y: 8 }, orientation: 1, sourceOrderId: 'room-template-000000000002-2-object-001' },
+  ];
+  const completedData = await recordOwnedObjectSnapshot(page, info.outputPath('completed-worker-snapshot.json'));
+  assertOwnedObjectOrders(completedData, 'object.shower-head', 'shower-head-brick', owned);
   const beforePixels = await nozzlePixels(page, completed, quarterTurns);
   await writeFile(info.outputPath('worker-and-completed-pixel-evidence.json'), JSON.stringify({
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
@@ -185,6 +195,9 @@ test(`player builds Shower Room at quarterTurns${quarterTurns} and retains autho
   await minimap.click({ position: { x: bounds.width * 22.5 / 32, y: bounds.height * 7.5 / 32 } });
   await page.mouse.move(1300, 700);
   const loaded = await page.screenshot({ path: info.outputPath('shower-loaded-fullhd.png') });
+  const loadedData = await recordOwnedObjectSnapshot(page, info.outputPath('loaded-worker-snapshot.json'));
+  assertOwnedObjectOrders(loadedData, 'object.shower-head', 'shower-head-brick', owned);
+  expect(loadedData).toEqual(completedData);
   const afterPixels = await nozzlePixels(page, loaded, quarterTurns);
   afterPixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored nozzle assembly after Load`)
     .toBeGreaterThan(quarterTurns === 1 && index === 1 ? 20 : 50));
@@ -195,6 +208,9 @@ test(`player builds Shower Room at quarterTurns${quarterTurns} and retains autho
     commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
   }, null, 2));
   await info.attach('shower-worker-and-pixel-evidence', { path: evidencePath, contentType: 'application/json' });
+  for (let step = 0; step < 3; step++) await page.getByRole('button', { name: quarterTurns === 0 ? 'Rotate camera right' : 'Rotate camera left', exact: true }).click();
+  await page.mouse.move(1300, 700);
+  await page.screenshot({ path: info.outputPath('physical-hardware-loaded-fullhd.png') });
 
 });
 }
