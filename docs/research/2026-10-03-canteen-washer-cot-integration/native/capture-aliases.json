@@ -2214,5 +2214,56 @@
     "archivedBytes": 2948,
     "archivedSha256": "43b015cd1ea3a43b5d9875d20ac7b01ee0f87faad89f1cce88bbf5e26b52e4db",
     "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ci-hydration-preservation-negative-20261003.json",
+    "archived": "ci-hydration-omission/report.json",
+    "sourceBytes": 24347,
+    "sourceSha256": "992d073561a79b1946ab02faac891508f3b06bac3bfa635aab3ed449dc1aa561",
+    "archivedBytes": 24347,
+    "archivedSha256": "992d073561a79b1946ab02faac891508f3b06bac3bfa635aab3ed449dc1aa561"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ci-hydration-preservation-negative-20261003.txt",
+    "archived": "ci-hydration-omission/console.txt",
+    "sourceBytes": 1846,
+    "sourceSha256": "c5039feeca199609860db0b1c75b8fb0b003953e6b6ab875dd67d6d60d285630",
+    "archivedBytes": 922,
+    "archivedSha256": "137fa76a08fb48488eaf6b1cada997520be050ea3551ec6ea483a74d1648f05f",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ci-hydration-preservation-restored-20261003.json",
+    "archived": "ci-hydration-restored/report.json",
+    "sourceBytes": 22655,
+    "sourceSha256": "6957cb77427070f0e3fe57d605043ecf67346a949496984e3f4ea1db3e6791f9",
+    "archivedBytes": 22655,
+    "archivedSha256": "6957cb77427070f0e3fe57d605043ecf67346a949496984e3f4ea1db3e6791f9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ci-hydration-preservation-restored-20261003.txt",
+    "archived": "ci-hydration-restored/console.txt",
+    "sourceBytes": 1736,
+    "sourceSha256": "2066621cbe90efb8c76cef30e23f1c622144d5364fbdd2201a32653b90556a10",
+    "archivedBytes": 867,
+    "archivedSha256": "c0113a905472a73c7a9408b962eee64cc48ebebe0ecd8f8f33f2749bbe810815",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-ci-hydration-preservation-byte-restoration-20261003.json",
+    "archived": "ci-hydration-byte-restoration/report.json",
+    "sourceBytes": 281,
+    "sourceSha256": "5f87098066b4fbc173431a98b66cc2cd593217af053b436e3d8fe0f4a44270a2",
+    "archivedBytes": 281,
+    "archivedSha256": "5f87098066b4fbc173431a98b66cc2cd593217af053b436e3d8fe0f4a44270a2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-approved-ci-integrated-foundation-restored-20261003.txt",
+    "archived": "ci-integration-corrected/console.txt",
+    "sourceBytes": 1622,
+    "sourceSha256": "5e1f2b3a600bceb94cf337082cd6e93094b08f6ebe54b459dc62dd6ec4bb3303",
+    "archivedBytes": 811,
+    "archivedSha256": "84e9d74e5acbbadaa8ada76ca10527d11d25a8b212f43f67be22c07095586f54",
+    "conversion": "UTF16LE console to UTF8"
   }
 ]

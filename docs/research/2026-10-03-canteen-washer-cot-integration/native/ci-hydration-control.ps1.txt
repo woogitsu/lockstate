@@ -1,0 +1,37 @@
+$ErrorActionPreference='Continue'
+$env:PATH=(Join-Path $env:TEMP 'lockstate-pnpm-11-22-20261002')+';C:/Users/matma/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin;'+$env:PATH
+$ciControlBranch=(git -c core.longpaths=true branch --show-current).Trim()
+$ciControlFrozen=(git -c core.longpaths=true rev-parse HEAD).Trim()
+if($ciControlBranch -ne 'codex/integrate-canteen-washer-cot-20261003'){throw 'Unexpected own branch'}
+if((git -c core.longpaths=true status --porcelain).Length -ne 0){throw 'Own control requires clean tree'}
+$ciControlFile=Join-Path (Get-Location) '.github/workflows/ci.yml'
+$ciControlBytes=[IO.File]::ReadAllBytes($ciControlFile)
+$ciControlBefore=(Get-FileHash -LiteralPath $ciControlFile -Algorithm SHA256).Hash
+$ciControlReceipt=@{frozen=$ciControlFrozen;before=$ciControlBefore;after=$null;negativeExit=$null;restoredExit=$null}
+git -c core.longpaths=true switch --detach $ciControlFrozen
+if($LASTEXITCODE -ne 0){throw 'Detach failed'}
+try {
+ $ciControlText=[Text.Encoding]::UTF8.GetString($ciControlBytes)
+ $ciControlStart=$ciControlText.IndexOf('      - name: Hydrate Blender sources and angled frames for verification')
+ $ciControlEnd=$ciControlText.IndexOf('      - name: Verify project',$ciControlStart)
+ if($ciControlStart -lt 0 -or $ciControlEnd -le $ciControlStart){throw 'Unique actual hydration producer absent'}
+ [IO.File]::WriteAllText($ciControlFile,$ciControlText.Remove($ciControlStart,$ciControlEnd-$ciControlStart),[Text.UTF8Encoding]::new($false))
+ $ciControlNegativeOutput='--outputFile='+(Join-Path $env:TEMP 'lockstate-ci-hydration-preservation-negative-20261003.json')
+ pnpm --config.verify-deps-before-run=false test tests/foundation/browser-ci-sharding-contract.test.ts tests/foundation/ci-configuration-contract.test.ts tests/foundation/research-index-contract.test.ts --maxWorkers=2 --reporter=json $ciControlNegativeOutput *> (Join-Path $env:TEMP 'lockstate-ci-hydration-preservation-negative-20261003.txt')
+ $ciControlReceipt.negativeExit=$LASTEXITCODE
+} finally {
+ [IO.File]::WriteAllBytes($ciControlFile,$ciControlBytes)
+ $ciControlReceipt.after=(Get-FileHash -LiteralPath $ciControlFile -Algorithm SHA256).Hash
+ $ciControlRestoredOutput='--outputFile='+(Join-Path $env:TEMP 'lockstate-ci-hydration-preservation-restored-20261003.json')
+ pnpm --config.verify-deps-before-run=false test tests/foundation/browser-ci-sharding-contract.test.ts tests/foundation/ci-configuration-contract.test.ts tests/foundation/research-index-contract.test.ts --maxWorkers=2 --reporter=json $ciControlRestoredOutput *> (Join-Path $env:TEMP 'lockstate-ci-hydration-preservation-restored-20261003.txt')
+ $ciControlReceipt.restoredExit=$LASTEXITCODE
+ [IO.File]::WriteAllText((Join-Path $env:TEMP 'lockstate-ci-hydration-preservation-byte-restoration-20261003.json'),($ciControlReceipt|ConvertTo-Json -Depth 6)+"`n",[Text.UTF8Encoding]::new($false))
+ git -c core.longpaths=true switch $ciControlBranch
+ if($LASTEXITCODE -ne 0){throw 'Branch restore failed'}
+ if($ciControlReceipt.before -ne $ciControlReceipt.after -or $ciControlReceipt.restoredExit -ne 0){throw 'Actual producer restoration failed'}
+}
+if($ciControlReceipt.negativeExit -ne 1){throw 'Actual omission did not reject'}
+$ciControlNegative=Get-Content -LiteralPath (Join-Path $env:TEMP 'lockstate-ci-hydration-preservation-negative-20261003.json') -Raw | ConvertFrom-Json
+$ciControlRestored=Get-Content -LiteralPath (Join-Path $env:TEMP 'lockstate-ci-hydration-preservation-restored-20261003.json') -Raw | ConvertFrom-Json
+if($ciControlNegative.numFailedTests -ne 1 -or $ciControlNegative.numPassedTests -ne 61 -or $ciControlRestored.numPassedTests -ne 62 -or $ciControlRestored.numFailedTests -ne 0){throw 'Unexpected preservation matrix'}
+$ciControlReceipt|ConvertTo-Json -Compress
