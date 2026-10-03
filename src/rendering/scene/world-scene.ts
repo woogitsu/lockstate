@@ -1036,6 +1036,25 @@ export class WorldScene extends Phaser.Scene {
     this.stepZoom(direction === 'in' ? KEYBOARD_ZOOM_STEP : 1 / KEYBOARD_ZOOM_STEP);
   }
 
+  /** Issue1590: a fixed128CSS-pixel camera step, independent of ground zoom. */
+  public stepCameraPan(direction: 'up' | 'down' | 'left' | 'right'): void {
+    const camera = this.cameras.main;
+    const displayScale = this.scale.displayScale;
+    const dx = direction === 'right' ? 1 : direction === 'left' ? -1 : 0;
+    const dy = direction === 'down' ? 1 : direction === 'up' ? -1 : 0;
+    camera.scrollX += dx * 128 * displayScale.x / camera.zoom;
+    camera.scrollY += dy * 128 * displayScale.y / camera.zoom;
+    // Keyboard activation can leave the physical cursor stationary on canvas.
+    // Reuse the existing actual gesture/hover consumers; never submit here.
+    if (!this.input.manager.isOver || this.panPointerId !== undefined) return;
+    const pointer = this.input.activePointer;
+    if (pointer.wasTouch) return;
+    if (this.extendBuild(pointer) || this.extendObject(pointer) || this.extendArea(pointer)) return;
+    if (this.isBuildArmed()) this.previewHover(pointer);
+    else if (this.isObjectArmed()) this.previewObjectHover(pointer);
+    else if (this.isRoomArmed()) this.previewAreaHover(pointer);
+  }
+
   // ---- build tool ---------------------------------------------------
   //
   // The interaction is **modal**, and deliberately so. The alternative --
