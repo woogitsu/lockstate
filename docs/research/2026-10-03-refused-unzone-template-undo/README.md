@@ -15,6 +15,24 @@ Read-only source diagnosis on published `a44c3f82d147130229e2f8d94cacab2362f7166
 
 ## Narrow source scope
 
-Only SessionCommands admission of the manual UnzoneRoom action marker: use the existing success-marked set and mark its existing successful removal branch. Refusal itself, copy, zoning selection, genuine resident relocation, successful-change semantics, V8 schema, prices and history format stay as currently approved. Source lease, producer negative/exact restoration and neighboring gates are pending.
+Only SessionCommands admission of the manual UnzoneRoom action marker: use the existing success-marked set and mark its existing successful removal branch. Refusal itself, copy, zoning selection, genuine resident relocation, successful-change semantics, V8 schema, prices and history format stay as currently approved. At the initial diagnostic checkpoint the source lease, producer negative/exact restoration and neighboring gates were pending; their terminal results follow.
 
 The parent granted exactly that source lease. The first fixed checkpoint adds UnzoneRoom to the existing success-marked command set and marks only the existing non-refused unzone branch. Expanded six cases pass in3.37s (`fixed.txt`), including two actual successful removals of an unoccupied completed template, live/V8. Those successful removals still prevent Undo from reaching the earlier independent wall; the wall, physical objects, funds and post-removal world/history remain unchanged by refused Undo. No successful removal is mistaken for an attempt.
+
+## Actual production negatives and final gates
+
+While detached from the published branch, remove UnzoneRoom from the actual deferred-marker set: the two genuine occupied-refusal cases fail and four controls pass,2.67s (`negative-premature-marker.txt`). Independently disconnect only the actual successful unzone marker: the two successful-removal controls fail and four others pass,2.69s (`negative-success-marker.txt`). No assertion or fixture is changed for either mutation.
+
+`finally` restores the original source byte buffer. All six pass in2.70s (`restored.txt`); `exact-restoration.json` records byteExact=true and SHA256 `93d6b562b5e09639c870c74386e122fbf5b58d224a88d1a23388c0d9ad6da32d`. Back on the named branch, the production diff is zero.
+
+`neighbors.txt`:265 GREEN across seven files,24.94s, maximum2 workers:
+
+- `tests/integration/refused-unzone-template-undo.test.ts`
+- `tests/integration/occupied-template-refusal-undo-selection.test.ts`
+- `tests/integration/undo-refuses-a-transaction-the-player-did-not-just-create.test.ts`
+- `tests/integration/room-zoning-loop.test.ts`
+- `tests/integration/room-template-rotated-history.test.ts`
+- `tests/integration/room-template-legacy-occupied-history.test.ts`
+- `tests/integration/unzoned-target-mid-journey.test.ts`
+
+Separate app/tools TypeScript checks exit0. Production client build GREEN6.45s (the existing bundle-size/plugin-timing warnings remain). The unchanged original eight documentation guards pass62/62 in13.08s with process-local `GIT_NO_LAZY_FETCH=1` after the exact published-branch fetch and this collection's continuous index row. The single added source line requires no live-coordinate change under the actual guards; no budgets, quotation allowance or citation allowlist changes. No native/browser, CI or release claim.
