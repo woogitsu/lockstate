@@ -985,7 +985,6 @@ export class RoomInstanceRegistry {
   public findAvailableForUse(roomCatalogId: string, requiredObjectCapability?: string,
     isEligible: (instance: RoomInstance) => boolean = () => true): RoomInstance | undefined {
     return this.allByRoomCatalogId(roomCatalogId).find((instance) => {
-      if (!isEligible(instance)) return false;
       const ceiling = this.concurrentUseCapacityFor(instance, requiredObjectCapability);
       // Infinity now means only one thing: an instance that records no
       // rectangle. **This used to add "which is what a V4 save carries"**, and
@@ -996,8 +995,10 @@ export class RoomInstanceRegistry {
       // short-circuit used to be the yard's**, and since #532 the yard has a
       // finite ceiling and falls through to the comparison below like every
       // other room.
-      if (ceiling === Number.POSITIVE_INFINITY) return true;
-      return this.useOccupancyOf(instance.instanceId, requiredObjectCapability) < ceiling;
+      if (ceiling === Number.POSITIVE_INFINITY) return isEligible(instance);
+      // Physical eligibility can scan loaded chunks. A room with no free
+      // capability place must not ask that question (#2016).
+      return ceiling > 0 && this.useOccupancyOf(instance.instanceId, requiredObjectCapability) < ceiling && isEligible(instance);
     });
   }
 
