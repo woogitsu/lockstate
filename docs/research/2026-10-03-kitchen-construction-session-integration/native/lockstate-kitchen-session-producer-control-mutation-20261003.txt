@@ -1,0 +1,54 @@
+﻿diff --git a/src/main.ts b/src/main.ts
+index fde5d9b9ee..befd656ca4 100644
+--- a/src/main.ts
++++ b/src/main.ts
+@@ -4597,7 +4597,7 @@ async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle)
+         // case, a plan armed against the outgoing worker must not retain its
+         // fitted camera origin or submit into a replacement session.
+         roomTemplateTool?.standDown();
+-        worldScene.cancelConstructionGesture();
++        // Negative control: omit ordinary construction session cancellation.
+         // This page keeps one renderer and one feed across prisons. Wait for
+         // the replacement worker's first snapshot before centering its map;
+         // the feed may still expose the outgoing world's last frame meanwhile.
+diff --git a/src/rendering/assets/oblique-object-mapping.ts b/src/rendering/assets/oblique-object-mapping.ts
+index b1e787210d..340ec84d64 100644
+--- a/src/rendering/assets/oblique-object-mapping.ts
++++ b/src/rendering/assets/oblique-object-mapping.ts
+@@ -19,8 +19,8 @@ export const OBLIQUE_OBJECT_ASSET_IDS: Readonly<Record<string, string>> = Object
+   'object.loading-dock-door': 'utility.loading-dock-door.variants',
+   'object.utility-panel': 'utility.utility-panel.variants',
+   'object.washing-machine': 'utility.washing-machine.variants',
+-  'object.stove': 'furniture.kitchen.stove.variants',
+-  'object.fridge': 'furniture.kitchen.fridge.variants',
++
++
+   'object.bookshelf': 'furniture.library.bookshelf.variants',
+   'object.waste-bin': 'fixture.cell.waste_bin',
+   'object.desk': 'furniture.office.desk.generic',
+diff --git a/src/rendering/scene/world-scene.ts b/src/rendering/scene/world-scene.ts
+index 2abbd2b742..b767240a0d 100644
+--- a/src/rendering/scene/world-scene.ts
++++ b/src/rendering/scene/world-scene.ts
+@@ -752,7 +752,7 @@ export class WorldScene extends Phaser.Scene {
+       if (pointer.wasTouch) this.touchGestures.end(pointer.id);
+       // Mouse buttons share one Phaser pointer ID. Releasing the camera's
+       // middle button cannot complete a still-held primary construction press.
+-      const releasedPrimary = pointer.wasTouch || (pointer.button === 0 && (pointer.buttons & 1) === 0);
++      const releasedPrimary = true;
+       if (releasedPrimary) {
+         if (this.commitBuild(pointer)) return;
+         if (this.commitObject(pointer)) return;
+diff --git a/src/ui/room-template-tool.ts b/src/ui/room-template-tool.ts
+index 737c18bbdf..9b67b27f63 100644
+--- a/src/ui/room-template-tool.ts
++++ b/src/ui/room-template-tool.ts
+@@ -61,7 +61,7 @@ export class RoomTemplateTool {
+     this.armed = false;
+     // Session replacement already stands this shared tool down. A request
+     // belonging to that abandoned operation must not block the new session.
+-    this.busy = undefined;
++    // Negative control: retain abandoned preflight owner.
+   }
+   public async quote(): Promise<RoomTemplateCostQuote | undefined> { return this.port.quote?.(this.selected); }
+ 
