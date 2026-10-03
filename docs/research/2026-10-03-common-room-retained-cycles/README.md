@@ -26,3 +26,9 @@ blender --background --threads 1 --python-exit-code 1 --python tooling/blender/p
 ```
 
 Windows executable C:/Program Files/Blender Foundation/Blender 5.2/blender.exe. This firstcheckpoint is two authentic before/after poses and savedsource only. Genuine72/sameacceptedID productiondescriptor/repeats/realproducercontrols follow. Root will assess the actual composed Common Room scene. No browser/server/build/UI/renderer/persistence/nativefixture/helper/roompalette/price/physics/save/template/general mapping edits or nativepass claim.
+
+## Complete genuine production checkpoint
+
+The original canonical producer now dispatches to the retained saved Cycles model through its dedicated wrapper. All 72 actual renders completed in 73.93335759994807 seconds, CPU one thread/64 samples; the 60/e40 and 300/e40 results exactly equal the saved comparison images. Accepted descriptor URL and asset ID remain unchanged. Canonical LF descriptor SHA256: 9e3f229fd79302f2164a1152e7f429d5274e68dfb448601f858aaacad70ede11. Historical Workbench descriptor, source and all old 72 images remain available.
+
+The actual previous live-source assertions rejected the new saved source; correcting the two current consumer pins restores both strict integrity suites and all existing context controls. This checkpoint does not yet claim production mutation/repeat controls or native acceptance; these follow separately.

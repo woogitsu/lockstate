@@ -261,4 +261,10 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    CYCLES_PRODUCER = 'render-common-room-cycles.py'
+    if CYCLES_PRODUCER != 'render-common-room-cycles.py':
+        raise ValueError('Common Room canonical Cycles producer dispatch changed')
+    spec = importlib.util.spec_from_file_location('common_room_actual_cycles_producer', Path(__file__).with_name(CYCLES_PRODUCER))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.main()
