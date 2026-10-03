@@ -620,9 +620,9 @@ export function migrateSaveEnvelopeV8ToV9(input: SaveEnvelopeV8): SaveEnvelopeV9
   const migratedPayload = {
     ...payload,
     construction: {
-      ...payload.construction,
       newerActionThanTheStackTop: false,
       orderRevisions: {},
+      ...payload.construction,
     },
   };
   return { ...input, saveSchemaVersion: 9, payload: migratedPayload,

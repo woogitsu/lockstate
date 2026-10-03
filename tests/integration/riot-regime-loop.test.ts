@@ -527,7 +527,7 @@ describe('a riot survives a save, because nothing about it is stored', () => {
     // a group runs. That is the schedule an open riot replaces at the point of
     // use and never writes to, so ADR 0057's claim is untouched by it: no
     // override is in this payload, which is what the assertions below check.
-    expect(SAVE_SCHEMA_VERSION).toBe(8); // V7 moved travel state; V8 adds object ownership (#1975), not the riot override.
+    expect(SAVE_SCHEMA_VERSION).toBe(9); // V7 travel, V8 object ownership, V9 construction history; none changes the riot override.
 
     const bundle = captureSessionSnapshot(live);
     const restored = restoreSimulationRuntime(bundle, SEED).runtime;

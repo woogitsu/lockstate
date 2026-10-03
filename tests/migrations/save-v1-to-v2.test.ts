@@ -51,7 +51,8 @@ describe('save-schema V1 -> V2 migration', () => {
       expect(result.value.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
       // Everything outside the entity ledger crosses unchanged.
       expect(result.value.payload.kernel).toEqual(fixture.payload.kernel);
-      expect(result.value.payload.construction).toEqual(fixture.payload.construction);
+      expect(result.value.payload.construction).toEqual({ ...fixture.payload.construction,
+        newerActionThanTheStackTop: false, orderRevisions: {} });
       expect(result.value.revision).toBe(fixture.revision);
       expect(result.value.createdAt).toBe(fixture.createdAt);
       expect(result.value.updatedAt).toBe(fixture.updatedAt);

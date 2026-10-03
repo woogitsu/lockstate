@@ -97,6 +97,7 @@ function v4EnvelopeWithARoom(): SaveEnvelopeV4 {
   wallRoomPerimeter(runtime.world, CELL_RECT, { doors: runtime.navigation.doors });
   submit(runtime, 'zone', packCommand({ type: 'ZoneRoom', roomId: 'room.cell', ...CELL_RECT }));
   const bundle = captureSessionSnapshot(runtime);
+  const { newerActionThanTheStackTop: _marker, orderRevisions: _revisions, ...historicalConstruction } = bundle.construction;
   if (bundle.simulation === undefined) throw new Error('a captured session must carry a simulation section');
 
   // The three things about a current capture that are newer than V4: the
@@ -110,7 +111,7 @@ function v4EnvelopeWithARoom(): SaveEnvelopeV4 {
   const payload = {
     kernel: bundle.kernel,
     world: bundle.world,
-    construction: bundle.construction,
+    construction: historicalConstruction,
     ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
     simulation: {
       ...simulation,
@@ -273,7 +274,7 @@ describe('save-schema V4 -> V5 migration', () => {
       expect(result).toMatchObject({ ok: true, migrated: true });
       if (!result.ok) return;
       expect(result.value.saveSchemaVersion).toBe(SAVE_SCHEMA_VERSION);
-      expect(SAVE_SCHEMA_VERSION).toBe(8);
+      expect(SAVE_SCHEMA_VERSION).toBe(9); // V9 preserves construction marker/counters (#1985/#2021).
     }
   });
 

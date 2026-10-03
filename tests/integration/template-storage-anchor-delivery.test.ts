@@ -21,7 +21,7 @@ function reload(runtime: SimulationRuntime): SimulationRuntime {
   const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)) as unknown);
   expect(decoded.ok).toBe(true);
   if (!decoded.ok) throw new Error('Actual V8 snapshot must decode');
-  expect(decoded.value.saveSchemaVersion).toBe(8);
+  expect(decoded.value.saveSchemaVersion).toBe(9);
   return restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
 }
 

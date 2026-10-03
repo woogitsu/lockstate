@@ -33,7 +33,7 @@ function reload(runtime: Runtime, legacy = false): Runtime {
   }))));
   expect(decoded.ok).toBe(true);
   if (!decoded.ok) throw new Error('Genuine construction must survive encoded Load');
-  expect(decoded.value.saveSchemaVersion).toBe(8);
+  expect(decoded.value.saveSchemaVersion).toBe(9);
   return restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
 }
 function prepare(pose: typeof poses[number], pending: boolean, saved: boolean) {

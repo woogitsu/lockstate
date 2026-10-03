@@ -39,7 +39,7 @@ it('purchases and builds individual desks through the typed kernel, checks secon
   const roundtrip = (): void => {
     const before = captureSessionSnapshot(runtime);
     const envelope = createSaveEnvelope({ gameVersion: 'individual-rotation-proof', prisonId: 'individual-rotation', revision: 1, createdAt: 0, updatedAt: 1, ...before });
-    expect(envelope.saveSchemaVersion).toBe(8);
+    expect(envelope.saveSchemaVersion).toBe(9);
     const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(envelope)));
     expect(decoded.ok).toBe(true);
     if (!decoded.ok) throw new Error('actual oriented purchase V8 refused');

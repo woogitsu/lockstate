@@ -75,6 +75,7 @@ function v3EnvelopeWithPrisoner(): { readonly envelope: SaveEnvelopeV3; readonly
   for (let tick = 0; tick < 40; tick += 1) runtime.kernel.step();
 
   const bundle = captureSessionSnapshot(runtime);
+  const { newerActionThanTheStackTop: _marker, orderRevisions: _revisions, ...historicalConstruction } = bundle.construction;
   if (bundle.simulation === undefined) throw new Error('a captured session with a prisoner must carry a simulation section');
 
   const components = bundle.simulation.prisoners.components;
@@ -112,7 +113,7 @@ function v3EnvelopeWithPrisoner(): { readonly envelope: SaveEnvelopeV3; readonly
   const payload = {
     kernel: bundle.kernel,
     world: bundle.world,
-    construction: bundle.construction,
+    construction: historicalConstruction,
     ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
     simulation: {
       ...simulationWithoutObjects,

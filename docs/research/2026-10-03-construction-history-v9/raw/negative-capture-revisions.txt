@@ -1,0 +1,60 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-construction-history-v9-20261003
+
+stdout | tests/integration/room-template-queued-cancellation-save.test.ts > the same genuine queued cancellation must retain its unchanged-state outcome through V9, mirror=false
+ACTUAL_QUEUED_CANCEL {"mirrorX":false,"expectedRevision":2,"restoredRevision":0,"executeAtTick":13,"fundsAtSave":23575,"liveFunds":25000,"loadedFunds":23575,"liveOrder":"cancelled","loadedOrder":"materials-pending","livePending":0,"loadedPending":1,"loadedRefusal":"cancel-build-order.stale-cancellation","savedCommandCount":1}
+
+stdout | tests/integration/room-template-queued-cancellation-save.test.ts > the same genuine queued cancellation must retain its unchanged-state outcome through V9, mirror=true
+ACTUAL_QUEUED_CANCEL {"mirrorX":true,"expectedRevision":2,"restoredRevision":0,"executeAtTick":13,"fundsAtSave":23575,"liveFunds":25000,"loadedFunds":23575,"liveOrder":"cancelled","loadedOrder":"materials-pending","livePending":0,"loadedPending":1,"loadedRefusal":"cancel-build-order.stale-cancellation","savedCommandCount":1}
+
+ ❯ tests/integration/room-template-queued-cancellation-save.test.ts (8 tests | 4 failed) 114ms
+   × the same genuine queued cancellation must retain its unchanged-state outcome through V9, mirror=false 43ms
+   × the same genuine queued cancellation must retain its unchanged-state outcome through V9, mirror=true 16ms
+   × a genuinely stale token still refuses without cancelling, mirror=false load=true 11ms
+   × a genuinely stale token still refuses without cancelling, mirror=true load=true 10ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  4 failed | 8 passed (12)
+   Start at  18:49:57
+   Duration  2.42s (transform 1.59s, setup 0ms, import 4.36s, tests 175ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/room-template-queued-cancellation-save.test.ts > the same genuine queued cancellation must retain its unchanged-state outcome through V9, mirror=false
+ FAIL  tests/integration/room-template-queued-cancellation-save.test.ts > the same genuine queued cancellation must retain its unchanged-state outcome through V9, mirror=true
+AssertionError: expected 'materials-pending' to be 'cancelled' // Object.is equality
+
+Expected: "cancelled"
+Received: "materials-pending"
+
+ ❯ tests/integration/room-template-queued-cancellation-save.test.ts:58:61
+     56|     loadedRefusal: loaded.refusals.last?.reason, savedCommandCount: sa…
+     57|   }));
+     58|   expect(loaded.construction.getOrder(pair.orderId)?.state).toBe('canc…
+       |                                                             ^
+     59|   expect(loaded.roomTemplates.snapshot().pending).toEqual([]);
+     60|   expect(loaded.treasury.balanceMinorUnits).toBe(pair.runtime.treasury…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/integration/room-template-queued-cancellation-save.test.ts > a genuinely stale token still refuses without cancelling, mirror=false load=true
+ FAIL  tests/integration/room-template-queued-cancellation-save.test.ts > a genuinely stale token still refuses without cancelling, mirror=true load=true
+AssertionError: expected undefined to be 'cancel-build-order.stale-cancellation' // Object.is equality
+
+- Expected:
+"cancel-build-order.stale-cancellation"
+
++ Received:
+undefined
+
+ ❯ tests/integration/room-template-queued-cancellation-save.test.ts:68:46
+     66|   const before = captureSessionSnapshot(pair.runtime), funds = pair.ru…
+     67|   send(pair.runtime, { type: 'CancelBuildOrder', orderId: pair.orderId…
+     68|   expect(pair.runtime.refusals.last?.reason).toBe('cancel-build-order.…
+       |                                              ^
+     69|   expect(captureSessionSnapshot(pair.runtime).construction).toEqual(be…
+     70|   expect(captureSessionSnapshot(pair.runtime).simulation?.roomTemplate…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+

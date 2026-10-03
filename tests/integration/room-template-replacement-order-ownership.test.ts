@@ -30,6 +30,8 @@ function reload(runtime: Runtime, legacy = false, unknownOwnership = false): Run
   })));
   if (unknownOwnership) {
     encoded.saveSchemaVersion = 7;
+    delete encoded.payload.construction.newerActionThanTheStackTop;
+    delete encoded.payload.construction.orderRevisions;
     for (const object of encoded.payload.simulation.objects.placedObjects) delete object.sourceOrderId;
     encoded.checksum = computeSaveChecksum(encoded.payload);
   }
