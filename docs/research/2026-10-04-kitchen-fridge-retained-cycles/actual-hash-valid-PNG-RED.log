@@ -1,0 +1,19 @@
+00:01.110  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-fridge-cycles-20261004\assets\source\blender\furniture.kitchen.fridge.soft-light.blend"
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-fridge-cycles-20261004\tooling\blender\render-kitchen-fridge-cycles.py", line 116, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-fridge-cycles-20261004\tooling\blender\render-kitchen-fridge-cycles.py", line 83, in main
+    verify_exports()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-fridge-cycles-20261004\tooling\blender\render-kitchen-fridge-cycles.py", line 64, in verify_exports
+    png_decoder.validate_png(body)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-fridge-cycles-20261004\tooling\blender\render-staff-room-padded-chair-oblique.py", line 101, in validate_png
+    raise ValueError('Staff chair decoded silhouette clips frame border')
+ValueError: Staff chair decoded silhouette clips frame border
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-fridge-cycles-20261004\tooling\blender\render-kitchen-fridge-cycles.py', exiting.

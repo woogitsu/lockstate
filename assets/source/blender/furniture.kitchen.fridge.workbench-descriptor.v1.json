@@ -1,0 +1,477 @@
+{
+  "schemaVersion": 1,
+  "assetId": "furniture.kitchen.fridge.variants",
+  "source": "assets/source/blender/furniture.kitchen.fridge.angled-detail.blend",
+  "sourceSha256": "0cb6861e636324cf4d1e6ad35c1739cbac6068f32eb702244f5ddb196715f3d5",
+  "resolutionPx": [
+    256,
+    256
+  ],
+  "nominalPixelsPerTile": 64,
+  "pivotPx": [
+    128,
+    128
+  ],
+  "cameraTargetTiles": [
+    0.5,
+    0.5,
+    1.1999999284744263
+  ],
+  "projection": "orthographic",
+  "yawDegrees": [
+    0,
+    30,
+    60,
+    90,
+    120,
+    150,
+    180,
+    210,
+    240,
+    270,
+    300,
+    330
+  ],
+  "elevationDegrees": [
+    20,
+    30,
+    40,
+    50,
+    60,
+    70
+  ],
+  "frames": [
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+00-elev20.c5ac2650f8b7.png",
+      "sha256": "c5ac2650f8b784f2cbdd21dd7524ec531f8e26e1c76a2060e8f02bb81889f397"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+00-elev30.5cd59faf2048.png",
+      "sha256": "5cd59faf204811c5abab201604e02705ef72c45df0baccba7f4cda205cc56f98"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+00-elev40.570c01907d60.png",
+      "sha256": "570c01907d60978d84db948d1ae299048932463224e94289e5220f2e9ce18b65"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+00-elev50.654709a9fd40.png",
+      "sha256": "654709a9fd4054654a16f30682fcc979399aac85be2cd0acee0d0c6b96b31f5a"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+00-elev60.56c1d6680272.png",
+      "sha256": "56c1d6680272747a5e1fa46618ecb9d99f0b1665b7a022e80f4b7a431f58ef7b"
+    },
+    {
+      "yawDegrees": 0,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+00-elev70.99f3a582f815.png",
+      "sha256": "99f3a582f815c74e2d93dab7656b4bc36d5fceba5d90cd52081a85996b1fbade"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+30-elev20.6c52888ca983.png",
+      "sha256": "6c52888ca9836328369e9d2b66415e19e47a7f0b687ba9a01b2fec3e6b69d970"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+30-elev30.c34f90acbca6.png",
+      "sha256": "c34f90acbca6a6907dcffdc40d12971d149b6465453ade85e5424541b56994bd"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+30-elev40.e8c155f69b7c.png",
+      "sha256": "e8c155f69b7c9ba4531306399a2fdf95534284b4e6d53c75e8f8f8999bb07c9c"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+30-elev50.d76165ae368e.png",
+      "sha256": "d76165ae368ea6386103fbc534a4cd4d32529c7a90676ca83728d90101297085"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+30-elev60.ced3aceacf9c.png",
+      "sha256": "ced3aceacf9c215dd82af9c80b34bb8277f1d4b078ff199198773094ff5de579"
+    },
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+30-elev70.389e5141d972.png",
+      "sha256": "389e5141d9726d23cc5bec78fc77f168cf6d77b45046988f93845a9ae82ef8c1"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+60-elev20.dce3b424b1c5.png",
+      "sha256": "dce3b424b1c5b49376e7e2fe5cb30539cf0e0f315d13b21ed864ae12033eface"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+60-elev30.fca3e1ca4b5e.png",
+      "sha256": "fca3e1ca4b5eeae4095d4e59a641c15fa1316797ed6cbae8cca1ad47af0d538c"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+60-elev40.8dc21c2424ea.png",
+      "sha256": "8dc21c2424ea65461c5dfbcdb28ab832adb60aa96189c70ed4956fdb20f46d26"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+60-elev50.53be8f14fb95.png",
+      "sha256": "53be8f14fb95b162afcdbbc5e7910f6faba53bea1b8c728e11368bedb2193c95"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+60-elev60.76c8798c9437.png",
+      "sha256": "76c8798c9437d60d755c99dc516a228824d2f1ffdc09c2391413da87bfb9afc9"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+60-elev70.25f88229ed99.png",
+      "sha256": "25f88229ed999185a3856aa73361112918ff9cbd59c186bb4751f7ecb2e6a8c0"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+90-elev20.89f49c46ac08.png",
+      "sha256": "89f49c46ac08596959e2cee415f831bd5d405cb534ca4014dc2e2a2f2b48e6fd"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+90-elev30.12ec03772adc.png",
+      "sha256": "12ec03772adc7cc6c6603a971e1ce2efbbfca4fa06e0e937412127736e3ae151"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+90-elev40.1d0dccfa4212.png",
+      "sha256": "1d0dccfa4212196a0313a02f011c7d675bc9850e7f376c38a8247eed0c3c8bef"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+90-elev50.c9b43315d91c.png",
+      "sha256": "c9b43315d91c6192998f7b19f0b3e9471052db5c49f7dff5380c281b385c5687"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+90-elev60.09192fbfa02b.png",
+      "sha256": "09192fbfa02beda52e805e22edda461e96b362b7e64c8bbf21531daa95bf462a"
+    },
+    {
+      "yawDegrees": 90,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+90-elev70.a1c361417ce3.png",
+      "sha256": "a1c361417ce38581def6fe4a79e4eadd46428f4497ebc82b73b09986f7aa6832"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+120-elev20.9d2bd6d79f06.png",
+      "sha256": "9d2bd6d79f069f1df7570ead9c7a54621a38a325063ec037aa72b4ce04fff6be"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+120-elev30.4e8fa44f1ec1.png",
+      "sha256": "4e8fa44f1ec15884289a5e31c387c7e15bd6f089d62299398998d86837e0575d"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+120-elev40.ca9c4e611050.png",
+      "sha256": "ca9c4e611050bbba192dff84829db35adbafc748fde9ddffd472d6a79c356b2c"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+120-elev50.2e52f2843174.png",
+      "sha256": "2e52f28431743eb24bd29468b0c5d03012d6f6c96e3e4661c5c3678d522795b4"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+120-elev60.049a62ca1e94.png",
+      "sha256": "049a62ca1e941e6358724103dde1c271ac28b4ff30d1d2bcc1a44aa0a7ddad15"
+    },
+    {
+      "yawDegrees": 120,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+120-elev70.2f96e6db5e43.png",
+      "sha256": "2f96e6db5e43e96df9f89fee900562bf6ee02806bc12fca4b0113449b8cd9810"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+150-elev20.f0a5635f5ecf.png",
+      "sha256": "f0a5635f5ecfd4960aeae1c95745c6f119cb65ace06cb15cb758329ec5b8952a"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+150-elev30.ebe436dd77a2.png",
+      "sha256": "ebe436dd77a2b4ff0ebd6e0e0a82525cf62b41901670c084894b3bf7a82bcc63"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+150-elev40.8663951f3203.png",
+      "sha256": "8663951f32032038b59814db560a305b156af52f3b9512882259eaf6b5ad5d89"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+150-elev50.c46e86f62e79.png",
+      "sha256": "c46e86f62e797ab3dbb98d257e020419e8653063b502a379cf397323c96afc99"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+150-elev60.9ef161c61689.png",
+      "sha256": "9ef161c6168929532166cc94200b8a5d9837f5a4b6c808be845bb28984317f7d"
+    },
+    {
+      "yawDegrees": 150,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+150-elev70.384e85bd350c.png",
+      "sha256": "384e85bd350c06b8ee0b3982fef0b24ecb2730f223be899e70157e06f5acff71"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+180-elev20.a1dbd4772ae0.png",
+      "sha256": "a1dbd4772ae0e1d958f604c3d867ddd7e13ea9aac303dc079d3ba4d5439dde2a"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+180-elev30.c8153f6f697c.png",
+      "sha256": "c8153f6f697c0616da9ff49cbe29240527affb728bdc46ca0bfa7ad6f2ce980d"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+180-elev40.ee5e7a97378c.png",
+      "sha256": "ee5e7a97378c915202f09e671e04f8416296ae2fc542cd55c6e46a31df3371a0"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+180-elev50.6f3d4b74ffc9.png",
+      "sha256": "6f3d4b74ffc98fe4252a254196be166d9403a904440eb84c2622b1c32b04c84b"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+180-elev60.2e38515d30ff.png",
+      "sha256": "2e38515d30ff8b608c3348aad4c53d3186c6b2cc023f1832b56f6347cce2b48a"
+    },
+    {
+      "yawDegrees": 180,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+180-elev70.3cc1b55471d6.png",
+      "sha256": "3cc1b55471d618ff09459a55adadb789f750c275a74de4bb4ab95677f5251bc6"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+210-elev20.67aa95e1cc84.png",
+      "sha256": "67aa95e1cc84b2f66d94b0660f3b8fba44e0da34296a826e76fa36feea9eb8ba"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+210-elev30.572c1ce924e5.png",
+      "sha256": "572c1ce924e5fd380a8a3f2c413655336340053087ab2780f8b8c4fc98b28d27"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+210-elev40.ad0695e7585d.png",
+      "sha256": "ad0695e7585d881d2cd500b0bf132183c0857c6830c6dee81342ceaf31da0257"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+210-elev50.ad9b2db380ac.png",
+      "sha256": "ad9b2db380aca1c01b1c7df139c86b91d7fa523b41011b04898a1336db5da719"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+210-elev60.ea918f214f16.png",
+      "sha256": "ea918f214f16c6112ae1226094850679cf77d9f934d50cab4c09319d9e133e31"
+    },
+    {
+      "yawDegrees": 210,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+210-elev70.e79a08586403.png",
+      "sha256": "e79a0858640359117cb41c05e473311b48496a19e48b8195ad79ac8f313a50ce"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+240-elev20.e8fe12c71af1.png",
+      "sha256": "e8fe12c71af11b156369dd2dfa0983cf9fedaff9245e7abae366c04256422d07"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+240-elev30.ea60e002a745.png",
+      "sha256": "ea60e002a745a92c8d5b4b038263ff18d976891bf94d6978e56a93420ca006f3"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+240-elev40.e122b541fe3a.png",
+      "sha256": "e122b541fe3acf3fc03c7c6888e7e0634cb7da2ec4785f86d409c695ab40efd6"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+240-elev50.add9eda03788.png",
+      "sha256": "add9eda03788722824a130d776647304f128ba614c1529e178b457d27e9f3210"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+240-elev60.ee0d510d2feb.png",
+      "sha256": "ee0d510d2feb0076275a07007f5c4652b70dd4b5e10af589360fd9022db67c62"
+    },
+    {
+      "yawDegrees": 240,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+240-elev70.469877dbf331.png",
+      "sha256": "469877dbf3310d6901896ea56bdeb9059efe0e1338637fd58b4fe52236d8c2c1"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+270-elev20.06e30a1cd45f.png",
+      "sha256": "06e30a1cd45fd0c42c7c5a84a5fbd02cbd23dc2bb15926876f6e811ac5b252f2"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+270-elev30.d519e0b20cfd.png",
+      "sha256": "d519e0b20cfd6056fc77e348dd5d0af0cc3bad66d42a87620220f1d25a7e5d54"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+270-elev40.40528c8c2605.png",
+      "sha256": "40528c8c2605956d2868d64e8c104ca2fad797dc8d1d38a7631934d823bb2527"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+270-elev50.3dd5119235b3.png",
+      "sha256": "3dd5119235b30262e0be7605e54292cf479da2915285aa3a898e01bab8c9d675"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+270-elev60.85b5301404e0.png",
+      "sha256": "85b5301404e0dbe6175daf8f4b9065c65d87b998e22fd0830a711654cab9ecaf"
+    },
+    {
+      "yawDegrees": 270,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+270-elev70.0d485a13e2a7.png",
+      "sha256": "0d485a13e2a7130462685795b27b5446d4162705442bacac5d2d145dbd177533"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+300-elev20.baf942328e0d.png",
+      "sha256": "baf942328e0d34bcbe8a205dff71094b6bd97b09fa631c31169b4a8b12e823a0"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+300-elev30.9b4d5c8e4f30.png",
+      "sha256": "9b4d5c8e4f308a77995739526de516623725b6e34f36ff3ec32fa63f511f56d5"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+300-elev40.09bfb9c9da1a.png",
+      "sha256": "09bfb9c9da1a6a4a37e86cb2124a6884e4b4e22daa16f5d2757882de87704576"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+300-elev50.40f5d9e3d4f8.png",
+      "sha256": "40f5d9e3d4f87a6e213564ae997903535c1c0213dcf13c4825a6c806e02e7b0a"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+300-elev60.128608ed30c4.png",
+      "sha256": "128608ed30c4b43387ad038943acbae252668aa9232f05f09614b3da2a57553c"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+300-elev70.aa8b98f801c0.png",
+      "sha256": "aa8b98f801c08a50c266243f67de95294f727eb1ef52cb8996a532f2987f0f63"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 20,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+330-elev20.f2dc322cf8b3.png",
+      "sha256": "f2dc322cf8b34a274deba67db1708044893e5734601018dc02e0e017b6df0b83"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 30,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+330-elev30.490b6c0e3c55.png",
+      "sha256": "490b6c0e3c55b2513d7bad315083c5cab3e882c506a714dfd1cc35373f0d39e3"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+330-elev40.374a35ed3678.png",
+      "sha256": "374a35ed3678d1a555e8fac6c970734eb80c89d663287243a01754ebfec963f1"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 50,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+330-elev50.a8dc290f7301.png",
+      "sha256": "a8dc290f730150660fbc886b799ac80be11ecabe84c9658f363f62fbffca78dd"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 60,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+330-elev60.3e64647804c1.png",
+      "sha256": "3e64647804c1c0b74fd4c072a366511f0c913de9567cf3c846c0ee53200eac5c"
+    },
+    {
+      "yawDegrees": 330,
+      "elevationDegrees": 70,
+      "image": "/assets/environment/oblique/furniture.kitchen.fridge.variants-yaw+330-elev70.5b784a3a2154.png",
+      "sha256": "5b784a3a2154e4487f9fd04fdc6f2e4ae0f5525f80542e4afb44c5a1bdd14d31"
+    }
+  ]
+}
