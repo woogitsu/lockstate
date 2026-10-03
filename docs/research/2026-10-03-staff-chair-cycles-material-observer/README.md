@@ -112,3 +112,27 @@ preserved default camera q0/q1 captures and named real source negatives. It does
 not prove arbitrary camera poses or every possible background. A genuine
 consumer omission still must turn native material reception RED on root's
 built game before claiming native acceptance.
+## Obtained omission, restoration and type receipts
+
+Actual mutation of the native observer helper removed the complete opaque5×5 /
+three-colour qualification. The normal source test turned RED on the actual
+default chair yaw0/e40 frame:64 pixels were incorrectly accepted at the unchanged
+40 bound. Result:1RED/6GREEN, exit1. Restore returned7GREEN/2files, exit0.
+`actual-gradient-restoration.json` records exact helper SHA256 before/after
+CB8EA29278B15CF3895C8652E79BACCECB915930729E782AEB7F20F46A8BA256.
+This is an actual native-observer producer omission, not a mutation of rendering
+or a native consumer run. Both raw outputs are retained.
+
+`pnpm --config.verify-deps-before-run=false typecheck` completed both app and
+tools strict checks with exit0. The PowerShell raw capture preserves its stderr
+package-command echo labelled NativeCommandError; that label is not an invented
+compiler failure. `typecheck-coverage-contract.test.ts` obtained4GREEN/exit0;
+new TS helper/tests are inside the existing strict `tests` include. Historical
+recipes remain inert `.cjs.txt`. `git diff --check` passed.
+
+Root original evidence subject is
+73a69fe52b743958a012f43cbcd63f59d0134b6c; product/source capture subject remains
+c28d4815844af9081c4d16925bbf498eb3df2ff1. No browser, build or server was started
+on this branch. **Native acceptance and actual room-context consumer omission
+are pending root execution.** The actual material maximum reports do not stand
+in for those gates.
