@@ -1,8 +1,13 @@
-/** Literal typed/public UI oracle, read-only worker and real network evidence. */
 import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
-import { expect } from './network-changed-fixture';
+import { expect, type Page, type TestInfo } from './network-changed-fixture';
 import { assertGarbageCapacity } from './native-garbage-room-evidence';
 import { CLASSROOM_CASES, CLASSROOM_DESK, CLASSROOM_ORIGIN, CLASSROOM_PLAN, classroomOwner } from '../fixtures/native-classroom-desk-plan';
+import { createHash } from 'node:crypto';
+import { writeFile } from 'node:fs/promises';
+import { observeCotImages } from './cell-cot-evidence';
+import { CLASSROOM_ART } from '../fixtures/native-classroom-desk-plan';
+
+/** Literal typed/public UI oracle, read-only worker and real network evidence. */
 
 // Same completed Storage/Delivery route already proved independently.
 export const assertClassroomCapacity = assertGarbageCapacity;
@@ -69,11 +74,6 @@ export function assertClassroomDesk(data: SessionSnapshotBundle, turns: 0 | 1, o
   assertClassroomPlan(data, turns, true, owner);
 }
 
-import { createHash } from 'node:crypto';
-import { writeFile } from 'node:fs/promises';
-import type { Page, TestInfo } from './network-changed-fixture';
-import { observeCotImages } from './cell-cot-evidence';
-import { CLASSROOM_ART } from '../fixtures/native-classroom-desk-plan';
 interface NetworkCatalog { assetId: string; source: string; sourceSha256: string; resolutionPx: number[];
   nominalPixelsPerTile: number; pivotPx: number[]; cameraTargetTiles: number[];
   frames: { yawDegrees: number; elevationDegrees: number; image: string; sha256: string }[] }

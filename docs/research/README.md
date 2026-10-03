@@ -100,7 +100,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
-| 2026-10-03 | [Classroom desk native preparation](./2026-10-03-classroom-desk-native-preparation/README.md) | Literal free2?1 desk slots in both original Classroom plan rotations; separate paid orientation0 ownership, actual producer RED-to-restore and wholeV8 proof; native pending. |
+| 2026-10-03 | [Classroom desk native preparation](./2026-10-03-classroom-desk-native-preparation/README.md) | Literal free 2 by 1 desk slots in both original Classroom plan rotations; separate paid orientation0 ownership, actual producer RED-to-restore and wholeV8 proof; native pending. |
 | 2026-10-03 | [Classroom teacher desk](./2026-10-03-classroom-teacher-desk/README.md) | Genuine retained 94-part desk plus visible textbook rack/shelf; 72 poses, actual contacts and producer RED-to-restore; native integration pending. |
 | 2026-10-03 | [Garbage Room q0/q1 public native preparation](./2026-10-03-garbage-room-native-preparation/README.md) | Literal actual typed builds, square shells/two owners, 4200 total cost, exact whole V8, real q1 producer RED and restore GREEN; opt-in60s native recipe pending root visuals. |
 | 2026-10-03 | [Dedicated Garbage Room refuse trolley](./2026-10-03-garbage-room-refuse-trolley/README.md) | Genuine retained twelve-part bin on a 30-part refuse carrier, 72 canonical poses, 33 actual contacts; three producer/export RED controls and exact restored GREEN. |
