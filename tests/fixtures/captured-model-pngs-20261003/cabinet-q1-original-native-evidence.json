@@ -1,0 +1,28 @@
+{
+  "quarterTurns": 1,
+  "actualBefore": [
+    "object.medical-bed@23,6:orientation=1",
+    "object.medicine-cabinet@24,8:orientation=1"
+  ],
+  "actualAfter": [
+    "object.medical-bed@23,6:orientation=1",
+    "object.medicine-cabinet@24,8:orientation=1"
+  ],
+  "beforePixels": [
+    2231
+  ],
+  "afterPixels": [
+    2231
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "infirmary-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      },
+      "quarterTurns": 1
+    }
+  ]
+}

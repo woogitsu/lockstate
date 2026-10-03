@@ -1,0 +1,13 @@
+{
+  "helper": "tests/browser/captured-png-pixels.ts",
+  "originalSha256": "acc086f6aeb2319f0cdda228969d69c7fec89e7fa79abf687677c04ec9503dd0",
+  "negativeMutation": "match red channel only instead of exact RGB",
+  "matchedSites": 1,
+  "negativeExit": 1,
+  "restoredExit": 0,
+  "restoredCases": 30,
+  "byteExact": true,
+  "restoredSha256": "acc086f6aeb2319f0cdda228969d69c7fec89e7fa79abf687677c04ec9503dd0",
+  "negativeFailed": 10,
+  "negativeLegalControlsPassed": 20
+}

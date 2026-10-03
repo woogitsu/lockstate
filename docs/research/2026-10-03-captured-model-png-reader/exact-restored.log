@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-exact-model-png-reader-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  30 passed (30)
+   Start at  03:01:28
+   Duration  675ms (transform 18ms, setup 0ms, import 77ms, tests 485ms, environment 0ms)
+

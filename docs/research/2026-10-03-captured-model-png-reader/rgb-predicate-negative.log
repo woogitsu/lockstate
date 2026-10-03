@@ -1,0 +1,179 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-exact-model-png-reader-20261003
+
+ ❯ tests/unit/captured-png-pixels.test.ts (30 tests | 10 failed) 518ms
+   × retains exact captured PNG/hash and palette counts for 'cabinet-q1-worker-completed.png' 49ms
+   × retains exact captured PNG/hash and palette counts for 'cabinet-q1-loaded.png' 41ms
+   × retains exact captured PNG/hash and palette counts for 'cabinet-q1-hardware-loaded.png' 38ms
+   × retains exact captured PNG/hash and palette counts for 'cabinet-q0-hardware-loaded.png' 48ms
+   × retains exact captured PNG/hash and palette counts for 'desk-q0-worker-completed.png' 45ms
+   × retains exact captured PNG/hash and palette counts for 'desk-q0-loaded.png' 40ms
+   × retains exact captured PNG/hash and palette counts for 'desk-q0-hardware-loaded.png' 41ms
+   × retains exact captured PNG/hash and palette counts for 'desk-q1-worker-completed.png' 43ms
+   × retains exact captured PNG/hash and palette counts for 'desk-q1-loaded.png' 42ms
+   × requires all three exact channels and keeps caller rectangles unchanged 2ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/captured-png-pixels.test.ts > retains exact captured PNG/hash and palette counts for 'cabinet-q1-worker-completed.png'
+ FAIL  tests/unit/captured-png-pixels.test.ts > retains exact captured PNG/hash and palette counts for 'cabinet-q1-loaded.png'
+AssertionError: expected [ 2257 ] to deeply equal [ 2231 ]
+
+- Expected
++ Received
+
+  [
+-   2231,
++   2257,
+  ]
+
+ ❯ tests/unit/captured-png-pixels.test.ts:21:18
+     19|   expect(createHash('sha256').update(png).digest('hex')).toBe(capture.…
+     20|   const counts = countCapturedPalettePixels(png, capture.samples);
+     21|   expect(counts).toEqual(capture.independentPillowCounts);
+       |                  ^
+     22|   if (capture.recordedBrowserCounts !== null) expect(counts).toEqual(c…
+     23| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  tests/unit/captured-png-pixels.test.ts > retains exact captured PNG/hash and palette counts for 'cabinet-q1-hardware-loaded.png'
+AssertionError: expected [ 15 ] to deeply equal [ +0 ]
+
+- Expected
++ Received
+
+  [
+-   0,
++   15,
+  ]
+
+ ❯ tests/unit/captured-png-pixels.test.ts:21:18
+     19|   expect(createHash('sha256').update(png).digest('hex')).toBe(capture.…
+     20|   const counts = countCapturedPalettePixels(png, capture.samples);
+     21|   expect(counts).toEqual(capture.independentPillowCounts);
+       |                  ^
+     22|   if (capture.recordedBrowserCounts !== null) expect(counts).toEqual(c…
+     23| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  tests/unit/captured-png-pixels.test.ts > retains exact captured PNG/hash and palette counts for 'cabinet-q0-hardware-loaded.png'
+AssertionError: expected [ 7 ] to deeply equal [ +0 ]
+
+- Expected
++ Received
+
+  [
+-   0,
++   7,
+  ]
+
+ ❯ tests/unit/captured-png-pixels.test.ts:21:18
+     19|   expect(createHash('sha256').update(png).digest('hex')).toBe(capture.…
+     20|   const counts = countCapturedPalettePixels(png, capture.samples);
+     21|   expect(counts).toEqual(capture.independentPillowCounts);
+       |                  ^
+     22|   if (capture.recordedBrowserCounts !== null) expect(counts).toEqual(c…
+     23| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  tests/unit/captured-png-pixels.test.ts > retains exact captured PNG/hash and palette counts for 'desk-q0-worker-completed.png'
+ FAIL  tests/unit/captured-png-pixels.test.ts > retains exact captured PNG/hash and palette counts for 'desk-q0-loaded.png'
+AssertionError: expected [ 296, 128 ] to deeply equal [ 281, 111 ]
+
+- Expected
++ Received
+
+  [
+-   281,
+-   111,
++   296,
++   128,
+  ]
+
+ ❯ tests/unit/captured-png-pixels.test.ts:21:18
+     19|   expect(createHash('sha256').update(png).digest('hex')).toBe(capture.…
+     20|   const counts = countCapturedPalettePixels(png, capture.samples);
+     21|   expect(counts).toEqual(capture.independentPillowCounts);
+       |                  ^
+     22|   if (capture.recordedBrowserCounts !== null) expect(counts).toEqual(c…
+     23| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  tests/unit/captured-png-pixels.test.ts > retains exact captured PNG/hash and palette counts for 'desk-q0-hardware-loaded.png'
+AssertionError: expected [ 1, +0 ] to deeply equal [ +0, +0 ]
+
+- Expected
++ Received
+
+  [
+-   0,
++   1,
+    0,
+  ]
+
+ ❯ tests/unit/captured-png-pixels.test.ts:21:18
+     19|   expect(createHash('sha256').update(png).digest('hex')).toBe(capture.…
+     20|   const counts = countCapturedPalettePixels(png, capture.samples);
+     21|   expect(counts).toEqual(capture.independentPillowCounts);
+       |                  ^
+     22|   if (capture.recordedBrowserCounts !== null) expect(counts).toEqual(c…
+     23| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  tests/unit/captured-png-pixels.test.ts > retains exact captured PNG/hash and palette counts for 'desk-q1-worker-completed.png'
+ FAIL  tests/unit/captured-png-pixels.test.ts > retains exact captured PNG/hash and palette counts for 'desk-q1-loaded.png'
+AssertionError: expected [ 498, 463 ] to deeply equal [ 497, 455 ]
+
+- Expected
++ Received
+
+  [
+-   497,
+-   455,
++   498,
++   463,
+  ]
+
+ ❯ tests/unit/captured-png-pixels.test.ts:21:18
+     19|   expect(createHash('sha256').update(png).digest('hex')).toBe(capture.…
+     20|   const counts = countCapturedPalettePixels(png, capture.samples);
+     21|   expect(counts).toEqual(capture.independentPillowCounts);
+       |                  ^
+     22|   if (capture.recordedBrowserCounts !== null) expect(counts).toEqual(c…
+     23| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  tests/unit/captured-png-pixels.test.ts > requires all three exact channels and keeps caller rectangles unchanged
+AssertionError: expected [ 3, 1 ] to deeply equal [ 1, 1 ]
+
+- Expected
++ Received
+
+  [
+-   1,
++   3,
+    1,
+  ]
+
+ ❯ tests/unit/captured-png-pixels.test.ts:34:105
+     32|
+     33| it('requires all three exact channels and keeps caller rectangles unch…
+     34|   expect(countCapturedPalettePixels(tinyPng(), [sample, { rect: [1, 0,…
+       |                                                                                                         ^
+     35|   expect(countCapturedPalettePixels(tinyPng(), [{ rect: [0, 1, 2, 1], …
+     36| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 20 passed (30)
+   Start at  03:01:27
+   Duration  728ms (transform 28ms, setup 0ms, import 90ms, tests 518ms, environment 0ms)
+

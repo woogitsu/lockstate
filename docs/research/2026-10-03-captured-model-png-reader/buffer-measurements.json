@@ -1,0 +1,326 @@
+{
+  "node": "v24.19.0",
+  "platform": "win32",
+  "captures": 12,
+  "rounds": 3,
+  "measuredOperation": "in-memory PNG validation/decode/opacity/exact RGB sampling only",
+  "excludes": [
+    "file I/O",
+    "module startup",
+    "browser",
+    "screenshot capture",
+    "worker/construction",
+    "full suite duration"
+  ],
+  "minMs": 35.78449999999998,
+  "medianMs": 40.46295000000012,
+  "maxMs": 47.490700000000004,
+  "results": [
+    {
+      "round": 0,
+      "file": "cabinet-q1-worker-completed.png",
+      "milliseconds": 47.27420000000001,
+      "counts": [
+        2231
+      ]
+    },
+    {
+      "round": 0,
+      "file": "cabinet-q1-loaded.png",
+      "milliseconds": 41.6772,
+      "counts": [
+        2231
+      ]
+    },
+    {
+      "round": 0,
+      "file": "cabinet-q1-hardware-loaded.png",
+      "milliseconds": 40.9666,
+      "counts": [
+        0
+      ]
+    },
+    {
+      "round": 0,
+      "file": "cabinet-q0-worker-completed.png",
+      "milliseconds": 45.26830000000001,
+      "counts": [
+        1151
+      ]
+    },
+    {
+      "round": 0,
+      "file": "cabinet-q0-loaded.png",
+      "milliseconds": 41.55449999999996,
+      "counts": [
+        1151
+      ]
+    },
+    {
+      "round": 0,
+      "file": "cabinet-q0-hardware-loaded.png",
+      "milliseconds": 43.65559999999999,
+      "counts": [
+        0
+      ]
+    },
+    {
+      "round": 0,
+      "file": "desk-q0-worker-completed.png",
+      "milliseconds": 40.13330000000002,
+      "counts": [
+        281,
+        111
+      ]
+    },
+    {
+      "round": 0,
+      "file": "desk-q0-loaded.png",
+      "milliseconds": 47.490700000000004,
+      "counts": [
+        281,
+        111
+      ]
+    },
+    {
+      "round": 0,
+      "file": "desk-q0-hardware-loaded.png",
+      "milliseconds": 45.28390000000002,
+      "counts": [
+        0,
+        0
+      ]
+    },
+    {
+      "round": 0,
+      "file": "desk-q1-worker-completed.png",
+      "milliseconds": 40.407700000000034,
+      "counts": [
+        497,
+        455
+      ]
+    },
+    {
+      "round": 0,
+      "file": "desk-q1-loaded.png",
+      "milliseconds": 36.94219999999996,
+      "counts": [
+        497,
+        455
+      ]
+    },
+    {
+      "round": 0,
+      "file": "desk-q1-hardware-loaded.png",
+      "milliseconds": 40.12049999999999,
+      "counts": [
+        0,
+        0
+      ]
+    },
+    {
+      "round": 1,
+      "file": "cabinet-q1-worker-completed.png",
+      "milliseconds": 38.2598999999999,
+      "counts": [
+        2231
+      ]
+    },
+    {
+      "round": 1,
+      "file": "cabinet-q1-loaded.png",
+      "milliseconds": 38.783000000000015,
+      "counts": [
+        2231
+      ]
+    },
+    {
+      "round": 1,
+      "file": "cabinet-q1-hardware-loaded.png",
+      "milliseconds": 40.06560000000002,
+      "counts": [
+        0
+      ]
+    },
+    {
+      "round": 1,
+      "file": "cabinet-q0-worker-completed.png",
+      "milliseconds": 43.43419999999992,
+      "counts": [
+        1151
+      ]
+    },
+    {
+      "round": 1,
+      "file": "cabinet-q0-loaded.png",
+      "milliseconds": 38.427200000000084,
+      "counts": [
+        1151
+      ]
+    },
+    {
+      "round": 1,
+      "file": "cabinet-q0-hardware-loaded.png",
+      "milliseconds": 40.70080000000007,
+      "counts": [
+        0
+      ]
+    },
+    {
+      "round": 1,
+      "file": "desk-q0-worker-completed.png",
+      "milliseconds": 42.659400000000005,
+      "counts": [
+        281,
+        111
+      ]
+    },
+    {
+      "round": 1,
+      "file": "desk-q0-loaded.png",
+      "milliseconds": 42.99490000000003,
+      "counts": [
+        281,
+        111
+      ]
+    },
+    {
+      "round": 1,
+      "file": "desk-q0-hardware-loaded.png",
+      "milliseconds": 40.72669999999994,
+      "counts": [
+        0,
+        0
+      ]
+    },
+    {
+      "round": 1,
+      "file": "desk-q1-worker-completed.png",
+      "milliseconds": 41.62270000000001,
+      "counts": [
+        497,
+        455
+      ]
+    },
+    {
+      "round": 1,
+      "file": "desk-q1-loaded.png",
+      "milliseconds": 41.88620000000003,
+      "counts": [
+        497,
+        455
+      ]
+    },
+    {
+      "round": 1,
+      "file": "desk-q1-hardware-loaded.png",
+      "milliseconds": 40.518200000000206,
+      "counts": [
+        0,
+        0
+      ]
+    },
+    {
+      "round": 2,
+      "file": "cabinet-q1-worker-completed.png",
+      "milliseconds": 40.72659999999996,
+      "counts": [
+        2231
+      ]
+    },
+    {
+      "round": 2,
+      "file": "cabinet-q1-loaded.png",
+      "milliseconds": 38.714800000000196,
+      "counts": [
+        2231
+      ]
+    },
+    {
+      "round": 2,
+      "file": "cabinet-q1-hardware-loaded.png",
+      "milliseconds": 37.66759999999999,
+      "counts": [
+        0
+      ]
+    },
+    {
+      "round": 2,
+      "file": "cabinet-q0-worker-completed.png",
+      "milliseconds": 39.13480000000004,
+      "counts": [
+        1151
+      ]
+    },
+    {
+      "round": 2,
+      "file": "cabinet-q0-loaded.png",
+      "milliseconds": 36.92880000000014,
+      "counts": [
+        1151
+      ]
+    },
+    {
+      "round": 2,
+      "file": "cabinet-q0-hardware-loaded.png",
+      "milliseconds": 38.80950000000007,
+      "counts": [
+        0
+      ]
+    },
+    {
+      "round": 2,
+      "file": "desk-q0-worker-completed.png",
+      "milliseconds": 37.10089999999991,
+      "counts": [
+        281,
+        111
+      ]
+    },
+    {
+      "round": 2,
+      "file": "desk-q0-loaded.png",
+      "milliseconds": 37.99229999999989,
+      "counts": [
+        281,
+        111
+      ]
+    },
+    {
+      "round": 2,
+      "file": "desk-q0-hardware-loaded.png",
+      "milliseconds": 39.33100000000013,
+      "counts": [
+        0,
+        0
+      ]
+    },
+    {
+      "round": 2,
+      "file": "desk-q1-worker-completed.png",
+      "milliseconds": 39.341499999999996,
+      "counts": [
+        497,
+        455
+      ]
+    },
+    {
+      "round": 2,
+      "file": "desk-q1-loaded.png",
+      "milliseconds": 35.78449999999998,
+      "counts": [
+        497,
+        455
+      ]
+    },
+    {
+      "round": 2,
+      "file": "desk-q1-hardware-loaded.png",
+      "milliseconds": 40.8445999999999,
+      "counts": [
+        0,
+        0
+      ]
+    }
+  ]
+}

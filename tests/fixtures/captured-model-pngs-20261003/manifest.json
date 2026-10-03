@@ -1,0 +1,478 @@
+[
+  {
+    "file": "cabinet-q1-worker-completed.png",
+    "sourceFolder": "dedicated-medicine-cabinet-176ee-and-anchors-after-Save-Load",
+    "sourceFile": "dedicated-medicine-cabinet-worker-completed-fullhd.png",
+    "model": "cabinet",
+    "quarterTurns": 1,
+    "stage": "worker-completed",
+    "bytes": 1528157,
+    "sha256": "932243a660ee09742846725ec51168e82ee1d1a281d48406453146b2d9794583",
+    "width": 1920,
+    "height": 1080,
+    "samples": [
+      {
+        "rect": [
+          965,
+          390,
+          100,
+          130
+        ],
+        "colour": [
+          72,
+          86,
+          86
+        ]
+      }
+    ],
+    "independentPillowCounts": [
+      2231
+    ],
+    "recordedBrowserCounts": [
+      2231
+    ]
+  },
+  {
+    "file": "cabinet-q1-loaded.png",
+    "sourceFolder": "dedicated-medicine-cabinet-176ee-and-anchors-after-Save-Load",
+    "sourceFile": "dedicated-medicine-cabinet-loaded-fullhd.png",
+    "model": "cabinet",
+    "quarterTurns": 1,
+    "stage": "loaded",
+    "bytes": 1493808,
+    "sha256": "1e5e5ac36b94b96cd0a163958bc24203bcd9de46f3924372870edcef47bbfbc6",
+    "width": 1920,
+    "height": 1080,
+    "samples": [
+      {
+        "rect": [
+          965,
+          390,
+          100,
+          130
+        ],
+        "colour": [
+          72,
+          86,
+          86
+        ]
+      }
+    ],
+    "independentPillowCounts": [
+      2231
+    ],
+    "recordedBrowserCounts": [
+      2231
+    ]
+  },
+  {
+    "file": "cabinet-q1-hardware-loaded.png",
+    "sourceFolder": "dedicated-medicine-cabinet-176ee-and-anchors-after-Save-Load",
+    "sourceFile": "dedicated-medicine-cabinet-hardware-loaded-fullhd.png",
+    "model": "cabinet",
+    "quarterTurns": 1,
+    "stage": "hardware-loaded",
+    "bytes": 1513405,
+    "sha256": "fbc2110e9c9dac9ed4c1c261517cf969d8a114c601ad03888a1b453bb05b9f00",
+    "width": 1920,
+    "height": 1080,
+    "samples": [
+      {
+        "rect": [
+          965,
+          390,
+          100,
+          130
+        ],
+        "colour": [
+          72,
+          86,
+          86
+        ]
+      }
+    ],
+    "independentPillowCounts": [
+      0
+    ],
+    "recordedBrowserCounts": null
+  },
+  {
+    "file": "cabinet-q0-worker-completed.png",
+    "sourceFolder": "dedicated-medicine-cabinet-cfdf5-and-anchors-after-Save-Load",
+    "sourceFile": "dedicated-medicine-cabinet-worker-completed-fullhd.png",
+    "model": "cabinet",
+    "quarterTurns": 0,
+    "stage": "worker-completed",
+    "bytes": 1530223,
+    "sha256": "ee70cc34c8abb7e61e3a4b84d6b5c7f75d08cbfd44fabe5649642e58a54ac2d6",
+    "width": 1920,
+    "height": 1080,
+    "samples": [
+      {
+        "rect": [
+          830,
+          350,
+          100,
+          130
+        ],
+        "colour": [
+          64,
+          76,
+          76
+        ]
+      }
+    ],
+    "independentPillowCounts": [
+      1151
+    ],
+    "recordedBrowserCounts": [
+      1151
+    ]
+  },
+  {
+    "file": "cabinet-q0-loaded.png",
+    "sourceFolder": "dedicated-medicine-cabinet-cfdf5-and-anchors-after-Save-Load",
+    "sourceFile": "dedicated-medicine-cabinet-loaded-fullhd.png",
+    "model": "cabinet",
+    "quarterTurns": 0,
+    "stage": "loaded",
+    "bytes": 1496684,
+    "sha256": "989db5fd54a9abdeb07cf173af0301f3b9f8d1335ef2ac4aab743fb416a3efd0",
+    "width": 1920,
+    "height": 1080,
+    "samples": [
+      {
+        "rect": [
+          830,
+          350,
+          100,
+          130
+        ],
+        "colour": [
+          64,
+          76,
+          76
+        ]
+      }
+    ],
+    "independentPillowCounts": [
+      1151
+    ],
+    "recordedBrowserCounts": [
+      1151
+    ]
+  },
+  {
+    "file": "cabinet-q0-hardware-loaded.png",
+    "sourceFolder": "dedicated-medicine-cabinet-cfdf5-and-anchors-after-Save-Load",
+    "sourceFile": "dedicated-medicine-cabinet-hardware-loaded-fullhd.png",
+    "model": "cabinet",
+    "quarterTurns": 0,
+    "stage": "hardware-loaded",
+    "bytes": 1498304,
+    "sha256": "8c9af372f0789e23961530ef039fcf1e43ad82d9ab6b1066c1643b23d9fbb4af",
+    "width": 1920,
+    "height": 1080,
+    "samples": [
+      {
+        "rect": [
+          830,
+          350,
+          100,
+          130
+        ],
+        "colour": [
+          64,
+          76,
+          76
+        ]
+      }
+    ],
+    "independentPillowCounts": [
+      0
+    ],
+    "recordedBrowserCounts": null
+  },
+  {
+    "file": "desk-q0-worker-completed.png",
+    "sourceFolder": "dedicated-office-desk-play-6e56a-and-anchors-after-Save-Load",
+    "sourceFile": "dedicated-office-desk-worker-completed-fullhd.png",
+    "model": "desk",
+    "quarterTurns": 0,
+    "stage": "worker-completed",
+    "bytes": 1513149,
+    "sha256": "cd289c1245771a3b74329a27f6d5d09f2c0496bf8b355a8ac1316e2e44dc4ce7",
+    "width": 1920,
+    "height": 1080,
+    "samples": [
+      {
+        "rect": [
+          815,
+          450,
+          25,
+          35
+        ],
+        "colour": [
+          143,
+          116,
+          86
+        ]
+      },
+      {
+        "rect": [
+          780,
+          420,
+          35,
+          32
+        ],
+        "colour": [
+          91,
+          148,
+          149
+        ]
+      }
+    ],
+    "independentPillowCounts": [
+      281,
+      111
+    ],
+    "recordedBrowserCounts": [
+      281,
+      111
+    ]
+  },
+  {
+    "file": "desk-q0-loaded.png",
+    "sourceFolder": "dedicated-office-desk-play-6e56a-and-anchors-after-Save-Load",
+    "sourceFile": "dedicated-office-desk-loaded-fullhd.png",
+    "model": "desk",
+    "quarterTurns": 0,
+    "stage": "loaded",
+    "bytes": 1479321,
+    "sha256": "cef2f6632af5e55f0cd2dc33281f6db061d1ce2df100ec79f8a05d419bcfc996",
+    "width": 1920,
+    "height": 1080,
+    "samples": [
+      {
+        "rect": [
+          815,
+          450,
+          25,
+          35
+        ],
+        "colour": [
+          143,
+          116,
+          86
+        ]
+      },
+      {
+        "rect": [
+          780,
+          420,
+          35,
+          32
+        ],
+        "colour": [
+          91,
+          148,
+          149
+        ]
+      }
+    ],
+    "independentPillowCounts": [
+      281,
+      111
+    ],
+    "recordedBrowserCounts": [
+      281,
+      111
+    ]
+  },
+  {
+    "file": "desk-q0-hardware-loaded.png",
+    "sourceFolder": "dedicated-office-desk-play-6e56a-and-anchors-after-Save-Load",
+    "sourceFile": "dedicated-office-desk-hardware-loaded-fullhd.png",
+    "model": "desk",
+    "quarterTurns": 0,
+    "stage": "hardware-loaded",
+    "bytes": 1475687,
+    "sha256": "fb407586774dce6401012a79381603c27bf0056e4444391287dc7a314c26ffee",
+    "width": 1920,
+    "height": 1080,
+    "samples": [
+      {
+        "rect": [
+          815,
+          450,
+          25,
+          35
+        ],
+        "colour": [
+          143,
+          116,
+          86
+        ]
+      },
+      {
+        "rect": [
+          780,
+          420,
+          35,
+          32
+        ],
+        "colour": [
+          91,
+          148,
+          149
+        ]
+      }
+    ],
+    "independentPillowCounts": [
+      0,
+      0
+    ],
+    "recordedBrowserCounts": null
+  },
+  {
+    "file": "desk-q1-worker-completed.png",
+    "sourceFolder": "dedicated-office-desk-play-b6b6f-and-anchors-after-Save-Load",
+    "sourceFile": "dedicated-office-desk-worker-completed-fullhd.png",
+    "model": "desk",
+    "quarterTurns": 1,
+    "stage": "worker-completed",
+    "bytes": 1511379,
+    "sha256": "3c75b75ca780cd20311f33b5662ce65cea0eb8484446c3d3d5d00edc72f9ad44",
+    "width": 1920,
+    "height": 1080,
+    "samples": [
+      {
+        "rect": [
+          945,
+          382,
+          25,
+          23
+        ],
+        "colour": [
+          143,
+          116,
+          87
+        ]
+      },
+      {
+        "rect": [
+          905,
+          348,
+          45,
+          27
+        ],
+        "colour": [
+          75,
+          86,
+          89
+        ]
+      }
+    ],
+    "independentPillowCounts": [
+      497,
+      455
+    ],
+    "recordedBrowserCounts": [
+      497,
+      455
+    ]
+  },
+  {
+    "file": "desk-q1-loaded.png",
+    "sourceFolder": "dedicated-office-desk-play-b6b6f-and-anchors-after-Save-Load",
+    "sourceFile": "dedicated-office-desk-loaded-fullhd.png",
+    "model": "desk",
+    "quarterTurns": 1,
+    "stage": "loaded",
+    "bytes": 1477622,
+    "sha256": "c28d7b974034a928c376d07e9f5f259c7d190b2b13fa3ada0d3071b32212c192",
+    "width": 1920,
+    "height": 1080,
+    "samples": [
+      {
+        "rect": [
+          945,
+          382,
+          25,
+          23
+        ],
+        "colour": [
+          143,
+          116,
+          87
+        ]
+      },
+      {
+        "rect": [
+          905,
+          348,
+          45,
+          27
+        ],
+        "colour": [
+          75,
+          86,
+          89
+        ]
+      }
+    ],
+    "independentPillowCounts": [
+      497,
+      455
+    ],
+    "recordedBrowserCounts": [
+      497,
+      455
+    ]
+  },
+  {
+    "file": "desk-q1-hardware-loaded.png",
+    "sourceFolder": "dedicated-office-desk-play-b6b6f-and-anchors-after-Save-Load",
+    "sourceFile": "dedicated-office-desk-hardware-loaded-fullhd.png",
+    "model": "desk",
+    "quarterTurns": 1,
+    "stage": "hardware-loaded",
+    "bytes": 1494732,
+    "sha256": "16a0f871e05ddce0790cac148180e6df44c89c925758115bb36e760ddcce9728",
+    "width": 1920,
+    "height": 1080,
+    "samples": [
+      {
+        "rect": [
+          945,
+          382,
+          25,
+          23
+        ],
+        "colour": [
+          143,
+          116,
+          87
+        ]
+      },
+      {
+        "rect": [
+          905,
+          348,
+          45,
+          27
+        ],
+        "colour": [
+          75,
+          86,
+          89
+        ]
+      }
+    ],
+    "independentPillowCounts": [
+      0,
+      0
+    ],
+    "recordedBrowserCounts": null
+  }
+]
