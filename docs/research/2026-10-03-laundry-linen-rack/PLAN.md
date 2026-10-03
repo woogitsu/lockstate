@@ -1,7 +1,9 @@
 # Durable owned plan
 
-1. DONE actual catalogue/current selectors/previous Kitchen+Laundry authored reports, source inventory and existing previews; no repeated microrepair or invented missing pedal.
-2. DONE retained104/full12graphs/new111-part Laundry linen storage rail/two panels/folds/hems, eight real contacts, exact bounds/four footprints. Saved-source and dispatch RED?exactrestore GREEN.
-3. NEXT genuine existing72 pipeline,1process/thread1; open real four poses, four byte-exact repeats and meaningful hash-validPNG semantic control.
-4. Own new registry descriptor and RoomLaundry/ObjectStorageRack selector only; retained default/StorageRoom/context boundary controls. Literal ordinary purchase/free slot with original two washers retained; no injected fixture/template change.
-5. Source/registry/context producer RED?exactrestore GREEN, focused tests/strictTS, coherent push and exact source/frame/native pending handoff.
+1. DONE actual Kitchen/Laundry catalogue, current source/consumer/previous authored reports; no duplicate grates/handles/drawer/pedal or speculative microgap repair.
+2. DONE retained104/full12graphs/new111-part Laundry linen rail/two panels/folds/hems, eight actual contacts, exact source bounds/all four footprints; source semantic/dispatch RED?exactrestoreGREEN.
+3. DONE genuine72/1thread, opened four current poses, quantified old/new pixels, four exact bounded repeats, hash-validdecoded PNG RED?exactrestoreGREEN. No full72 repeat.
+4. DONE registry descriptor and actual RoomLaundry-only selector, default/StorageRoom/Kitchen/washer/planned/building/outside/cross-room controls retained.
+5. DONE true public typedStorage?Delivery?Laundry q0/q1 plus separately bought orientation0 rack/free squares/65cost/both washer owners retained/wholeV8 exact. Actual context+registry omission RED?exactrestoreGREEN.
+6. DONE17focused tests GREEN+1 genericPATHskip; application/browser+tooling strictTS GREEN; final coherent source/export/integration/evidence push.
+7. PENDING ROOT genuine production build/browser lease, actual public UI purchase, network/loader PNG body and FullHD per-linen calibration. No claimed native run/collection/build.

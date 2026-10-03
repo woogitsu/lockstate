@@ -1,0 +1,45 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-kitchen-laundry-functional-detail-20261003
+
+xxx
+
+ Test Files  2 failed (2)
+      Tests  3 failed (3)
+   Start at  19:43:05
+   Duration  2.80s (transform 871ms, setup 0ms, import 2.41s, tests 317ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/laundry-linen-rack-public-consumer.test.ts > buys a separate orientation0 rack inside actual public Laundry q0, retains both washers and whole V8
+ FAIL  tests/integration/laundry-linen-rack-public-consumer.test.ts > buys a separate orientation0 rack inside actual public Laundry q1, retains both washers and whole V8
+AssertionError: expected 'furniture.storage.rack.wooden' to be 'furniture.laundry.linen-rack' // Object.is equality
+
+Expected: "furniture.laundry.linen-rack"
+Received: "furniture.storage.rack.wooden"
+
+ ❯ tests/integration/laundry-linen-rack-public-consumer.test.ts:66:26
+     64|   const camera = { target: { x: 23 * 64, y: 8 * 64 }, viewport: { widt…
+     65|   const solid = projectObliqueWorldFrame(frame, camera).raised.find(so…
+     66|   expect(solid?.assetId).toBe('furniture.laundry.linen-rack');
+       |                          ^
+     67|   const publicRoot = new URL('../../public/', import.meta.url);
+     68|   const registry = parseObliqueModuleRegistry(JSON.parse(readFileSync(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/unit/oblique-laundry-linen-rack-context.test.ts > uses the full Laundry occupied rectangle while retaining default and Storage Room rack contexts
+AssertionError: expected 'furniture.storage.rack.wooden' to be 'furniture.laundry.linen-rack' // Object.is equality
+
+Expected: "furniture.laundry.linen-rack"
+Received: "furniture.storage.rack.wooden"
+
+ ❯ tests/unit/oblique-laundry-linen-rack-context.test.ts:8:31
+      6| it('uses the full Laundry occupied rectangle while retaining default a…
+      7|   const select = (x: number, y: number, width: number, height: number,…
+      8|   expect(select(21, 8, 1, 1)).toBe('furniture.laundry.linen-rack');
+       |                               ^
+      9|   expect(select(24, 9, 1, 1)).toBe('furniture.laundry.linen-rack');
+     10|   for (const [x, y, w, h] of [[20, 8, 1, 1], [25, 8, 1, 1], [22, 5, 1,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯

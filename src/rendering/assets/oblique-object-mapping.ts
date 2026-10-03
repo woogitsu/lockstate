@@ -53,6 +53,9 @@ const ROOM_VISUAL_VARIANTS: readonly {
   { roomCatalogId: 'room.garbage-room', objectAssets: Object.freeze({
     'object.waste-bin': 'fixture.garbage-room.waste-bin',
   }) },
+  { roomCatalogId: 'room.laundry', objectAssets: Object.freeze({
+    'object.storage-rack': 'furniture.laundry.linen-rack',
+  }) },
   { roomCatalogId: 'room.storage-room', objectAssets: Object.freeze({
     'object.storage-rack': 'furniture.storage-room.timber-rack',
   }) },

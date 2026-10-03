@@ -1,0 +1,28 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-kitchen-laundry-functional-detail-20261003
+
+x·
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  19:44:40
+   Duration  807ms (transform 59ms, setup 0ms, import 155ms, tests 529ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-laundry-linen-rack-art.test.ts > retains every104-part generic rack mesh and twelve full shader graphs with seven connected linen assembly parts
+AssertionError: expected 'f85a86cbab87fd47b0a0350f2a390fc7e42b9…' to be '779d11f79c28b8049ccd3371d840c75b52cd1…' // Object.is equality
+
+Expected: "779d11f79c28b8049ccd3371d840c75b52cd153439f3882e28c593d05dd964ec"
+Received: "f85a86cbab87fd47b0a0350f2a390fc7e42b94e92917c3a3bb1f9415fea1653b"
+
+ ❯ tests/unit/oblique-laundry-linen-rack-art.test.ts:31:69
+     29|   expect(sourceHash(readFileSync(new URL(provenance.originalSource,roo…
+     30|   expect(provenance.sourceSha256).toBe('779d11f79c28b8049ccd3371d840c7…
+     31|   expect(sourceHash(readFileSync(new URL(provenance.source,root)))).to…
+       |                                                                     ^
+     32|   expect(provenance.retainedOriginalMeshNames).toHaveLength(104);expec…
+     33|   expect(provenance.retainedOriginalRawMeshes).toEqual(old.allAuthored…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
