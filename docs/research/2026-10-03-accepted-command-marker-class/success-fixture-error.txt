@@ -1,0 +1,96 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-accepted-command-marker-class-audit-20261003
+
+ ❯ tests/integration/accepted-command-marker-class.test.ts (60 tests | 8 failed) 515ms
+   × real accepted command preserves its own history meaning: saved=false type='PlaceObject' 5ms
+   × real accepted command preserves its own history meaning: saved=false type='RemoveObject' 46ms
+   × real accepted command preserves its own history meaning: saved=false type='ReleaseGuardAssignment' 25ms
+   × real accepted command preserves its own history meaning: saved=false type='DismissAlert' 3ms
+   × real accepted command preserves its own history meaning: saved=true type='PlaceObject' 5ms
+   × real accepted command preserves its own history meaning: saved=true type='RemoveObject' 25ms
+   × real accepted command preserves its own history meaning: saved=true type='ReleaseGuardAssignment' 22ms
+   × real accepted command preserves its own history meaning: saved=true type='DismissAlert' 5ms
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 52 passed (60)
+   Start at  05:07:13
+   Duration  3.03s (transform 850ms, setup 0ms, import 2.39s, tests 515ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=false type='PlaceObject'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=true type='PlaceObject'
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/integration/accepted-command-marker-class.test.ts:168:34
+    166|   const { kernel: _beforeKernel, ...before } = captureSessionSnapshot(…
+    167|   send(runtime, action);
+    168|   expect(runtime.refusals.count).toBe(0);
+       |                                  ^
+    169|   const { kernel: _afterKernel, ...after } = captureSessionSnapshot(ru…
+    170|   expect(after).not.toEqual(before);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=false type='RemoveObject'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=true type='RemoveObject'
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ until tests/integration/accepted-command-marker-class.test.ts:86:23
+     84| function until(runtime: Runtime, predicate: () => boolean) {
+     85|   for (let tick = 0; tick < 30_000 && !predicate(); tick++) runtime.ke…
+     86|   expect(predicate()).toBe(true);
+       |                       ^
+     87| }
+     88| const successfulTypes: Record<SimulationCommand['type'], true> = {
+ ❯ tests/integration/accepted-command-marker-class.test.ts:122:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=false type='ReleaseGuardAssignment'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=true type='ReleaseGuardAssignment'
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ until tests/integration/accepted-command-marker-class.test.ts:86:23
+     84| function until(runtime: Runtime, predicate: () => boolean) {
+     85|   for (let tick = 0; tick < 30_000 && !predicate(); tick++) runtime.ke…
+     86|   expect(predicate()).toBe(true);
+       |                       ^
+     87| }
+     88| const successfulTypes: Record<SimulationCommand['type'], true> = {
+ ❯ tests/integration/accepted-command-marker-class.test.ts:114:44
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=false type='DismissAlert'
+ FAIL  tests/integration/accepted-command-marker-class.test.ts > real accepted command preserves its own history meaning: saved=true type='DismissAlert'
+AssertionError: expected undefined to be defined
+ ❯ tests/integration/accepted-command-marker-class.test.ts:146:21
+    144|     case 'DismissAlert': {
+    145|       const event = runtime.events.getSnapshot().records.at(-1)!;
+    146|       expect(event).toBeDefined();
+       |                     ^
+    147|       action = { type, fromSequence: event.sequence, throughSequence: …
+    148|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+

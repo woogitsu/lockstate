@@ -2,7 +2,7 @@ import { createConstructionCommandHandler, reportMaterialsFunding } from '../con
 import { isJustInTimePurchaseOrderId, type ProcurementSystem } from '../economy';
 import type { SimulationEventLog } from '../events';
 import type { CommandHandler } from '../kernel/kernel';
-import { type SimulationCommand, unpackCommand } from '../protocol/commands';
+import { unpackCommand } from '../protocol/commands';
 import {
   ADMIT_REFUSAL_REASONS,
   DISMISS_STAFF_REFUSAL_REASONS,
@@ -66,10 +66,9 @@ import { tileCoordinate } from '../world/coordinates';
  * `PrisonerOperationsRuntime` for the same reason: an admission is not a
  * construction order either.
  *
- * **The delegation is total, not a fallback.** Every command this does not
- * handle is passed through unchanged, including ones neither layer handles --
- * `unpackCommand` returning `null` is the decoder's business and is left to
- * the handler that owns it.
+ * **The delegation is explicit, not a fallback.** The remaining construction
+ * variants are passed through unchanged. The final `never` check requires a
+ * future variant to choose an effect; a malformed payload changes nothing.
  *
  * `PlaceObject` is the sixth, and it is the one command here that *turns into*
  * a construction order rather than avoiding being one: `ObjectPlacementService`
