@@ -2,6 +2,7 @@ import { expect, test, type Page } from './network-changed-fixture';
 import { SAVE_PANEL_MESSAGE_KEY } from '../../src/ui/save-panel-messages';
 import { HUD_MESSAGE_KEY } from '../../src/ui/hud';
 import { defaultMessageCatalogEn } from '../../src/services/localization';
+import { assertLayoutEscapeKeepsBuildPlacement } from './layout-menu-escape-acceptance';
 
 /**
  * Does the thing we actually built execute as a game?
@@ -377,3 +378,9 @@ test.describe('the production artefact runs the game', () => {
     ).toContain('simulation/clock-state');
   });
 });
+
+for (const renderer of ['world', 'oblique'] as const) {
+  test(`Production Full HD ${renderer} Layout Escape preserves armed Build`, async ({ page }, testInfo) => {
+    await assertLayoutEscapeKeepsBuildPlacement(page, testInfo, renderer);
+  });
+}
