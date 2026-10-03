@@ -3016,7 +3016,9 @@ function mountInterface(app: HTMLElement, host: InterfaceHost = {}): HudHandle {
 
         case 'arm-build-tool': {
           roomTemplateTool?.standDown();
-          if (!intent.armed) worldScene.cancelConstructionGesture();
+          // A held build belongs to its selection; a different row needs a new press.
+          if (!intent.armed || (tool?.isArmed() === true && intent.definitionId !== undefined &&
+              intent.definitionId !== tool.selectedDefinitionId)) worldScene.cancelConstructionGesture();
           /*
            * Also chrome, but it has a second half outside the HUD: it decides
            * whether a click on the *world* builds or moves the camera -- and,
