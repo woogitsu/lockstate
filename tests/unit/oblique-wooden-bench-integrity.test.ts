@@ -37,8 +37,11 @@ it('retains the original authored wooden bench mesh set and exports the authorit
   const footprint = defaultObjectRegistry.getById('object.bench')!.footprint;
   expect(provenance.footprintTiles).toEqual([footprint.width, footprint.height]);
   expect(catalog.assetId).toBe('furniture.corridor.bench.variants');
-  expect(catalog.source).toBe(provenance.source);
-  expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+  const detail = JSON.parse(readFileSync(new URL('assets/source/blender/furniture.corridor.bench.angled-detail.provenance.json', root), 'utf8')) as { source: string; sourceSha256: string; originalSource: string; originalSourceSha256: string };
+  expect(detail.originalSource).toBe(provenance.source);
+  expect(detail.originalSourceSha256).toBe(provenance.sourceSha256);
+  expect(catalog.source).toBe(detail.source);
+  expect(catalog.sourceSha256).toBe(detail.sourceSha256);
   expect(catalog.cameraTargetTiles).toEqual([footprint.width / 2, footprint.height / 2, 0.44325]);
   expect(catalog.nominalPixelsPerTile).toBe(64);
   expect(catalog.resolutionPx).toEqual([256, 256]);

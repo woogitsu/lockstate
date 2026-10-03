@@ -1,0 +1,33 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-next-default-model-source-audit-20261003
+
+ ❯ tests/unit/oblique-wooden-bench-crossrails-integrity.test.ts (2 tests | 1 failed) 25ms
+   × consumes the detailed default through the existing descriptor and decodes every canonical frame without clipping 11ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  08:48:33
+   Duration  307ms (transform 60ms, setup 0ms, import 166ms, tests 25ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-wooden-bench-crossrails-integrity.test.ts > consumes the detailed default through the existing descriptor and decodes every canonical frame without clipping
+AssertionError: /assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev20.4b14970b12b9.png: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/oblique-wooden-bench-crossrails-integrity.test.ts:75:51
+     73|     expect(png.subarray(0,8)).toEqual(Buffer.from([137,80,78,71,13,10,…
+     74|     expect([png.readUInt32BE(16),png.readUInt32BE(20)]).toEqual([256,2…
+     75|     expect(hasTransparentBorder(png),frame.image).toBe(true);
+       |                                                   ^
+     76|   }
+     77| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
