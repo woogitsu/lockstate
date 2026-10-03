@@ -1,0 +1,90 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-construction-history-v9-20261003
+
+ ❯ tests/integration/construction-history-restore-validation.test.ts (15 tests | 10 failed) 76ms
+   × direct runtime restore refuses 'negative' ledger before any construction mutation 14ms
+   × direct runtime restore refuses 'fractional' ledger before any construction mutation 4ms
+   × direct runtime restore refuses 'unsafe' ledger before any construction mutation 4ms
+   × direct runtime restore refuses 'NaN' ledger before any construction mutation 5ms
+   × direct runtime restore refuses 'Infinity' ledger before any construction mutation 3ms
+   × direct runtime restore refuses 'string' ledger before any construction mutation 3ms
+   × direct runtime restore refuses 'null value' ledger before any construction mutation 2ms
+   × direct runtime restore refuses 'empty ID' ledger before any construction mutation 2ms
+   × in-process host retains its live session when a raw malformed ledger is refused 3ms
+   × actual worker initialize raw snapshot validates the ledger without a save-envelope parser, damaged=true 4ms
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 5 passed (15)
+   Start at  19:19:52
+   Duration  2.44s (transform 818ms, setup 0ms, import 2.25s, tests 76ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/construction-history-restore-validation.test.ts > direct runtime restore refuses 'negative' ledger before any construction mutation
+ FAIL  tests/integration/construction-history-restore-validation.test.ts > direct runtime restore refuses 'fractional' ledger before any construction mutation
+ FAIL  tests/integration/construction-history-restore-validation.test.ts > direct runtime restore refuses 'unsafe' ledger before any construction mutation
+ FAIL  tests/integration/construction-history-restore-validation.test.ts > direct runtime restore refuses 'NaN' ledger before any construction mutation
+ FAIL  tests/integration/construction-history-restore-validation.test.ts > direct runtime restore refuses 'Infinity' ledger before any construction mutation
+ FAIL  tests/integration/construction-history-restore-validation.test.ts > direct runtime restore refuses 'string' ledger before any construction mutation
+ FAIL  tests/integration/construction-history-restore-validation.test.ts > direct runtime restore refuses 'null value' ledger before any construction mutation
+ FAIL  tests/integration/construction-history-restore-validation.test.ts > direct runtime restore refuses 'empty ID' ledger before any construction mutation
+AssertionError: expected function to throw an error, but it didn't
+ ❯ tests/integration/construction-history-restore-validation.test.ts:37:68
+     35|   const { runtime, bundle } = boughtBundle();
+     36|   const damaged = { ...bundle, construction: { ...bundle.construction,…
+     37|   expect(() => runtime.construction.restore(damaged.construction)).toT…
+       |                                                                    ^
+     38|   expect(captureSessionSnapshot(runtime)).toStrictEqual(bundle);
+     39|   expect(() => restoreSimulationRuntime(damaged)).toThrowError(Snapsho…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  tests/integration/construction-history-restore-validation.test.ts > in-process host retains its live session when a raw malformed ledger is refused
+AssertionError: promise resolved "undefined" instead of rejecting
+
+- Expected:
+Error {
+  "message": "rejected promise",
+}
+
++ Received:
+undefined
+
+ ❯ tests/integration/construction-history-restore-validation.test.ts:63:48
+     61|   const existing = host.getRuntime()!, before = captureSessionSnapshot…
+     62|   const damaged = { ...before, construction: { ...before.construction,…
+     63|   await expect(host.startFromSnapshot(damaged)).rejects.toMatchObject(…
+       |                                                ^
+     64|   expect(host.getRuntime()).toBe(existing);
+     65|   expect(captureSessionSnapshot(existing)).toStrictEqual(before);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  tests/integration/construction-history-restore-validation.test.ts > actual worker initialize raw snapshot validates the ledger without a save-envelope parser, damaged=true
+AssertionError: expected undefined to match object { kind: 'protocol/error', …(1) }
+
+- Expected:
+{
+  "kind": "protocol/error",
+  "payload": {
+    "code": "snapshot-incompatible",
+    "details": {
+      "snapshotRestore": "damaged-payload",
+    },
+  },
+}
+
++ Received:
+undefined
+
+ ❯ tests/integration/construction-history-restore-validation.test.ts:78:73
+     76|       schemaId: SESSION_SNAPSHOT_SCHEMA_ID, schemaVersion: SESSION_SNA…
+     77|   if (damaged) {
+     78|     expect(messages.find(message => message.kind === 'protocol/error')…
+       |                                                                         ^
+     79|       payload: { code: 'snapshot-incompatible', details: { snapshotRes…
+     80|     expect(messages.some(message => message.kind === 'simulation/ready…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
