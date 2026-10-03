@@ -586,6 +586,14 @@ export class WorldScene extends Phaser.Scene {
     const keyUp = (event: KeyboardEvent): void => {
       this.handleActionEvents(this.keyboard.keyUp(event));
     };
+    const disarmRovingArrows = (event: FocusEvent): void => {
+      const target = event.target;
+      if (!(target instanceof Element) || !target.matches('[role="radio"]') ||
+        target.closest('[role="radiogroup"]') === null) return;
+      // As in Oblique, list focus owns an arrow that started on the world.
+      // Its next keydown may never arrive; preserve unconsumed WASD keys.
+      this.keyboard.releaseCodes(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
+    };
     // A `keyup` goes to whichever window has focus, so holding a camera key and
     // alt-tabbing sends the release elsewhere and the key stays down forever --
     // measured at 1,419 world units of panning over three seconds, continuing
@@ -614,6 +622,7 @@ export class WorldScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       window.removeEventListener('keydown', keyDown);
       window.removeEventListener('keyup', keyUp);
+      window.removeEventListener('focusin', disarmRovingArrows);
       window.removeEventListener('blur', blur);
       canvas.removeEventListener('pointerdown', capturePointer);
       this.tiles?.destroy();
@@ -637,6 +646,7 @@ export class WorldScene extends Phaser.Scene {
     canvas.addEventListener('pointerdown', capturePointer);
     window.addEventListener('keydown', keyDown);
     window.addEventListener('keyup', keyUp);
+    window.addEventListener('focusin', disarmRovingArrows);
     window.addEventListener('blur', blur);
 
     this.input.on(
