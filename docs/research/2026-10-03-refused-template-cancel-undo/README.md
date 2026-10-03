@@ -38,4 +38,20 @@ Every source swap/mutation restores exact original bytes in `finally`; the workt
 
 The first expanded fixture used `top` instead of the existing command edge `north`, causing six schema errors; a restored zero revision minus one caused one more invalid-input error. These seven were fixture errors before the command boundary, not production failures. Correct actual `north` commands and positive unequal stale revisions yield the fourteen genuine baseline failures above.
 
-Neighboring/types/documentation gates are recorded when terminal.
+## Bounded neighboring and type/build gates
+
+**178 GREEN / 9 actual files**, 16.83 s:
+
+- `occupied-template-refusal-undo-selection.test.ts`
+- `room-template-occupied-material-cancel.test.ts`
+- `undo-refuses-a-transaction-the-player-did-not-just-create.test.ts`
+- `room-template-replacement-order-ownership.test.ts`
+- `room-template-pending-object-removal.test.ts`
+- `room-template-manual-door-removal.test.ts`
+- `command-success-notices.test.ts`
+- `room-template-occupied-cancel-atomicity.test.ts`
+- `template-deferred-history-order.test.ts`
+
+Both application and tools TypeScript gates exit 0. Production client build is GREEN, 7.19 s, with existing chunk-size/plugin timing warnings. The source remains byte-identical to the restored producer committed as `e748bf8e9e36eef07b41df320f92d5226862742e`. A bounded exact published-branch fetch makes the diagnostic/source citations available locally.
+
+Original documentation gates initially report the missing own research row. The own row is added; no historical coordinate, quotation budget, test guard or tolerance is changed. Process-local `GIT_NO_LAZY_FETCH=1` avoids the previously observed automatic network fetch during citation reads; missing real objects would still fail the unchanged guard. The original eight documentation gates are terminal **62 GREEN**, 4.42 s; only the own index row was required, with no live-anchor amendment.
