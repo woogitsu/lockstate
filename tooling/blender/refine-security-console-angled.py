@@ -190,6 +190,7 @@ def build():
         'retainedMeshesCount':9,'retainedMeshesBefore':raw_before,'retainedMeshesCorrected':raw_corrected,'retainedObjectMatrices':matrices_before,'retainedMaterialValues':materials_before,
         'acceptedExportFit':[1,.9,1],'footprintTiles':[2,1],'cameraTargetTiles':[1,.5,.65],'retainedEvaluatedPointSetMaximumError':maximum_error,
         'originalRawNormalAudit':original_raw_normals,'originalEvaluatedNormalAudit':original_evaluated_normals,'evaluatedOutwardNormalAudit':normals,'sourceEvaluatedBounds':{'min':minimum,'max':maximum},
+        'allAuthoredRawMeshes':[raw_record(o) for o in sorted(scene.objects,key=lambda o:o.name) if o.type=='MESH'],
         'addedMeshNames':sorted(set(after)-set(corrected)),'meshes':[{'name':name,'evaluatedVertices':len(row['points']),'evaluatedPositionSha256':row['evaluatedPositionSha256']} for name,row in sorted(after.items())]}
     pipeline_common.write_text(SOURCE.with_suffix('.provenance.json'),json.dumps(receipt,indent=2)+'\n')
     print('SECURITY_CONSOLE_SOURCE',receipt['sourceSha256'],len(after),sum(n['evaluatedPolygons'] for n in normals),minimum,maximum,flush=True)

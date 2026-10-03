@@ -43,6 +43,9 @@ def prepare_source(scene, model):
         raise ValueError('Security console retained/authored mesh set changed')
     # Actual evaluated normals include the original bevels and object transforms.
     audit.convex_normal_audit(scene)
+    raw_meshes = [audit.raw_record(obj) for obj in sorted(scene.objects, key=lambda obj: obj.name) if obj.type == 'MESH']
+    if raw_meshes != receipt['allAuthoredRawMeshes']:
+        raise ValueError('Security actual authored topology/material assignment/modifier data changed')
     for expected in receipt['meshes']:
         if rows[expected['name']]['evaluatedPositionSha256'] != expected['evaluatedPositionSha256']:
             raise ValueError('Security console actual evaluated authored geometry changed')

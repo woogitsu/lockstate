@@ -1,0 +1,64 @@
+{
+  "controls": [
+    {
+      "control": "omit-physical-keycap",
+      "exitCode": 1,
+      "error": "ValueError: Security console retained/authored mesh set changed"
+    },
+    {
+      "control": "move-physical-monitor-bezel",
+      "exitCode": 1,
+      "error": "ValueError: Security console actual evaluated authored geometry changed"
+    },
+    {
+      "control": "move-retained-control",
+      "exitCode": 1,
+      "error": "ValueError: Security console actual evaluated authored geometry changed"
+    },
+    {
+      "control": "change-retained-bevel",
+      "exitCode": 1,
+      "error": "ValueError: Security actual authored topology/material assignment/modifier data changed"
+    },
+    {
+      "control": "change-retained-material-graph",
+      "exitCode": 1,
+      "error": "ValueError: Security retained four material graphs changed"
+    },
+    {
+      "control": "change-added-keycap-material",
+      "exitCode": 1,
+      "error": "ValueError: Security actual authored topology/material assignment/modifier data changed"
+    },
+    {
+      "control": "wrong-loaded-X-scale",
+      "exitCode": 1,
+      "error": "ValueError: Security declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-accepted-target",
+      "exitCode": 1,
+      "error": "ValueError: Security declared occupied rectangle/source fit/accepted target changed"
+    },
+    {
+      "control": "wrong-canonical-descriptor",
+      "exitCode": 1,
+      "error": "ValueError: Security exporter targets the wrong canonical descriptor"
+    },
+    {
+      "control": "wrong-camera-span",
+      "exitCode": 1,
+      "error": "ValueError: Security actual camera pitch differs from64pixels per tile"
+    },
+    {
+      "control": "wrong-camera-vector",
+      "exitCode": 1,
+      "error": "ValueError: Security actual camera ground basis differs from world projection"
+    }
+  ],
+  "exactRestoredNativeVerifyExitCode": 0,
+  "sourceBytesUnchanged": true,
+  "wrapperSha256": "5026e318f5a05c8905b9ad695ecc892662789e8e8d9b976605939893fd1ddb0a",
+  "sourceSha256": "5b32b08dfed1b1dad0e79e4dc3f618937f7815f4208594c64b0d7b1c0d81207f",
+  "originalSourceSha256": "7b7c755e96cc460c6afa42d8a5e4a1f44480a21a6483cea122949290848db5d7"
+}
