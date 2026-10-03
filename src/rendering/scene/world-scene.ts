@@ -420,6 +420,16 @@ export class WorldScene extends Phaser.Scene {
   /** Explicit HUD disarming invalidates its unfinished press immediately. */
   public cancelConstructionGesture(): void { this.cancelAllGestures(); }
 
+  /** Repaint a changed individual selection at its retained anchor; cancel stale release. */
+  public refreshObjectToolPreview(): void {
+    const rect = this.objectRect;
+    this.cancelObject();
+    const footprint = this.objectTool?.footprint();
+    this.hoveredObjectTile = undefined;
+    this.objectRect = rect === undefined || footprint === undefined ? undefined : footprintRectAt(rect, footprint);
+    this.paintObjectPreview();
+  }
+
   public create(): void {
     this.cameras.main.setBackgroundColor(VOID_COLOR);
     this.tiles = new TileLayer(this);

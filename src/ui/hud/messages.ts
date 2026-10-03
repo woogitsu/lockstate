@@ -595,6 +595,7 @@ export const HUD_MESSAGE_KEY = {
   buildTemplateShower: 'hud.build.template-shower',
 
   buildArm: 'hud.build.arm',
+  buildRotateObject: 'hud.build.rotate-object',
   buildDisarm: 'hud.build.disarm',
   buildArmHint: 'hud.build.arm-hint',
   buildArmHintSquare: 'hud.build.arm-hint-square',
