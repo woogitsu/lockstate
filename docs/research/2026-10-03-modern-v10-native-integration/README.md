@@ -108,6 +108,7 @@ imports, including the empty-order-ID fix for#2027, were not in this client.
 | Cot capacity/q0/q1 | 1 GREEN / 1 RED / 1 not run | q0 completes and displays the owned cot. The unchanged blanket ROI returns72 against the original700 floor and stops before Save/Load. No new cot persistence acceptance is claimed. |
 | Toilet capacity/q0/q1 | 1 GREEN / 1 RED / 1 not run | q0 completed ownership, canonical source/HTTP/Blob, hardware-pose route and whole paused V10 Save/Load reach their assertions. Original palette ROIs return[0,22] before and after Load against unchanged100/8 floors; q1 does not run. |
 | Corrected Cot capacity/q0/q1 | 3 GREEN,2.1min | Both real completed owners and whole paused public V10 Save/Load pass. q0 retains the original blanket ROI and strict700 floor using keys derived from evaluated authored blanket meshes; q1 has its existing owner/HTTP/Blob/headboard-pose guards, without a new q1 blanket pixel claim. |
+| Full/cutaway square Brick wall, three public poses each | 6 GREEN,2.1min | Genuine construction, minimum200 visible masonry pixels and original20-pixel spill limits pass at−45/45,45/65 and45/80. Whole occupied1×1 footprint remains aligned with the actual authored frame at each pose. |
 
 All original runs, including failures, screenshots, worker receipts and
 terminal traces, are retained under the `integrated21d-*` entries in

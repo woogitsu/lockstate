@@ -1,0 +1,177 @@
+{
+  "cutaway": false,
+  "pose": {
+    "yaw": 45,
+    "elevation": 80,
+    "turns": 6,
+    "raises": 4
+  },
+  "point": {
+    "x": 1469.1168824543142,
+    "y": 540
+  },
+  "mapClick": {
+    "clientX": 383,
+    "clientY": 911,
+    "rect": {
+      "x": 239,
+      "y": 854,
+      "width": 224,
+      "height": 88
+    },
+    "fx": 0.6428571428571429,
+    "fy": 0.6477272727272727
+  },
+  "target": {
+    "x": 20.571428571428573,
+    "y": 20.727272727272727
+  },
+  "measured": {
+    "yaw": 45,
+    "elevation": 80,
+    "ground": [
+      {
+        "x": 968.8158767524556,
+        "y": 467.6504685381798
+      },
+      {
+        "x": 1025.3844192473794,
+        "y": 523.3596077637814
+      },
+      {
+        "x": 968.8158767524556,
+        "y": 579.0687469893828
+      },
+      {
+        "x": 912.2473342575317,
+        "y": 523.3596077637814
+      }
+    ],
+    "hull": [
+      {
+        "x": 912.2473342575317,
+        "y": 512.9407171037655
+      },
+      {
+        "x": 968.8158767524556,
+        "y": 457.231577878164
+      },
+      {
+        "x": 1025.3844192473794,
+        "y": 512.9407171037655
+      },
+      {
+        "x": 1025.3844192473794,
+        "y": 523.3596077637814
+      },
+      {
+        "x": 968.8158767524556,
+        "y": 579.0687469893828
+      },
+      {
+        "x": 912.2473342575317,
+        "y": 523.3596077637814
+      }
+    ],
+    "authoredHull": [
+      {
+        "x": 912.2473342575317,
+        "y": 498.0025120593394
+      },
+      {
+        "x": 968.8158767524556,
+        "y": 446.73400149487634
+      },
+      {
+        "x": 1025.3844192473794,
+        "y": 498.0025120593394
+      },
+      {
+        "x": 1025.3844192473794,
+        "y": 523.3596077637814
+      },
+      {
+        "x": 968.8158767524556,
+        "y": 574.6281183282445
+      },
+      {
+        "x": 912.2473342575317,
+        "y": 523.3596077637814
+      }
+    ],
+    "groundMinX": 912.2473342575317,
+    "groundMaxX": 1025.3844192473794,
+    "masonryInside": 4976,
+    "masonryOutside": 776,
+    "masonryOutsideGroundSpan": 0,
+    "masonryOutsideAuthoredHull": 0,
+    "outsideBounds": {
+      "left": 913,
+      "top": 449,
+      "right": 1023,
+      "bottom": 503
+    }
+  },
+  "wallTextures": [
+    "http://127.0.0.1:5392/game-content/oblique-square-brick-full-wall.v1.json",
+    "http://127.0.0.1:5392/game-content/oblique-square-brick-low-wall.v1.json",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-full-wall-yaw-045-elev45.0b190bd964b6.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-low-wall-yaw-045-elev45.1f712df62e5e.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-full-wall-yaw-030-elev45.91efe52a05f7.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-low-wall-yaw-030-elev45.6e34ad2b3b07.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-full-wall-yaw-015-elev45.79d9c85d9de4.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-low-wall-yaw-015-elev45.6400567e6bef.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-low-wall-yaw+000-elev45.a8b8fbee8cd5.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-full-wall-yaw+000-elev45.f4298f70f5ec.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-full-wall-yaw%2B000-elev45.f4298f70f5ec.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-low-wall-yaw%2B000-elev45.a8b8fbee8cd5.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-full-wall-yaw+015-elev45.e5814cf5eb5f.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-low-wall-yaw+015-elev45.31d2677710f5.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-low-wall-yaw%2B015-elev45.31d2677710f5.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-full-wall-yaw%2B015-elev45.e5814cf5eb5f.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-full-wall-yaw+030-elev45.be50939d7de5.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-low-wall-yaw+030-elev45.eb756ff209de.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-low-wall-yaw%2B030-elev45.eb756ff209de.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-full-wall-yaw%2B030-elev45.be50939d7de5.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-full-wall-yaw+045-elev45.012663cc0c9b.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-low-wall-yaw+045-elev45.48603357483d.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-low-wall-yaw%2B045-elev45.48603357483d.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-full-wall-yaw%2B045-elev45.012663cc0c9b.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-full-wall-yaw+045-elev65.37dccc7bfa27.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-low-wall-yaw+045-elev65.a3bd4eabe0d5.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-low-wall-yaw%2B045-elev65.a3bd4eabe0d5.png",
+    "http://127.0.0.1:5392/assets/environment/oblique/square-brick-full-wall-yaw%2B045-elev65.37dccc7bfa27.png"
+  ],
+  "snapshot": [
+    {
+      "id": "order-380ceb3f-6551-4100-902e-9692ac94142a",
+      "definitionId": "wall-brick",
+      "location": {
+        "x": 20,
+        "y": 20
+      },
+      "footprint": "square",
+      "placementSequence": 2,
+      "state": "completed",
+      "progress": 50,
+      "materialsAllocated": [
+        {
+          "itemId": "item.brick",
+          "quantity": 2
+        }
+      ],
+      "assignedWorkerId": "mock-worker-1"
+    }
+  ],
+  "workerCommands": [
+    {
+      "type": "PlaceBuildOrder",
+      "orderId": "order-380ceb3f-6551-4100-902e-9692ac94142a",
+      "definitionId": "wall-brick",
+      "x": 20,
+      "y": 20,
+      "footprint": "square",
+      "transactionId": "build-d82681d9-69b2-4b0c-a0a0-2d5cbc4b573b"
+    }
+  ]
+}

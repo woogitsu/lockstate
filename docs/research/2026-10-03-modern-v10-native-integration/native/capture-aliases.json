@@ -2222,5 +2222,222 @@
     "sourceSha256": "4efbdf3766735069e4e9b27eb1d978d1fbc53e33c50ebc8acd99f3a516d99eb5",
     "archivedBytes": 1504356,
     "archivedSha256": "4efbdf3766735069e4e9b27eb1d978d1fbc53e33c50ebc8acd99f3a516d99eb5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004.json",
+    "archived": "integrated21d-wall/report.json",
+    "sourceBytes": 10820,
+    "sourceSha256": "1de85cb9a376d172f3e2c48e5421857155c931117d153150782a615ebedc5fc7",
+    "archivedBytes": 10820,
+    "archivedSha256": "1de85cb9a376d172f3e2c48e5421857155c931117d153150782a615ebedc5fc7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004.txt",
+    "archived": "integrated21d-wall/console.txt",
+    "sourceBytes": 5318,
+    "sourceSha256": "0a5fec69137a3c18aa4729c0ddeaeb29ced31129f3ae4b864c62730aa5d1aaf3",
+    "archivedBytes": 2672,
+    "archivedSha256": "620fe716c70aadbf704f5475a25186ff6e2d746e3c219e1e50aadd80cdc43611",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\.last-run.json",
+    "archived": "integrated21d-wall/001-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-28939-osen-whole-square-at--45-45\\native-completed-wall.png",
+    "archived": "integrated21d-wall/002-native-completed-wall.png",
+    "sourceBytes": 1503244,
+    "sourceSha256": "9b955b3feb89e09770bd4e8b2cf252ae088cb7bdb517b5af6ce2ae0800b35216",
+    "archivedBytes": 1503244,
+    "archivedSha256": "9b955b3feb89e09770bd4e8b2cf252ae088cb7bdb517b5af6ce2ae0800b35216"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-28939-osen-whole-square-at--45-45\\native-ground-footprint.json",
+    "archived": "integrated21d-wall/003-native-ground-footprint.json",
+    "sourceBytes": 3327,
+    "sourceSha256": "1872ff259000bb1f1f19703bf8180c1b02ef9d3704c53dfb9e1b2e4f3d21baae",
+    "archivedBytes": 3327,
+    "archivedSha256": "1872ff259000bb1f1f19703bf8180c1b02ef9d3704c53dfb9e1b2e4f3d21baae"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-28939-osen-whole-square-at--45-45\\native-wall-canvas.png",
+    "archived": "integrated21d-wall/004-native-wall-canvas.png",
+    "sourceBytes": 1503244,
+    "sourceSha256": "9b955b3feb89e09770bd4e8b2cf252ae088cb7bdb517b5af6ce2ae0800b35216",
+    "archivedBytes": 1503244,
+    "archivedSha256": "9b955b3feb89e09770bd4e8b2cf252ae088cb7bdb517b5af6ce2ae0800b35216"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-28939-osen-whole-square-at--45-45\\whole-square-preview.png",
+    "archived": "integrated21d-wall/005-whole-square-preview.png",
+    "sourceBytes": 1683348,
+    "sourceSha256": "8e1aa738156586a8bdb11a644c614ce44b43275bb53f4cf9314e932a6df4819e",
+    "archivedBytes": 1683348,
+    "archivedSha256": "8e1aa738156586a8bdb11a644c614ce44b43275bb53f4cf9314e932a6df4819e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-330cc-hosen-whole-square-at-45-80\\native-completed-wall.png",
+    "archived": "integrated21d-wall/006-native-completed-wall.png",
+    "sourceBytes": 1497502,
+    "sourceSha256": "dbc94200bd834ace53c940184bd27af0be7ceb210534e5190ef465fd5e045750",
+    "archivedBytes": 1497502,
+    "archivedSha256": "dbc94200bd834ace53c940184bd27af0be7ceb210534e5190ef465fd5e045750"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-330cc-hosen-whole-square-at-45-80\\native-ground-footprint.json",
+    "archived": "integrated21d-wall/007-native-ground-footprint.json",
+    "sourceBytes": 6008,
+    "sourceSha256": "4df5e438e8128adf440633475be2837b9f0b900d52a2d97d99bb9f10372bd02d",
+    "archivedBytes": 6008,
+    "archivedSha256": "4df5e438e8128adf440633475be2837b9f0b900d52a2d97d99bb9f10372bd02d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-330cc-hosen-whole-square-at-45-80\\native-wall-canvas.png",
+    "archived": "integrated21d-wall/008-native-wall-canvas.png",
+    "sourceBytes": 1497502,
+    "sourceSha256": "dbc94200bd834ace53c940184bd27af0be7ceb210534e5190ef465fd5e045750",
+    "archivedBytes": 1497502,
+    "archivedSha256": "dbc94200bd834ace53c940184bd27af0be7ceb210534e5190ef465fd5e045750"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-330cc-hosen-whole-square-at-45-80\\whole-square-preview.png",
+    "archived": "integrated21d-wall/009-whole-square-preview.png",
+    "sourceBytes": 1683348,
+    "sourceSha256": "8e1aa738156586a8bdb11a644c614ce44b43275bb53f4cf9314e932a6df4819e",
+    "archivedBytes": 1683348,
+    "archivedSha256": "8e1aa738156586a8bdb11a644c614ce44b43275bb53f4cf9314e932a6df4819e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-53ce2-hosen-whole-square-at-45-65\\native-completed-wall.png",
+    "archived": "integrated21d-wall/010-native-completed-wall.png",
+    "sourceBytes": 1520119,
+    "sourceSha256": "cd61f437e5710f20569ba5835cba43a9c2652891355142c5bff73f4ab9079788",
+    "archivedBytes": 1520119,
+    "archivedSha256": "cd61f437e5710f20569ba5835cba43a9c2652891355142c5bff73f4ab9079788"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-53ce2-hosen-whole-square-at-45-65\\native-ground-footprint.json",
+    "archived": "integrated21d-wall/011-native-ground-footprint.json",
+    "sourceBytes": 6013,
+    "sourceSha256": "e9d99c5dcd4a0c66f5ef5c474694c1df89c888f6eb2dcafc11516fa05c362d9d",
+    "archivedBytes": 6013,
+    "archivedSha256": "e9d99c5dcd4a0c66f5ef5c474694c1df89c888f6eb2dcafc11516fa05c362d9d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-53ce2-hosen-whole-square-at-45-65\\native-wall-canvas.png",
+    "archived": "integrated21d-wall/012-native-wall-canvas.png",
+    "sourceBytes": 1520119,
+    "sourceSha256": "cd61f437e5710f20569ba5835cba43a9c2652891355142c5bff73f4ab9079788",
+    "archivedBytes": 1520119,
+    "archivedSha256": "cd61f437e5710f20569ba5835cba43a9c2652891355142c5bff73f4ab9079788"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-53ce2-hosen-whole-square-at-45-65\\whole-square-preview.png",
+    "archived": "integrated21d-wall/013-whole-square-preview.png",
+    "sourceBytes": 1683348,
+    "sourceSha256": "8e1aa738156586a8bdb11a644c614ce44b43275bb53f4cf9314e932a6df4819e",
+    "archivedBytes": 1683348,
+    "archivedSha256": "8e1aa738156586a8bdb11a644c614ce44b43275bb53f4cf9314e932a6df4819e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-a885b-hosen-whole-square-at-45-65\\native-completed-wall.png",
+    "archived": "integrated21d-wall/014-native-completed-wall.png",
+    "sourceBytes": 1758157,
+    "sourceSha256": "cbbb8cd841d216ee72b03174a537a8d48952e2a30de73fd9b730b82201146f7a",
+    "archivedBytes": 1758157,
+    "archivedSha256": "cbbb8cd841d216ee72b03174a537a8d48952e2a30de73fd9b730b82201146f7a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-a885b-hosen-whole-square-at-45-65\\native-ground-footprint.json",
+    "archived": "integrated21d-wall/015-native-ground-footprint.json",
+    "sourceBytes": 5788,
+    "sourceSha256": "0ab498dfbce5bb0e4cac0142f8d698b34d6b9d462d1710dd453c5c7abeddd553",
+    "archivedBytes": 5788,
+    "archivedSha256": "0ab498dfbce5bb0e4cac0142f8d698b34d6b9d462d1710dd453c5c7abeddd553"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-a885b-hosen-whole-square-at-45-65\\native-wall-canvas.png",
+    "archived": "integrated21d-wall/016-native-wall-canvas.png",
+    "sourceBytes": 1758157,
+    "sourceSha256": "cbbb8cd841d216ee72b03174a537a8d48952e2a30de73fd9b730b82201146f7a",
+    "archivedBytes": 1758157,
+    "archivedSha256": "cbbb8cd841d216ee72b03174a537a8d48952e2a30de73fd9b730b82201146f7a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-a885b-hosen-whole-square-at-45-65\\whole-square-preview.png",
+    "archived": "integrated21d-wall/017-whole-square-preview.png",
+    "sourceBytes": 1862153,
+    "sourceSha256": "5be6eba7be10ef4f96bac6ef532196796fc3c95f3db9a45e18dfd3048ac1bb81",
+    "archivedBytes": 1862153,
+    "archivedSha256": "5be6eba7be10ef4f96bac6ef532196796fc3c95f3db9a45e18dfd3048ac1bb81"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-d19fd-hosen-whole-square-at-45-80\\native-completed-wall.png",
+    "archived": "integrated21d-wall/018-native-completed-wall.png",
+    "sourceBytes": 1740463,
+    "sourceSha256": "cf6a1741a9c626d0178429ccacf4de5480e9fb6672bf87ca95a1291f2100a9d6",
+    "archivedBytes": 1740463,
+    "archivedSha256": "cf6a1741a9c626d0178429ccacf4de5480e9fb6672bf87ca95a1291f2100a9d6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-d19fd-hosen-whole-square-at-45-80\\native-ground-footprint.json",
+    "archived": "integrated21d-wall/019-native-ground-footprint.json",
+    "sourceBytes": 5786,
+    "sourceSha256": "e6e4392e0ee71a125af452bd5432cb2f54e88e6d1608f03193e75347cbc8ef3c",
+    "archivedBytes": 5786,
+    "archivedSha256": "e6e4392e0ee71a125af452bd5432cb2f54e88e6d1608f03193e75347cbc8ef3c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-d19fd-hosen-whole-square-at-45-80\\native-wall-canvas.png",
+    "archived": "integrated21d-wall/020-native-wall-canvas.png",
+    "sourceBytes": 1740463,
+    "sourceSha256": "cf6a1741a9c626d0178429ccacf4de5480e9fb6672bf87ca95a1291f2100a9d6",
+    "archivedBytes": 1740463,
+    "archivedSha256": "cf6a1741a9c626d0178429ccacf4de5480e9fb6672bf87ca95a1291f2100a9d6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-d19fd-hosen-whole-square-at-45-80\\whole-square-preview.png",
+    "archived": "integrated21d-wall/021-whole-square-preview.png",
+    "sourceBytes": 1862153,
+    "sourceSha256": "5be6eba7be10ef4f96bac6ef532196796fc3c95f3db9a45e18dfd3048ac1bb81",
+    "archivedBytes": 1862153,
+    "archivedSha256": "5be6eba7be10ef4f96bac6ef532196796fc3c95f3db9a45e18dfd3048ac1bb81"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-da6a9-osen-whole-square-at--45-45\\native-completed-wall.png",
+    "archived": "integrated21d-wall/022-native-completed-wall.png",
+    "sourceBytes": 1756941,
+    "sourceSha256": "0445062c3665b3351842e52d09f4bf2e1a3da888ee7dd3642e8d1b0089d85866",
+    "archivedBytes": 1756941,
+    "archivedSha256": "0445062c3665b3351842e52d09f4bf2e1a3da888ee7dd3642e8d1b0089d85866"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-da6a9-osen-whole-square-at--45-45\\native-ground-footprint.json",
+    "archived": "integrated21d-wall/023-native-ground-footprint.json",
+    "sourceBytes": 3330,
+    "sourceSha256": "3174215969353c65adfab8c15e5cd6ddf9c638b3b41a52162e0fd747f1d934cc",
+    "archivedBytes": 3330,
+    "archivedSha256": "3174215969353c65adfab8c15e5cd6ddf9c638b3b41a52162e0fd747f1d934cc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-da6a9-osen-whole-square-at--45-45\\native-wall-canvas.png",
+    "archived": "integrated21d-wall/024-native-wall-canvas.png",
+    "sourceBytes": 1756941,
+    "sourceSha256": "0445062c3665b3351842e52d09f4bf2e1a3da888ee7dd3642e8d1b0089d85866",
+    "archivedBytes": 1756941,
+    "archivedSha256": "0445062c3665b3351842e52d09f4bf2e1a3da888ee7dd3642e8d1b0089d85866"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-wall-native-20261004\\oblique-square-wall-native-da6a9-osen-whole-square-at--45-45\\whole-square-preview.png",
+    "archived": "integrated21d-wall/025-whole-square-preview.png",
+    "sourceBytes": 1862153,
+    "sourceSha256": "5be6eba7be10ef4f96bac6ef532196796fc3c95f3db9a45e18dfd3048ac1bb81",
+    "archivedBytes": 1862153,
+    "archivedSha256": "5be6eba7be10ef4f96bac6ef532196796fc3c95f3db9a45e18dfd3048ac1bb81"
   }
 ]

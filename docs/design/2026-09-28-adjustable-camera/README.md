@@ -1774,3 +1774,19 @@ routes also pass. Root is integrating subsequent Common Room/Kitchen matrices
 and the prepared public open-View Fit fix; current three lanes cover Kitchen
 fridge art, Fit runtime preparation and concrete historical-failure triage.
 Complete exact-head release gates still follow the integrated real game.
+
+2026-10-04 subsequent actual checkpoint: frozen21dba6ee includes genuine
+Common Room/Kitchen retained-material matrices and the open-View Fit producer.
+Cot completed owners and whole public V10 Save/Load pass in both rotations;
+its q0 blanket keeps the original700 floor with mesh-derived source colors.
+Six real full/cutaway wall cases retain square-footprint alignment through
+three camera poses. UI100 whole-cell preview/held rotation/release passes.
+UI200 has a reproduced inspector overlap; the existing manual fold exposes
+all28 squares without changing the accepted origin or quote. The owner is
+offered temporary automatic fold/restore versus manual fold, with actual
+comparison photos in [the durable integration record](../../research/2026-10-03-modern-v10-native-integration/README.md).
+Later source integrates modern Canteen table/bench plus#2027 empty-order-ID,
+#2028 stale Wall→Door gesture and#2002 obsolete template busy-owner fixes.
+Those later producer changes require a new combined build and release gates.
+Current lanes cover Kitchen/Toilet material observers and the existing manual
+fold paint defect. New matrices or passing source checks alone are not release.
