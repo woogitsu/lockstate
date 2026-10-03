@@ -1,0 +1,30 @@
+{
+  "actualControls": [
+    {
+      "control": "actual .blend writing tablet rigid z+0.22, matched provenance source hash",
+      "mutatedSourceSHA256": "303b95290fb95351ca32cb17abc52ce86732be8ce5a5c165c396ddb02a25a252",
+      "exitCode": 1,
+      "reason": "Classroom student chair actual contact disconnected: Classroom student chair.sealed timber writing tablet / Classroom student chair.continuous petrol tablet bearer"
+    },
+    {
+      "control": "actual producer omits its own dispatch tuple",
+      "exitCode": 1,
+      "reason": "Classroom student chair dedicated producer dispatch changed"
+    },
+    {
+      "control": "actual valid RGBA PNG with opaque corner, matched descriptor hash and filename hash",
+      "badPNG_SHA256": "5fa579de127ec16894e03e83b35409ca6a03d6eaea1cfc6d40a5bb4254d11a51",
+      "exitCode": 1,
+      "reason": "Classroom student chair PNG transparent border"
+    }
+  ],
+  "boundedNewRepeatRenderCount": 0,
+  "sourceSHA256": "0c3d7dc54a594659c810f8e1d76bd4980bf1293f7a5b22c367805760de1a9b1b",
+  "provenanceSHA256": "ee83fc4d8838be9e48a7ce28a2aa56b5833e714f6500b667d56c5d0ea6f9ba75",
+  "descriptorSHA256": "13332d4efde722a47b2805143e04cba68bdc9739866e840436cd4a1e0aaf071e",
+  "exactSourceProvenanceProducerDescriptorRestoration": true,
+  "all72OwnExportsExactBytePreservation": true,
+  "originalSchoolChair72ExportsAndSharedFilesUnchanged": true,
+  "restoredProducerExitCode": 0,
+  "restoredUnitExitCode": 0
+}
