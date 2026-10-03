@@ -1924,5 +1924,198 @@
     "sourceSha256": "4a40769199ec12a0b1dc68593697f65ac3093ca0e22f05e0527ef4f9d5581772",
     "archivedBytes": 15875,
     "archivedSha256": "4a40769199ec12a0b1dc68593697f65ac3093ca0e22f05e0527ef4f9d5581772"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004.json",
+    "archived": "integrated21d-toilet-original/report.json",
+    "sourceBytes": 13597,
+    "sourceSha256": "c34a9f0c9525a26d48feb45a0778eadaa6319d66c593040ef1d0c2ee9ea04d8d",
+    "archivedBytes": 13597,
+    "archivedSha256": "c34a9f0c9525a26d48feb45a0778eadaa6319d66c593040ef1d0c2ee9ea04d8d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004.txt",
+    "archived": "integrated21d-toilet-original/console.txt",
+    "sourceBytes": 10710,
+    "sourceSha256": "3a9c59096768ed007ec8a1137e32210cca5df0d3d97a2c0ad2f255e12d83b13d",
+    "archivedBytes": 5592,
+    "archivedSha256": "af56dda11c6365075d8bcde096fc15a03fa1c5ea282150850872034e1b78c98e",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\.last-run.json",
+    "archived": "integrated21d-toilet-original/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "94ee4c617a3e602d2cb1b47a1884b0e85e7834f3fea4c9e43cc37826cfd3591e",
+    "archivedBytes": 96,
+    "archivedSha256": "94ee4c617a3e602d2cb1b47a1884b0e85e7834f3fea4c9e43cc37826cfd3591e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\attachments\\dedicated-cell-toilet-worker-and-save-evidence-458c6e4ceec2d9b1303a4aba88f352c3486261f4.json",
+    "archived": "integrated21d-toilet-original/002-dedicated-cell-toilet-worker-and-save-evidence-458c6e4ceec2d9b13.json",
+    "sourceBytes": 136213,
+    "sourceSha256": "14df81b1e78779c2641f99fc6a2316bc73241f1840f7d606666061b95d77b4d6",
+    "archivedBytes": 136213,
+    "archivedSha256": "14df81b1e78779c2641f99fc6a2316bc73241f1840f7d606666061b95d77b4d6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "integrated21d-toilet-original/003-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 56745,
+    "sourceSha256": "117b0def3f9d752d0ab1e710c0b3f0d0fffb98ed13ced0b2d22ae19b5481fbb9",
+    "archivedBytes": 56745,
+    "archivedSha256": "117b0def3f9d752d0ab1e710c0b3f0d0fffb98ed13ced0b2d22ae19b5481fbb9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "integrated21d-toilet-original/004-completed-worker-snapshot.json",
+    "sourceBytes": 78225,
+    "sourceSha256": "0cf01e8f7fca7d0e706cbbc6ef051a95a76a4440e75f2b1da06287b00282d89a",
+    "archivedBytes": 78225,
+    "archivedSha256": "0cf01e8f7fca7d0e706cbbc6ef051a95a76a4440e75f2b1da06287b00282d89a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\dedicated-cell-toilet-loaded-fullhd.png",
+    "archived": "integrated21d-toilet-original/005-dedicated-cell-toilet-loaded-fullhd.png",
+    "sourceBytes": 1533753,
+    "sourceSha256": "bd9de6f541b14649451d18e5a733fef4185019d1138cde10a718bac6a3845e24",
+    "archivedBytes": 1533753,
+    "archivedSha256": "bd9de6f541b14649451d18e5a733fef4185019d1138cde10a718bac6a3845e24"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-and-save-evidence.json",
+    "archived": "integrated21d-toilet-original/006-dedicated-cell-toilet-worker-and-save-evidence.json",
+    "sourceBytes": 136213,
+    "sourceSha256": "14df81b1e78779c2641f99fc6a2316bc73241f1840f7d606666061b95d77b4d6",
+    "archivedBytes": 136213,
+    "archivedSha256": "14df81b1e78779c2641f99fc6a2316bc73241f1840f7d606666061b95d77b4d6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-completed-fullhd.png",
+    "archived": "integrated21d-toilet-original/007-dedicated-cell-toilet-worker-completed-fullhd.png",
+    "sourceBytes": 1563045,
+    "sourceSha256": "e9781afef1b24bd5aa5031bcf77f2396c1a3fdaefc73dd07f21e2b324fa5f8c7",
+    "archivedBytes": 1563045,
+    "archivedSha256": "e9781afef1b24bd5aa5031bcf77f2396c1a3fdaefc73dd07f21e2b324fa5f8c7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\error-context.md",
+    "archived": "integrated21d-toilet-original/008-error-context.md",
+    "sourceBytes": 9669,
+    "sourceSha256": "3b07b682545c1e7725d59a8268ac9d07f9f8e56b1b400fc2bf87439610ea821e",
+    "archivedBytes": 9669,
+    "archivedSha256": "3b07b682545c1e7725d59a8268ac9d07f9f8e56b1b400fc2bf87439610ea821e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "integrated21d-toilet-original/009-failed-player-fullhd.png",
+    "sourceBytes": 1472244,
+    "sourceSha256": "4dda109c1ad29527c022cc829220ce9c578ab63d757824a24fc36b47da3ce8b3",
+    "archivedBytes": 1472244,
+    "archivedSha256": "4dda109c1ad29527c022cc829220ce9c578ab63d757824a24fc36b47da3ce8b3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\failed-player-worker-snapshot.json",
+    "archived": "integrated21d-toilet-original/010-failed-player-worker-snapshot.json",
+    "sourceBytes": 78225,
+    "sourceSha256": "d7af6b923248f8bf0b5d337c63430a7a982a559d930db6213fd5d7fafbaa3f76",
+    "archivedBytes": 78225,
+    "archivedSha256": "d7af6b923248f8bf0b5d337c63430a7a982a559d930db6213fd5d7fafbaa3f76"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\failed-toilet-raw-network-provenance.json",
+    "archived": "integrated21d-toilet-original/011-failed-toilet-raw-network-provenance.json",
+    "sourceBytes": 4532,
+    "sourceSha256": "8fea563dde8acbabeaded3021b9e5910f2b90a3405aa8a5f5016f4c3d0ec4b39",
+    "archivedBytes": 4532,
+    "archivedSha256": "8fea563dde8acbabeaded3021b9e5910f2b90a3405aa8a5f5016f4c3d0ec4b39"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "integrated21d-toilet-original/012-loaded-worker-snapshot.json",
+    "sourceBytes": 78225,
+    "sourceSha256": "7d02520e4fb1cedd908854cbcc65b6d29d137915bff6dc31a208a4aff3f8a01d",
+    "archivedBytes": 78225,
+    "archivedSha256": "7d02520e4fb1cedd908854cbcc65b6d29d137915bff6dc31a208a4aff3f8a01d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-actual-network-and-htmlimage-evidence.json",
+    "archived": "integrated21d-toilet-original/013-toilet-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 24198,
+    "sourceSha256": "37170c9c6b6e03a5fd3501dd4fb5a77963f5379722c30d5eba7f84595fae051d",
+    "archivedBytes": 24198,
+    "archivedSha256": "37170c9c6b6e03a5fd3501dd4fb5a77963f5379722c30d5eba7f84595fae051d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-actual200-exposed-frame.png",
+    "archived": "integrated21d-toilet-original/014-toilet-actual200-exposed-frame.png",
+    "sourceBytes": 14657,
+    "sourceSha256": "12522e96db7e5cd627928558800c25dda9a33f43643a999213443144a30df312",
+    "archivedBytes": 14657,
+    "archivedSha256": "12522e96db7e5cd627928558800c25dda9a33f43643a999213443144a30df312"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-completed-whole-paused-worker-snapshot.json",
+    "archived": "integrated21d-toilet-original/015-toilet-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 78225,
+    "sourceSha256": "688c92a76f4be8bc21b0c8e77424740813ac636001a26b919c58ec42cd66b504",
+    "archivedBytes": 78225,
+    "archivedSha256": "688c92a76f4be8bc21b0c8e77424740813ac636001a26b919c58ec42cd66b504"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-detail-pending-native-recipe.json",
+    "archived": "integrated21d-toilet-original/016-toilet-detail-pending-native-recipe.json",
+    "sourceBytes": 25926,
+    "sourceSha256": "b7b730a7b029be391a581f94cd198550a96315c98e70458862e0f7502ed0cf9b",
+    "archivedBytes": 25926,
+    "archivedSha256": "b7b730a7b029be391a581f94cd198550a96315c98e70458862e0f7502ed0cf9b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-detail-whole-paused-worker-snapshot.json",
+    "archived": "integrated21d-toilet-original/017-toilet-detail-whole-paused-worker-snapshot.json",
+    "sourceBytes": 78225,
+    "sourceSha256": "528876795d08725e134bc5a9a8e6f672130bee1daf180b0d78f190e31cf3207e",
+    "archivedBytes": 78225,
+    "archivedSha256": "528876795d08725e134bc5a9a8e6f672130bee1daf180b0d78f190e31cf3207e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-loaded-whole-paused-worker-snapshot.json",
+    "archived": "integrated21d-toilet-original/018-toilet-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 78225,
+    "sourceSha256": "c4fd4ceb2a5f86ddd4b55e214fb31f9a0a8bcda15909d0873c2cbe631ff7a313",
+    "archivedBytes": 78225,
+    "archivedSha256": "c4fd4ceb2a5f86ddd4b55e214fb31f9a0a8bcda15909d0873c2cbe631ff7a313"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-raw-response-provenance.json",
+    "archived": "integrated21d-toilet-original/019-toilet-raw-response-provenance.json",
+    "sourceBytes": 4532,
+    "sourceSha256": "8fea563dde8acbabeaded3021b9e5910f2b90a3405aa8a5f5016f4c3d0ec4b39",
+    "archivedBytes": 4532,
+    "archivedSha256": "8fea563dde8acbabeaded3021b9e5910f2b90a3405aa8a5f5016f4c3d0ec4b39"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-transfer-neck-local45-elev40-loaded-fullhd.png",
+    "archived": "integrated21d-toilet-original/020-toilet-transfer-neck-local45-elev40-loaded-fullhd.png",
+    "sourceBytes": 1472244,
+    "sourceSha256": "4dda109c1ad29527c022cc829220ce9c578ab63d757824a24fc36b47da3ce8b3",
+    "archivedBytes": 1472244,
+    "archivedSha256": "4dda109c1ad29527c022cc829220ce9c578ab63d757824a24fc36b47da3ce8b3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "integrated21d-toilet-original/021-worker-and-completed-save-evidence.json",
+    "sourceBytes": 286,
+    "sourceSha256": "482e6438dc06b7d58d6cfd680bf68ce8fee5823b539763a1196fddb717e6c716",
+    "archivedBytes": 286,
+    "archivedSha256": "482e6438dc06b7d58d6cfd680bf68ce8fee5823b539763a1196fddb717e6c716"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-native-20261004\\dedicated-cell-toilet-play-d5a09--capacity-before-Basic-cell\\capacity-completed-worker-snapshot.json",
+    "archived": "integrated21d-toilet-original/022-capacity-completed-worker-snapshot.json",
+    "sourceBytes": 56745,
+    "sourceSha256": "beee0c10f123e1e674bcdbf10e4ddb153ad409f281c3abccb3b668d3c64f51cc",
+    "archivedBytes": 56745,
+    "archivedSha256": "beee0c10f123e1e674bcdbf10e4ddb153ad409f281c3abccb3b668d3c64f51cc"
   }
 ]

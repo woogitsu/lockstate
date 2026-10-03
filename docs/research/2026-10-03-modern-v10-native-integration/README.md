@@ -106,11 +106,12 @@ imports, including the empty-order-ID fix for#2027, were not in this client.
 | Corrected exposed-cursor CameraA Fit UI100/UI200 | 1 GREEN / 1 RED,39.4s | UI200 reaches the genuine accepted q1 mirrored Basic cell and1530 quote. Its actual floor0 crosses the visible right rail. This is a product geometry failure, not the original fixture failure. |
 | Kitchen capacity/q0/q1 | 1 GREEN / 1 RED / 1 not run | q0 completed owners, precise cost, actual stove HTTP/decoded Blob and whole paused V10 Save/Load pass. Original material ROIs return stove[1,0] and fridge[0,394], below unchanged original floors. Serial q1 does not run. |
 | Cot capacity/q0/q1 | 1 GREEN / 1 RED / 1 not run | q0 completes and displays the owned cot. The unchanged blanket ROI returns72 against the original700 floor and stops before Save/Load. No new cot persistence acceptance is claimed. |
+| Toilet capacity/q0/q1 | 1 GREEN / 1 RED / 1 not run | q0 completed ownership, canonical source/HTTP/Blob, hardware-pose route and whole paused V10 Save/Load reach their assertions. Original palette ROIs return[0,22] before and after Load against unchanged100/8 floors; q1 does not run. |
 
-All four original runs, including failures, screenshots, worker receipts and
+All original runs, including failures, screenshots, worker receipts and
 terminal traces, are retained under the `integrated21d-*` entries in
 [the capture index](./native/capture-aliases.json). The original Kitchen and
-Cot FullHD screenshots were opened and show the delivered modern models.
+Cot and Toilet FullHD screenshots were opened and show the delivered modern models.
 Material classifier calibration must distinguish their actual authored
 surfaces from floors, walls and unrelated objects without reducing a pixel
 floor. A visible model alone is not a passing material gate.

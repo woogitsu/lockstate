@@ -1,0 +1,86 @@
+
+node : [1A[2K[2m[WebServer] [22m(node:33860) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env be
+ing set.
+At line:2 char:375
++ ... ix+'.json'; node node_modules/@playwright/test/cli.js test dedicated- ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([1A[2K[2m[We... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wra
+ngler.json configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+
+Running 3 tests using 1 worker
+
+[1A[2K(node:63728) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K(node:63728) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1A[2K[1/3] tests\browser\dedicated-cell-toilet-player-build.spec.ts:198:1 › player creates storage and delivery capacity before Basic cell
+[1A[2K[2/3] tests\browser\dedicated-cell-toilet-player-build.spec.ts:264:3 › player builds Basic cell at quarterTurns0 and retains toilet palettes and anchors after Save/Load
+[1A[2K  1) tests\browser\dedicated-cell-toilet-player-build.spec.ts:264:3 › player builds Basic cell at quarterTurns0 and retains toilet palettes and anchors after Save/Load 
+
+    Error: toilet 1 authored palette after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      237 |   }, null, 2));
+      238 |   beforePixels.forEach((count, index) => expect.soft(count, `toilet ${index + 1} authored palette after construction`)
+    > 239 |     .toBeGreaterThan(index === 0 ? 100 : 8));
+          |      ^
+      240 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      241 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      242 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\dedicated-cell-toilet-player-build.spec.ts:239:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\dedicated-cell-toilet-player-build.spec.ts:238:16
+
+    Error: toilet 1 authored palette after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      258 |   const afterPixels = await toiletPalettePixels(page, loaded, quarterTurns);
+      259 |   afterPixels.forEach((count, index) => expect.soft(count, `toilet ${index + 1} authored palette after Load`)
+    > 260 |     .toBeGreaterThan(index === 0 ? 100 : 8));
+          |      ^
+      261 |   expect(afterPixels).toEqual(beforePixels);
+      262 |   const evidencePath = info.outputPath('dedicated-cell-toilet-worker-and-save-evidence.json');
+      263 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\dedicated-cell-toilet-player-build.spec.ts:260:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\dedicated-cell-toilet-player-build.spec.ts:259:15
+
+    attachment #1: dedicated-cell-toilet-worker-and-save-evidence (application/json) ───────────────
+    ..\..\..\AppData\Local\Temp\lockstate-modern-integrated-21d-toilet-native-20261004\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\attachments\dedicated-cell-toilet-worker-and-save-evidence-458c6e4ceec2d9b1303a4aba88f352c3486261f4.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-modern-integrated-21d-toilet-native-20261004\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\error-context.md
+
+
+[1A[2K[3/3] tests\browser\dedicated-cell-toilet-player-build.spec.ts:264:3 › player builds Basic cell at quarterTurns1 and retains toilet palettes and anchors after Save/Load
+[1A[2K  1 failed
+    tests\browser\dedicated-cell-toilet-player-build.spec.ts:264:3 › player builds Basic cell at quarterTurns0 and retains toilet palettes and anchors after Save/Load 
+  1 did not run
+  1 passed (1.5m)
