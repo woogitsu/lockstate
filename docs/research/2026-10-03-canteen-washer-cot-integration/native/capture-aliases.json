@@ -568,5 +568,110 @@
     "sourceSha256": "97513acc3c956188d9b3c736619228bde1ec7c7f30bc1d4a6e88d8cb6341b29e",
     "archivedBytes": 252652,
     "archivedSha256": "97513acc3c956188d9b3c736619228bde1ec7c7f30bc1d4a6e88d8cb6341b29e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-hire-initial-20261003.json",
+    "archived": "history-hire-initial/report.json",
+    "sourceBytes": 13398,
+    "sourceSha256": "605d9ae0c25b76c9ee780d04848332a422151b9e792b29c42e9c28f94f4603c1",
+    "archivedBytes": 13398,
+    "archivedSha256": "605d9ae0c25b76c9ee780d04848332a422151b9e792b29c42e9c28f94f4603c1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-hire-initial-20261003.txt",
+    "archived": "history-hire-initial/console.txt",
+    "sourceBytes": 9082,
+    "sourceSha256": "a0c9462ebf09cee86db5d4283b5ec9f58a4311cbced2025578e4d451dc72bdc3",
+    "archivedBytes": 4557,
+    "archivedSha256": "baa41c093160d3cb17039e9165778e5a5b7a9b7fe819971a4fe7c0e1a093ca59",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-hire-initial-20261003\\.last-run.json",
+    "archived": "history-hire-initial/001-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "a49e0a023304adbf4f84e98ae6e72ebbfb1fc053ff8d9fef6867ed317e9df154",
+    "archivedBytes": 96,
+    "archivedSha256": "a49e0a023304adbf4f84e98ae6e72ebbfb1fc053ff8d9fef6867ed317e9df154"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-hire-initial-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\attachments\\actual-public-Guard-worker-and-loader-evidence-b861e8755dc1d35dd71707f90deb8ee976671fbf.json",
+    "archived": "history-hire-initial/002-actual-public-Guard-worker-and-loader-evidence-b861e8755dc1d35dd71707f90deb8ee97",
+    "sourceBytes": 169839,
+    "sourceSha256": "cbeb47b559113d4d317698677132a08de65bbbe3a2ffd118f5e0d5d8440a1a0b",
+    "archivedBytes": 169839,
+    "archivedSha256": "cbeb47b559113d4d317698677132a08de65bbbe3a2ffd118f5e0d5d8440a1a0b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-hire-initial-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\guard-empty-world-control-canvas.png",
+    "archived": "history-hire-initial/003-guard-empty-world-control-canvas.png",
+    "sourceBytes": 1517883,
+    "sourceSha256": "51b7ed32812f44fbe8dce72757c2e2e896b70f1f2f6ae7e266fbfaf5c6281a9e",
+    "archivedBytes": 1517883,
+    "archivedSha256": "51b7ed32812f44fbe8dce72757c2e2e896b70f1f2f6ae7e266fbfaf5c6281a9e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-hire-initial-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\hired-guard-before-save-canvas.png",
+    "archived": "history-hire-initial/004-hired-guard-before-save-canvas.png",
+    "sourceBytes": 1558701,
+    "sourceSha256": "a192eb5737501d32d63d3206993454e0bf2674e5f34f6323dd8134fa5ec32c13",
+    "archivedBytes": 1558701,
+    "archivedSha256": "a192eb5737501d32d63d3206993454e0bf2674e5f34f6323dd8134fa5ec32c13"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-hire-initial-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\hired-guard-before-save-fullhd.png",
+    "archived": "history-hire-initial/005-hired-guard-before-save-fullhd.png",
+    "sourceBytes": 1558701,
+    "sourceSha256": "a192eb5737501d32d63d3206993454e0bf2674e5f34f6323dd8134fa5ec32c13",
+    "archivedBytes": 1558701,
+    "archivedSha256": "a192eb5737501d32d63d3206993454e0bf2674e5f34f6323dd8134fa5ec32c13"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-hire-initial-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\hired-guard-loaded-fullhd.png",
+    "archived": "history-hire-initial/006-hired-guard-loaded-fullhd.png",
+    "sourceBytes": 1532885,
+    "sourceSha256": "71cf1b90c6d8bb5f763e5c56069ff84ce9b794397a47812a8afb18eccae77246",
+    "archivedBytes": 1532885,
+    "archivedSha256": "71cf1b90c6d8bb5f763e5c56069ff84ce9b794397a47812a8afb18eccae77246"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-hire-initial-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\hired-guard-rear-band-pending-calibration-fullhd.png",
+    "archived": "history-hire-initial/007-hired-guard-rear-band-pending-calibration-fullhd.png",
+    "sourceBytes": 249001,
+    "sourceSha256": "718346335e1df112b325fbb2e7e8229abf0cea1a89674963ea45a1ac2be8d481",
+    "archivedBytes": 249001,
+    "archivedSha256": "718346335e1df112b325fbb2e7e8229abf0cea1a89674963ea45a1ac2be8d481"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-hire-initial-20261003\\hired-guard-player-build-a-ae7f6-dy-through-paused-Save-Load\\hired-guard-worker-save-and-loader-evidence.json",
+    "archived": "history-hire-initial/008-hired-guard-worker-save-and-loader-evidence.json",
+    "sourceBytes": 169839,
+    "sourceSha256": "cbeb47b559113d4d317698677132a08de65bbbe3a2ffd118f5e0d5d8440a1a0b",
+    "archivedBytes": 169839,
+    "archivedSha256": "cbeb47b559113d4d317698677132a08de65bbbe3a2ffd118f5e0d5d8440a1a0b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-hire-initial-20261003\\room-template-history-verd-aa149-ationary-Cell-history-cases\\error-context.md",
+    "archived": "history-hire-initial/009-error-context.md",
+    "sourceBytes": 13644,
+    "sourceSha256": "35131baa70e4eebab20cd04d4393c7262d54e0be58f4dd377f31e117ecf46363",
+    "archivedBytes": 13644,
+    "archivedSha256": "35131baa70e4eebab20cd04d4393c7262d54e0be58f4dd377f31e117ecf46363"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-hire-initial-20261003\\room-template-history-verd-aa149-ationary-Cell-history-cases\\failed-actual-fullhd.png",
+    "archived": "history-hire-initial/010-failed-actual-fullhd.png",
+    "sourceBytes": 1646414,
+    "sourceSha256": "8f0692265b390af2db26325705e27eb53626b5e3191d67171d8c21b0e61b797b",
+    "archivedBytes": 1646414,
+    "archivedSha256": "8f0692265b390af2db26325705e27eb53626b5e3191d67171d8c21b0e61b797b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-history-hire-initial-20261003\\room-template-history-verd-aa149-ationary-Cell-history-cases\\failed-actual-worker-and-input.json",
+    "archived": "history-hire-initial/011-failed-actual-worker-and-input.json",
+    "sourceBytes": 55503,
+    "sourceSha256": "649eb37939cf49df765cd87ed9e43a9a444539360b612d2d59334a021962783d",
+    "archivedBytes": 55503,
+    "archivedSha256": "649eb37939cf49df765cd87ed9e43a9a444539360b612d2d59334a021962783d"
   }
 ]

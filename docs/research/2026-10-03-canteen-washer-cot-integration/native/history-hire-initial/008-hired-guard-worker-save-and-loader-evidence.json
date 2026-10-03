@@ -1,0 +1,5054 @@
+{
+  "subject": "genuine public HireStaff, no injected actor feed",
+  "empty": {
+    "masterSeed": 3964179742,
+    "kernel": {
+      "tick": 0,
+      "expectedSequence": 0,
+      "rngStates": [
+        {
+          "name": "contraband.detection",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              1626643598,
+              955082721,
+              2175930607,
+              1972398901
+            ]
+          }
+        },
+        {
+          "name": "contraband.intelligence",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2741540940,
+              276097368,
+              1432057449,
+              582385290
+            ]
+          }
+        },
+        {
+          "name": "contraband.introduction",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2563715544,
+              3131109645,
+              2475984376,
+              292129576
+            ]
+          }
+        },
+        {
+          "name": "identity.actor-name",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2074125064,
+              1572528856,
+              1170864708,
+              1439744682
+            ]
+          }
+        },
+        {
+          "name": "prisoners.classification",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2693137283,
+              383493226,
+              703274253,
+              2713613289
+            ]
+          }
+        },
+        {
+          "name": "prisoners.sentence",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              659959954,
+              2258480248,
+              3908986638,
+              21873668
+            ]
+          }
+        }
+      ],
+      "commands": []
+    },
+    "world": {
+      "version": 1,
+      "chunkSize": 32,
+      "ownedChunks": [
+        {
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "chunks": [
+        {
+          "x": 0,
+          "y": 0,
+          "lifecycle": "loaded",
+          "geometryRevision": 0,
+          "contentRevision": 0,
+          "dirty": false,
+          "terrain": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "topEdge": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "leftEdge": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "zoning": [
+            [
+              0,
+              1024
+            ]
+          ]
+        }
+      ]
+    },
+    "construction": {
+      "orders": [],
+      "undoStack": [],
+      "redoStack": []
+    },
+    "entities": {
+      "capacity": 5000,
+      "nextAvailableIndex": 0,
+      "maxActiveIndex": -1,
+      "generations": [
+        [
+          0,
+          5000
+        ]
+      ],
+      "freeIndices": [],
+      "alive": [
+        [
+          0,
+          5000
+        ]
+      ]
+    },
+    "simulation": {
+      "regimeSchedules": [
+        {
+          "classificationGroupId": "general-population",
+          "blocks": [
+            {
+              "startTickOfDay": 0,
+              "endTickOfDay": 400,
+              "allowedCategories": [
+                "sleep"
+              ]
+            },
+            {
+              "startTickOfDay": 400,
+              "endTickOfDay": 500,
+              "allowedCategories": [
+                "meal",
+                "hygiene"
+              ]
+            },
+            {
+              "startTickOfDay": 500,
+              "endTickOfDay": 1000,
+              "allowedCategories": [
+                "work",
+                "education",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1000,
+              "endTickOfDay": 1200,
+              "allowedCategories": [
+                "recreation",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1200,
+              "endTickOfDay": 1300,
+              "allowedCategories": [
+                "meal"
+              ]
+            },
+            {
+              "startTickOfDay": 1300,
+              "endTickOfDay": 1800,
+              "allowedCategories": [
+                "work",
+                "education",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1800,
+              "endTickOfDay": 2000,
+              "allowedCategories": [
+                "recreation",
+                "hygiene",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2000,
+              "endTickOfDay": 2100,
+              "allowedCategories": [
+                "meal"
+              ]
+            },
+            {
+              "startTickOfDay": 2100,
+              "endTickOfDay": 2300,
+              "allowedCategories": [
+                "recreation",
+                "hygiene",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2300,
+              "endTickOfDay": 2400,
+              "allowedCategories": [
+                "sleep"
+              ]
+            }
+          ]
+        },
+        {
+          "classificationGroupId": "high-risk",
+          "blocks": [
+            {
+              "startTickOfDay": 0,
+              "endTickOfDay": 2000,
+              "allowedCategories": [
+                "sleep",
+                "meal",
+                "hygiene"
+              ]
+            },
+            {
+              "startTickOfDay": 2000,
+              "endTickOfDay": 2200,
+              "allowedCategories": [
+                "recreation",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2200,
+              "endTickOfDay": 2400,
+              "allowedCategories": [
+                "sleep",
+                "meal",
+                "hygiene"
+              ]
+            }
+          ]
+        }
+      ],
+      "prisoners": {
+        "components": {
+          "activeLength": 0,
+          "sentenceLengthTicks": [],
+          "priorIncidentsAtIntake": [],
+          "sentenceEndTick": [],
+          "riskTier": [],
+          "classificationGroupIndex": [],
+          "intakeStage": [],
+          "solitarySanctionEndTick": [],
+          "injured": [],
+          "needs": {
+            "hunger": [],
+            "sleep": [],
+            "hygiene": [],
+            "bladder": [],
+            "safety": [],
+            "recreation": []
+          },
+          "actionIndex": [],
+          "actionPhase": [],
+          "phaseStartedAtTick": [],
+          "needFulfilledLastTick": [],
+          "tileX": [],
+          "tileY": []
+        },
+        "coldState": {
+          "accommodationInstanceId": [],
+          "currentActionTargetInstanceId": []
+        },
+        "roomInstanceDefinitions": [],
+        "roomInstanceOccupancy": []
+      },
+      "operations": {
+        "containers": [
+          [
+            "construction-materials",
+            []
+          ]
+        ],
+        "jobs": [],
+        "jobWorkers": {
+          "workers": [],
+          "busy": []
+        },
+        "electricity": {
+          "type": "electricity",
+          "nodes": [],
+          "connections": [],
+          "failedNodeIds": []
+        },
+        "water": {
+          "type": "water",
+          "nodes": [],
+          "connections": [],
+          "failedNodeIds": []
+        }
+      },
+      "navigation": {
+        "doors": []
+      },
+      "security": {
+        "sectorDefinitions": [
+          {
+            "id": "security-sector.prison",
+            "gradeId": "grade.general",
+            "doorIds": [],
+            "postTile": {
+              "x": 16,
+              "y": 16
+            }
+          }
+        ],
+        "sectorControlStates": [
+          [
+            "security-sector.prison",
+            "normal"
+          ]
+        ],
+        "guards": {
+          "entityStore": {
+            "capacity": 500,
+            "nextAvailableIndex": 0,
+            "maxActiveIndex": -1,
+            "generations": [
+              [
+                0,
+                500
+              ]
+            ],
+            "freeIndices": [],
+            "alive": [
+              [
+                0,
+                500
+              ]
+            ]
+          },
+          "records": []
+        },
+        "schedules": [
+          {
+            "sectorId": "security-sector.prison",
+            "blocks": [
+              {
+                "startTickOfDay": 0,
+                "endTickOfDay": 2400,
+                "requiredGuardCount": 1
+              }
+            ]
+          }
+        ],
+        "deployment": {
+          "metrics": {
+            "deploymentFailures": 0
+          }
+        },
+        "patrol": {
+          "metrics": {
+            "loopsCompletedOnTime": 0,
+            "loopsCompletedLate": 0,
+            "loopsMissed": 0
+          }
+        }
+      },
+      "contraband": {
+        "items": [],
+        "intelligence": [],
+        "intelligenceSequence": 0,
+        "informants": [],
+        "confiscations": [],
+        "searchPolicies": [
+          {
+            "scope": "cell",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 40,
+            "baseDetectionProbability": 0.7,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.2
+          },
+          {
+            "scope": "delivery",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 25,
+            "baseDetectionProbability": 0.6,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.15
+          },
+          {
+            "scope": "person",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 20,
+            "baseDetectionProbability": 0.75,
+            "concealmentPenaltyPerPoint": 0.06,
+            "intelligenceConfidenceBonus": 0.2
+          },
+          {
+            "scope": "sector",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 15,
+            "baseDetectionProbability": 0.5,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.25
+          }
+        ],
+        "searchContainerLocations": [],
+        "search": {
+          "queue": [],
+          "active": [],
+          "metrics": {
+            "itemsDiscovered": 0,
+            "itemsMissed": 0,
+            "searchesCompleted": 0,
+            "searchesCancelled": 0
+          }
+        }
+      },
+      "economy": {
+        "treasury": {
+          "balanceMinorUnits": 25000
+        },
+        "procurement": {
+          "pending": []
+        },
+        "payroll": {
+          "unpaidWagesMinorUnits": 0
+        }
+      },
+      "objects": {
+        "placedObjects": []
+      },
+      "alerts": {
+        "sequence": 0,
+        "records": [],
+        "dismissed": []
+      },
+      "inFlight": {
+        "navigation": {
+          "pending": [],
+          "results": []
+        },
+        "prisoners": {
+          "locomotion": {
+            "walks": [],
+            "headings": []
+          },
+          "pathRequestIds": [],
+          "requestSequence": 0
+        },
+        "guards": {
+          "locomotion": {
+            "walks": [],
+            "headings": []
+          },
+          "deploymentRequestSequence": 0,
+          "patrolRequestSequence": 0
+        },
+        "search": {
+          "requestSequence": 0,
+          "jobs": []
+        }
+      },
+      "incidents": {
+        "log": [],
+        "sectorRisk": [],
+        "gangs": {
+          "definitions": [
+            {
+              "id": "gang.alpha",
+              "territorySectorIds": [
+                "security-sector.prison"
+              ]
+            },
+            {
+              "id": "gang.beta",
+              "territorySectorIds": [
+                "security-sector.prison"
+              ]
+            }
+          ],
+          "members": [],
+          "reputation": [
+            [
+              "gang.alpha",
+              0.5
+            ],
+            [
+              "gang.beta",
+              0.5
+            ]
+          ],
+          "grudges": []
+        },
+        "tunnels": [],
+        "watchedSectorIds": [
+          "security-sector.prison"
+        ],
+        "trigger": {
+          "metrics": {
+            "incidentsTriggered": 0,
+            "riotsTriggered": 0,
+            "retaliationsTriggered": 0
+          },
+          "sequence": 0
+        },
+        "response": {
+          "metrics": {
+            "incidentsResolved": 0,
+            "incidentsLapsed": 0,
+            "respondersDispatched": 0,
+            "routeFailures": 0
+          }
+        }
+      }
+    },
+    "identity": {
+      "version": 1,
+      "poolId": "placeholder.v1",
+      "entries": []
+    }
+  },
+  "pausedBefore": {
+    "masterSeed": 3964179742,
+    "kernel": {
+      "tick": 0,
+      "expectedSequence": 1,
+      "rngStates": [
+        {
+          "name": "contraband.detection",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              1626643598,
+              955082721,
+              2175930607,
+              1972398901
+            ]
+          }
+        },
+        {
+          "name": "contraband.intelligence",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2741540940,
+              276097368,
+              1432057449,
+              582385290
+            ]
+          }
+        },
+        {
+          "name": "contraband.introduction",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2563715544,
+              3131109645,
+              2475984376,
+              292129576
+            ]
+          }
+        },
+        {
+          "name": "identity.actor-name",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              1092266157,
+              1538642338,
+              2668708406,
+              2170468758
+            ]
+          }
+        },
+        {
+          "name": "prisoners.classification",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2693137283,
+              383493226,
+              703274253,
+              2713613289
+            ]
+          }
+        },
+        {
+          "name": "prisoners.sentence",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              659959954,
+              2258480248,
+              3908986638,
+              21873668
+            ]
+          }
+        }
+      ],
+      "commands": []
+    },
+    "world": {
+      "version": 1,
+      "chunkSize": 32,
+      "ownedChunks": [
+        {
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "chunks": [
+        {
+          "x": 0,
+          "y": 0,
+          "lifecycle": "loaded",
+          "geometryRevision": 0,
+          "contentRevision": 0,
+          "dirty": false,
+          "terrain": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "topEdge": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "leftEdge": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "zoning": [
+            [
+              0,
+              1024
+            ]
+          ]
+        }
+      ]
+    },
+    "construction": {
+      "orders": [],
+      "undoStack": [],
+      "redoStack": []
+    },
+    "entities": {
+      "capacity": 5000,
+      "nextAvailableIndex": 0,
+      "maxActiveIndex": -1,
+      "generations": [
+        [
+          0,
+          5000
+        ]
+      ],
+      "freeIndices": [],
+      "alive": [
+        [
+          0,
+          5000
+        ]
+      ]
+    },
+    "simulation": {
+      "regimeSchedules": [
+        {
+          "classificationGroupId": "general-population",
+          "blocks": [
+            {
+              "startTickOfDay": 0,
+              "endTickOfDay": 400,
+              "allowedCategories": [
+                "sleep"
+              ]
+            },
+            {
+              "startTickOfDay": 400,
+              "endTickOfDay": 500,
+              "allowedCategories": [
+                "meal",
+                "hygiene"
+              ]
+            },
+            {
+              "startTickOfDay": 500,
+              "endTickOfDay": 1000,
+              "allowedCategories": [
+                "work",
+                "education",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1000,
+              "endTickOfDay": 1200,
+              "allowedCategories": [
+                "recreation",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1200,
+              "endTickOfDay": 1300,
+              "allowedCategories": [
+                "meal"
+              ]
+            },
+            {
+              "startTickOfDay": 1300,
+              "endTickOfDay": 1800,
+              "allowedCategories": [
+                "work",
+                "education",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1800,
+              "endTickOfDay": 2000,
+              "allowedCategories": [
+                "recreation",
+                "hygiene",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2000,
+              "endTickOfDay": 2100,
+              "allowedCategories": [
+                "meal"
+              ]
+            },
+            {
+              "startTickOfDay": 2100,
+              "endTickOfDay": 2300,
+              "allowedCategories": [
+                "recreation",
+                "hygiene",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2300,
+              "endTickOfDay": 2400,
+              "allowedCategories": [
+                "sleep"
+              ]
+            }
+          ]
+        },
+        {
+          "classificationGroupId": "high-risk",
+          "blocks": [
+            {
+              "startTickOfDay": 0,
+              "endTickOfDay": 2000,
+              "allowedCategories": [
+                "sleep",
+                "meal",
+                "hygiene"
+              ]
+            },
+            {
+              "startTickOfDay": 2000,
+              "endTickOfDay": 2200,
+              "allowedCategories": [
+                "recreation",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2200,
+              "endTickOfDay": 2400,
+              "allowedCategories": [
+                "sleep",
+                "meal",
+                "hygiene"
+              ]
+            }
+          ]
+        }
+      ],
+      "prisoners": {
+        "components": {
+          "activeLength": 0,
+          "sentenceLengthTicks": [],
+          "priorIncidentsAtIntake": [],
+          "sentenceEndTick": [],
+          "riskTier": [],
+          "classificationGroupIndex": [],
+          "intakeStage": [],
+          "solitarySanctionEndTick": [],
+          "injured": [],
+          "needs": {
+            "hunger": [],
+            "sleep": [],
+            "hygiene": [],
+            "bladder": [],
+            "safety": [],
+            "recreation": []
+          },
+          "actionIndex": [],
+          "actionPhase": [],
+          "phaseStartedAtTick": [],
+          "needFulfilledLastTick": [],
+          "tileX": [],
+          "tileY": []
+        },
+        "coldState": {
+          "accommodationInstanceId": [],
+          "currentActionTargetInstanceId": []
+        },
+        "roomInstanceDefinitions": [],
+        "roomInstanceOccupancy": []
+      },
+      "operations": {
+        "containers": [
+          [
+            "construction-materials",
+            []
+          ]
+        ],
+        "jobs": [],
+        "jobWorkers": {
+          "workers": [],
+          "busy": []
+        },
+        "electricity": {
+          "type": "electricity",
+          "nodes": [],
+          "connections": [],
+          "failedNodeIds": []
+        },
+        "water": {
+          "type": "water",
+          "nodes": [],
+          "connections": [],
+          "failedNodeIds": []
+        }
+      },
+      "navigation": {
+        "doors": []
+      },
+      "security": {
+        "sectorDefinitions": [
+          {
+            "id": "security-sector.prison",
+            "gradeId": "grade.general",
+            "doorIds": [],
+            "postTile": {
+              "x": 16,
+              "y": 16
+            }
+          }
+        ],
+        "sectorControlStates": [
+          [
+            "security-sector.prison",
+            "normal"
+          ]
+        ],
+        "guards": {
+          "entityStore": {
+            "capacity": 500,
+            "nextAvailableIndex": 1,
+            "maxActiveIndex": 0,
+            "generations": [
+              [
+                0,
+                500
+              ]
+            ],
+            "freeIndices": [],
+            "alive": [
+              [
+                1,
+                1
+              ],
+              [
+                0,
+                499
+              ]
+            ]
+          },
+          "records": [
+            [
+              0,
+              {
+                "staffRoleId": "staff-role.guard",
+                "tileX": 16,
+                "tileY": 16,
+                "deploymentPhase": "unassigned"
+              }
+            ]
+          ]
+        },
+        "schedules": [
+          {
+            "sectorId": "security-sector.prison",
+            "blocks": [
+              {
+                "startTickOfDay": 0,
+                "endTickOfDay": 2400,
+                "requiredGuardCount": 1
+              }
+            ]
+          }
+        ],
+        "deployment": {
+          "metrics": {
+            "deploymentFailures": 0
+          }
+        },
+        "patrol": {
+          "metrics": {
+            "loopsCompletedOnTime": 0,
+            "loopsCompletedLate": 0,
+            "loopsMissed": 0
+          }
+        }
+      },
+      "contraband": {
+        "items": [],
+        "intelligence": [],
+        "intelligenceSequence": 0,
+        "informants": [],
+        "confiscations": [],
+        "searchPolicies": [
+          {
+            "scope": "cell",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 40,
+            "baseDetectionProbability": 0.7,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.2
+          },
+          {
+            "scope": "delivery",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 25,
+            "baseDetectionProbability": 0.6,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.15
+          },
+          {
+            "scope": "person",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 20,
+            "baseDetectionProbability": 0.75,
+            "concealmentPenaltyPerPoint": 0.06,
+            "intelligenceConfidenceBonus": 0.2
+          },
+          {
+            "scope": "sector",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 15,
+            "baseDetectionProbability": 0.5,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.25
+          }
+        ],
+        "searchContainerLocations": [],
+        "search": {
+          "queue": [],
+          "active": [],
+          "metrics": {
+            "itemsDiscovered": 0,
+            "itemsMissed": 0,
+            "searchesCompleted": 0,
+            "searchesCancelled": 0
+          }
+        }
+      },
+      "economy": {
+        "treasury": {
+          "balanceMinorUnits": 24920
+        },
+        "procurement": {
+          "pending": []
+        },
+        "payroll": {
+          "unpaidWagesMinorUnits": 0
+        }
+      },
+      "objects": {
+        "placedObjects": []
+      },
+      "alerts": {
+        "sequence": 0,
+        "records": [],
+        "dismissed": []
+      },
+      "inFlight": {
+        "navigation": {
+          "pending": [],
+          "results": []
+        },
+        "prisoners": {
+          "locomotion": {
+            "walks": [],
+            "headings": []
+          },
+          "pathRequestIds": [],
+          "requestSequence": 0
+        },
+        "guards": {
+          "locomotion": {
+            "walks": [],
+            "headings": []
+          },
+          "deploymentRequestSequence": 0,
+          "patrolRequestSequence": 0
+        },
+        "search": {
+          "requestSequence": 0,
+          "jobs": []
+        }
+      },
+      "incidents": {
+        "log": [],
+        "sectorRisk": [],
+        "gangs": {
+          "definitions": [
+            {
+              "id": "gang.alpha",
+              "territorySectorIds": [
+                "security-sector.prison"
+              ]
+            },
+            {
+              "id": "gang.beta",
+              "territorySectorIds": [
+                "security-sector.prison"
+              ]
+            }
+          ],
+          "members": [],
+          "reputation": [
+            [
+              "gang.alpha",
+              0.5
+            ],
+            [
+              "gang.beta",
+              0.5
+            ]
+          ],
+          "grudges": []
+        },
+        "tunnels": [],
+        "watchedSectorIds": [
+          "security-sector.prison"
+        ],
+        "trigger": {
+          "metrics": {
+            "incidentsTriggered": 0,
+            "riotsTriggered": 0,
+            "retaliationsTriggered": 0
+          },
+          "sequence": 0
+        },
+        "response": {
+          "metrics": {
+            "incidentsResolved": 0,
+            "incidentsLapsed": 0,
+            "respondersDispatched": 0,
+            "routeFailures": 0
+          }
+        }
+      }
+    },
+    "identity": {
+      "version": 1,
+      "poolId": "placeholder.v1",
+      "entries": [
+        {
+          "kind": "staff",
+          "entityId": 0,
+          "givenName": "Sonia",
+          "familyName": "Bakker"
+        }
+      ]
+    }
+  },
+  "pausedAfter": {
+    "masterSeed": 3964179742,
+    "kernel": {
+      "tick": 0,
+      "expectedSequence": 1,
+      "rngStates": [
+        {
+          "name": "contraband.detection",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              1626643598,
+              955082721,
+              2175930607,
+              1972398901
+            ]
+          }
+        },
+        {
+          "name": "contraband.intelligence",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2741540940,
+              276097368,
+              1432057449,
+              582385290
+            ]
+          }
+        },
+        {
+          "name": "contraband.introduction",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2563715544,
+              3131109645,
+              2475984376,
+              292129576
+            ]
+          }
+        },
+        {
+          "name": "identity.actor-name",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              1092266157,
+              1538642338,
+              2668708406,
+              2170468758
+            ]
+          }
+        },
+        {
+          "name": "prisoners.classification",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2693137283,
+              383493226,
+              703274253,
+              2713613289
+            ]
+          }
+        },
+        {
+          "name": "prisoners.sentence",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              659959954,
+              2258480248,
+              3908986638,
+              21873668
+            ]
+          }
+        }
+      ],
+      "commands": []
+    },
+    "world": {
+      "version": 1,
+      "chunkSize": 32,
+      "ownedChunks": [
+        {
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "chunks": [
+        {
+          "x": 0,
+          "y": 0,
+          "lifecycle": "loaded",
+          "geometryRevision": 0,
+          "contentRevision": 0,
+          "dirty": false,
+          "terrain": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "topEdge": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "leftEdge": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "zoning": [
+            [
+              0,
+              1024
+            ]
+          ]
+        }
+      ]
+    },
+    "construction": {
+      "orders": [],
+      "undoStack": [],
+      "redoStack": []
+    },
+    "entities": {
+      "capacity": 5000,
+      "nextAvailableIndex": 0,
+      "maxActiveIndex": -1,
+      "generations": [
+        [
+          0,
+          5000
+        ]
+      ],
+      "freeIndices": [],
+      "alive": [
+        [
+          0,
+          5000
+        ]
+      ]
+    },
+    "simulation": {
+      "regimeSchedules": [
+        {
+          "classificationGroupId": "general-population",
+          "blocks": [
+            {
+              "startTickOfDay": 0,
+              "endTickOfDay": 400,
+              "allowedCategories": [
+                "sleep"
+              ]
+            },
+            {
+              "startTickOfDay": 400,
+              "endTickOfDay": 500,
+              "allowedCategories": [
+                "meal",
+                "hygiene"
+              ]
+            },
+            {
+              "startTickOfDay": 500,
+              "endTickOfDay": 1000,
+              "allowedCategories": [
+                "work",
+                "education",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1000,
+              "endTickOfDay": 1200,
+              "allowedCategories": [
+                "recreation",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1200,
+              "endTickOfDay": 1300,
+              "allowedCategories": [
+                "meal"
+              ]
+            },
+            {
+              "startTickOfDay": 1300,
+              "endTickOfDay": 1800,
+              "allowedCategories": [
+                "work",
+                "education",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1800,
+              "endTickOfDay": 2000,
+              "allowedCategories": [
+                "recreation",
+                "hygiene",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2000,
+              "endTickOfDay": 2100,
+              "allowedCategories": [
+                "meal"
+              ]
+            },
+            {
+              "startTickOfDay": 2100,
+              "endTickOfDay": 2300,
+              "allowedCategories": [
+                "recreation",
+                "hygiene",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2300,
+              "endTickOfDay": 2400,
+              "allowedCategories": [
+                "sleep"
+              ]
+            }
+          ]
+        },
+        {
+          "classificationGroupId": "high-risk",
+          "blocks": [
+            {
+              "startTickOfDay": 0,
+              "endTickOfDay": 2000,
+              "allowedCategories": [
+                "sleep",
+                "meal",
+                "hygiene"
+              ]
+            },
+            {
+              "startTickOfDay": 2000,
+              "endTickOfDay": 2200,
+              "allowedCategories": [
+                "recreation",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2200,
+              "endTickOfDay": 2400,
+              "allowedCategories": [
+                "sleep",
+                "meal",
+                "hygiene"
+              ]
+            }
+          ]
+        }
+      ],
+      "prisoners": {
+        "components": {
+          "activeLength": 0,
+          "sentenceLengthTicks": [],
+          "priorIncidentsAtIntake": [],
+          "sentenceEndTick": [],
+          "riskTier": [],
+          "classificationGroupIndex": [],
+          "intakeStage": [],
+          "solitarySanctionEndTick": [],
+          "injured": [],
+          "needs": {
+            "hunger": [],
+            "sleep": [],
+            "hygiene": [],
+            "bladder": [],
+            "safety": [],
+            "recreation": []
+          },
+          "actionIndex": [],
+          "actionPhase": [],
+          "phaseStartedAtTick": [],
+          "needFulfilledLastTick": [],
+          "tileX": [],
+          "tileY": []
+        },
+        "coldState": {
+          "accommodationInstanceId": [],
+          "currentActionTargetInstanceId": []
+        },
+        "roomInstanceDefinitions": [],
+        "roomInstanceOccupancy": []
+      },
+      "operations": {
+        "containers": [
+          [
+            "construction-materials",
+            []
+          ]
+        ],
+        "jobs": [],
+        "jobWorkers": {
+          "workers": [],
+          "busy": []
+        },
+        "electricity": {
+          "type": "electricity",
+          "nodes": [],
+          "connections": [],
+          "failedNodeIds": []
+        },
+        "water": {
+          "type": "water",
+          "nodes": [],
+          "connections": [],
+          "failedNodeIds": []
+        }
+      },
+      "navigation": {
+        "doors": []
+      },
+      "security": {
+        "sectorDefinitions": [
+          {
+            "id": "security-sector.prison",
+            "gradeId": "grade.general",
+            "doorIds": [],
+            "postTile": {
+              "x": 16,
+              "y": 16
+            }
+          }
+        ],
+        "sectorControlStates": [
+          [
+            "security-sector.prison",
+            "normal"
+          ]
+        ],
+        "guards": {
+          "entityStore": {
+            "capacity": 500,
+            "nextAvailableIndex": 1,
+            "maxActiveIndex": 0,
+            "generations": [
+              [
+                0,
+                500
+              ]
+            ],
+            "freeIndices": [],
+            "alive": [
+              [
+                1,
+                1
+              ],
+              [
+                0,
+                499
+              ]
+            ]
+          },
+          "records": [
+            [
+              0,
+              {
+                "staffRoleId": "staff-role.guard",
+                "tileX": 16,
+                "tileY": 16,
+                "deploymentPhase": "unassigned"
+              }
+            ]
+          ]
+        },
+        "schedules": [
+          {
+            "sectorId": "security-sector.prison",
+            "blocks": [
+              {
+                "startTickOfDay": 0,
+                "endTickOfDay": 2400,
+                "requiredGuardCount": 1
+              }
+            ]
+          }
+        ],
+        "deployment": {
+          "metrics": {
+            "deploymentFailures": 0
+          }
+        },
+        "patrol": {
+          "metrics": {
+            "loopsCompletedOnTime": 0,
+            "loopsCompletedLate": 0,
+            "loopsMissed": 0
+          }
+        }
+      },
+      "contraband": {
+        "items": [],
+        "intelligence": [],
+        "intelligenceSequence": 0,
+        "informants": [],
+        "confiscations": [],
+        "searchPolicies": [
+          {
+            "scope": "cell",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 40,
+            "baseDetectionProbability": 0.7,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.2
+          },
+          {
+            "scope": "delivery",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 25,
+            "baseDetectionProbability": 0.6,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.15
+          },
+          {
+            "scope": "person",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 20,
+            "baseDetectionProbability": 0.75,
+            "concealmentPenaltyPerPoint": 0.06,
+            "intelligenceConfidenceBonus": 0.2
+          },
+          {
+            "scope": "sector",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 15,
+            "baseDetectionProbability": 0.5,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.25
+          }
+        ],
+        "searchContainerLocations": [],
+        "search": {
+          "queue": [],
+          "active": [],
+          "metrics": {
+            "itemsDiscovered": 0,
+            "itemsMissed": 0,
+            "searchesCompleted": 0,
+            "searchesCancelled": 0
+          }
+        }
+      },
+      "economy": {
+        "treasury": {
+          "balanceMinorUnits": 24920
+        },
+        "procurement": {
+          "pending": []
+        },
+        "payroll": {
+          "unpaidWagesMinorUnits": 0
+        }
+      },
+      "objects": {
+        "placedObjects": []
+      },
+      "alerts": {
+        "sequence": 0,
+        "records": [],
+        "dismissed": []
+      },
+      "inFlight": {
+        "navigation": {
+          "pending": [],
+          "results": []
+        },
+        "prisoners": {
+          "locomotion": {
+            "walks": [],
+            "headings": []
+          },
+          "pathRequestIds": [],
+          "requestSequence": 0
+        },
+        "guards": {
+          "locomotion": {
+            "walks": [],
+            "headings": []
+          },
+          "deploymentRequestSequence": 0,
+          "patrolRequestSequence": 0
+        },
+        "search": {
+          "requestSequence": 0,
+          "jobs": []
+        }
+      },
+      "incidents": {
+        "log": [],
+        "sectorRisk": [],
+        "gangs": {
+          "definitions": [
+            {
+              "id": "gang.alpha",
+              "territorySectorIds": [
+                "security-sector.prison"
+              ]
+            },
+            {
+              "id": "gang.beta",
+              "territorySectorIds": [
+                "security-sector.prison"
+              ]
+            }
+          ],
+          "members": [],
+          "reputation": [
+            [
+              "gang.alpha",
+              0.5
+            ],
+            [
+              "gang.beta",
+              0.5
+            ]
+          ],
+          "grudges": []
+        },
+        "tunnels": [],
+        "watchedSectorIds": [
+          "security-sector.prison"
+        ],
+        "trigger": {
+          "metrics": {
+            "incidentsTriggered": 0,
+            "riotsTriggered": 0,
+            "retaliationsTriggered": 0
+          },
+          "sequence": 0
+        },
+        "response": {
+          "metrics": {
+            "incidentsResolved": 0,
+            "incidentsLapsed": 0,
+            "respondersDispatched": 0,
+            "routeFailures": 0
+          }
+        }
+      }
+    },
+    "identity": {
+      "version": 1,
+      "poolId": "placeholder.v1",
+      "entries": [
+        {
+          "kind": "staff",
+          "entityId": 0,
+          "givenName": "Sonia",
+          "familyName": "Bakker"
+        }
+      ]
+    }
+  },
+  "rearPoseWorker": {
+    "masterSeed": 3964179742,
+    "kernel": {
+      "tick": 0,
+      "expectedSequence": 1,
+      "rngStates": [
+        {
+          "name": "contraband.detection",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              1626643598,
+              955082721,
+              2175930607,
+              1972398901
+            ]
+          }
+        },
+        {
+          "name": "contraband.intelligence",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2741540940,
+              276097368,
+              1432057449,
+              582385290
+            ]
+          }
+        },
+        {
+          "name": "contraband.introduction",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2563715544,
+              3131109645,
+              2475984376,
+              292129576
+            ]
+          }
+        },
+        {
+          "name": "identity.actor-name",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              1092266157,
+              1538642338,
+              2668708406,
+              2170468758
+            ]
+          }
+        },
+        {
+          "name": "prisoners.classification",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              2693137283,
+              383493226,
+              703274253,
+              2713613289
+            ]
+          }
+        },
+        {
+          "name": "prisoners.sentence",
+          "state": {
+            "algorithm": "xoshiro128**",
+            "version": 1,
+            "words": [
+              659959954,
+              2258480248,
+              3908986638,
+              21873668
+            ]
+          }
+        }
+      ],
+      "commands": []
+    },
+    "world": {
+      "version": 1,
+      "chunkSize": 32,
+      "ownedChunks": [
+        {
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "chunks": [
+        {
+          "x": 0,
+          "y": 0,
+          "lifecycle": "loaded",
+          "geometryRevision": 0,
+          "contentRevision": 0,
+          "dirty": false,
+          "terrain": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "topEdge": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "leftEdge": [
+            [
+              0,
+              1024
+            ]
+          ],
+          "zoning": [
+            [
+              0,
+              1024
+            ]
+          ]
+        }
+      ]
+    },
+    "construction": {
+      "orders": [],
+      "undoStack": [],
+      "redoStack": []
+    },
+    "entities": {
+      "capacity": 5000,
+      "nextAvailableIndex": 0,
+      "maxActiveIndex": -1,
+      "generations": [
+        [
+          0,
+          5000
+        ]
+      ],
+      "freeIndices": [],
+      "alive": [
+        [
+          0,
+          5000
+        ]
+      ]
+    },
+    "simulation": {
+      "regimeSchedules": [
+        {
+          "classificationGroupId": "general-population",
+          "blocks": [
+            {
+              "startTickOfDay": 0,
+              "endTickOfDay": 400,
+              "allowedCategories": [
+                "sleep"
+              ]
+            },
+            {
+              "startTickOfDay": 400,
+              "endTickOfDay": 500,
+              "allowedCategories": [
+                "meal",
+                "hygiene"
+              ]
+            },
+            {
+              "startTickOfDay": 500,
+              "endTickOfDay": 1000,
+              "allowedCategories": [
+                "work",
+                "education",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1000,
+              "endTickOfDay": 1200,
+              "allowedCategories": [
+                "recreation",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1200,
+              "endTickOfDay": 1300,
+              "allowedCategories": [
+                "meal"
+              ]
+            },
+            {
+              "startTickOfDay": 1300,
+              "endTickOfDay": 1800,
+              "allowedCategories": [
+                "work",
+                "education",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 1800,
+              "endTickOfDay": 2000,
+              "allowedCategories": [
+                "recreation",
+                "hygiene",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2000,
+              "endTickOfDay": 2100,
+              "allowedCategories": [
+                "meal"
+              ]
+            },
+            {
+              "startTickOfDay": 2100,
+              "endTickOfDay": 2300,
+              "allowedCategories": [
+                "recreation",
+                "hygiene",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2300,
+              "endTickOfDay": 2400,
+              "allowedCategories": [
+                "sleep"
+              ]
+            }
+          ]
+        },
+        {
+          "classificationGroupId": "high-risk",
+          "blocks": [
+            {
+              "startTickOfDay": 0,
+              "endTickOfDay": 2000,
+              "allowedCategories": [
+                "sleep",
+                "meal",
+                "hygiene"
+              ]
+            },
+            {
+              "startTickOfDay": 2000,
+              "endTickOfDay": 2200,
+              "allowedCategories": [
+                "recreation",
+                "free-association"
+              ]
+            },
+            {
+              "startTickOfDay": 2200,
+              "endTickOfDay": 2400,
+              "allowedCategories": [
+                "sleep",
+                "meal",
+                "hygiene"
+              ]
+            }
+          ]
+        }
+      ],
+      "prisoners": {
+        "components": {
+          "activeLength": 0,
+          "sentenceLengthTicks": [],
+          "priorIncidentsAtIntake": [],
+          "sentenceEndTick": [],
+          "riskTier": [],
+          "classificationGroupIndex": [],
+          "intakeStage": [],
+          "solitarySanctionEndTick": [],
+          "injured": [],
+          "needs": {
+            "hunger": [],
+            "sleep": [],
+            "hygiene": [],
+            "bladder": [],
+            "safety": [],
+            "recreation": []
+          },
+          "actionIndex": [],
+          "actionPhase": [],
+          "phaseStartedAtTick": [],
+          "needFulfilledLastTick": [],
+          "tileX": [],
+          "tileY": []
+        },
+        "coldState": {
+          "accommodationInstanceId": [],
+          "currentActionTargetInstanceId": []
+        },
+        "roomInstanceDefinitions": [],
+        "roomInstanceOccupancy": []
+      },
+      "operations": {
+        "containers": [
+          [
+            "construction-materials",
+            []
+          ]
+        ],
+        "jobs": [],
+        "jobWorkers": {
+          "workers": [],
+          "busy": []
+        },
+        "electricity": {
+          "type": "electricity",
+          "nodes": [],
+          "connections": [],
+          "failedNodeIds": []
+        },
+        "water": {
+          "type": "water",
+          "nodes": [],
+          "connections": [],
+          "failedNodeIds": []
+        }
+      },
+      "navigation": {
+        "doors": []
+      },
+      "security": {
+        "sectorDefinitions": [
+          {
+            "id": "security-sector.prison",
+            "gradeId": "grade.general",
+            "doorIds": [],
+            "postTile": {
+              "x": 16,
+              "y": 16
+            }
+          }
+        ],
+        "sectorControlStates": [
+          [
+            "security-sector.prison",
+            "normal"
+          ]
+        ],
+        "guards": {
+          "entityStore": {
+            "capacity": 500,
+            "nextAvailableIndex": 1,
+            "maxActiveIndex": 0,
+            "generations": [
+              [
+                0,
+                500
+              ]
+            ],
+            "freeIndices": [],
+            "alive": [
+              [
+                1,
+                1
+              ],
+              [
+                0,
+                499
+              ]
+            ]
+          },
+          "records": [
+            [
+              0,
+              {
+                "staffRoleId": "staff-role.guard",
+                "tileX": 16,
+                "tileY": 16,
+                "deploymentPhase": "unassigned"
+              }
+            ]
+          ]
+        },
+        "schedules": [
+          {
+            "sectorId": "security-sector.prison",
+            "blocks": [
+              {
+                "startTickOfDay": 0,
+                "endTickOfDay": 2400,
+                "requiredGuardCount": 1
+              }
+            ]
+          }
+        ],
+        "deployment": {
+          "metrics": {
+            "deploymentFailures": 0
+          }
+        },
+        "patrol": {
+          "metrics": {
+            "loopsCompletedOnTime": 0,
+            "loopsCompletedLate": 0,
+            "loopsMissed": 0
+          }
+        }
+      },
+      "contraband": {
+        "items": [],
+        "intelligence": [],
+        "intelligenceSequence": 0,
+        "informants": [],
+        "confiscations": [],
+        "searchPolicies": [
+          {
+            "scope": "cell",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 40,
+            "baseDetectionProbability": 0.7,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.2
+          },
+          {
+            "scope": "delivery",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 25,
+            "baseDetectionProbability": 0.6,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.15
+          },
+          {
+            "scope": "person",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 20,
+            "baseDetectionProbability": 0.75,
+            "concealmentPenaltyPerPoint": 0.06,
+            "intelligenceConfidenceBonus": 0.2
+          },
+          {
+            "scope": "sector",
+            "requiredGuardCount": 1,
+            "dwellTicksPerTarget": 15,
+            "baseDetectionProbability": 0.5,
+            "concealmentPenaltyPerPoint": 0.05,
+            "intelligenceConfidenceBonus": 0.25
+          }
+        ],
+        "searchContainerLocations": [],
+        "search": {
+          "queue": [],
+          "active": [],
+          "metrics": {
+            "itemsDiscovered": 0,
+            "itemsMissed": 0,
+            "searchesCompleted": 0,
+            "searchesCancelled": 0
+          }
+        }
+      },
+      "economy": {
+        "treasury": {
+          "balanceMinorUnits": 24920
+        },
+        "procurement": {
+          "pending": []
+        },
+        "payroll": {
+          "unpaidWagesMinorUnits": 0
+        }
+      },
+      "objects": {
+        "placedObjects": []
+      },
+      "alerts": {
+        "sequence": 0,
+        "records": [],
+        "dismissed": []
+      },
+      "inFlight": {
+        "navigation": {
+          "pending": [],
+          "results": []
+        },
+        "prisoners": {
+          "locomotion": {
+            "walks": [],
+            "headings": []
+          },
+          "pathRequestIds": [],
+          "requestSequence": 0
+        },
+        "guards": {
+          "locomotion": {
+            "walks": [],
+            "headings": []
+          },
+          "deploymentRequestSequence": 0,
+          "patrolRequestSequence": 0
+        },
+        "search": {
+          "requestSequence": 0,
+          "jobs": []
+        }
+      },
+      "incidents": {
+        "log": [],
+        "sectorRisk": [],
+        "gangs": {
+          "definitions": [
+            {
+              "id": "gang.alpha",
+              "territorySectorIds": [
+                "security-sector.prison"
+              ]
+            },
+            {
+              "id": "gang.beta",
+              "territorySectorIds": [
+                "security-sector.prison"
+              ]
+            }
+          ],
+          "members": [],
+          "reputation": [
+            [
+              "gang.alpha",
+              0.5
+            ],
+            [
+              "gang.beta",
+              0.5
+            ]
+          ],
+          "grudges": []
+        },
+        "tunnels": [],
+        "watchedSectorIds": [
+          "security-sector.prison"
+        ],
+        "trigger": {
+          "metrics": {
+            "incidentsTriggered": 0,
+            "riotsTriggered": 0,
+            "retaliationsTriggered": 0
+          },
+          "sequence": 0
+        },
+        "response": {
+          "metrics": {
+            "incidentsResolved": 0,
+            "incidentsLapsed": 0,
+            "respondersDispatched": 0,
+            "routeFailures": 0
+          }
+        }
+      }
+    },
+    "identity": {
+      "version": 1,
+      "poolId": "placeholder.v1",
+      "entries": [
+        {
+          "kind": "staff",
+          "entityId": 0,
+          "givenName": "Sonia",
+          "familyName": "Bakker"
+        }
+      ]
+    }
+  },
+  "genuineBefore": {
+    "entityId": 0,
+    "renderActorId": 4294967296,
+    "record": {
+      "staffRoleId": "staff-role.guard",
+      "tileX": 16,
+      "tileY": 16,
+      "deploymentPhase": "unassigned"
+    },
+    "identity": {
+      "kind": "staff",
+      "entityId": 0,
+      "givenName": "Sonia",
+      "familyName": "Bakker"
+    },
+    "expectedDefaultHeading": "south",
+    "expectedAssetId": "actor.guard.base"
+  },
+  "genuineAfter": {
+    "entityId": 0,
+    "renderActorId": 4294967296,
+    "record": {
+      "staffRoleId": "staff-role.guard",
+      "tileX": 16,
+      "tileY": 16,
+      "deploymentPhase": "unassigned"
+    },
+    "identity": {
+      "kind": "staff",
+      "entityId": 0,
+      "givenName": "Sonia",
+      "familyName": "Bakker"
+    },
+    "expectedDefaultHeading": "south",
+    "expectedAssetId": "actor.guard.base"
+  },
+  "centredBefore": {
+    "bounds": {
+      "x": 239,
+      "y": 881,
+      "width": 224,
+      "height": 88
+    },
+    "fractions": {
+      "x": 0.515625,
+      "y": 0.515625
+    },
+    "worldGroundTarget": {
+      "x": 1056,
+      "y": 1056
+    }
+  },
+  "centredAfter": {
+    "bounds": {
+      "x": 239,
+      "y": 881,
+      "width": 224,
+      "height": 88
+    },
+    "fractions": {
+      "x": 0.515625,
+      "y": 0.515625
+    },
+    "worldGroundTarget": {
+      "x": 1056,
+      "y": 1056
+    }
+  },
+  "visibleBefore": 2531,
+  "visibleAfter": 2531,
+  "pngBeforeSave": {
+    "responses": [
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-45-elev45.c7352a388ac2.png",
+        "status": 200,
+        "sha256": "c7352a388ac2bb8075e924066c4abe39019d09272582ad2273a8dec5ffa55b17",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-60-elev45.8db7f6314de9.png",
+        "status": 200,
+        "sha256": "8db7f6314de924f83bb0d552060d5fe7f5c9cf8ca24fc05280aebe99962ab2ef",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-75-elev45.30cb7cd5ad0f.png",
+        "status": 200,
+        "sha256": "30cb7cd5ad0fd7f212551227808f1d2d0bd975208761b652cbed9dcc672dd022",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-90-elev45.9d652fb38262.png",
+        "status": 200,
+        "sha256": "9d652fb382624060b6dc0b4da85fed8c934d91c7af6d1b10435b4d0134183141",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-105-elev45.54ae51635897.png",
+        "status": 200,
+        "sha256": "54ae516358971582a36b48f668d0d6064d377c7fe6f514ac43f0729a5472cdb0",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-120-elev45.27526070f60e.png",
+        "status": 200,
+        "sha256": "27526070f60e3626ed420889ce3f3d14a7bd1655bdd4feb8afb2f5a9d20b70c0",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-135-elev45.882ef390240f.png",
+        "status": 200,
+        "sha256": "882ef390240f95779f3691d4053c8656ea31fdf6f2ce435568822194aa20f75d",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-150-elev45.cc0b32f7521f.png",
+        "status": 200,
+        "sha256": "cc0b32f7521fbe2c7d6d5ef78b8aa773cc5ff045ae7c96d35c072291a3215faa",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-165-elev45.9e47c478198c.png",
+        "status": 200,
+        "sha256": "9e47c478198c0c6df05b1e47c5157287a1b5d0ea879504977796e604ca2b576c",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-180-elev45.0c4bb5ba00eb.png",
+        "status": 200,
+        "sha256": "0c4bb5ba00ebeb3deb5417dc69d3288bacd5bd7cf27549fc6609b739657f6a1e",
+        "width": 512,
+        "height": 512
+      }
+    ],
+    "images": [
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/fd883190-d061-4740-8d70-6a25234d5e57",
+        "currentSrc": "blob:http://127.0.0.1:5184/fd883190-d061-4740-8d70-6a25234d5e57",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "d11380f7c0ac5d972b431d64f23fa25b759ff3de011f0ba295d6efa95bf9fe53"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/a5f609fc-74b0-45d0-a4d1-3f1963694b7c",
+        "currentSrc": "blob:http://127.0.0.1:5184/a5f609fc-74b0-45d0-a4d1-3f1963694b7c",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "961310abe6780382d3c958519ab93c2340457087941cfb2ed5c81b46545f748a"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/a939f407-ab3d-4da4-9054-f48b7eabcfdc",
+        "currentSrc": "blob:http://127.0.0.1:5184/a939f407-ab3d-4da4-9054-f48b7eabcfdc",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "e9397ac4b9d63f5a18988d31e0aabf36b9cefa4efaeeb4927a43beaab14669ac"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/4386996e-0be6-4c0f-a803-59b7ef487fef",
+        "currentSrc": "blob:http://127.0.0.1:5184/4386996e-0be6-4c0f-a803-59b7ef487fef",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "d98fa663476fcc9adf6f15346e53605215f58fd3f1c5089049284b096f86a07b"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/a3743e63-561d-4bb9-8665-5f3a60ed38cb",
+        "currentSrc": "blob:http://127.0.0.1:5184/a3743e63-561d-4bb9-8665-5f3a60ed38cb",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "74095e5922cdc2e62fc7826a20ff9848e2583227f3bdf428b2a9855894d14243"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/622fe491-76dd-4085-a8f7-821219f6594c",
+        "currentSrc": "blob:http://127.0.0.1:5184/622fe491-76dd-4085-a8f7-821219f6594c",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "40921f9613417d04bd8ec9e842a93abf32982a48326bfecaf641153afbdfd2ec"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/da9df36d-d57b-46ed-9d16-88119a4d9d0e",
+        "currentSrc": "blob:http://127.0.0.1:5184/da9df36d-d57b-46ed-9d16-88119a4d9d0e",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "03ababd95b126c05b85b12241e2aad53589791d8f33152189968abbb60004930"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/8aa0a6d9-3a7f-4fcc-b9f7-37b98ae6e833",
+        "currentSrc": "blob:http://127.0.0.1:5184/8aa0a6d9-3a7f-4fcc-b9f7-37b98ae6e833",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "f315c0e4faac15aea4e1e8ef0a13b3f6b879a15fada4a991873e33667033ad83"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/c0b4440c-20d9-485f-b92b-472b54c1efab",
+        "currentSrc": "blob:http://127.0.0.1:5184/c0b4440c-20d9-485f-b92b-472b54c1efab",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "6109b4c8f99c8aed492c32fe36948f401640d763a7fce8e689b130ba6617b1b6"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/e32c04d7-9d1d-4f4b-8774-6a71b1de7089",
+        "currentSrc": "blob:http://127.0.0.1:5184/e32c04d7-9d1d-4f4b-8774-6a71b1de7089",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "ec435cdad35d052a7cb35fe45e97f5a960b1c1cef6439125c847b649e0608acc"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/88f61ea0-bf98-49d0-a262-84a61f637055",
+        "currentSrc": "blob:http://127.0.0.1:5184/88f61ea0-bf98-49d0-a262-84a61f637055",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "f362fceb7be335feb4161d55cc330db00752ee358726ce513b2124d656f40afc"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/29583d0e-48a7-43fd-933f-4229688c3da0",
+        "currentSrc": "blob:http://127.0.0.1:5184/29583d0e-48a7-43fd-933f-4229688c3da0",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "c0ef65857ded2b12b7b106666b854de5efb278e3aba8131967ad2851ac1febc5"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/e497f560-7cda-4187-bf5e-4e27b80dc520",
+        "currentSrc": "blob:http://127.0.0.1:5184/e497f560-7cda-4187-bf5e-4e27b80dc520",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "b8bf710d732d2f6ed0b2047683741b81d8d4258cf82e507ffe8019905a5e22be"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/44713c9a-9121-44fc-8187-d70cada04b73",
+        "currentSrc": "blob:http://127.0.0.1:5184/44713c9a-9121-44fc-8187-d70cada04b73",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "2ecf5465679a998e5cf4380a1ea9413ea8cdc915a6a985976e2ffb4c5e2370d2"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/173676fc-95b8-41d4-8f03-468aa166feb2",
+        "currentSrc": "blob:http://127.0.0.1:5184/173676fc-95b8-41d4-8f03-468aa166feb2",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "c7352a388ac2bb8075e924066c4abe39019d09272582ad2273a8dec5ffa55b17"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/9ca5ac4f-0822-4a93-a85c-fe64cce62a1c",
+        "currentSrc": "blob:http://127.0.0.1:5184/9ca5ac4f-0822-4a93-a85c-fe64cce62a1c",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "16b8abd3656c3395333538bb6dda8bf1c843c3e55e31565ea2bd3f9fa0462f45"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/ce998295-32ea-4dc9-bd2f-19ae43d38c0d",
+        "currentSrc": "blob:http://127.0.0.1:5184/ce998295-32ea-4dc9-bd2f-19ae43d38c0d",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "3c68840d1fbf6b57018b2367c84ef74f3c46e787739f521cfbcdb308171e9c9f"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/c42622a0-f8a5-45a0-86ba-507065fbdb9e",
+        "currentSrc": "blob:http://127.0.0.1:5184/c42622a0-f8a5-45a0-86ba-507065fbdb9e",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "bb8d15f97f7d596fa816fc4d496bebbeb6cf49bc413d15011acdac24e297303a"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/fbce3a29-35f2-4c82-81ee-951acf815168",
+        "currentSrc": "blob:http://127.0.0.1:5184/fbce3a29-35f2-4c82-81ee-951acf815168",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "46222ac72e320a839af9d57f0d7a53a3ec4c57f3028dc2bd759542a3578f72b5"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/1d8aad99-8f9c-4d39-b1b6-a8e5dd6dda78",
+        "currentSrc": "blob:http://127.0.0.1:5184/1d8aad99-8f9c-4d39-b1b6-a8e5dd6dda78",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "f871ecb6f11f97851cb3c416c21a9dab15580675c1ea64b7970aaa523b545092"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/06208716-27a8-4a87-a799-5b3727affdc2",
+        "currentSrc": "blob:http://127.0.0.1:5184/06208716-27a8-4a87-a799-5b3727affdc2",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "421ea8f74f06ad53e01811820c8c23d83a692cea675e667a755b6cd791d73524"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/68b8e447-3059-406f-aa71-ccb506690f50",
+        "currentSrc": "blob:http://127.0.0.1:5184/68b8e447-3059-406f-aa71-ccb506690f50",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "18b909749016599155528a35af28cf2c99fb2e1929e776fd2cefda20c0c2346c"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/963df4ba-23d7-4075-88c8-ddfebe767fe2",
+        "currentSrc": "blob:http://127.0.0.1:5184/963df4ba-23d7-4075-88c8-ddfebe767fe2",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "e992058304fe6be2d8944c883491c87e9485399d7633568f0a566d07630c0ef4"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/515fead1-d016-4e83-8e02-92780f53ce8d",
+        "currentSrc": "blob:http://127.0.0.1:5184/515fead1-d016-4e83-8e02-92780f53ce8d",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "40d4eca89db2508bafdf7996586a7e3844f6e68c6767a4c340f227f8fd97e813"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/232ea6d2-032f-449b-bd35-16c18ae50cea",
+        "currentSrc": "blob:http://127.0.0.1:5184/232ea6d2-032f-449b-bd35-16c18ae50cea",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "96bf089124afaa1fb73f14c939452bfa070d5cd88fa5a3fc920c57975f71bd96"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/cd49e7b4-060d-4e49-99c0-4ee223f049dd",
+        "currentSrc": "blob:http://127.0.0.1:5184/cd49e7b4-060d-4e49-99c0-4ee223f049dd",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "d3f2d1b9659cee8c4bc31843c710552144650c18f4497558240b4c54449fce6c"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/800e4f66-957e-463c-981c-fa9a95cdeff2",
+        "currentSrc": "blob:http://127.0.0.1:5184/800e4f66-957e-463c-981c-fa9a95cdeff2",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "4edfe021a8670ce6b704fb523764016aa35393689f1ac04a27cd8e8d1c9109f8"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/39b367a6-99a3-4135-99c7-8d1496af7437",
+        "currentSrc": "blob:http://127.0.0.1:5184/39b367a6-99a3-4135-99c7-8d1496af7437",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "faccdd4d94af62dbb9bf239a5bfbdecac1daeab6c9542aed8a9a9a874368eae7"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/51593e9f-7743-4aa2-adf0-300483b4b215",
+        "currentSrc": "blob:http://127.0.0.1:5184/51593e9f-7743-4aa2-adf0-300483b4b215",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "13d9fadda21f26afd30b16e61999905bf6f9e1ff9b3922ba1d20236dc3145b57"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/8d0132bd-53ce-450f-ba73-1f070ef86964",
+        "currentSrc": "blob:http://127.0.0.1:5184/8d0132bd-53ce-450f-ba73-1f070ef86964",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "751dcd28f827c10dca1853c5df2876a7df64afc6284d4c1631d405d0210f3af5"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/36c6ad4e-ae3e-4081-8448-3e6f01ca4fb8",
+        "currentSrc": "blob:http://127.0.0.1:5184/36c6ad4e-ae3e-4081-8448-3e6f01ca4fb8",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "8846d69e23162f459677865a6c62f7772b3d189630380323bd6ed7267363dd12"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/6cc15bb0-1cce-46a8-8cbc-47d75296dc98",
+        "currentSrc": "blob:http://127.0.0.1:5184/6cc15bb0-1cce-46a8-8cbc-47d75296dc98",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "2f3d110ea54c5305300070d398ebb846478baf2ea848d9103f5b14f6ee8d6e88"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/d78737f0-22de-4998-9b34-993b7abcf636",
+        "currentSrc": "blob:http://127.0.0.1:5184/d78737f0-22de-4998-9b34-993b7abcf636",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "a681371bbea096e78ae0d9d4cc71334d8feb6847846a15f7f4bfe5b8dc4a975a"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/be995f3e-c641-4e9e-a71f-c9eb3ad4e1cb",
+        "currentSrc": "blob:http://127.0.0.1:5184/be995f3e-c641-4e9e-a71f-c9eb3ad4e1cb",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "b4392b01567c952b264fb925e6787988fe1bf4b7ad5b19512f800e7c913a5803"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/73d5b493-6eb0-4312-a9b5-39e3c939ff35",
+        "currentSrc": "blob:http://127.0.0.1:5184/73d5b493-6eb0-4312-a9b5-39e3c939ff35",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "c07bdc4b76ab6476561be6eb739c5a7978342554a86b9154f8a30f908f84e449"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/535d593b-d9d1-4915-a646-30c259ab8685",
+        "currentSrc": "blob:http://127.0.0.1:5184/535d593b-d9d1-4915-a646-30c259ab8685",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "a2ec3336433803ea1c29e391d01e38275d8ff6a005e3061919fbde5daa260be1"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/51c39926-dec4-44bc-8518-11f0b0f3e977",
+        "currentSrc": "blob:http://127.0.0.1:5184/51c39926-dec4-44bc-8518-11f0b0f3e977",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "0d98bdcab1dfb8882e87530ad3b1eba4e98c36039d8af03d4e11fea377e78527"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/f968924c-6909-4ca6-ac84-79c82afcdb38",
+        "currentSrc": "blob:http://127.0.0.1:5184/f968924c-6909-4ca6-ac84-79c82afcdb38",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "307a1fd32c82aa171b168e95bb1ea7686c2520268d83c441868b18a7a6d43f68"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/98e1c12d-e4e8-4a55-b6b3-207c98991031",
+        "currentSrc": "blob:http://127.0.0.1:5184/98e1c12d-e4e8-4a55-b6b3-207c98991031",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "e9f94d81d85a28e4e6071819a1a70b109b23abcb9948bc74b5404197b34d8a94"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/9f688b15-d630-421a-b4a0-670e719064ff",
+        "currentSrc": "blob:http://127.0.0.1:5184/9f688b15-d630-421a-b4a0-670e719064ff",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "06bf1b3a0d8a6f98dc0cefd9ea43e5ee14225bb36e319944ad2d0d454035dfe1"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/f8244484-bc13-482f-a7fa-08a6fe77b242",
+        "currentSrc": "blob:http://127.0.0.1:5184/f8244484-bc13-482f-a7fa-08a6fe77b242",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "13f7928a8d509d1ef9f24970d316c3f64aad4d8cd47e6b9870fae1d87a44371b"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/f0efb74c-fd15-41a8-8ed4-f7802d4cd508",
+        "currentSrc": "blob:http://127.0.0.1:5184/f0efb74c-fd15-41a8-8ed4-f7802d4cd508",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "c5e0ff6eca9d0ab41094d2b0d4f0ca427c7149302a1f264d77f366737ece50c9"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/de0757e3-2c8a-4858-9a39-8cb1a9b98b1a",
+        "currentSrc": "blob:http://127.0.0.1:5184/de0757e3-2c8a-4858-9a39-8cb1a9b98b1a",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "b17091c17260d041d14d4594e60a670bc4e0465412855b101a9b97f54b34762f"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/298b329d-ffef-4df6-9de1-2abf801fcd53",
+        "currentSrc": "blob:http://127.0.0.1:5184/298b329d-ffef-4df6-9de1-2abf801fcd53",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "1f712df62e5e4e7b5533bd14c3b438ee94255e3e682c64f6e093e02a4f308a47"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/d303ebef-5b7b-4fbc-91e3-f9ea999c3719",
+        "currentSrc": "blob:http://127.0.0.1:5184/d303ebef-5b7b-4fbc-91e3-f9ea999c3719",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "6dcaf6e6b44bf6c0ada95c94ae2f7afb5b24054b5e797e536c29b1c444c2ec76"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/354a3020-64fe-4ded-b14a-b0b66941c214",
+        "currentSrc": "blob:http://127.0.0.1:5184/354a3020-64fe-4ded-b14a-b0b66941c214",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "84bd56fcf5f16dc981bfbb9f4db28c178c4c5262c7b39d75cb086e266a2d0a1a"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/fe8ce99d-dafa-451b-9b6f-5cc7f00e26ff",
+        "currentSrc": "blob:http://127.0.0.1:5184/fe8ce99d-dafa-451b-9b6f-5cc7f00e26ff",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "bc9186a5257c192d5f49c035a6f38d3386e1e84c0464858d1dde479fa89b73db"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/89dc3d21-5e07-4662-85e5-0bfd76a1351b",
+        "currentSrc": "blob:http://127.0.0.1:5184/89dc3d21-5e07-4662-85e5-0bfd76a1351b",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "88831c70a40decd8db51c3a0e475fd547564d31be0275d60c2b68f49481935d8"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/04df686d-5b14-4359-9c0e-5321b6b563cc",
+        "currentSrc": "blob:http://127.0.0.1:5184/04df686d-5b14-4359-9c0e-5321b6b563cc",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "09dee978bfed1a2fdcf32a66ed5f25ae7547e9e3b2e79386f5e96e3e9acb1737"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/8d989648-64b1-4bcf-8f57-a0cfa9d9550c",
+        "currentSrc": "blob:http://127.0.0.1:5184/8d989648-64b1-4bcf-8f57-a0cfa9d9550c",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "bd2db1e500072bc0fe8c26de9e07b32002def9aaf673e7938ecb6759ade992b3"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/7267b9e0-e182-421d-bf3a-a373ae1a9659",
+        "currentSrc": "blob:http://127.0.0.1:5184/7267b9e0-e182-421d-bf3a-a373ae1a9659",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "717733ee6861ddc89bde35f6a054f402f27b5196f153f7c371b30a8a5354ea44"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/53bd9979-35b3-44d3-a59b-0ee60ccda2be",
+        "currentSrc": "blob:http://127.0.0.1:5184/53bd9979-35b3-44d3-a59b-0ee60ccda2be",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "9efe0d30115dcad9ec7a490a86c68eddc68604e7715f8c9f6eba6056e05eb59b"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/54a71766-3d95-450b-9d46-802d775d2202",
+        "currentSrc": "blob:http://127.0.0.1:5184/54a71766-3d95-450b-9d46-802d775d2202",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "142e26025b0b5e128eb866cf2d1f29bd9295172dc14ead22c9b4a774b60bcfa7"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/50f895b4-d416-4b1b-b486-389b55c4eefa",
+        "currentSrc": "blob:http://127.0.0.1:5184/50f895b4-d416-4b1b-b486-389b55c4eefa",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "b7048d770cd11bc7ea838f1a733620b856d7d72ae87f2ef890ab3afebbb99dbc"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/c5e8f68c-04ba-422d-b3eb-e836f7cc8d97",
+        "currentSrc": "blob:http://127.0.0.1:5184/c5e8f68c-04ba-422d-b3eb-e836f7cc8d97",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "ec72ac7ae01dff96f4b1d79852334d4af60e80a0de87a7240f33aa63b854c643"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/dca1f032-4e2e-4ed6-ad4c-55fbc26c0f52",
+        "currentSrc": "blob:http://127.0.0.1:5184/dca1f032-4e2e-4ed6-ad4c-55fbc26c0f52",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "b8b57a8d367e0d23e1e4820475bed3f9027545951e0d0d7151316bcc76e43fe4"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/8921e7c7-b55a-4570-9db9-ea79268e9263",
+        "currentSrc": "blob:http://127.0.0.1:5184/8921e7c7-b55a-4570-9db9-ea79268e9263",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "daa34902b62027994251f9e67b7b6264e8ebd86ab8938e94d2edef7a506f96a7"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/a299f26a-47d0-431c-be13-4af562e3b1b9",
+        "currentSrc": "blob:http://127.0.0.1:5184/a299f26a-47d0-431c-be13-4af562e3b1b9",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "09bfb9c9da1a6a4a37e86cb2124a6884e4b4e22daa16f5d2757882de87704576"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/07b249b1-761c-450f-a0b9-ebb7f67a579e",
+        "currentSrc": "blob:http://127.0.0.1:5184/07b249b1-761c-450f-a0b9-ebb7f67a579e",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "b285c8f9ed0a515600023fc2030ea17e510f10a0a965db28a47a5bd6f54aaf7f"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/ab55b17e-85e4-446a-9538-bbb4853caad2",
+        "currentSrc": "blob:http://127.0.0.1:5184/ab55b17e-85e4-446a-9538-bbb4853caad2",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "9cf00229dd97fe12839f2588c31416e972608a9315250ef7fb28229e8c7ea8c0"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/8a6873e5-2dc9-4a5c-a78f-8b1d390725da",
+        "currentSrc": "blob:http://127.0.0.1:5184/8a6873e5-2dc9-4a5c-a78f-8b1d390725da",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "4b149587d26e459fdd9c90c17ff890c189081e0be9803f19be7f46b3a5cdab0f"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/50e02c09-d283-4334-92c0-eff764e8ffbb",
+        "currentSrc": "blob:http://127.0.0.1:5184/50e02c09-d283-4334-92c0-eff764e8ffbb",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "9a0b41e7cdc2ad36e228b3d772bbdeb7cc16e777b7cf2d33a12cdaeff2d31947"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/fd432ee2-97f2-45ce-aeb7-9c74805b86cb",
+        "currentSrc": "blob:http://127.0.0.1:5184/fd432ee2-97f2-45ce-aeb7-9c74805b86cb",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "5e4ce93fa297120ed8ea22b4afe49ff1141ebcfc2934fe3b2f0d7d2aeb54c6e8"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/0b84f7a6-cfb1-4780-afca-2a8e5ba193e0",
+        "currentSrc": "blob:http://127.0.0.1:5184/0b84f7a6-cfb1-4780-afca-2a8e5ba193e0",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "963e6e5c124221556fd4fa580d1f8dc9dd3665e23a761fc002d6e842ddef72d7"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/545e1dde-5214-4a17-a94e-4fe64b37b959",
+        "currentSrc": "blob:http://127.0.0.1:5184/545e1dde-5214-4a17-a94e-4fe64b37b959",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "cb4bae62ae53809dba9e61f8556cfa7e854c22e243126379742ad0fbfd116a1f"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/fdc3f40c-d0e7-4bc5-91f7-5c15e8596eb6",
+        "currentSrc": "blob:http://127.0.0.1:5184/fdc3f40c-d0e7-4bc5-91f7-5c15e8596eb6",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "24f4e0f9b2718e92c0f01ed849049ddc3d759c31278517e72c34ff6e6a331dc0"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/e9390c6f-0e41-4016-abd9-ecb65a42e31a",
+        "currentSrc": "blob:http://127.0.0.1:5184/e9390c6f-0e41-4016-abd9-ecb65a42e31a",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "71ccffb2cc51119ea19ce62d6bc84a416a24f2f6928de7624e3fb020facbe0f6"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/7f53e82f-4a4e-40b6-8804-07edb4a69c9b",
+        "currentSrc": "blob:http://127.0.0.1:5184/7f53e82f-4a4e-40b6-8804-07edb4a69c9b",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "e9335cef165fe3e84a90cdf3bb629ddd884e34ecc248f64a60321f4a44937529"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/bce7a5a8-5c52-483c-b94d-0271f337e6fb",
+        "currentSrc": "blob:http://127.0.0.1:5184/bce7a5a8-5c52-483c-b94d-0271f337e6fb",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "fcfa401381d129d186f54dc13e9832869e4ed3153cae55e91d5d38d528f9cdb0"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/9256b0f8-3467-4c10-b36c-9df4cd7474d8",
+        "currentSrc": "blob:http://127.0.0.1:5184/9256b0f8-3467-4c10-b36c-9df4cd7474d8",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "4e656013fc9cb562777c71ed4b94ed2de7ce485116a6f934f00146e102cc0458"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/0c8fd63a-e42d-4a4c-afc5-1f1cec3bf425",
+        "currentSrc": "blob:http://127.0.0.1:5184/0c8fd63a-e42d-4a4c-afc5-1f1cec3bf425",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "a1f31f17de5a327f36605d69251bc76d91dc7b82aa5970e82b665659dbfcb800"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/7c03ed21-0953-46d9-9631-6beb4656c4ec",
+        "currentSrc": "blob:http://127.0.0.1:5184/7c03ed21-0953-46d9-9631-6beb4656c4ec",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "9e83b26d596c40780ccfaf5bdeaea34fd3fb9423382023d2bd54f1bc5c622d92"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/b4b2c1f1-152a-4f38-8590-28a644700168",
+        "currentSrc": "blob:http://127.0.0.1:5184/b4b2c1f1-152a-4f38-8590-28a644700168",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "1355322ca365edf6db9c561b66c9953de8a6263a6939c35d8aa051f7f5a60655"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/40e36f43-2356-4e86-a047-28690458d541",
+        "currentSrc": "blob:http://127.0.0.1:5184/40e36f43-2356-4e86-a047-28690458d541",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "6917ab6272c49c2a64aaf56ed9cfdd59d5c23f2f5101af67ea2446519f1df818"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/515013f3-5f91-475b-b4c6-6a2e75bec496",
+        "currentSrc": "blob:http://127.0.0.1:5184/515013f3-5f91-475b-b4c6-6a2e75bec496",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "3447b706bed88addd78a51cc025eeac54f79ef79ce0b1fd949510dba52f2c6dc"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/38ec60c2-2818-4b0c-bbf7-7b3cb7e409ac",
+        "currentSrc": "blob:http://127.0.0.1:5184/38ec60c2-2818-4b0c-bbf7-7b3cb7e409ac",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "8d8ce9ca121fe947e6dbfb8db4e7654efbfe28515ba9bb0dc6456396123d3ee0"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/d8bf38f8-9094-4f07-9813-ce995063ec78",
+        "currentSrc": "blob:http://127.0.0.1:5184/d8bf38f8-9094-4f07-9813-ce995063ec78",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "9304f6a7697b1242d4c26d563b7bb2a4598b8b4dcd43cce008d7eaa81b91834d"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/f446c0ab-8de6-407d-9010-3ead16a467b7",
+        "currentSrc": "blob:http://127.0.0.1:5184/f446c0ab-8de6-407d-9010-3ead16a467b7",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "f279d76d4d3035576ec232d68de20f079b2584394dc587662799a4d3be7aa635"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/75602622-5e50-4808-a707-01f378289cec",
+        "currentSrc": "blob:http://127.0.0.1:5184/75602622-5e50-4808-a707-01f378289cec",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "05788bcaeb3341e3ddb55506ecd56ebb01baa46efa2277578be4583931276b16"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/c97865cb-ec5b-404e-8c81-1b605d70faea",
+        "currentSrc": "blob:http://127.0.0.1:5184/c97865cb-ec5b-404e-8c81-1b605d70faea",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "ce7e0bef821387716337a715515c628010c51b34db4ead050b6066fa51d29448"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/f052c4f5-daf5-449c-ab82-e0662cf09167",
+        "currentSrc": "blob:http://127.0.0.1:5184/f052c4f5-daf5-449c-ab82-e0662cf09167",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "8a17ffe2678ca2c2c0246a89996aba64097fa29dead9c3eb2c9682ca594d73b8"
+      }
+    ],
+    "descriptors": [
+      {
+        "url": "http://127.0.0.1:5184/game-content/oblique-actor-guard.v1.json",
+        "status": 200,
+        "data": {
+          "schemaVersion": 1,
+          "assetId": "actor.guard.base",
+          "source": "actor.guard.base.angled-detail.blend",
+          "sourceSha256": "b1f402e1096c49e1ea65c2e7727df2b6c498a77d09fc485679f1dcf72c95b456",
+          "resolutionPx": [
+            512,
+            512
+          ],
+          "nominalPixelsPerTile": 64,
+          "pivotPx": [
+            256,
+            256
+          ],
+          "cameraTargetTiles": [
+            0,
+            0,
+            0
+          ],
+          "projection": "orthographic",
+          "yawDegrees": [
+            -180,
+            -165,
+            -150,
+            -135,
+            -120,
+            -105,
+            -90,
+            -75,
+            -60,
+            -45,
+            -30,
+            -15,
+            0,
+            15,
+            30,
+            45,
+            60,
+            75,
+            90,
+            105,
+            120,
+            135,
+            150,
+            165
+          ],
+          "elevationDegrees": [
+            25,
+            45,
+            65
+          ],
+          "frames": [
+            {
+              "yawDegrees": -180,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-180-elev25.7d38d8f38dcc.png",
+              "sha256": "7d38d8f38dcc9bd6d852f52ec823f9546183fd560f14187ce8629425481d2ebc"
+            },
+            {
+              "yawDegrees": -180,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-180-elev45.0c4bb5ba00eb.png",
+              "sha256": "0c4bb5ba00ebeb3deb5417dc69d3288bacd5bd7cf27549fc6609b739657f6a1e"
+            },
+            {
+              "yawDegrees": -180,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-180-elev65.756174b7a811.png",
+              "sha256": "756174b7a811c98cfe752a2d284708778bce48e7f8f60f6232e7e0a3ec0148e3"
+            },
+            {
+              "yawDegrees": -165,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-165-elev25.ceb67c84501a.png",
+              "sha256": "ceb67c84501ab5cf49e2027b15825dcffd04ac44274d203dbb5e0a18735c686d"
+            },
+            {
+              "yawDegrees": -165,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-165-elev45.9e47c478198c.png",
+              "sha256": "9e47c478198c0c6df05b1e47c5157287a1b5d0ea879504977796e604ca2b576c"
+            },
+            {
+              "yawDegrees": -165,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-165-elev65.ed51e08fcde4.png",
+              "sha256": "ed51e08fcde47580e91c4d9f21eb85142a753227b5fa5309a0ec2cb22fc78073"
+            },
+            {
+              "yawDegrees": -150,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-150-elev25.3a64f0f76e4c.png",
+              "sha256": "3a64f0f76e4c5f4cb35a69d04328e4fc81d2ef15ebe04d7e80437190e09e7a73"
+            },
+            {
+              "yawDegrees": -150,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-150-elev45.cc0b32f7521f.png",
+              "sha256": "cc0b32f7521fbe2c7d6d5ef78b8aa773cc5ff045ae7c96d35c072291a3215faa"
+            },
+            {
+              "yawDegrees": -150,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-150-elev65.32aaf198e4ad.png",
+              "sha256": "32aaf198e4ad930caa515756fe8f5db1418c6586aaf0a3197635f3a93b440276"
+            },
+            {
+              "yawDegrees": -135,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-135-elev25.3f946283a2ba.png",
+              "sha256": "3f946283a2ba2cfc58f6ac7f50f261d2faebbc8d170f8a3beadd2a61fc0d9aaf"
+            },
+            {
+              "yawDegrees": -135,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-135-elev45.882ef390240f.png",
+              "sha256": "882ef390240f95779f3691d4053c8656ea31fdf6f2ce435568822194aa20f75d"
+            },
+            {
+              "yawDegrees": -135,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-135-elev65.ef11292d1ce5.png",
+              "sha256": "ef11292d1ce5247364440e7954d8252fc679cdd8930451caa13ce38feee0de1a"
+            },
+            {
+              "yawDegrees": -120,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-120-elev25.0a9712e0de9b.png",
+              "sha256": "0a9712e0de9bdcc7d9e4ad00694eb8a18d72bc5467c33bdb66abf6df75b09dbd"
+            },
+            {
+              "yawDegrees": -120,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-120-elev45.27526070f60e.png",
+              "sha256": "27526070f60e3626ed420889ce3f3d14a7bd1655bdd4feb8afb2f5a9d20b70c0"
+            },
+            {
+              "yawDegrees": -120,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-120-elev65.7ec84e6c22e6.png",
+              "sha256": "7ec84e6c22e64da2d07e94c78feefb253197940894fb7f13f7ef33fe9a5df4ff"
+            },
+            {
+              "yawDegrees": -105,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-105-elev25.b987fdb3d840.png",
+              "sha256": "b987fdb3d84064fd32ab5a4676b29db0a3af1a6651fdb8637ba109a1860bae79"
+            },
+            {
+              "yawDegrees": -105,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-105-elev45.54ae51635897.png",
+              "sha256": "54ae516358971582a36b48f668d0d6064d377c7fe6f514ac43f0729a5472cdb0"
+            },
+            {
+              "yawDegrees": -105,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-105-elev65.9ef93e6e4df1.png",
+              "sha256": "9ef93e6e4df181d83593a43e125f3ea6d8ccc32473fc3ff2edd1b886a45aa1ab"
+            },
+            {
+              "yawDegrees": -90,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-90-elev25.5bf16483310a.png",
+              "sha256": "5bf16483310a81581edfad744189cedcb99aadbddfef9034827ffafa083c9d96"
+            },
+            {
+              "yawDegrees": -90,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-90-elev45.9d652fb38262.png",
+              "sha256": "9d652fb382624060b6dc0b4da85fed8c934d91c7af6d1b10435b4d0134183141"
+            },
+            {
+              "yawDegrees": -90,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-90-elev65.5e3403754ff5.png",
+              "sha256": "5e3403754ff56e3672f56306d87b87eebb34fdd94d0ed2101defa208b97677eb"
+            },
+            {
+              "yawDegrees": -75,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-75-elev25.82c26cc4e726.png",
+              "sha256": "82c26cc4e72686ed77fc17ad604446ec0ed73421909763c149a772d8cb1e1b04"
+            },
+            {
+              "yawDegrees": -75,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-75-elev45.30cb7cd5ad0f.png",
+              "sha256": "30cb7cd5ad0fd7f212551227808f1d2d0bd975208761b652cbed9dcc672dd022"
+            },
+            {
+              "yawDegrees": -75,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-75-elev65.bec470cecb9d.png",
+              "sha256": "bec470cecb9df3735b4ecfd3abe52e24d28c56e81a49c5d5a98209549c93035e"
+            },
+            {
+              "yawDegrees": -60,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-60-elev25.758713800165.png",
+              "sha256": "758713800165dfb6c58234b5c3a8d30ff9871dfa8c811a5ab54fb603525b499c"
+            },
+            {
+              "yawDegrees": -60,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-60-elev45.8db7f6314de9.png",
+              "sha256": "8db7f6314de924f83bb0d552060d5fe7f5c9cf8ca24fc05280aebe99962ab2ef"
+            },
+            {
+              "yawDegrees": -60,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-60-elev65.652089cbaf59.png",
+              "sha256": "652089cbaf59785d30347027e3cd23db2d0bdc7773104f49f62b36c9638e67f1"
+            },
+            {
+              "yawDegrees": -45,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-45-elev25.0c5abba5a804.png",
+              "sha256": "0c5abba5a804e4cdd9878eab01ba981ad15eccb8769b5b45349e68f59bc5beab"
+            },
+            {
+              "yawDegrees": -45,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-45-elev45.c7352a388ac2.png",
+              "sha256": "c7352a388ac2bb8075e924066c4abe39019d09272582ad2273a8dec5ffa55b17"
+            },
+            {
+              "yawDegrees": -45,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-45-elev65.74e5d20053e2.png",
+              "sha256": "74e5d20053e2ca09ecd2fad6ae82954fdc93a705760290df4f12d5b18ad54b71"
+            },
+            {
+              "yawDegrees": -30,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-30-elev25.dc5673e8a94b.png",
+              "sha256": "dc5673e8a94bbce81a324973c82a143b2e5e4d97ac713a249ab8c38cd14f6819"
+            },
+            {
+              "yawDegrees": -30,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-30-elev45.6512baf80824.png",
+              "sha256": "6512baf80824085074ffd5910320b43c4dccda7b8dfd8f4f8098a10da2a6af17"
+            },
+            {
+              "yawDegrees": -30,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-30-elev65.c2e00ec13681.png",
+              "sha256": "c2e00ec136816eabb32cb400ac64066675f7b5c6b39f54ae9094f9d67e2f2a00"
+            },
+            {
+              "yawDegrees": -15,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-15-elev25.541967bc978b.png",
+              "sha256": "541967bc978b551747d61f587c497ba6e2fbcfd669ebdc341c28992796804ae8"
+            },
+            {
+              "yawDegrees": -15,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-15-elev45.8970da9a3d16.png",
+              "sha256": "8970da9a3d163f2d5b35f2ccd54c03c6670a8e53f9b6956b8d9530015e7a4412"
+            },
+            {
+              "yawDegrees": -15,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-15-elev65.950159d1658d.png",
+              "sha256": "950159d1658d79ff0039b8157f668502455501d14e218c76942bc663ec8ec289"
+            },
+            {
+              "yawDegrees": 0,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+00-elev25.572ac468464b.png",
+              "sha256": "572ac468464b4839571410bd50fc71523093e13a2ee3c1613086e6a4123f5092"
+            },
+            {
+              "yawDegrees": 0,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+00-elev45.27b27b26518f.png",
+              "sha256": "27b27b26518f443edb43132a94ce7fcfbde22ca0cdab4c3f42019730df5a32ee"
+            },
+            {
+              "yawDegrees": 0,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+00-elev65.fed62813d88a.png",
+              "sha256": "fed62813d88a7db3db9938d5f81bbf70b08a482e357656387e4154a6e38b62de"
+            },
+            {
+              "yawDegrees": 15,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+15-elev25.5802c158563e.png",
+              "sha256": "5802c158563eef6514b681f24c9cc98075f643677578009365d8717a10df93ba"
+            },
+            {
+              "yawDegrees": 15,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+15-elev45.78ae78a49e9e.png",
+              "sha256": "78ae78a49e9ecfcb2367a3986a86042098503203b3be0a733771fcf50887eb3b"
+            },
+            {
+              "yawDegrees": 15,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+15-elev65.2cda6ce9684c.png",
+              "sha256": "2cda6ce9684c48099b559b26bf85a55b101c6d9ae03907f4d0cfaaa31788602e"
+            },
+            {
+              "yawDegrees": 30,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+30-elev25.b50363e0f5ce.png",
+              "sha256": "b50363e0f5cee1a296a65b29e6fe70628921bbcca273aef221b884c0684ed2bd"
+            },
+            {
+              "yawDegrees": 30,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+30-elev45.582e6658633f.png",
+              "sha256": "582e6658633fdbc9f957c02be32339fa5eef7ac25d6e70b115caeec019d2b8b8"
+            },
+            {
+              "yawDegrees": 30,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+30-elev65.b80f68bf0e1d.png",
+              "sha256": "b80f68bf0e1dd00084f341252c24ef7b371fcc664675b12a4fb680fe67bb05df"
+            },
+            {
+              "yawDegrees": 45,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+45-elev25.b42c08f69e81.png",
+              "sha256": "b42c08f69e81c464ba36caf9081b11667a1b23bf0955b40e6a6e52f63e9f154c"
+            },
+            {
+              "yawDegrees": 45,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+45-elev45.0ae0536a2ab9.png",
+              "sha256": "0ae0536a2ab94d5597196dc2243f3890ce8e1f9dc67daeec73367c1098e3b4a0"
+            },
+            {
+              "yawDegrees": 45,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+45-elev65.7a7dd202ba04.png",
+              "sha256": "7a7dd202ba041bf6485c1122b4e6f0d3bbb195b464cb07be7284c9cb18ab780d"
+            },
+            {
+              "yawDegrees": 60,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+60-elev25.79aefc4fc948.png",
+              "sha256": "79aefc4fc948fed532749178a17431fce901556d53ee5b3597ec735c1beb1a94"
+            },
+            {
+              "yawDegrees": 60,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+60-elev45.580a5aab4e1d.png",
+              "sha256": "580a5aab4e1dd9eab54c90629e2b38df910c176aefd913dfe3828cd870f5b17a"
+            },
+            {
+              "yawDegrees": 60,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+60-elev65.ea32ffb32d10.png",
+              "sha256": "ea32ffb32d10a5dbd2c83aaa69ded8ca913a90f562e5aafa45757e2843c39fe5"
+            },
+            {
+              "yawDegrees": 75,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+75-elev25.3f7a7e7c7747.png",
+              "sha256": "3f7a7e7c77472e02b7b41cbdca2b5fb2822a8668bebf0312599268a117cb6c65"
+            },
+            {
+              "yawDegrees": 75,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+75-elev45.6d2dba69b52e.png",
+              "sha256": "6d2dba69b52e022a4066c4b87b2e118d8d5076cc3b5106bf58bd00f5170bed69"
+            },
+            {
+              "yawDegrees": 75,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+75-elev65.18305730d471.png",
+              "sha256": "18305730d4714773f6655dc0a604127917cbf9312f3a02a76923eee10f9f9561"
+            },
+            {
+              "yawDegrees": 90,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+90-elev25.02661e6751f5.png",
+              "sha256": "02661e6751f5a5a6e6b712ec0f367cba4557345a927fb96f8b6ecb2da2c0f311"
+            },
+            {
+              "yawDegrees": 90,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+90-elev45.826949d0baef.png",
+              "sha256": "826949d0baeff959b041c5d9510751aca26e18c5415270ac0f29a1f84f0549ca"
+            },
+            {
+              "yawDegrees": 90,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+90-elev65.19f59a9942b8.png",
+              "sha256": "19f59a9942b8767a254774b7b9cdf77e3b33cce080e5576fd0ba2ffcfdaf6242"
+            },
+            {
+              "yawDegrees": 105,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+105-elev25.eaeaf9f349cd.png",
+              "sha256": "eaeaf9f349cdf10e84781b47e6d02f689950811f191a146df443780dab40d8e8"
+            },
+            {
+              "yawDegrees": 105,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+105-elev45.5619ec76344d.png",
+              "sha256": "5619ec76344dcc5fd24c003bf8c8e515a220af0821aa22102144ea6c7d0ca298"
+            },
+            {
+              "yawDegrees": 105,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+105-elev65.d3fbf0352b49.png",
+              "sha256": "d3fbf0352b49a28cce86571b9eb0d56c378c8fa47c04f68e613408648eeca192"
+            },
+            {
+              "yawDegrees": 120,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+120-elev25.3fbef9f94ab8.png",
+              "sha256": "3fbef9f94ab8ee07d2b52e9ad245a72de17328d9b965c846b21efabe6169486c"
+            },
+            {
+              "yawDegrees": 120,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+120-elev45.1c669be0e926.png",
+              "sha256": "1c669be0e9266f18cf077a49e0c83ab35867a56e20f6790dfbe3414f0c9769b2"
+            },
+            {
+              "yawDegrees": 120,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+120-elev65.8c542ee80262.png",
+              "sha256": "8c542ee80262df27fffe4fc302617432a00a10786af0bcd3c3f6084535e4fe51"
+            },
+            {
+              "yawDegrees": 135,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+135-elev25.391355d70119.png",
+              "sha256": "391355d701195b78c324ed14a99e8209febe81596ef210b7fb71295ad2eaf771"
+            },
+            {
+              "yawDegrees": 135,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+135-elev45.48c8e171af14.png",
+              "sha256": "48c8e171af14cd92bd5542e65c7fbdfb1be23644427ebd95ed8ab5a2877e7e95"
+            },
+            {
+              "yawDegrees": 135,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+135-elev65.10271f80ece0.png",
+              "sha256": "10271f80ece01bb106d97f819032ebacb5261a154e1369a5962c6b5cdd0df1ee"
+            },
+            {
+              "yawDegrees": 150,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+150-elev25.c3e092fb7bdd.png",
+              "sha256": "c3e092fb7bdda27b96538125376eb41722d888d3884a798d426ea8b8ba193af1"
+            },
+            {
+              "yawDegrees": 150,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+150-elev45.18a466d5ef17.png",
+              "sha256": "18a466d5ef1782d66d1900fc6d6705622ea1308ad4eea987df4b99a9a0078e26"
+            },
+            {
+              "yawDegrees": 150,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+150-elev65.a5f8cf9d241b.png",
+              "sha256": "a5f8cf9d241b1340da60632d8f0ea41458324befe5dbfe271927cbf24665e83f"
+            },
+            {
+              "yawDegrees": 165,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+165-elev25.b46fa90eade7.png",
+              "sha256": "b46fa90eade7040abf97d0a530a47f63f122ff7325d4331a9eaa886ec679e4fc"
+            },
+            {
+              "yawDegrees": 165,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+165-elev45.77af41ff4ae8.png",
+              "sha256": "77af41ff4ae8338b0c5f50da7c39e3e22273c7647f373d9c9417741f0882affb"
+            },
+            {
+              "yawDegrees": 165,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+165-elev65.2f846709d452.png",
+              "sha256": "2f846709d45205cfe1f6d4080a30656fa84fa5b4ded08a134c2f9734a7b53eca"
+            }
+          ]
+        }
+      }
+    ],
+    "redirects": [],
+    "errors": []
+  },
+  "pngLoading": {
+    "responses": [
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-45-elev45.c7352a388ac2.png",
+        "status": 200,
+        "sha256": "c7352a388ac2bb8075e924066c4abe39019d09272582ad2273a8dec5ffa55b17",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-60-elev45.8db7f6314de9.png",
+        "status": 200,
+        "sha256": "8db7f6314de924f83bb0d552060d5fe7f5c9cf8ca24fc05280aebe99962ab2ef",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-75-elev45.30cb7cd5ad0f.png",
+        "status": 200,
+        "sha256": "30cb7cd5ad0fd7f212551227808f1d2d0bd975208761b652cbed9dcc672dd022",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-90-elev45.9d652fb38262.png",
+        "status": 200,
+        "sha256": "9d652fb382624060b6dc0b4da85fed8c934d91c7af6d1b10435b4d0134183141",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-105-elev45.54ae51635897.png",
+        "status": 200,
+        "sha256": "54ae516358971582a36b48f668d0d6064d377c7fe6f514ac43f0729a5472cdb0",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-120-elev45.27526070f60e.png",
+        "status": 200,
+        "sha256": "27526070f60e3626ed420889ce3f3d14a7bd1655bdd4feb8afb2f5a9d20b70c0",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-135-elev45.882ef390240f.png",
+        "status": 200,
+        "sha256": "882ef390240f95779f3691d4053c8656ea31fdf6f2ce435568822194aa20f75d",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-150-elev45.cc0b32f7521f.png",
+        "status": 200,
+        "sha256": "cc0b32f7521fbe2c7d6d5ef78b8aa773cc5ff045ae7c96d35c072291a3215faa",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-165-elev45.9e47c478198c.png",
+        "status": 200,
+        "sha256": "9e47c478198c0c6df05b1e47c5157287a1b5d0ea879504977796e604ca2b576c",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-180-elev45.0c4bb5ba00eb.png",
+        "status": 200,
+        "sha256": "0c4bb5ba00ebeb3deb5417dc69d3288bacd5bd7cf27549fc6609b739657f6a1e",
+        "width": 512,
+        "height": 512
+      }
+    ],
+    "images": [
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/fd883190-d061-4740-8d70-6a25234d5e57",
+        "currentSrc": "blob:http://127.0.0.1:5184/fd883190-d061-4740-8d70-6a25234d5e57",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "d11380f7c0ac5d972b431d64f23fa25b759ff3de011f0ba295d6efa95bf9fe53"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/a5f609fc-74b0-45d0-a4d1-3f1963694b7c",
+        "currentSrc": "blob:http://127.0.0.1:5184/a5f609fc-74b0-45d0-a4d1-3f1963694b7c",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "961310abe6780382d3c958519ab93c2340457087941cfb2ed5c81b46545f748a"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/a939f407-ab3d-4da4-9054-f48b7eabcfdc",
+        "currentSrc": "blob:http://127.0.0.1:5184/a939f407-ab3d-4da4-9054-f48b7eabcfdc",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "e9397ac4b9d63f5a18988d31e0aabf36b9cefa4efaeeb4927a43beaab14669ac"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/4386996e-0be6-4c0f-a803-59b7ef487fef",
+        "currentSrc": "blob:http://127.0.0.1:5184/4386996e-0be6-4c0f-a803-59b7ef487fef",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "d98fa663476fcc9adf6f15346e53605215f58fd3f1c5089049284b096f86a07b"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/a3743e63-561d-4bb9-8665-5f3a60ed38cb",
+        "currentSrc": "blob:http://127.0.0.1:5184/a3743e63-561d-4bb9-8665-5f3a60ed38cb",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "74095e5922cdc2e62fc7826a20ff9848e2583227f3bdf428b2a9855894d14243"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/622fe491-76dd-4085-a8f7-821219f6594c",
+        "currentSrc": "blob:http://127.0.0.1:5184/622fe491-76dd-4085-a8f7-821219f6594c",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "40921f9613417d04bd8ec9e842a93abf32982a48326bfecaf641153afbdfd2ec"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/da9df36d-d57b-46ed-9d16-88119a4d9d0e",
+        "currentSrc": "blob:http://127.0.0.1:5184/da9df36d-d57b-46ed-9d16-88119a4d9d0e",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "03ababd95b126c05b85b12241e2aad53589791d8f33152189968abbb60004930"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/8aa0a6d9-3a7f-4fcc-b9f7-37b98ae6e833",
+        "currentSrc": "blob:http://127.0.0.1:5184/8aa0a6d9-3a7f-4fcc-b9f7-37b98ae6e833",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "f315c0e4faac15aea4e1e8ef0a13b3f6b879a15fada4a991873e33667033ad83"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/c0b4440c-20d9-485f-b92b-472b54c1efab",
+        "currentSrc": "blob:http://127.0.0.1:5184/c0b4440c-20d9-485f-b92b-472b54c1efab",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "6109b4c8f99c8aed492c32fe36948f401640d763a7fce8e689b130ba6617b1b6"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/e32c04d7-9d1d-4f4b-8774-6a71b1de7089",
+        "currentSrc": "blob:http://127.0.0.1:5184/e32c04d7-9d1d-4f4b-8774-6a71b1de7089",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "ec435cdad35d052a7cb35fe45e97f5a960b1c1cef6439125c847b649e0608acc"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/88f61ea0-bf98-49d0-a262-84a61f637055",
+        "currentSrc": "blob:http://127.0.0.1:5184/88f61ea0-bf98-49d0-a262-84a61f637055",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "f362fceb7be335feb4161d55cc330db00752ee358726ce513b2124d656f40afc"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/29583d0e-48a7-43fd-933f-4229688c3da0",
+        "currentSrc": "blob:http://127.0.0.1:5184/29583d0e-48a7-43fd-933f-4229688c3da0",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "c0ef65857ded2b12b7b106666b854de5efb278e3aba8131967ad2851ac1febc5"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/e497f560-7cda-4187-bf5e-4e27b80dc520",
+        "currentSrc": "blob:http://127.0.0.1:5184/e497f560-7cda-4187-bf5e-4e27b80dc520",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "b8bf710d732d2f6ed0b2047683741b81d8d4258cf82e507ffe8019905a5e22be"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/44713c9a-9121-44fc-8187-d70cada04b73",
+        "currentSrc": "blob:http://127.0.0.1:5184/44713c9a-9121-44fc-8187-d70cada04b73",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "2ecf5465679a998e5cf4380a1ea9413ea8cdc915a6a985976e2ffb4c5e2370d2"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/173676fc-95b8-41d4-8f03-468aa166feb2",
+        "currentSrc": "blob:http://127.0.0.1:5184/173676fc-95b8-41d4-8f03-468aa166feb2",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "c7352a388ac2bb8075e924066c4abe39019d09272582ad2273a8dec5ffa55b17"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/9ca5ac4f-0822-4a93-a85c-fe64cce62a1c",
+        "currentSrc": "blob:http://127.0.0.1:5184/9ca5ac4f-0822-4a93-a85c-fe64cce62a1c",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "16b8abd3656c3395333538bb6dda8bf1c843c3e55e31565ea2bd3f9fa0462f45"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/ce998295-32ea-4dc9-bd2f-19ae43d38c0d",
+        "currentSrc": "blob:http://127.0.0.1:5184/ce998295-32ea-4dc9-bd2f-19ae43d38c0d",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "3c68840d1fbf6b57018b2367c84ef74f3c46e787739f521cfbcdb308171e9c9f"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/c42622a0-f8a5-45a0-86ba-507065fbdb9e",
+        "currentSrc": "blob:http://127.0.0.1:5184/c42622a0-f8a5-45a0-86ba-507065fbdb9e",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "bb8d15f97f7d596fa816fc4d496bebbeb6cf49bc413d15011acdac24e297303a"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/fbce3a29-35f2-4c82-81ee-951acf815168",
+        "currentSrc": "blob:http://127.0.0.1:5184/fbce3a29-35f2-4c82-81ee-951acf815168",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "46222ac72e320a839af9d57f0d7a53a3ec4c57f3028dc2bd759542a3578f72b5"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/1d8aad99-8f9c-4d39-b1b6-a8e5dd6dda78",
+        "currentSrc": "blob:http://127.0.0.1:5184/1d8aad99-8f9c-4d39-b1b6-a8e5dd6dda78",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "f871ecb6f11f97851cb3c416c21a9dab15580675c1ea64b7970aaa523b545092"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/06208716-27a8-4a87-a799-5b3727affdc2",
+        "currentSrc": "blob:http://127.0.0.1:5184/06208716-27a8-4a87-a799-5b3727affdc2",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "421ea8f74f06ad53e01811820c8c23d83a692cea675e667a755b6cd791d73524"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/68b8e447-3059-406f-aa71-ccb506690f50",
+        "currentSrc": "blob:http://127.0.0.1:5184/68b8e447-3059-406f-aa71-ccb506690f50",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "18b909749016599155528a35af28cf2c99fb2e1929e776fd2cefda20c0c2346c"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/963df4ba-23d7-4075-88c8-ddfebe767fe2",
+        "currentSrc": "blob:http://127.0.0.1:5184/963df4ba-23d7-4075-88c8-ddfebe767fe2",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "e992058304fe6be2d8944c883491c87e9485399d7633568f0a566d07630c0ef4"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/515fead1-d016-4e83-8e02-92780f53ce8d",
+        "currentSrc": "blob:http://127.0.0.1:5184/515fead1-d016-4e83-8e02-92780f53ce8d",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "40d4eca89db2508bafdf7996586a7e3844f6e68c6767a4c340f227f8fd97e813"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/232ea6d2-032f-449b-bd35-16c18ae50cea",
+        "currentSrc": "blob:http://127.0.0.1:5184/232ea6d2-032f-449b-bd35-16c18ae50cea",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "96bf089124afaa1fb73f14c939452bfa070d5cd88fa5a3fc920c57975f71bd96"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/cd49e7b4-060d-4e49-99c0-4ee223f049dd",
+        "currentSrc": "blob:http://127.0.0.1:5184/cd49e7b4-060d-4e49-99c0-4ee223f049dd",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "d3f2d1b9659cee8c4bc31843c710552144650c18f4497558240b4c54449fce6c"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/800e4f66-957e-463c-981c-fa9a95cdeff2",
+        "currentSrc": "blob:http://127.0.0.1:5184/800e4f66-957e-463c-981c-fa9a95cdeff2",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "4edfe021a8670ce6b704fb523764016aa35393689f1ac04a27cd8e8d1c9109f8"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/39b367a6-99a3-4135-99c7-8d1496af7437",
+        "currentSrc": "blob:http://127.0.0.1:5184/39b367a6-99a3-4135-99c7-8d1496af7437",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "faccdd4d94af62dbb9bf239a5bfbdecac1daeab6c9542aed8a9a9a874368eae7"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/51593e9f-7743-4aa2-adf0-300483b4b215",
+        "currentSrc": "blob:http://127.0.0.1:5184/51593e9f-7743-4aa2-adf0-300483b4b215",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "13d9fadda21f26afd30b16e61999905bf6f9e1ff9b3922ba1d20236dc3145b57"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/8d0132bd-53ce-450f-ba73-1f070ef86964",
+        "currentSrc": "blob:http://127.0.0.1:5184/8d0132bd-53ce-450f-ba73-1f070ef86964",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "751dcd28f827c10dca1853c5df2876a7df64afc6284d4c1631d405d0210f3af5"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/36c6ad4e-ae3e-4081-8448-3e6f01ca4fb8",
+        "currentSrc": "blob:http://127.0.0.1:5184/36c6ad4e-ae3e-4081-8448-3e6f01ca4fb8",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "8846d69e23162f459677865a6c62f7772b3d189630380323bd6ed7267363dd12"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/6cc15bb0-1cce-46a8-8cbc-47d75296dc98",
+        "currentSrc": "blob:http://127.0.0.1:5184/6cc15bb0-1cce-46a8-8cbc-47d75296dc98",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "2f3d110ea54c5305300070d398ebb846478baf2ea848d9103f5b14f6ee8d6e88"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/d78737f0-22de-4998-9b34-993b7abcf636",
+        "currentSrc": "blob:http://127.0.0.1:5184/d78737f0-22de-4998-9b34-993b7abcf636",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "a681371bbea096e78ae0d9d4cc71334d8feb6847846a15f7f4bfe5b8dc4a975a"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/be995f3e-c641-4e9e-a71f-c9eb3ad4e1cb",
+        "currentSrc": "blob:http://127.0.0.1:5184/be995f3e-c641-4e9e-a71f-c9eb3ad4e1cb",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "b4392b01567c952b264fb925e6787988fe1bf4b7ad5b19512f800e7c913a5803"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/73d5b493-6eb0-4312-a9b5-39e3c939ff35",
+        "currentSrc": "blob:http://127.0.0.1:5184/73d5b493-6eb0-4312-a9b5-39e3c939ff35",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "c07bdc4b76ab6476561be6eb739c5a7978342554a86b9154f8a30f908f84e449"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/535d593b-d9d1-4915-a646-30c259ab8685",
+        "currentSrc": "blob:http://127.0.0.1:5184/535d593b-d9d1-4915-a646-30c259ab8685",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "a2ec3336433803ea1c29e391d01e38275d8ff6a005e3061919fbde5daa260be1"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/51c39926-dec4-44bc-8518-11f0b0f3e977",
+        "currentSrc": "blob:http://127.0.0.1:5184/51c39926-dec4-44bc-8518-11f0b0f3e977",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "0d98bdcab1dfb8882e87530ad3b1eba4e98c36039d8af03d4e11fea377e78527"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/f968924c-6909-4ca6-ac84-79c82afcdb38",
+        "currentSrc": "blob:http://127.0.0.1:5184/f968924c-6909-4ca6-ac84-79c82afcdb38",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "307a1fd32c82aa171b168e95bb1ea7686c2520268d83c441868b18a7a6d43f68"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/98e1c12d-e4e8-4a55-b6b3-207c98991031",
+        "currentSrc": "blob:http://127.0.0.1:5184/98e1c12d-e4e8-4a55-b6b3-207c98991031",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "e9f94d81d85a28e4e6071819a1a70b109b23abcb9948bc74b5404197b34d8a94"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/9f688b15-d630-421a-b4a0-670e719064ff",
+        "currentSrc": "blob:http://127.0.0.1:5184/9f688b15-d630-421a-b4a0-670e719064ff",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "06bf1b3a0d8a6f98dc0cefd9ea43e5ee14225bb36e319944ad2d0d454035dfe1"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/f8244484-bc13-482f-a7fa-08a6fe77b242",
+        "currentSrc": "blob:http://127.0.0.1:5184/f8244484-bc13-482f-a7fa-08a6fe77b242",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "13f7928a8d509d1ef9f24970d316c3f64aad4d8cd47e6b9870fae1d87a44371b"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/f0efb74c-fd15-41a8-8ed4-f7802d4cd508",
+        "currentSrc": "blob:http://127.0.0.1:5184/f0efb74c-fd15-41a8-8ed4-f7802d4cd508",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "c5e0ff6eca9d0ab41094d2b0d4f0ca427c7149302a1f264d77f366737ece50c9"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/de0757e3-2c8a-4858-9a39-8cb1a9b98b1a",
+        "currentSrc": "blob:http://127.0.0.1:5184/de0757e3-2c8a-4858-9a39-8cb1a9b98b1a",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "b17091c17260d041d14d4594e60a670bc4e0465412855b101a9b97f54b34762f"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/298b329d-ffef-4df6-9de1-2abf801fcd53",
+        "currentSrc": "blob:http://127.0.0.1:5184/298b329d-ffef-4df6-9de1-2abf801fcd53",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "1f712df62e5e4e7b5533bd14c3b438ee94255e3e682c64f6e093e02a4f308a47"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/d303ebef-5b7b-4fbc-91e3-f9ea999c3719",
+        "currentSrc": "blob:http://127.0.0.1:5184/d303ebef-5b7b-4fbc-91e3-f9ea999c3719",
+        "complete": true,
+        "width": 128,
+        "height": 128,
+        "error": false,
+        "sha256": "6dcaf6e6b44bf6c0ada95c94ae2f7afb5b24054b5e797e536c29b1c444c2ec76"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/354a3020-64fe-4ded-b14a-b0b66941c214",
+        "currentSrc": "blob:http://127.0.0.1:5184/354a3020-64fe-4ded-b14a-b0b66941c214",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "84bd56fcf5f16dc981bfbb9f4db28c178c4c5262c7b39d75cb086e266a2d0a1a"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/fe8ce99d-dafa-451b-9b6f-5cc7f00e26ff",
+        "currentSrc": "blob:http://127.0.0.1:5184/fe8ce99d-dafa-451b-9b6f-5cc7f00e26ff",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "bc9186a5257c192d5f49c035a6f38d3386e1e84c0464858d1dde479fa89b73db"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/89dc3d21-5e07-4662-85e5-0bfd76a1351b",
+        "currentSrc": "blob:http://127.0.0.1:5184/89dc3d21-5e07-4662-85e5-0bfd76a1351b",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "88831c70a40decd8db51c3a0e475fd547564d31be0275d60c2b68f49481935d8"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/04df686d-5b14-4359-9c0e-5321b6b563cc",
+        "currentSrc": "blob:http://127.0.0.1:5184/04df686d-5b14-4359-9c0e-5321b6b563cc",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "09dee978bfed1a2fdcf32a66ed5f25ae7547e9e3b2e79386f5e96e3e9acb1737"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/8d989648-64b1-4bcf-8f57-a0cfa9d9550c",
+        "currentSrc": "blob:http://127.0.0.1:5184/8d989648-64b1-4bcf-8f57-a0cfa9d9550c",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "bd2db1e500072bc0fe8c26de9e07b32002def9aaf673e7938ecb6759ade992b3"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/7267b9e0-e182-421d-bf3a-a373ae1a9659",
+        "currentSrc": "blob:http://127.0.0.1:5184/7267b9e0-e182-421d-bf3a-a373ae1a9659",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "717733ee6861ddc89bde35f6a054f402f27b5196f153f7c371b30a8a5354ea44"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/53bd9979-35b3-44d3-a59b-0ee60ccda2be",
+        "currentSrc": "blob:http://127.0.0.1:5184/53bd9979-35b3-44d3-a59b-0ee60ccda2be",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "9efe0d30115dcad9ec7a490a86c68eddc68604e7715f8c9f6eba6056e05eb59b"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/54a71766-3d95-450b-9d46-802d775d2202",
+        "currentSrc": "blob:http://127.0.0.1:5184/54a71766-3d95-450b-9d46-802d775d2202",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "142e26025b0b5e128eb866cf2d1f29bd9295172dc14ead22c9b4a774b60bcfa7"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/50f895b4-d416-4b1b-b486-389b55c4eefa",
+        "currentSrc": "blob:http://127.0.0.1:5184/50f895b4-d416-4b1b-b486-389b55c4eefa",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "b7048d770cd11bc7ea838f1a733620b856d7d72ae87f2ef890ab3afebbb99dbc"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/c5e8f68c-04ba-422d-b3eb-e836f7cc8d97",
+        "currentSrc": "blob:http://127.0.0.1:5184/c5e8f68c-04ba-422d-b3eb-e836f7cc8d97",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "ec72ac7ae01dff96f4b1d79852334d4af60e80a0de87a7240f33aa63b854c643"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/dca1f032-4e2e-4ed6-ad4c-55fbc26c0f52",
+        "currentSrc": "blob:http://127.0.0.1:5184/dca1f032-4e2e-4ed6-ad4c-55fbc26c0f52",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "b8b57a8d367e0d23e1e4820475bed3f9027545951e0d0d7151316bcc76e43fe4"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/8921e7c7-b55a-4570-9db9-ea79268e9263",
+        "currentSrc": "blob:http://127.0.0.1:5184/8921e7c7-b55a-4570-9db9-ea79268e9263",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "daa34902b62027994251f9e67b7b6264e8ebd86ab8938e94d2edef7a506f96a7"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/a299f26a-47d0-431c-be13-4af562e3b1b9",
+        "currentSrc": "blob:http://127.0.0.1:5184/a299f26a-47d0-431c-be13-4af562e3b1b9",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "09bfb9c9da1a6a4a37e86cb2124a6884e4b4e22daa16f5d2757882de87704576"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/07b249b1-761c-450f-a0b9-ebb7f67a579e",
+        "currentSrc": "blob:http://127.0.0.1:5184/07b249b1-761c-450f-a0b9-ebb7f67a579e",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "b285c8f9ed0a515600023fc2030ea17e510f10a0a965db28a47a5bd6f54aaf7f"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/ab55b17e-85e4-446a-9538-bbb4853caad2",
+        "currentSrc": "blob:http://127.0.0.1:5184/ab55b17e-85e4-446a-9538-bbb4853caad2",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "9cf00229dd97fe12839f2588c31416e972608a9315250ef7fb28229e8c7ea8c0"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/8a6873e5-2dc9-4a5c-a78f-8b1d390725da",
+        "currentSrc": "blob:http://127.0.0.1:5184/8a6873e5-2dc9-4a5c-a78f-8b1d390725da",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "4b149587d26e459fdd9c90c17ff890c189081e0be9803f19be7f46b3a5cdab0f"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/50e02c09-d283-4334-92c0-eff764e8ffbb",
+        "currentSrc": "blob:http://127.0.0.1:5184/50e02c09-d283-4334-92c0-eff764e8ffbb",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "9a0b41e7cdc2ad36e228b3d772bbdeb7cc16e777b7cf2d33a12cdaeff2d31947"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/fd432ee2-97f2-45ce-aeb7-9c74805b86cb",
+        "currentSrc": "blob:http://127.0.0.1:5184/fd432ee2-97f2-45ce-aeb7-9c74805b86cb",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "5e4ce93fa297120ed8ea22b4afe49ff1141ebcfc2934fe3b2f0d7d2aeb54c6e8"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/0b84f7a6-cfb1-4780-afca-2a8e5ba193e0",
+        "currentSrc": "blob:http://127.0.0.1:5184/0b84f7a6-cfb1-4780-afca-2a8e5ba193e0",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "963e6e5c124221556fd4fa580d1f8dc9dd3665e23a761fc002d6e842ddef72d7"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/545e1dde-5214-4a17-a94e-4fe64b37b959",
+        "currentSrc": "blob:http://127.0.0.1:5184/545e1dde-5214-4a17-a94e-4fe64b37b959",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "cb4bae62ae53809dba9e61f8556cfa7e854c22e243126379742ad0fbfd116a1f"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/fdc3f40c-d0e7-4bc5-91f7-5c15e8596eb6",
+        "currentSrc": "blob:http://127.0.0.1:5184/fdc3f40c-d0e7-4bc5-91f7-5c15e8596eb6",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "24f4e0f9b2718e92c0f01ed849049ddc3d759c31278517e72c34ff6e6a331dc0"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/e9390c6f-0e41-4016-abd9-ecb65a42e31a",
+        "currentSrc": "blob:http://127.0.0.1:5184/e9390c6f-0e41-4016-abd9-ecb65a42e31a",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "71ccffb2cc51119ea19ce62d6bc84a416a24f2f6928de7624e3fb020facbe0f6"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/7f53e82f-4a4e-40b6-8804-07edb4a69c9b",
+        "currentSrc": "blob:http://127.0.0.1:5184/7f53e82f-4a4e-40b6-8804-07edb4a69c9b",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "e9335cef165fe3e84a90cdf3bb629ddd884e34ecc248f64a60321f4a44937529"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/bce7a5a8-5c52-483c-b94d-0271f337e6fb",
+        "currentSrc": "blob:http://127.0.0.1:5184/bce7a5a8-5c52-483c-b94d-0271f337e6fb",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "fcfa401381d129d186f54dc13e9832869e4ed3153cae55e91d5d38d528f9cdb0"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/9256b0f8-3467-4c10-b36c-9df4cd7474d8",
+        "currentSrc": "blob:http://127.0.0.1:5184/9256b0f8-3467-4c10-b36c-9df4cd7474d8",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "4e656013fc9cb562777c71ed4b94ed2de7ce485116a6f934f00146e102cc0458"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/0c8fd63a-e42d-4a4c-afc5-1f1cec3bf425",
+        "currentSrc": "blob:http://127.0.0.1:5184/0c8fd63a-e42d-4a4c-afc5-1f1cec3bf425",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "a1f31f17de5a327f36605d69251bc76d91dc7b82aa5970e82b665659dbfcb800"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/7c03ed21-0953-46d9-9631-6beb4656c4ec",
+        "currentSrc": "blob:http://127.0.0.1:5184/7c03ed21-0953-46d9-9631-6beb4656c4ec",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "9e83b26d596c40780ccfaf5bdeaea34fd3fb9423382023d2bd54f1bc5c622d92"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/b4b2c1f1-152a-4f38-8590-28a644700168",
+        "currentSrc": "blob:http://127.0.0.1:5184/b4b2c1f1-152a-4f38-8590-28a644700168",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "1355322ca365edf6db9c561b66c9953de8a6263a6939c35d8aa051f7f5a60655"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/40e36f43-2356-4e86-a047-28690458d541",
+        "currentSrc": "blob:http://127.0.0.1:5184/40e36f43-2356-4e86-a047-28690458d541",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "6917ab6272c49c2a64aaf56ed9cfdd59d5c23f2f5101af67ea2446519f1df818"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/515013f3-5f91-475b-b4c6-6a2e75bec496",
+        "currentSrc": "blob:http://127.0.0.1:5184/515013f3-5f91-475b-b4c6-6a2e75bec496",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "3447b706bed88addd78a51cc025eeac54f79ef79ce0b1fd949510dba52f2c6dc"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/38ec60c2-2818-4b0c-bbf7-7b3cb7e409ac",
+        "currentSrc": "blob:http://127.0.0.1:5184/38ec60c2-2818-4b0c-bbf7-7b3cb7e409ac",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "8d8ce9ca121fe947e6dbfb8db4e7654efbfe28515ba9bb0dc6456396123d3ee0"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/d8bf38f8-9094-4f07-9813-ce995063ec78",
+        "currentSrc": "blob:http://127.0.0.1:5184/d8bf38f8-9094-4f07-9813-ce995063ec78",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "9304f6a7697b1242d4c26d563b7bb2a4598b8b4dcd43cce008d7eaa81b91834d"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/f446c0ab-8de6-407d-9010-3ead16a467b7",
+        "currentSrc": "blob:http://127.0.0.1:5184/f446c0ab-8de6-407d-9010-3ead16a467b7",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "f279d76d4d3035576ec232d68de20f079b2584394dc587662799a4d3be7aa635"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/75602622-5e50-4808-a707-01f378289cec",
+        "currentSrc": "blob:http://127.0.0.1:5184/75602622-5e50-4808-a707-01f378289cec",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "05788bcaeb3341e3ddb55506ecd56ebb01baa46efa2277578be4583931276b16"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/c97865cb-ec5b-404e-8c81-1b605d70faea",
+        "currentSrc": "blob:http://127.0.0.1:5184/c97865cb-ec5b-404e-8c81-1b605d70faea",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "ce7e0bef821387716337a715515c628010c51b34db4ead050b6066fa51d29448"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/f052c4f5-daf5-449c-ab82-e0662cf09167",
+        "currentSrc": "blob:http://127.0.0.1:5184/f052c4f5-daf5-449c-ab82-e0662cf09167",
+        "complete": true,
+        "width": 256,
+        "height": 256,
+        "error": false,
+        "sha256": "8a17ffe2678ca2c2c0246a89996aba64097fa29dead9c3eb2c9682ca594d73b8"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/3051ce44-3727-400d-8652-27a4cbaa2e3d",
+        "currentSrc": "blob:http://127.0.0.1:5184/3051ce44-3727-400d-8652-27a4cbaa2e3d",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "8db7f6314de924f83bb0d552060d5fe7f5c9cf8ca24fc05280aebe99962ab2ef"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/05d5832e-9d7a-4040-bcbe-699a99471a55",
+        "currentSrc": "blob:http://127.0.0.1:5184/05d5832e-9d7a-4040-bcbe-699a99471a55",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "30cb7cd5ad0fd7f212551227808f1d2d0bd975208761b652cbed9dcc672dd022"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/ba5bccb9-e52b-42b7-a40b-3747699fe4f7",
+        "currentSrc": "blob:http://127.0.0.1:5184/ba5bccb9-e52b-42b7-a40b-3747699fe4f7",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "9d652fb382624060b6dc0b4da85fed8c934d91c7af6d1b10435b4d0134183141"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/82e2586d-48bb-47e7-9fc2-4002b26f256c",
+        "currentSrc": "blob:http://127.0.0.1:5184/82e2586d-48bb-47e7-9fc2-4002b26f256c",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "54ae516358971582a36b48f668d0d6064d377c7fe6f514ac43f0729a5472cdb0"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/d40e2dc8-eb7a-44c6-a74f-f42893c52a00",
+        "currentSrc": "blob:http://127.0.0.1:5184/d40e2dc8-eb7a-44c6-a74f-f42893c52a00",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "27526070f60e3626ed420889ce3f3d14a7bd1655bdd4feb8afb2f5a9d20b70c0"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/9f6bda59-d2b6-4388-a987-67628c4a6162",
+        "currentSrc": "blob:http://127.0.0.1:5184/9f6bda59-d2b6-4388-a987-67628c4a6162",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "882ef390240f95779f3691d4053c8656ea31fdf6f2ce435568822194aa20f75d"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/ea2704ad-14e3-44a7-913e-6096f13a63a7",
+        "currentSrc": "blob:http://127.0.0.1:5184/ea2704ad-14e3-44a7-913e-6096f13a63a7",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "cc0b32f7521fbe2c7d6d5ef78b8aa773cc5ff045ae7c96d35c072291a3215faa"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/bb7f99a8-6efd-4415-8fdd-f32178cefd32",
+        "currentSrc": "blob:http://127.0.0.1:5184/bb7f99a8-6efd-4415-8fdd-f32178cefd32",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "9e47c478198c0c6df05b1e47c5157287a1b5d0ea879504977796e604ca2b576c"
+      },
+      {
+        "assignedSrc": "blob:http://127.0.0.1:5184/4ffe06bd-7ca4-4f39-a516-8837cdeaa41c",
+        "currentSrc": "blob:http://127.0.0.1:5184/4ffe06bd-7ca4-4f39-a516-8837cdeaa41c",
+        "complete": true,
+        "width": 512,
+        "height": 512,
+        "error": false,
+        "sha256": "0c4bb5ba00ebeb3deb5417dc69d3288bacd5bd7cf27549fc6609b739657f6a1e"
+      }
+    ],
+    "descriptors": [
+      {
+        "url": "http://127.0.0.1:5184/game-content/oblique-actor-guard.v1.json",
+        "status": 200,
+        "data": {
+          "schemaVersion": 1,
+          "assetId": "actor.guard.base",
+          "source": "actor.guard.base.angled-detail.blend",
+          "sourceSha256": "b1f402e1096c49e1ea65c2e7727df2b6c498a77d09fc485679f1dcf72c95b456",
+          "resolutionPx": [
+            512,
+            512
+          ],
+          "nominalPixelsPerTile": 64,
+          "pivotPx": [
+            256,
+            256
+          ],
+          "cameraTargetTiles": [
+            0,
+            0,
+            0
+          ],
+          "projection": "orthographic",
+          "yawDegrees": [
+            -180,
+            -165,
+            -150,
+            -135,
+            -120,
+            -105,
+            -90,
+            -75,
+            -60,
+            -45,
+            -30,
+            -15,
+            0,
+            15,
+            30,
+            45,
+            60,
+            75,
+            90,
+            105,
+            120,
+            135,
+            150,
+            165
+          ],
+          "elevationDegrees": [
+            25,
+            45,
+            65
+          ],
+          "frames": [
+            {
+              "yawDegrees": -180,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-180-elev25.7d38d8f38dcc.png",
+              "sha256": "7d38d8f38dcc9bd6d852f52ec823f9546183fd560f14187ce8629425481d2ebc"
+            },
+            {
+              "yawDegrees": -180,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-180-elev45.0c4bb5ba00eb.png",
+              "sha256": "0c4bb5ba00ebeb3deb5417dc69d3288bacd5bd7cf27549fc6609b739657f6a1e"
+            },
+            {
+              "yawDegrees": -180,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-180-elev65.756174b7a811.png",
+              "sha256": "756174b7a811c98cfe752a2d284708778bce48e7f8f60f6232e7e0a3ec0148e3"
+            },
+            {
+              "yawDegrees": -165,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-165-elev25.ceb67c84501a.png",
+              "sha256": "ceb67c84501ab5cf49e2027b15825dcffd04ac44274d203dbb5e0a18735c686d"
+            },
+            {
+              "yawDegrees": -165,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-165-elev45.9e47c478198c.png",
+              "sha256": "9e47c478198c0c6df05b1e47c5157287a1b5d0ea879504977796e604ca2b576c"
+            },
+            {
+              "yawDegrees": -165,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-165-elev65.ed51e08fcde4.png",
+              "sha256": "ed51e08fcde47580e91c4d9f21eb85142a753227b5fa5309a0ec2cb22fc78073"
+            },
+            {
+              "yawDegrees": -150,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-150-elev25.3a64f0f76e4c.png",
+              "sha256": "3a64f0f76e4c5f4cb35a69d04328e4fc81d2ef15ebe04d7e80437190e09e7a73"
+            },
+            {
+              "yawDegrees": -150,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-150-elev45.cc0b32f7521f.png",
+              "sha256": "cc0b32f7521fbe2c7d6d5ef78b8aa773cc5ff045ae7c96d35c072291a3215faa"
+            },
+            {
+              "yawDegrees": -150,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-150-elev65.32aaf198e4ad.png",
+              "sha256": "32aaf198e4ad930caa515756fe8f5db1418c6586aaf0a3197635f3a93b440276"
+            },
+            {
+              "yawDegrees": -135,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-135-elev25.3f946283a2ba.png",
+              "sha256": "3f946283a2ba2cfc58f6ac7f50f261d2faebbc8d170f8a3beadd2a61fc0d9aaf"
+            },
+            {
+              "yawDegrees": -135,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-135-elev45.882ef390240f.png",
+              "sha256": "882ef390240f95779f3691d4053c8656ea31fdf6f2ce435568822194aa20f75d"
+            },
+            {
+              "yawDegrees": -135,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-135-elev65.ef11292d1ce5.png",
+              "sha256": "ef11292d1ce5247364440e7954d8252fc679cdd8930451caa13ce38feee0de1a"
+            },
+            {
+              "yawDegrees": -120,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-120-elev25.0a9712e0de9b.png",
+              "sha256": "0a9712e0de9bdcc7d9e4ad00694eb8a18d72bc5467c33bdb66abf6df75b09dbd"
+            },
+            {
+              "yawDegrees": -120,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-120-elev45.27526070f60e.png",
+              "sha256": "27526070f60e3626ed420889ce3f3d14a7bd1655bdd4feb8afb2f5a9d20b70c0"
+            },
+            {
+              "yawDegrees": -120,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-120-elev65.7ec84e6c22e6.png",
+              "sha256": "7ec84e6c22e64da2d07e94c78feefb253197940894fb7f13f7ef33fe9a5df4ff"
+            },
+            {
+              "yawDegrees": -105,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-105-elev25.b987fdb3d840.png",
+              "sha256": "b987fdb3d84064fd32ab5a4676b29db0a3af1a6651fdb8637ba109a1860bae79"
+            },
+            {
+              "yawDegrees": -105,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-105-elev45.54ae51635897.png",
+              "sha256": "54ae516358971582a36b48f668d0d6064d377c7fe6f514ac43f0729a5472cdb0"
+            },
+            {
+              "yawDegrees": -105,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-105-elev65.9ef93e6e4df1.png",
+              "sha256": "9ef93e6e4df181d83593a43e125f3ea6d8ccc32473fc3ff2edd1b886a45aa1ab"
+            },
+            {
+              "yawDegrees": -90,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-90-elev25.5bf16483310a.png",
+              "sha256": "5bf16483310a81581edfad744189cedcb99aadbddfef9034827ffafa083c9d96"
+            },
+            {
+              "yawDegrees": -90,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-90-elev45.9d652fb38262.png",
+              "sha256": "9d652fb382624060b6dc0b4da85fed8c934d91c7af6d1b10435b4d0134183141"
+            },
+            {
+              "yawDegrees": -90,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-90-elev65.5e3403754ff5.png",
+              "sha256": "5e3403754ff56e3672f56306d87b87eebb34fdd94d0ed2101defa208b97677eb"
+            },
+            {
+              "yawDegrees": -75,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-75-elev25.82c26cc4e726.png",
+              "sha256": "82c26cc4e72686ed77fc17ad604446ec0ed73421909763c149a772d8cb1e1b04"
+            },
+            {
+              "yawDegrees": -75,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-75-elev45.30cb7cd5ad0f.png",
+              "sha256": "30cb7cd5ad0fd7f212551227808f1d2d0bd975208761b652cbed9dcc672dd022"
+            },
+            {
+              "yawDegrees": -75,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-75-elev65.bec470cecb9d.png",
+              "sha256": "bec470cecb9df3735b4ecfd3abe52e24d28c56e81a49c5d5a98209549c93035e"
+            },
+            {
+              "yawDegrees": -60,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-60-elev25.758713800165.png",
+              "sha256": "758713800165dfb6c58234b5c3a8d30ff9871dfa8c811a5ab54fb603525b499c"
+            },
+            {
+              "yawDegrees": -60,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-60-elev45.8db7f6314de9.png",
+              "sha256": "8db7f6314de924f83bb0d552060d5fe7f5c9cf8ca24fc05280aebe99962ab2ef"
+            },
+            {
+              "yawDegrees": -60,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-60-elev65.652089cbaf59.png",
+              "sha256": "652089cbaf59785d30347027e3cd23db2d0bdc7773104f49f62b36c9638e67f1"
+            },
+            {
+              "yawDegrees": -45,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-45-elev25.0c5abba5a804.png",
+              "sha256": "0c5abba5a804e4cdd9878eab01ba981ad15eccb8769b5b45349e68f59bc5beab"
+            },
+            {
+              "yawDegrees": -45,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-45-elev45.c7352a388ac2.png",
+              "sha256": "c7352a388ac2bb8075e924066c4abe39019d09272582ad2273a8dec5ffa55b17"
+            },
+            {
+              "yawDegrees": -45,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-45-elev65.74e5d20053e2.png",
+              "sha256": "74e5d20053e2ca09ecd2fad6ae82954fdc93a705760290df4f12d5b18ad54b71"
+            },
+            {
+              "yawDegrees": -30,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-30-elev25.dc5673e8a94b.png",
+              "sha256": "dc5673e8a94bbce81a324973c82a143b2e5e4d97ac713a249ab8c38cd14f6819"
+            },
+            {
+              "yawDegrees": -30,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-30-elev45.6512baf80824.png",
+              "sha256": "6512baf80824085074ffd5910320b43c4dccda7b8dfd8f4f8098a10da2a6af17"
+            },
+            {
+              "yawDegrees": -30,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-30-elev65.c2e00ec13681.png",
+              "sha256": "c2e00ec136816eabb32cb400ac64066675f7b5c6b39f54ae9094f9d67e2f2a00"
+            },
+            {
+              "yawDegrees": -15,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw-15-elev25.541967bc978b.png",
+              "sha256": "541967bc978b551747d61f587c497ba6e2fbcfd669ebdc341c28992796804ae8"
+            },
+            {
+              "yawDegrees": -15,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw-15-elev45.8970da9a3d16.png",
+              "sha256": "8970da9a3d163f2d5b35f2ccd54c03c6670a8e53f9b6956b8d9530015e7a4412"
+            },
+            {
+              "yawDegrees": -15,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw-15-elev65.950159d1658d.png",
+              "sha256": "950159d1658d79ff0039b8157f668502455501d14e218c76942bc663ec8ec289"
+            },
+            {
+              "yawDegrees": 0,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+00-elev25.572ac468464b.png",
+              "sha256": "572ac468464b4839571410bd50fc71523093e13a2ee3c1613086e6a4123f5092"
+            },
+            {
+              "yawDegrees": 0,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+00-elev45.27b27b26518f.png",
+              "sha256": "27b27b26518f443edb43132a94ce7fcfbde22ca0cdab4c3f42019730df5a32ee"
+            },
+            {
+              "yawDegrees": 0,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+00-elev65.fed62813d88a.png",
+              "sha256": "fed62813d88a7db3db9938d5f81bbf70b08a482e357656387e4154a6e38b62de"
+            },
+            {
+              "yawDegrees": 15,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+15-elev25.5802c158563e.png",
+              "sha256": "5802c158563eef6514b681f24c9cc98075f643677578009365d8717a10df93ba"
+            },
+            {
+              "yawDegrees": 15,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+15-elev45.78ae78a49e9e.png",
+              "sha256": "78ae78a49e9ecfcb2367a3986a86042098503203b3be0a733771fcf50887eb3b"
+            },
+            {
+              "yawDegrees": 15,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+15-elev65.2cda6ce9684c.png",
+              "sha256": "2cda6ce9684c48099b559b26bf85a55b101c6d9ae03907f4d0cfaaa31788602e"
+            },
+            {
+              "yawDegrees": 30,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+30-elev25.b50363e0f5ce.png",
+              "sha256": "b50363e0f5cee1a296a65b29e6fe70628921bbcca273aef221b884c0684ed2bd"
+            },
+            {
+              "yawDegrees": 30,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+30-elev45.582e6658633f.png",
+              "sha256": "582e6658633fdbc9f957c02be32339fa5eef7ac25d6e70b115caeec019d2b8b8"
+            },
+            {
+              "yawDegrees": 30,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+30-elev65.b80f68bf0e1d.png",
+              "sha256": "b80f68bf0e1dd00084f341252c24ef7b371fcc664675b12a4fb680fe67bb05df"
+            },
+            {
+              "yawDegrees": 45,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+45-elev25.b42c08f69e81.png",
+              "sha256": "b42c08f69e81c464ba36caf9081b11667a1b23bf0955b40e6a6e52f63e9f154c"
+            },
+            {
+              "yawDegrees": 45,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+45-elev45.0ae0536a2ab9.png",
+              "sha256": "0ae0536a2ab94d5597196dc2243f3890ce8e1f9dc67daeec73367c1098e3b4a0"
+            },
+            {
+              "yawDegrees": 45,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+45-elev65.7a7dd202ba04.png",
+              "sha256": "7a7dd202ba041bf6485c1122b4e6f0d3bbb195b464cb07be7284c9cb18ab780d"
+            },
+            {
+              "yawDegrees": 60,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+60-elev25.79aefc4fc948.png",
+              "sha256": "79aefc4fc948fed532749178a17431fce901556d53ee5b3597ec735c1beb1a94"
+            },
+            {
+              "yawDegrees": 60,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+60-elev45.580a5aab4e1d.png",
+              "sha256": "580a5aab4e1dd9eab54c90629e2b38df910c176aefd913dfe3828cd870f5b17a"
+            },
+            {
+              "yawDegrees": 60,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+60-elev65.ea32ffb32d10.png",
+              "sha256": "ea32ffb32d10a5dbd2c83aaa69ded8ca913a90f562e5aafa45757e2843c39fe5"
+            },
+            {
+              "yawDegrees": 75,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+75-elev25.3f7a7e7c7747.png",
+              "sha256": "3f7a7e7c77472e02b7b41cbdca2b5fb2822a8668bebf0312599268a117cb6c65"
+            },
+            {
+              "yawDegrees": 75,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+75-elev45.6d2dba69b52e.png",
+              "sha256": "6d2dba69b52e022a4066c4b87b2e118d8d5076cc3b5106bf58bd00f5170bed69"
+            },
+            {
+              "yawDegrees": 75,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+75-elev65.18305730d471.png",
+              "sha256": "18305730d4714773f6655dc0a604127917cbf9312f3a02a76923eee10f9f9561"
+            },
+            {
+              "yawDegrees": 90,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+90-elev25.02661e6751f5.png",
+              "sha256": "02661e6751f5a5a6e6b712ec0f367cba4557345a927fb96f8b6ecb2da2c0f311"
+            },
+            {
+              "yawDegrees": 90,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+90-elev45.826949d0baef.png",
+              "sha256": "826949d0baeff959b041c5d9510751aca26e18c5415270ac0f29a1f84f0549ca"
+            },
+            {
+              "yawDegrees": 90,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+90-elev65.19f59a9942b8.png",
+              "sha256": "19f59a9942b8767a254774b7b9cdf77e3b33cce080e5576fd0ba2ffcfdaf6242"
+            },
+            {
+              "yawDegrees": 105,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+105-elev25.eaeaf9f349cd.png",
+              "sha256": "eaeaf9f349cdf10e84781b47e6d02f689950811f191a146df443780dab40d8e8"
+            },
+            {
+              "yawDegrees": 105,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+105-elev45.5619ec76344d.png",
+              "sha256": "5619ec76344dcc5fd24c003bf8c8e515a220af0821aa22102144ea6c7d0ca298"
+            },
+            {
+              "yawDegrees": 105,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+105-elev65.d3fbf0352b49.png",
+              "sha256": "d3fbf0352b49a28cce86571b9eb0d56c378c8fa47c04f68e613408648eeca192"
+            },
+            {
+              "yawDegrees": 120,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+120-elev25.3fbef9f94ab8.png",
+              "sha256": "3fbef9f94ab8ee07d2b52e9ad245a72de17328d9b965c846b21efabe6169486c"
+            },
+            {
+              "yawDegrees": 120,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+120-elev45.1c669be0e926.png",
+              "sha256": "1c669be0e9266f18cf077a49e0c83ab35867a56e20f6790dfbe3414f0c9769b2"
+            },
+            {
+              "yawDegrees": 120,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+120-elev65.8c542ee80262.png",
+              "sha256": "8c542ee80262df27fffe4fc302617432a00a10786af0bcd3c3f6084535e4fe51"
+            },
+            {
+              "yawDegrees": 135,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+135-elev25.391355d70119.png",
+              "sha256": "391355d701195b78c324ed14a99e8209febe81596ef210b7fb71295ad2eaf771"
+            },
+            {
+              "yawDegrees": 135,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+135-elev45.48c8e171af14.png",
+              "sha256": "48c8e171af14cd92bd5542e65c7fbdfb1be23644427ebd95ed8ab5a2877e7e95"
+            },
+            {
+              "yawDegrees": 135,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+135-elev65.10271f80ece0.png",
+              "sha256": "10271f80ece01bb106d97f819032ebacb5261a154e1369a5962c6b5cdd0df1ee"
+            },
+            {
+              "yawDegrees": 150,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+150-elev25.c3e092fb7bdd.png",
+              "sha256": "c3e092fb7bdda27b96538125376eb41722d888d3884a798d426ea8b8ba193af1"
+            },
+            {
+              "yawDegrees": 150,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+150-elev45.18a466d5ef17.png",
+              "sha256": "18a466d5ef1782d66d1900fc6d6705622ea1308ad4eea987df4b99a9a0078e26"
+            },
+            {
+              "yawDegrees": 150,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+150-elev65.a5f8cf9d241b.png",
+              "sha256": "a5f8cf9d241b1340da60632d8f0ea41458324befe5dbfe271927cbf24665e83f"
+            },
+            {
+              "yawDegrees": 165,
+              "elevationDegrees": 25,
+              "image": "/assets/environment/oblique/actor-guard-yaw+165-elev25.b46fa90eade7.png",
+              "sha256": "b46fa90eade7040abf97d0a530a47f63f122ff7325d4331a9eaa886ec679e4fc"
+            },
+            {
+              "yawDegrees": 165,
+              "elevationDegrees": 45,
+              "image": "/assets/environment/oblique/actor-guard-yaw+165-elev45.77af41ff4ae8.png",
+              "sha256": "77af41ff4ae8338b0c5f50da7c39e3e22273c7647f373d9c9417741f0882affb"
+            },
+            {
+              "yawDegrees": 165,
+              "elevationDegrees": 65,
+              "image": "/assets/environment/oblique/actor-guard-yaw+165-elev65.2f846709d452.png",
+              "sha256": "2f846709d45205cfe1f6d4080a30656fa84fa5b4ded08a134c2f9734a7b53eca"
+            }
+          ]
+        }
+      }
+    ],
+    "redirects": [],
+    "errors": []
+  },
+  "actualLoadedFrame": {
+    "url": "http://127.0.0.1:5184/assets/environment/oblique/actor-guard-yaw-180-elev45.0c4bb5ba00eb.png",
+    "status": 200,
+    "sha256": "0c4bb5ba00ebeb3deb5417dc69d3288bacd5bd7cf27549fc6609b739657f6a1e",
+    "width": 512,
+    "height": 512
+  },
+  "expectedCameraInputs": {
+    "initialYaw": -45,
+    "rotateLeftClicks": 9,
+    "yawStep": 15,
+    "finalYaw": -180,
+    "elevation": 45,
+    "zoom": 1.25
+  },
+  "expectedAuthoredPose": {
+    "yaw": -180,
+    "elevation": 45
+  },
+  "boundTextureKeyObserved": false,
+  "nativePoseObserved": false,
+  "rearBandPixelCalibrationPending": true,
+  "loaderLimitation": "Actual decoded PNG may be preloaded; network/HTMLImage evidence does not identify a private actor-bound texture."
+}
