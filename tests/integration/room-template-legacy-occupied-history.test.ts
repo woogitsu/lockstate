@@ -3,6 +3,9 @@ import { routeWaypoints } from '../../src/simulation/navigation/route';
 import { tileCoordinate, type TilePosition } from '../../src/simulation/world/coordinates';
 import { expect, it } from 'vitest';
 import { createSaveEnvelope, decodeSaveEnvelope } from '../../src/persistence/save-schema';
+import { computeSaveChecksum } from '../../src/persistence/checksum';
+import type { JsonValue } from '../../src/shared/json';
+import { MAX_BUFFERED_SIMULATION_EVENTS } from '../../src/simulation/events/event-log';
 import { packCommand, type SimulationCommand } from '../../src/simulation/protocol/commands';
 import type { RoomDetailViewModel } from '../../src/simulation/presentation/room-projection';
 import { createNewSimulationRuntime } from '../../src/simulation/runtime/new-session';
@@ -30,17 +33,30 @@ function finish(runtime: Runtime) {
 
 function reload(runtime: Runtime, legacy = false): Runtime {
   const original = captureSessionSnapshot(runtime); const bundle = legacy ? { ...original, simulation: { ...original.simulation!, roomTemplates: { version: 1 as const, pending: [] } } } : original;
-  const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(createSaveEnvelope({
+  const envelope = createSaveEnvelope({
     gameVersion: 'test', prisonId: 'occupied-template-undo', revision: 1, createdAt: 0, updatedAt: 1,
     kernel: bundle.kernel, world: bundle.world, construction: bundle.construction,
     ...(bundle.entities === undefined ? {} : { entities: bundle.entities }),
     ...(bundle.simulation === undefined ? {} : { simulation: bundle.simulation }),
     ...(bundle.identity === undefined ? {} : { identity: bundle.identity }),
     ...(bundle.masterSeed === undefined ? {} : { masterSeed: bundle.masterSeed }),
-  }))));
+  });
+  // An old template-metadata fixture must really carry the frozen V8 format,
+  // not a current V9 envelope that silently drops its accepted-action guard.
+  const { newerActionThanTheStackTop: _marker, orderRevisions: _revisions, ...oldConstruction } = envelope.payload.construction;
+  const oldPayload = { ...envelope.payload, construction: oldConstruction };
+  const input = legacy ? { ...envelope, saveSchemaVersion: 8, payload: oldPayload,
+    checksum: computeSaveChecksum(oldPayload as unknown as JsonValue) } : envelope;
+  const decoded = decodeSaveEnvelope(JSON.parse(JSON.stringify(input)));
   expect(decoded.ok).toBe(true);
   if (!decoded.ok) throw new Error('Occupied template save must decode');
-  return restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
+  const restored = restoreSimulationRuntime(decoded.value.payload as unknown as SessionSnapshotBundle).runtime;
+  const { roomTemplates: _emptyOldCoordinator, ...oldSystems } = bundle.simulation!;
+  expect(captureSessionSnapshot(restored)).toEqual(legacy ? {
+    ...bundle, simulation: oldSystems,
+    construction: { ...oldConstruction, newerActionThanTheStackTop: false, orderRevisions: {} },
+  } : bundle);
+  return restored;
 }
 
 function detail(runtime: Runtime, id: string) {
@@ -65,6 +81,22 @@ function assertRefusedWithoutMutation(runtime: Runtime) {
   expect(after).toEqual(before);
   expect(runtime.treasury.snapshot()).toEqual(funds);
   expect(runtime.refusals.last).toMatchObject({ reason: 'unzone.room-occupied' });
+}
+
+function assertV9NewerAdmissionProtection(runtime: Runtime) {
+  const before = captureSessionSnapshot(runtime);
+  expect(before.construction.newerActionThanTheStackTop).toBe(true);
+  const beforeEvents = before.simulation!.alerts!;
+  send(runtime, { type: 'Undo' });
+  const after = captureSessionSnapshot(runtime);
+  expect(after.kernel).toEqual({ ...before.kernel, expectedSequence: before.kernel.expectedSequence + 1 });
+  const { alerts: afterEvents, ...afterSystems } = after.simulation!;
+  const { alerts: _beforeEvents, ...beforeSystems } = before.simulation!;
+  expect({ ...after, kernel: before.kernel, simulation: afterSystems }).toEqual({ ...before, simulation: beforeSystems });
+  const event = { sequence: beforeEvents.sequence + 1, tick: runtime.kernel.tick, type: 'construction.undo-refused-newer-action' };
+  expect(afterEvents).toEqual({ ...beforeEvents, sequence: event.sequence,
+    records: [...beforeEvents.records, event].slice(-MAX_BUFFERED_SIMULATION_EVENTS) });
+  expect(runtime.refusals.count).toBe(0);
 }
 
 const tile = (x: number, y: number) => ({ x: tileCoordinate(x), y: tileCoordinate(y) });
@@ -98,6 +130,8 @@ it.each(orientations)('keeps occupied legacy row access and readiness through at
   finish(runtime);
   rowRoute(runtime, orientation);
   admit(runtime, 1, 1_000);
+  runtime = reload(runtime);
+  assertV9NewerAdmissionProtection(runtime);
   runtime = reload(runtime, true);
   expect(runtime.roomTemplates.snapshot().completed ?? []).toEqual([]);
   expect(runtime.roomTemplates.snapshot().undone ?? []).toEqual([]);
@@ -128,7 +162,7 @@ it.each([false, true])('preserves the current recorded occupied-row path, mirror
   finish(runtime);
   admit(runtime, 1);
   runtime = reload(runtime);
-  assertRefusedWithoutMutation(runtime);
+  assertV9NewerAdmissionProtection(runtime);
   expect(runtime.roomTemplates.snapshot().completed).toHaveLength(1);
 });
 
@@ -139,6 +173,8 @@ it.each(orientations)('relocates a legacy newest-template resident only into the
   send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 10, y: 10 }, ...orientation });
   finish(runtime);
   admit(runtime, 1);
+  runtime = reload(runtime);
+  assertV9NewerAdmissionProtection(runtime);
   runtime = reload(runtime, true);
   const target = 'room.cell:11:11';
   const spare = 'room.cell:21:6';
