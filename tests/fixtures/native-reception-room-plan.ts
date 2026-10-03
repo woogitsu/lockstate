@@ -31,6 +31,7 @@ export function receptionOwner(kind: 'wall' | 'door' | 'object', ordinal: number
 export const RECEPTION_ART = {
   assetId: 'furniture.reception.waiting-armchair',
   descriptor: '/game-content/oblique-furniture-reception-waiting-armchair.v1.json',
+  descriptorCanonicalTextSha256: '55fa838b7d646a308ce9d97ff2167a2ffbb914aa35d9db3b7544578dab942aea',
   source: 'assets/source/blender/furniture.reception.waiting-armchair.blend',
   sourceSha256: '12cd91c54feb1d35603752eb7efe5c6245be190d77aa31d6e6b81121ea18457d',
   exposedFrame: '/assets/environment/oblique/furniture.reception.waiting-armchair-yaw+60-elev40.4e6ee8fdb156.png',
