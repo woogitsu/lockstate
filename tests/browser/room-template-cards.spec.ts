@@ -10,21 +10,31 @@ test('Full HD catalogue compares all room footprints before selection and keeps 
   await expect(dialog).toBeVisible();
   const cards = dialog.locator('.hud-template__card');
   await expect(cards).toHaveCount(20);
+  // Read the same actual DOM geometry in one pass: per-fixture boundingBox
+  // protocol calls consumed the fixed60s budget on source2 before card8.
+  const geometry = await cards.evaluateAll(items => items.map(card => {
+    const miniature = card.querySelector('.hud-template__miniature')!;
+    return {
+      id: (card as HTMLElement).dataset['templateId'],
+      miniature: miniature.getBoundingClientRect().toJSON() as { x:number; y:number; width:number; height:number },
+      fixtures: [...card.querySelectorAll('.hud-template__fixture')].map(fixture => fixture.getBoundingClientRect().toJSON() as { x:number; y:number; width:number; height:number }),
+    };
+  }));
+  expect(geometry).toHaveLength(20);
   for (const id of ROOM_TEMPLATE_IDS) {
-    const card = dialog.locator(`[data-template-id="${id}"]`);
-    await expect(card.locator('.hud-template__fixture')).toHaveCount(instantiateRoomTemplate(id, { x: 0, y: 0 }).objects.length);
-    const miniature = card.locator('.hud-template__miniature');
-    const rect = await miniature.boundingBox();
-    expect(rect!.width).toBeLessThanOrEqual(56.1);
-    expect(rect!.height).toBeLessThanOrEqual(56.1);
-    for (const fixture of await card.locator('.hud-template__fixture').all()) {
-      const bounds = await fixture.boundingBox();
-      expect(bounds!.width).toBeGreaterThanOrEqual(2.4);
-      expect(bounds!.height).toBeGreaterThanOrEqual(2.4);
-      expect(bounds!.x).toBeGreaterThanOrEqual(rect!.x);
-      expect(bounds!.y).toBeGreaterThanOrEqual(rect!.y);
-      expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(rect!.x + rect!.width + 0.1);
-      expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(rect!.y + rect!.height + 0.1);
+    const card = geometry.find(item => item.id === id);
+    expect(card, id).toBeDefined();
+    expect(card!.fixtures, id).toHaveLength(instantiateRoomTemplate(id, { x:0,y:0 }).objects.length);
+    const rect = card!.miniature;
+    expect(rect.width).toBeLessThanOrEqual(56.1);
+    expect(rect.height).toBeLessThanOrEqual(56.1);
+    for (const bounds of card!.fixtures) {
+      expect(bounds.width).toBeGreaterThanOrEqual(2.4);
+      expect(bounds.height).toBeGreaterThanOrEqual(2.4);
+      expect(bounds.x).toBeGreaterThanOrEqual(rect.x);
+      expect(bounds.y).toBeGreaterThanOrEqual(rect.y);
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(rect.x + rect.width + 0.1);
+      expect(bounds.y + bounds.height).toBeLessThanOrEqual(rect.y + rect.height + 0.1);
     }
   }
   const basic = dialog.getByRole('button',{name:'Basic cell',exact:true});
