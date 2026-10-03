@@ -81,7 +81,7 @@ export function requireCanteenOwners(snapshot: SessionSnapshotBundle, quarterTur
   for (const owner of owners) {
     expect(snapshot.construction.orders.find(order => order.id === owner.sourceOrderId)).toMatchObject({
       id: owner.sourceOrderId, definitionId: 'dining-table-wooden', location: owner.anchorTile,
-      state: 'completed', sequence,
+      state: 'completed', placementSequence: sequence,
       ...(quarterTurns === 0 ? {} : { objectOrientation: quarterTurns }),
     });
   }
