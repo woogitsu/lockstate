@@ -1,0 +1,73 @@
+{
+  "fixed": "d4b7d4ec7df5f5f35854fa5ba3eb7a76ac462a5a",
+  "detachedDuringMutation": true,
+  "checks": [
+    {
+      "name": "hydration-omission-red",
+      "status": 1,
+      "expected": "red"
+    },
+    {
+      "name": "aggregate-source-result-omission-red",
+      "status": 1,
+      "expected": "red"
+    },
+    {
+      "name": "aggregate-artifact-result-omission-red",
+      "status": 1,
+      "expected": "red"
+    },
+    {
+      "name": "aggregate-source-sha-omission-red",
+      "status": 1,
+      "expected": "red"
+    },
+    {
+      "name": "aggregate-artifact-sha-omission-red",
+      "status": 1,
+      "expected": "red"
+    },
+    {
+      "name": "partition-omission-red",
+      "status": 1,
+      "expected": "red"
+    },
+    {
+      "name": "preservation-exact-restored",
+      "status": 0,
+      "expected": "green"
+    }
+  ],
+  "negativeCollection": {
+    "actualTests": 886,
+    "expectedTests": 887,
+    "exactMetadataUnion": false,
+    "missingTests": [
+      {
+        "file": "ui-clock-paused-readout.spec.ts",
+        "title": "renders PAUSED and greys the readout while paused, and neither while running",
+        "id": "ec2911bd7015e23bb811-30003fa804b079849777",
+        "projectName": "",
+        "line": 156,
+        "column": 3
+      }
+    ]
+  },
+  "restoredCollection": {
+    "actualTests": 887,
+    "expectedTests": 887,
+    "exactMetadataUnion": true,
+    "missingTests": []
+  },
+  "restoredSources": {
+    ".github/workflows/ci.yml": {
+      "sha256": "076b9449fc1cb948897d125505d7dbf4698a6ff314e759bc2a3a8161a809f236",
+      "byteExact": true
+    },
+    "tests/browser/partition-source-files.ts": {
+      "sha256": "998425a7ce786cece9679286236f410ca1f87346cb01010390344a0bced1558e",
+      "byteExact": true
+    }
+  },
+  "noBrowserOrServer": true
+}
