@@ -1,0 +1,295 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-manual-type-lifecycle-probe-20261003
+
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts (9 tests | 9 failed) 9ms
+   × fresh 'new' session admits a new plan after outgoing preflight, armed=false 4ms
+   × fresh 'new' session admits a new plan after outgoing preflight, armed=true 1ms
+   × fresh 'load' session admits a new plan after outgoing preflight, armed=false 0ms
+   × fresh 'load' session admits a new plan after outgoing preflight, armed=true 0ms
+   × a delayed genuine same-session preflight submits exactly one plan 0ms
+   × cancel/rearm keeps the newer pending owner when an older real preflight settles, armed=false 0ms
+   × cancel/rearm keeps the newer pending owner when an older real preflight settles, armed=true 0ms
+   × an abandoned old session requester timing out cannot release a newer generation busy token 0ms
+   × standing down a numeric unarmed request discards its actual late clear result 0ms
+ ❯ tests/unit/ordinary-build-session-ownership.test.ts (30 tests | 30 failed) 13ms
+   × world/new/wall: outgoing held gesture cannot report or submit into replacement worker 4ms
+   × world/new/object: outgoing held gesture cannot report or submit into replacement worker 1ms
+   × world/new/room: outgoing held gesture cannot report or submit into replacement worker 0ms
+   × world/load/wall: outgoing held gesture cannot report or submit into replacement worker 0ms
+   × world/load/object: outgoing held gesture cannot report or submit into replacement worker 0ms
+   × world/load/room: outgoing held gesture cannot report or submit into replacement worker 0ms
+   × oblique/new/wall: outgoing held gesture cannot report or submit into replacement worker 1ms
+   × oblique/new/object: outgoing held gesture cannot report or submit into replacement worker 0ms
+   × oblique/new/room: outgoing held gesture cannot report or submit into replacement worker 0ms
+   × oblique/load/wall: outgoing held gesture cannot report or submit into replacement worker 0ms
+   × oblique/load/object: outgoing held gesture cannot report or submit into replacement worker 0ms
+   × oblique/load/room: outgoing held gesture cannot report or submit into replacement worker 0ms
+   × world/wall: ordinary same-session held primary release remains legal 0ms
+   × world/new/wall: a fresh replacement-session press remains legal 0ms
+   × world/load/wall: a fresh replacement-session press remains legal 0ms
+   × world/object: ordinary same-session held primary release remains legal 0ms
+   × world/new/object: a fresh replacement-session press remains legal 0ms
+   × world/load/object: a fresh replacement-session press remains legal 0ms
+   × world/room: ordinary same-session held primary release remains legal 0ms
+   × world/new/room: a fresh replacement-session press remains legal 0ms
+   × world/load/room: a fresh replacement-session press remains legal 0ms
+   × oblique/wall: ordinary same-session held primary release remains legal 0ms
+   × oblique/new/wall: a fresh replacement-session press remains legal 0ms
+   × oblique/load/wall: a fresh replacement-session press remains legal 0ms
+   × oblique/object: ordinary same-session held primary release remains legal 0ms
+   × oblique/new/object: a fresh replacement-session press remains legal 0ms
+   × oblique/load/object: a fresh replacement-session press remains legal 0ms
+   × oblique/room: ordinary same-session held primary release remains legal 0ms
+   × oblique/new/room: a fresh replacement-session press remains legal 0ms
+   × oblique/load/room: a fresh replacement-session press remains legal 0ms
+ ❯ tests/unit/ui-template-numeric-submit-session-controls.test.ts (8 tests | 8 failed) 8ms
+   × world/new/same: stale numeric session result cannot stand down a current public arm 4ms
+   × world/new/new: stale numeric session result cannot stand down a current public arm 1ms
+   × world/load/same: stale numeric session result cannot stand down a current public arm 0ms
+   × world/load/new: stale numeric session result cannot stand down a current public arm 0ms
+   × oblique/new/same: stale numeric session result cannot stand down a current public arm 0ms
+   × oblique/new/new: stale numeric session result cannot stand down a current public arm 0ms
+   × oblique/load/same: stale numeric session result cannot stand down a current public arm 0ms
+   × oblique/load/new: stale numeric session result cannot stand down a current public arm 0ms
+
+ Test Files  3 failed (3)
+      Tests  47 failed (47)
+   Start at  17:00:53
+   Duration  4.80s (transform 4.70s, setup 0ms, import 8.93s, tests 29ms, environment 0ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 47 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/new/wall: outgoing held gesture cannot report or submit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/new/object: outgoing held gesture cannot report or submit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/new/room: outgoing held gesture cannot report or submit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/load/wall: outgoing held gesture cannot report or submit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/load/object: outgoing held gesture cannot report or submit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/load/room: outgoing held gesture cannot report or submit into replacement worker
+ReferenceError: objectTool is not defined
+ ❯ eval tests/unit/ordinary-build-session-ownership.test.ts:94:19
+     92|   let activeScene: WorldScene | ObliqueWorldScene | undefined;
+     93|   const host = new WorkerPerSessionHost(channel, { onWorkerAvailabilit…
+     94|     const apply = new Function('roomTemplateTool', 'worldScene', 'Obli…
+       |                   ^
+     95|       (undefined, activeScene, ObliqueWorldScene, hud, { labelKey: 'un…
+     96|     apply(available);
+ ❯ Object.onWorkerAvailability tests/unit/ordinary-build-session-ownership.test.ts:96:5
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ordinary-build-session-ownership.test.ts:136:3
+ ❯ tests/unit/ordinary-build-session-ownership.test.ts:142:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/47]⎯
+
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/new/wall: outgoing held gesture cannot report or submit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/new/object: outgoing held gesture cannot report or submit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/new/room: outgoing held gesture cannot report or submit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/load/wall: outgoing held gesture cannot report or submit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/load/object: outgoing held gesture cannot report or submit into replacement worker
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/load/room: outgoing held gesture cannot report or submit into replacement worker
+ReferenceError: objectTool is not defined
+ ❯ eval tests/unit/ordinary-build-session-ownership.test.ts:94:19
+     92|   let activeScene: WorldScene | ObliqueWorldScene | undefined;
+     93|   const host = new WorkerPerSessionHost(channel, { onWorkerAvailabilit…
+     94|     const apply = new Function('roomTemplateTool', 'worldScene', 'Obli…
+       |                   ^
+     95|       (undefined, activeScene, ObliqueWorldScene, hud, { labelKey: 'un…
+     96|     apply(available);
+ ❯ Object.onWorkerAvailability tests/unit/ordinary-build-session-ownership.test.ts:96:5
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ordinary-build-session-ownership.test.ts:136:3
+ ❯ tests/unit/ordinary-build-session-ownership.test.ts:142:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/47]⎯
+
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/wall: ordinary same-session held primary release remains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/object: ordinary same-session held primary release remains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/room: ordinary same-session held primary release remains legal
+ReferenceError: objectTool is not defined
+ ❯ eval tests/unit/ordinary-build-session-ownership.test.ts:94:19
+     92|   let activeScene: WorldScene | ObliqueWorldScene | undefined;
+     93|   const host = new WorkerPerSessionHost(channel, { onWorkerAvailabilit…
+     94|     const apply = new Function('roomTemplateTool', 'worldScene', 'Obli…
+       |                   ^
+     95|       (undefined, activeScene, ObliqueWorldScene, hud, { labelKey: 'un…
+     96|     apply(available);
+ ❯ Object.onWorkerAvailability tests/unit/ordinary-build-session-ownership.test.ts:96:5
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ordinary-build-session-ownership.test.ts:136:3
+ ❯ tests/unit/ordinary-build-session-ownership.test.ts:165:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/47]⎯
+
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/new/wall: a fresh replacement-session press remains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/load/wall: a fresh replacement-session press remains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/new/object: a fresh replacement-session press remains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/load/object: a fresh replacement-session press remains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/new/room: a fresh replacement-session press remains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > world/load/room: a fresh replacement-session press remains legal
+ReferenceError: objectTool is not defined
+ ❯ eval tests/unit/ordinary-build-session-ownership.test.ts:94:19
+     92|   let activeScene: WorldScene | ObliqueWorldScene | undefined;
+     93|   const host = new WorkerPerSessionHost(channel, { onWorkerAvailabilit…
+     94|     const apply = new Function('roomTemplateTool', 'worldScene', 'Obli…
+       |                   ^
+     95|       (undefined, activeScene, ObliqueWorldScene, hud, { labelKey: 'un…
+     96|     apply(available);
+ ❯ Object.onWorkerAvailability tests/unit/ordinary-build-session-ownership.test.ts:96:5
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ordinary-build-session-ownership.test.ts:136:3
+ ❯ tests/unit/ordinary-build-session-ownership.test.ts:172:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/47]⎯
+
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/wall: ordinary same-session held primary release remains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/object: ordinary same-session held primary release remains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/room: ordinary same-session held primary release remains legal
+ReferenceError: objectTool is not defined
+ ❯ eval tests/unit/ordinary-build-session-ownership.test.ts:94:19
+     92|   let activeScene: WorldScene | ObliqueWorldScene | undefined;
+     93|   const host = new WorkerPerSessionHost(channel, { onWorkerAvailabilit…
+     94|     const apply = new Function('roomTemplateTool', 'worldScene', 'Obli…
+       |                   ^
+     95|       (undefined, activeScene, ObliqueWorldScene, hud, { labelKey: 'un…
+     96|     apply(available);
+ ❯ Object.onWorkerAvailability tests/unit/ordinary-build-session-ownership.test.ts:96:5
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ordinary-build-session-ownership.test.ts:136:3
+ ❯ tests/unit/ordinary-build-session-ownership.test.ts:165:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/47]⎯
+
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/new/wall: a fresh replacement-session press remains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/load/wall: a fresh replacement-session press remains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/new/object: a fresh replacement-session press remains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/load/object: a fresh replacement-session press remains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/new/room: a fresh replacement-session press remains legal
+ FAIL  tests/unit/ordinary-build-session-ownership.test.ts > oblique/load/room: a fresh replacement-session press remains legal
+ReferenceError: objectTool is not defined
+ ❯ eval tests/unit/ordinary-build-session-ownership.test.ts:94:19
+     92|   let activeScene: WorldScene | ObliqueWorldScene | undefined;
+     93|   const host = new WorkerPerSessionHost(channel, { onWorkerAvailabilit…
+     94|     const apply = new Function('roomTemplateTool', 'worldScene', 'Obli…
+       |                   ^
+     95|       (undefined, activeScene, ObliqueWorldScene, hud, { labelKey: 'un…
+     96|     apply(available);
+ ❯ Object.onWorkerAvailability tests/unit/ordinary-build-session-ownership.test.ts:96:5
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ordinary-build-session-ownership.test.ts:136:3
+ ❯ tests/unit/ordinary-build-session-ownership.test.ts:172:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/47]⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > fresh 'new' session admits a new plan after outgoing preflight, armed=false
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > fresh 'new' session admits a new plan after outgoing preflight, armed=true
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > fresh 'load' session admits a new plan after outgoing preflight, armed=false
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > fresh 'load' session admits a new plan after outgoing preflight, armed=true
+ReferenceError: objectTool is not defined
+ ❯ Object.eval [as onWorkerAvailability] tests/unit/ui-room-template-session-preflight.test.ts:42:10
+     40| const callback = stripTypeScriptTypes(source.slice(start, end + '\n   …
+     41| function availability(tool: RoomTemplateTool) {
+     42|   return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldS…
+       |          ^
+     43|     (tool, { cancelConstructionGesture() {} }, class {}, { setUnavaila…
+     44| }
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ui-room-template-session-preflight.test.ts:59:3
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:75:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/47]⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > a delayed genuine same-session preflight submits exactly one plan
+ReferenceError: objectTool is not defined
+ ❯ Object.eval [as onWorkerAvailability] tests/unit/ui-room-template-session-preflight.test.ts:42:10
+     40| const callback = stripTypeScriptTypes(source.slice(start, end + '\n   …
+     41| function availability(tool: RoomTemplateTool) {
+     42|   return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldS…
+       |          ^
+     43|     (tool, { cancelConstructionGesture() {} }, class {}, { setUnavaila…
+     44| }
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ui-room-template-session-preflight.test.ts:59:3
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:119:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/47]⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > cancel/rearm keeps the newer pending owner when an older real preflight settles, armed=false
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > cancel/rearm keeps the newer pending owner when an older real preflight settles, armed=true
+ReferenceError: objectTool is not defined
+ ❯ Object.eval [as onWorkerAvailability] tests/unit/ui-room-template-session-preflight.test.ts:42:10
+     40| const callback = stripTypeScriptTypes(source.slice(start, end + '\n   …
+     41| function availability(tool: RoomTemplateTool) {
+     42|   return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldS…
+       |          ^
+     43|     (tool, { cancelConstructionGesture() {} }, class {}, { setUnavaila…
+     44| }
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ui-room-template-session-preflight.test.ts:59:3
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:133:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/47]⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > an abandoned old session requester timing out cannot release a newer generation busy token
+ReferenceError: objectTool is not defined
+ ❯ Object.eval [as onWorkerAvailability] tests/unit/ui-room-template-session-preflight.test.ts:42:10
+     40| const callback = stripTypeScriptTypes(source.slice(start, end + '\n   …
+     41| function availability(tool: RoomTemplateTool) {
+     42|   return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldS…
+       |          ^
+     43|     (tool, { cancelConstructionGesture() {} }, class {}, { setUnavaila…
+     44| }
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ui-room-template-session-preflight.test.ts:59:3
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:159:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/47]⎯
+
+ FAIL  tests/unit/ui-room-template-session-preflight.test.ts > standing down a numeric unarmed request discards its actual late clear result
+ReferenceError: objectTool is not defined
+ ❯ Object.eval [as onWorkerAvailability] tests/unit/ui-room-template-session-preflight.test.ts:42:10
+     40| const callback = stripTypeScriptTypes(source.slice(start, end + '\n   …
+     41| function availability(tool: RoomTemplateTool) {
+     42|   return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldS…
+       |          ^
+     43|     (tool, { cancelConstructionGesture() {} }, class {}, { setUnavaila…
+     44| }
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ui-room-template-session-preflight.test.ts:59:3
+ ❯ tests/unit/ui-room-template-session-preflight.test.ts:186:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/47]⎯
+
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > world/new/same: stale numeric session result cannot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > world/new/new: stale numeric session result cannot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > world/load/same: stale numeric session result cannot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > world/load/new: stale numeric session result cannot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > oblique/new/same: stale numeric session result cannot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > oblique/new/new: stale numeric session result cannot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > oblique/load/same: stale numeric session result cannot stand down a current public arm
+ FAIL  tests/unit/ui-template-numeric-submit-session-controls.test.ts > oblique/load/new: stale numeric session result cannot stand down a current public arm
+ReferenceError: objectTool is not defined
+ ❯ Object.eval [as onWorkerAvailability] tests/unit/ui-template-numeric-submit-session-controls.test.ts:47:10
+     45| const callback = stripTypeScriptTypes(source.slice(start, end + '\n   …
+     46| function availability(tool: RoomTemplateTool, scene: WorldScene | Obli…
+     47|   return new Function('roomTemplateTool', 'worldScene', 'ObliqueWorldS…
+       |          ^
+     48|     (tool, scene, ObliqueWorldScene, { setUnavailable() {} }, 'unavail…
+     49| }
+ ❯ WorkerPerSessionHost.beginSession src/persistence/session/worker-per-session-host.ts:128:18
+ ❯ WorkerPerSessionHost.startNew src/persistence/session/worker-per-session-host.ts:92:18
+ ❯ setup tests/unit/ui-template-numeric-submit-session-controls.test.ts:93:2
+ ❯ tests/unit/ui-template-numeric-submit-session-controls.test.ts:106:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/47]⎯
+

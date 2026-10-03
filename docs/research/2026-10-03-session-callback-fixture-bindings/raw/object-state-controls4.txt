@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-template-manual-type-lifecycle-probe-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  17:04:45
+   Duration  279ms (transform 58ms, setup 0ms, import 159ms, tests 3ms, environment 0ms)
+
