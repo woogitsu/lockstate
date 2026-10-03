@@ -1,0 +1,29 @@
+{
+  "subject": "e93abddb62d1f8a35e5ef94de48abe0c5973c3d3",
+  "typesExit": 0,
+  "suiteExit": 1,
+  "tests": {
+    "failed": 2,
+    "passed": 8551,
+    "skipped": 2
+  },
+  "files": {
+    "failed": 2,
+    "passed": 720
+  },
+  "buildReached": false,
+  "logs": [
+    {
+      "name": "second-complete-types.txt",
+      "originalEncoding": "utf16le",
+      "originalSHA256": "732d168c03269202a35bd128ec776ea90917534f13a909da64b215fb4b785427",
+      "archiveSHA256": "ce7340e96ac51200d649620de02a661fa0123ac56aeeaa9919f21cd3781ca748"
+    },
+    {
+      "name": "second-complete-suite.txt",
+      "originalEncoding": "utf16le",
+      "originalSHA256": "c2171282470a8154d59334857d06b9705ff931087bdb4fb960fbcc91fffe2aba",
+      "archiveSHA256": "a31e22435ba037147856c4f371c3a167e2d96e354aa845f360a0c14c95c2fcd7"
+    }
+  ]
+}

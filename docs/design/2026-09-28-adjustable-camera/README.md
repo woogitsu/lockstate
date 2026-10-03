@@ -1720,3 +1720,27 @@ controls, physical input/focus and whole paused state equality. A opens the
 panel with the existing View button; B keeps it visible. Both remain separate
 owner choices, with no silent import of layout or ordinary-object Rotate drafts.
 Root retains the sole browser/build lease after both bounded subjects finished.
+
+### 2026-10-03 modern appearance is the current visual priority
+
+The owner explicitly requests a nicer contemporary appearance and says the
+current game resembles a 1990s RTS. The [durable modern appearance direction](../2026-10-03-modern-game-style/README.md)
+records that request, the generated reference and its limits. The actual game
+still keeps all nine readings above the playfield, Full HD, exact tile
+footprints and existing room palettes. Camera A and individual Rotate object
+controls are now expressly approved. The wider Build/Save allocation at 200%
+remains a separate choice; the camera B comparison is not the release direction.
+
+Three independent agents work on actual material/light rendering in Blender,
+the modern HUD skin, and the approved controls plus their real public browser
+consumers. Root combines their work and evaluates genuine built-client photos.
+An AI concept or a material sample alone is not a completed game or a release.
+
+The second complete V9 gate on e93abddb62 retained strict types exit 0 and
+8551 passing tests, two existing skips and two documentation failures across
+722 files. The chained build was not reached. Original logs and the encoding/
+hash receipt are retained in the V9 record. One failure requires fetching the
+actual published Bench ref for citation verification; the other was a quoted
+historical local proposal path, now linked to its immutable published source.
+Native observer preparation for queued cancellation and Laundry is integrated;
+new actual combined-product native acceptance remains to be obtained.

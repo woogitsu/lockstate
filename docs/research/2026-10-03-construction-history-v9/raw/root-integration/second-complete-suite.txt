@@ -1,0 +1,70 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003
+
+ ❯ tests/foundation/documentation-links-contract.test.ts (10 tests | 1 failed) 559ms
+     × resolves every cited path 349ms
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts (8 tests | 1 failed) 22ms
+     × cites only commits this repository publishes, so CI reads the same history a reader can 4ms
+node : 
+At line:5 char:1
++ node node_modules/vitest/vitest.mjs run --maxWorkers=4 *> ($rootProof ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-commit-citation-contract.test.ts > a commit sha cited in prose names a commit tha
+t exists > cites only commits this repository publishes, so CI reads the same history a reader can
+AssertionError: these cite a commit that exists on this disk and on no ref this repository publishes, so nobody else ca
+n check them and CI cannot either: `fetch-depth: 0` fetches all history for every published branch and tag and nothing 
+more. The usual cause is a sha read out of an agent's own worktree before the coordinator cherry-picked it, which rewri
+tes it -- `git branch -r --contains <sha>` tells you. Cite the commit as published, or record it in UNPUBLISHED_BY_ORIG
+IN with what it is and why the anchor cannot move: expected [ …(3) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-wooden-bench-ground-mounts/NATIVE_HANDOFF.md:5 -> 982ec72761bcab1f164a08a26f8adbff96e0f7f
+1",
++   "docs/research/2026-10-03-wooden-bench-ground-mounts/NATIVE_HANDOFF.md:5 -> c8cf9cd29afa7a7835f1440c7ec8efdd101e19c
+b",
++   "docs/research/2026-10-03-wooden-bench-ground-mounts/README.md:5 -> 982ec72761bcab1f164a08a26f8adbff96e0f7f1",
++ ]
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts:748:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/foundation/documentation-links-contract.test.ts > every rooted path cited in the documentation is on disk 
+> resolves every cited path
+AssertionError: these documented paths name a file that does not exist: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-03-v9-history-consumer-integration/README.md -> docs/research/2026-10-03-queued-template-can
+cellation-load/v9-review-proposal.md",
++ ]
+
+ ❯ tests/foundation/documentation-links-contract.test.ts:416:80
+    414|       .map(cited);
+    415|
+    416|     expect(dangling, 'these documented paths name a file that does not…
+       |                                                                                ^
+    417|   });
+    418| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 720 passed (722)
+      Tests  2 failed | 8551 passed | 2 skipped (8555)
+   Start at  20:13:47
+   Duration  120.68s (transform 11.14s, setup 0ms, import 174.82s, tests 217.94s, environment 36ms)
+
