@@ -2691,5 +2691,1957 @@
       "evaluatedVertices": 56,
       "evaluatedPositionSha256": "580d7bdbe5a067f0b76a1dec3b7810879764acbff67e108d7bf6fd53fcaaf676"
     }
+  ],
+  "allAuthoredRawMeshes": [
+    {
+      "name": "angled-security.control keycap row0 column0",
+      "rawVertexBytesSha256": "785e94de4a6d6fb12dedd5820dd7be587d45aadd6ae2a9068119754fd109e985",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.control keycap row0 column1",
+      "rawVertexBytesSha256": "785e94de4a6d6fb12dedd5820dd7be587d45aadd6ae2a9068119754fd109e985",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.control keycap row0 column2",
+      "rawVertexBytesSha256": "785e94de4a6d6fb12dedd5820dd7be587d45aadd6ae2a9068119754fd109e985",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.control keycap row0 column3",
+      "rawVertexBytesSha256": "785e94de4a6d6fb12dedd5820dd7be587d45aadd6ae2a9068119754fd109e985",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.control keycap row0 column4",
+      "rawVertexBytesSha256": "785e94de4a6d6fb12dedd5820dd7be587d45aadd6ae2a9068119754fd109e985",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.control keycap row0 column5",
+      "rawVertexBytesSha256": "785e94de4a6d6fb12dedd5820dd7be587d45aadd6ae2a9068119754fd109e985",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.control keycap row1 column0",
+      "rawVertexBytesSha256": "785e94de4a6d6fb12dedd5820dd7be587d45aadd6ae2a9068119754fd109e985",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.control keycap row1 column1",
+      "rawVertexBytesSha256": "785e94de4a6d6fb12dedd5820dd7be587d45aadd6ae2a9068119754fd109e985",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.control keycap row1 column2",
+      "rawVertexBytesSha256": "785e94de4a6d6fb12dedd5820dd7be587d45aadd6ae2a9068119754fd109e985",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.control keycap row1 column3",
+      "rawVertexBytesSha256": "785e94de4a6d6fb12dedd5820dd7be587d45aadd6ae2a9068119754fd109e985",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.control keycap row1 column4",
+      "rawVertexBytesSha256": "785e94de4a6d6fb12dedd5820dd7be587d45aadd6ae2a9068119754fd109e985",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.control keycap row1 column5",
+      "rawVertexBytesSha256": "785e94de4a6d6fb12dedd5820dd7be587d45aadd6ae2a9068119754fd109e985",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.control mount fastener -0.42 0.218",
+      "rawVertexBytesSha256": "8b05ba356dd9da7446fb6c75e321c497dba7846c28f101d78f982aebc70a632a",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": [
+        {
+          "name": "rounded control edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded control edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.000699999975040555,
+            "width_pct": 0.000699999975040555,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.control mount fastener -0.42 0.342",
+      "rawVertexBytesSha256": "8b05ba356dd9da7446fb6c75e321c497dba7846c28f101d78f982aebc70a632a",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": [
+        {
+          "name": "rounded control edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded control edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.000699999975040555,
+            "width_pct": 0.000699999975040555,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.control mount fastener 0.42 0.218",
+      "rawVertexBytesSha256": "8b05ba356dd9da7446fb6c75e321c497dba7846c28f101d78f982aebc70a632a",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": [
+        {
+          "name": "rounded control edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded control edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.000699999975040555,
+            "width_pct": 0.000699999975040555,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.control mount fastener 0.42 0.342",
+      "rawVertexBytesSha256": "8b05ba356dd9da7446fb6c75e321c497dba7846c28f101d78f982aebc70a632a",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": [
+        {
+          "name": "rounded control edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded control edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.000699999975040555,
+            "width_pct": 0.000699999975040555,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.control panel stop 0.218",
+      "rawVertexBytesSha256": "d3018591664020098ca1efa0d141f627ca164bd856f2af0dc6b450afb148db1e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.control panel stop 0.343",
+      "rawVertexBytesSha256": "d3018591664020098ca1efa0d141f627ca164bd856f2af0dc6b450afb148db1e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.monitor bezel fastener -0.55 0.377",
+      "rawVertexBytesSha256": "e3c85a9974ff92e4a5fcc1421c7fe4f047b3f024fce63e576d6c745eeba07de4",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": [
+        {
+          "name": "rounded control edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded control edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.000699999975040555,
+            "width_pct": 0.000699999975040555,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.monitor bezel fastener -0.55 0.723",
+      "rawVertexBytesSha256": "e3c85a9974ff92e4a5fcc1421c7fe4f047b3f024fce63e576d6c745eeba07de4",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": [
+        {
+          "name": "rounded control edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded control edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.000699999975040555,
+            "width_pct": 0.000699999975040555,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.monitor bezel fastener 0.55 0.377",
+      "rawVertexBytesSha256": "e3c85a9974ff92e4a5fcc1421c7fe4f047b3f024fce63e576d6c745eeba07de4",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": [
+        {
+          "name": "rounded control edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded control edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.000699999975040555,
+            "width_pct": 0.000699999975040555,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.monitor bezel fastener 0.55 0.723",
+      "rawVertexBytesSha256": "e3c85a9974ff92e4a5fcc1421c7fe4f047b3f024fce63e576d6c745eeba07de4",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": [
+        {
+          "name": "rounded control edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded control edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.000699999975040555,
+            "width_pct": 0.000699999975040555,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.monitor bezel horizontal 0.373",
+      "rawVertexBytesSha256": "b6c1aae732c80bf38dd8acd1674244a4d9dab6b3acd4994003e71b038a9c58f3",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "control panel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.003000000026077032,
+            "width_pct": 0.003000000026077032,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.monitor bezel horizontal 0.727",
+      "rawVertexBytesSha256": "b6c1aae732c80bf38dd8acd1674244a4d9dab6b3acd4994003e71b038a9c58f3",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "control panel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.003000000026077032,
+            "width_pct": 0.003000000026077032,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.monitor bezel vertical -1",
+      "rawVertexBytesSha256": "8473992bebe48fa8be2758f0bb425f44790b6a2a81687c80761ac19eae51d84e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "control panel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.003000000026077032,
+            "width_pct": 0.003000000026077032,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.monitor bezel vertical 1",
+      "rawVertexBytesSha256": "8473992bebe48fa8be2758f0bb425f44790b6a2a81687c80761ac19eae51d84e",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "control panel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.003000000026077032,
+            "width_pct": 0.003000000026077032,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.rotary dial barrel",
+      "rawVertexBytesSha256": "475ba00a06af27d68d10909c30b3bbb2c8b768dcfcb1699d404016054a570ef8",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "control panel"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": [
+        {
+          "name": "rounded control edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded control edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.0020000000949949026,
+            "width_pct": 0.0020000000949949026,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.rotary dial collar",
+      "rawVertexBytesSha256": "a4ee165619a7be35e4b0d5b5bd6ac0c27a663bb4a309d4a6b5f87aee92afa703",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": [
+        {
+          "name": "rounded control edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded control edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.001500000013038516,
+            "width_pct": 0.001500000013038516,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.rotary dial raised amber pointer",
+      "rawVertexBytesSha256": "2bb8375a6927d38d3663dc6be906815df514014150d67101bd122eb0e64112cc",
+      "rawTopologyBytesSha256": "eeda05d6a13f48dc4e8cf4a64f9bd7b447743493c522f15aa43f9a87bef2ed77",
+      "materials": [
+        "amber status"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "small service edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "small service edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.000699999975040555,
+            "width_pct": 0.000699999975040555,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "angled-security.status indicator collar",
+      "rawVertexBytesSha256": "a4ee165619a7be35e4b0d5b5bd6ac0c27a663bb4a309d4a6b5f87aee92afa703",
+      "rawTopologyBytesSha256": "5cf3c1879a577ad4e0aeff7e2e45caffc9188f6027b628010cf704999b0fb0e4",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "b707241545a346265aab1ffb32ff64b55bf8f8dc1b56a46ef33ce3d15db11d33",
+      "modifiers": [
+        {
+          "name": "rounded control edge",
+          "type": "BEVEL",
+          "values": {
+            "name": "rounded control edge",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.001500000013038516,
+            "width_pct": 0.001500000013038516,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "body",
+      "rawVertexBytesSha256": "0c95cd5d30b2fd2f765b202031566d7559259fea78e489b1ea336a196c0af144",
+      "rawTopologyBytesSha256": "ba5c7b507fb1bdc809b32a651cd9df447a38349504624422da34b56f7fc4af83",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.05999999865889549,
+            "width_pct": 0.05999999865889549,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "control",
+      "rawVertexBytesSha256": "96159dac2f593e731c327772e648d51a69b2b3537c6952c99c4e2da5a844b30b",
+      "rawTopologyBytesSha256": "ba5c7b507fb1bdc809b32a651cd9df447a38349504624422da34b56f7fc4af83",
+      "materials": [
+        "control panel"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.019999999552965164,
+            "width_pct": 0.019999999552965164,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "dial",
+      "rawVertexBytesSha256": "7f2a559fa410f59b5421cbc129fe4002b1291f603fef985acbf8d618e4632e35",
+      "rawTopologyBytesSha256": "ba5c7b507fb1bdc809b32a651cd9df447a38349504624422da34b56f7fc4af83",
+      "materials": [
+        "amber status"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.019999999552965164,
+            "width_pct": 0.019999999552965164,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "foot",
+      "rawVertexBytesSha256": "1d0f14ee2bde58edbfa93b090558225eccdd8d858e92559b4d581fe0b3a6915c",
+      "rawTopologyBytesSha256": "ba5c7b507fb1bdc809b32a651cd9df447a38349504624422da34b56f7fc4af83",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.019999999552965164,
+            "width_pct": 0.019999999552965164,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "foot.001",
+      "rawVertexBytesSha256": "1d0f14ee2bde58edbfa93b090558225eccdd8d858e92559b4d581fe0b3a6915c",
+      "rawTopologyBytesSha256": "ba5c7b507fb1bdc809b32a651cd9df447a38349504624422da34b56f7fc4af83",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.019999999552965164,
+            "width_pct": 0.019999999552965164,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "front",
+      "rawVertexBytesSha256": "223744e814a5e105b485c61dc490455789eff2db8cf29755ec97a236a5a11591",
+      "rawTopologyBytesSha256": "ba5c7b507fb1bdc809b32a651cd9df447a38349504624422da34b56f7fc4af83",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.029999999329447746,
+            "width_pct": 0.029999999329447746,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "monitor",
+      "rawVertexBytesSha256": "8c9d0e914bd1e58eac14ba0b98abe4681fb56a28cf23f9250ffad1c37b772c76",
+      "rawTopologyBytesSha256": "ba5c7b507fb1bdc809b32a651cd9df447a38349504624422da34b56f7fc4af83",
+      "materials": [
+        "monitor glass"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.05999999865889549,
+            "width_pct": 0.05999999865889549,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "status",
+      "rawVertexBytesSha256": "7f2a559fa410f59b5421cbc129fe4002b1291f603fef985acbf8d618e4632e35",
+      "rawTopologyBytesSha256": "ba5c7b507fb1bdc809b32a651cd9df447a38349504624422da34b56f7fc4af83",
+      "materials": [
+        "amber status"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.019999999552965164,
+            "width_pct": 0.019999999552965164,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    },
+    {
+      "name": "top",
+      "rawVertexBytesSha256": "5f4a3f93ab2e04a5ed520009ce5a854c05e55d83045ea3e7eb3b8534bc3181ad",
+      "rawTopologyBytesSha256": "ba5c7b507fb1bdc809b32a651cd9df447a38349504624422da34b56f7fc4af83",
+      "materials": [
+        "warm charcoal"
+      ],
+      "polygonMaterialIndicesSha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+      "modifiers": [
+        {
+          "name": "soft_edges",
+          "type": "BEVEL",
+          "values": {
+            "name": "soft_edges",
+            "show_viewport": true,
+            "show_render": true,
+            "show_in_editmode": true,
+            "show_on_cage": false,
+            "show_expanded": true,
+            "is_active": true,
+            "use_pin_to_last": false,
+            "use_apply_on_spline": false,
+            "width": 0.03999999910593033,
+            "width_pct": 0.03999999910593033,
+            "segments": 2,
+            "affect": "EDGES",
+            "limit_method": "ANGLE",
+            "edge_weight": "bevel_weight_edge",
+            "vertex_weight": "bevel_weight_vert",
+            "angle_limit": 0.5235987901687622,
+            "vertex_group": "",
+            "invert_vertex_group": false,
+            "use_clamp_overlap": true,
+            "offset_type": "OFFSET",
+            "profile_type": "SUPERELLIPSE",
+            "profile": 0.5,
+            "material": -1,
+            "loop_slide": true,
+            "mark_seam": false,
+            "mark_sharp": false,
+            "harden_normals": false,
+            "face_strength_mode": "FSTR_NONE",
+            "miter_outer": "MITER_SHARP",
+            "miter_inner": "MITER_SHARP",
+            "spread": 0.10000000149011612,
+            "vmesh_method": "ADJ"
+          }
+        }
+      ]
+    }
   ]
 }
