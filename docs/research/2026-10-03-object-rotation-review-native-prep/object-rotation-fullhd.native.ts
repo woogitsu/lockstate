@@ -78,6 +78,7 @@ for (const locale of ['en', 'pl'] as const) test(`${locale}: DRAFT fourth Rotate
     await expect.poll(() => actualVerdict(page, anchor, 2)).toEqual(allowed(horizontal));
     await page.keyboard.press('Space'); await expect(rotate).toHaveAttribute('data-quarter-turns', '3');
     await expect.poll(() => actualVerdict(page, anchor, 3)).toEqual(allowed(vertical));
+    await measure('armed-q3'); // same exercised state, longest angle label; original44/88px checks retained
     await page.keyboard.press('KeyR'); await expect(rotate).toHaveAttribute('data-quarter-turns', '3'); // never an object rotation binding
     await page.keyboard.press('Enter'); await expect(rotate).toHaveAttribute('data-quarter-turns', '0');
     await expect.poll(() => actualVerdict(page, anchor, 0)).toEqual(allowed(horizontal));
