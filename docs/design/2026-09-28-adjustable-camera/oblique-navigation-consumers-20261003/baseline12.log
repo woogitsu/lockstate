@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/hud-oblique-camera-consumers-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  02:17:28
+   Duration  809ms (transform 241ms, setup 0ms, import 666ms, tests 28ms, environment 0ms)
+
