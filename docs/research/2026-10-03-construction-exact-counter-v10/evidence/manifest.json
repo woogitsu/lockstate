@@ -80,6 +80,11 @@
         "sha256":  "a80c283b31029146a4c49af428f3489225b256029fabafc0242b33f94e6806ff"
     },
     {
+        "file":  "lockstate-v10-complete-suite-final.txt",
+        "bytes":  3692,
+        "sha256":  "870ffe2c998f78c1f0f31cf28b13329627f4a5178f40dafb60c6527f298d5e35"
+    },
+    {
         "file":  "lockstate-v10-complete-suite-original.txt",
         "bytes":  284564,
         "sha256":  "cc23d635ee193dcab28092f77a1a5ab7a7a5d66a5e793aeab0b18e4f1c6c8386"
@@ -98,6 +103,11 @@
         "file":  "lockstate-v10-current-consumer-files.json",
         "bytes":  1885,
         "sha256":  "f123138ccfb30d104211d937a1b615de500cfa858651fe92af8f097265c4b340"
+    },
+    {
+        "file":  "lockstate-v10-current-consumer-preservation.json",
+        "bytes":  6446,
+        "sha256":  "b37d8daea725cd7f9a03403393550b75e2fad13ccf809204add3af77d52c54c1"
     },
     {
         "file":  "lockstate-v10-current-consumers-focused.txt",

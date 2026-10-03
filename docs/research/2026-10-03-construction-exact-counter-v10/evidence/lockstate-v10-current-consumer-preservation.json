@@ -1,0 +1,212 @@
+[
+    {
+        "file":  "tests/determinism/clock-transport.test.ts",
+        "beforeAssertions":  15,
+        "afterAssertions":  15,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/migrations/save-v4-to-v5.test.ts",
+        "beforeAssertions":  24,
+        "afterAssertions":  24,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/migrations/save-v7-to-v8-object-ownership.test.ts",
+        "beforeAssertions":  25,
+        "afterAssertions":  25,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/completed-square-incoming-object-footprint.test.ts",
+        "beforeAssertions":  19,
+        "afterAssertions":  19,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/completed-template-door-furniture.test.ts",
+        "beforeAssertions":  25,
+        "afterAssertions":  25,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/construction-placement-order.test.ts",
+        "beforeAssertions":  18,
+        "afterAssertions":  18,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/disconnected-first-shower-selection.test.ts",
+        "beforeAssertions":  20,
+        "afterAssertions":  20,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/economy-payroll-save.test.ts",
+        "beforeAssertions":  28,
+        "afterAssertions":  28,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/economy-state-income-persistence.test.ts",
+        "beforeAssertions":  31,
+        "afterAssertions":  31,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/generic-object-template-approach.test.ts",
+        "beforeAssertions":  16,
+        "afterAssertions":  16,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/incident-injury-loop.test.ts",
+        "beforeAssertions":  39,
+        "afterAssertions":  39,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/individual-object-preflight-publication.test.ts",
+        "beforeAssertions":  21,
+        "afterAssertions":  21,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/individual-object-rotation-command.test.ts",
+        "beforeAssertions":  30,
+        "afterAssertions":  30,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/later-usable-shower-selection.test.ts",
+        "beforeAssertions":  16,
+        "afterAssertions":  16,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/laundry-linen-rack-public-consumer.test.ts",
+        "beforeAssertions":  24,
+        "afterAssertions":  24,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/native-classroom-desk-preparation.test.ts",
+        "beforeAssertions":  30,
+        "afterAssertions":  30,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/native-garbage-room-preparation.test.ts",
+        "beforeAssertions":  20,
+        "afterAssertions":  20,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/native-reception-room-preparation.test.ts",
+        "beforeAssertions":  20,
+        "afterAssertions":  20,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/native-staff-room-padded-chair-preparation.test.ts",
+        "beforeAssertions":  13,
+        "afterAssertions":  13,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/pending-square-wall-incoming-object.test.ts",
+        "beforeAssertions":  31,
+        "afterAssertions":  31,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/pending-template-incoming-object-footprint.test.ts",
+        "beforeAssertions":  23,
+        "afterAssertions":  23,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/riot-regime-loop.test.ts",
+        "beforeAssertions":  34,
+        "afterAssertions":  34,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/room-template-blocked-anchor-fallback.test.ts",
+        "beforeAssertions":  18,
+        "afterAssertions":  18,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/room-template-completed-row-access.test.ts",
+        "beforeAssertions":  18,
+        "afterAssertions":  18,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/room-template-door-square-run.test.ts",
+        "beforeAssertions":  34,
+        "afterAssertions":  34,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/room-template-later-wall-approach.test.ts",
+        "beforeAssertions":  19,
+        "afterAssertions":  19,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/room-template-rebuilt-render-identity.test.ts",
+        "beforeAssertions":  39,
+        "afterAssertions":  39,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/square-wall-object-footprint.test.ts",
+        "beforeAssertions":  26,
+        "afterAssertions":  26,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/integration/template-storage-anchor-delivery.test.ts",
+        "beforeAssertions":  28,
+        "afterAssertions":  28,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    },
+    {
+        "file":  "tests/unit/ui-room-template-session-preflight.test.ts",
+        "beforeAssertions":  38,
+        "afterAssertions":  38,
+        "beforeSkips":  0,
+        "afterSkips":  0
+    }
+]
