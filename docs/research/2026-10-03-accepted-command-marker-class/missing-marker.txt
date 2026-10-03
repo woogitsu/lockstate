@@ -613,4 +613,3 @@ AssertionError: expected { version: 1, chunkSize: 32, …(2) } to deeply equal {
     196|     expect(runtime.placedObjects.getSnapshot()).toEqual(accepted.simul…
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/30]⎯
-
