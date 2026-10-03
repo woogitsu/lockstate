@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-modern-retained-material-lighting-draft-20261003
+
+-·········
+
+ Test Files  3 passed (3)
+      Tests  9 passed | 1 skipped (10)
+   Start at  20:41:21
+   Duration  799ms (transform 95ms, setup 0ms, import 226ms, tests 766ms, environment 0ms)
