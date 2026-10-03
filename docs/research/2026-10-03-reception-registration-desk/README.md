@@ -13,3 +13,7 @@ Proposed functional variant: `furniture.reception.registration-desk`. Keep every
 ## Planned verification and honest boundary
 
 Genuine Blender1process/1thread; source retention/actual contacts/all four occupied turns; new72 canonical exports; inspect real old/new views. Meaningful actual detached-counter semantic RED, producer dispatch RED, hash-valid decoded-PNG RED, byte-exact restoration. Actual former generic selection RED, context/registry omissions RED and exact restoration GREEN; strict neighbouring controls, typecheck/build. Source/render publication checkpoints follow. Nothing rendered or native-passed is claimed by this initial proposal. Root later performs public Reception q0/q1 Build/paused SaveLoad and body acceptance.
+
+## Actual first model checkpoint
+
+Genuine Blender5.2.1, one process/thread, produced110 meshes:94 original plus16 functional counter/document parts. All six original full material graphs preserved, original raw parts retained and maximum evaluated world vertex error0. Twenty actual evaluated triangle-interior contact witnesses connect the new counter/tray/clipboard to the original desktop. Exact original bounds retained: min[-.9100000262260437,-.41999998688697815,0], max[.9100000262260437,.42250001430511475,1.2699999809265137]. Source SHA256 `be670aa62316c8f8557a1edbed75f3ac87df3ebe4bc78a3958c1e106347bb0dc`. The real producer verifies source semantics before byte guards and keeps the original target[1,.5,.6349999904632568]. Canonical rendering/visible inspection/controls follow; no invented export or native claim.
