@@ -408,7 +408,10 @@ const roomTool = commandSender === undefined ? undefined : new RoomTool();
  * of the two tools a row arms is decided in the `arm-build-tool` branch below.
  */
 const objectPreviewRevision = simulation === undefined ? undefined
-  : new SimulationObjectPlacementPreviewRevision(simulation, () => objectTool?.setArmed(false), () => objectTool?.refreshPreview());
+  : new SimulationObjectPlacementPreviewRevision(simulation, () => {
+    objectTool?.resetPreview();
+    worldScene.cancelConstructionGesture();
+  }, () => objectTool?.refreshPreview());
 const objectTool = commandSender === undefined ? undefined : new ObjectTool(simulation === undefined || objectPreviewRevision === undefined
   ? undefined : { preflight: createSimulationObjectPlacementPreflight(simulation), worldRevision: () => objectPreviewRevision.revision,
     onPreviewChanged: () => worldScene.refreshObjectToolVerdict() });
@@ -4608,7 +4611,7 @@ async function bootPersistence(workers: SimulationWorkerChannel, hud: HudHandle)
         // case, a plan armed against the outgoing worker must not retain its
         // fitted camera origin or submit into a replacement session.
         roomTemplateTool?.standDown();
-        objectTool?.setArmed(false);
+        objectTool?.resetPreview();
         worldScene.cancelConstructionGesture();
         // This page keeps one renderer and one feed across prisons. Wait for
         // the replacement worker's first snapshot before centering its map;

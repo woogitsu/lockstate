@@ -80,6 +80,12 @@ export class ObjectTool implements ObjectToolPort, HudWorldObjectSource {
     this.aimedRect = undefined;
   }
 
+  /** A replacement session withdraws the old aim, preserving the public tool mode. */
+  public resetPreview(): void {
+    this.clearPreview();
+    this.readout?.(undefined);
+  }
+
   /** Re-read a stationary aim only after a real authoritative publication. */
   public refreshPreview(): void {
     if (this.aimedRect === undefined) return;

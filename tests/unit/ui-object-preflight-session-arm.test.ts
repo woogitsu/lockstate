@@ -32,7 +32,7 @@ for (const boundary of ['ready', 'availability'] as const) for (const removing o
     tool.setArmed(true, { definitionId: 'bed-wooden', footprint: { width: 1, height: 2 }, removing });
     tool.target({ tileX: 7, tileY: 6, width: 1, height: removing ? 1 : 2 });
     if (boundary === 'availability') actualCallback<(available: boolean) => void>(availabilityCallback!, bindings)(true);
-    else listener!({ protocolVersion: 1, messageId: 'new-session-ready', kind: 'simulation/ready',
+    else listener!({ protocolVersion: 1, messageId: 'new-session-ready', replyTo: 'initialize-replacement', kind: 'simulation/ready',
       payload: { sessionId: 'replacement', tick: 0, clock: { mode: 'paused' } } });
     // The UI's Stop placing/Remove selection does not change on New/Load.
     expect(tool.isArmed()).toBe(true);
