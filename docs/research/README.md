@@ -100,6 +100,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [2026-10-04 Classroom teacher desk: retained soft Cycles](./2026-10-04-classroom-teacher-desk-retained-cycles/README.md) | Can the actual133-part teacher desk reveal its existing six authored material families without changing2x1 geometry? | Source/graph/contact audit and genuine comparison; complete exports and native boundary recorded separately. |
 | [2026-10-04 Angled missed primary release](./2026-10-04-oblique-missed-primary-release/README.md) | Can a later camera release purchase an abandoned primary square-wall run? | Issue2030; actual Phaser/main/worker original2RED, recovery omission2RED/1touchGREEN, byte-exact restore220GREEN; whole worker camera invariance, native unmeasured. |
 | [2026-10-04 Full-template order identity admission](./2026-10-04-template-order-identity-admission/README.md) | Can a rotated mirrored plan begin before all its generated IDs are available? | Issue#2031 actual packed kernel4RED/2legal; full identity guard8GREEN, real producer6RED/2legal and exact-byte restore8GREEN,130 neighboring checks. No UI-native claim. |
 | [2026-10-04 Manual panels hidden](./2026-10-04-manual-panels-hidden/README.md) | Why does public Hide the panels leave Save content painted in the FullHD active Build rail? | Opened genuineUI200 screenshot and exact CSS cascade cause; one-selector fix and real DOM/wholeV10 native regression prepared, execution pending. |
