@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-kitchen-prep-counter-cycles-20261004
+
+ × tests/unit/oblique-kitchen-prep-counter-modern-consumer.test.ts > selects genuine saved modern Kitchen prep counter q0 over its whole unchanged paid footprint 9ms
+   → expected [] to deeply equal [ { …(2) } ]
+ × tests/unit/oblique-kitchen-prep-counter-modern-consumer.test.ts > selects genuine saved modern Kitchen prep counter q1 over its whole unchanged paid footprint 2ms
+   → expected [] to deeply equal [ { …(2) } ]
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-kitchen-prep-counter-modern-consumer.test.ts > selects genuine saved modern Kitchen prep counter q0 over its whole unchanged paid footprint
+ FAIL  tests/unit/oblique-kitchen-prep-counter-modern-consumer.test.ts > selects genuine saved modern Kitchen prep counter q1 over its whole unchanged paid footprint
+AssertionError: expected [] to deeply equal [ { …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "assetId": "furniture.kitchen.prep-counter.variants",
+-     "manifest": "/game-content/oblique-furniture.kitchen-prep-counter.v1.json",
+-   },
+- ]
++ []
+
+ ❯ tests/unit/oblique-kitchen-prep-counter-modern-consumer.test.ts:39:69
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  02:30:51
+   Duration  648ms (transform 176ms, setup 0ms, import 519ms, tests 12ms, environment 0ms)

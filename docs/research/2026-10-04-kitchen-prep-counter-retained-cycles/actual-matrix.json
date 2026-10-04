@@ -1,45 +1,23 @@
 {
-  "schemaVersion": 1,
-  "assetId": "furniture.kitchen.prep-counter.variants",
-  "source": "assets/source/blender/furniture.kitchen.prep-counter.soft-light.blend",
+  "genuineBlenderVersion": [
+    5,
+    2,
+    1
+  ],
+  "engine": "CYCLES",
+  "device": "CPU",
+  "threads": 1,
+  "samples": 128,
+  "seed": 0,
+  "adaptiveSampling": false,
+  "denoising": true,
+  "denoiser": "OPENIMAGEDENOISE",
+  "denoisingUseGpu": false,
+  "viewTransform": "AgX",
+  "actualExportSeconds": 259.9707266999758,
+  "realRenderCount": 72,
   "sourceSha256": "91a5aa7e9027221e36b115a43f23f342596d927eda4523bc68964d5e0a308d1d",
-  "resolutionPx": [
-    256,
-    256
-  ],
-  "nominalPixelsPerTile": 64,
-  "pivotPx": [
-    128,
-    128
-  ],
-  "cameraTargetTiles": [
-    1.0,
-    0.5,
-    0.8100000619888306
-  ],
-  "projection": "orthographic",
-  "yawDegrees": [
-    0,
-    30,
-    60,
-    90,
-    120,
-    150,
-    180,
-    210,
-    240,
-    270,
-    300,
-    330
-  ],
-  "elevationDegrees": [
-    20,
-    30,
-    40,
-    50,
-    60,
-    70
-  ],
+  "descriptorSha256": "432f7e7a55b5255104ca82877d6b61ec837cef60872beb04ac8da6ca64a0b003",
   "frames": [
     {
       "yawDegrees": 0,
@@ -473,5 +451,7 @@
       "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+330-elev70.b71a8c54bf0f.png",
       "sha256": "b71a8c54bf0fd4e3a491fc88c74b832b6df82b50ea752d694960a4c8040da9b8"
     }
-  ]
+  ],
+  "groundPlaneAdded": false,
+  "nativeAcceptance": false
 }

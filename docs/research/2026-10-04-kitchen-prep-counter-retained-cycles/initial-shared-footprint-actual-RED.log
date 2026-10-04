@@ -1,0 +1,13 @@
+00:01.125  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-prep-counter-cycles-20261004\assets\source\blender\furniture.kitchen.prep-counter.soft-light.blend"
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-prep-counter-cycles-20261004\docs\research\2026-10-04-kitchen-prep-counter-retained-cycles\actual-shared-callback-probe.py", line 5, in <module>
+    s,c,t=shared.configure((p.ASSET_ID,p.SOURCE_NAME,p.MANIFEST_NAME,2,1,1.,1.,.8100000619888306))
+          ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-prep-counter-cycles-20261004\tooling\blender\render-kitchen-fixtures-oblique.py", line 315, in configure
+    raise ValueError(f"{asset_id} escapes its {width} x {height} occupied footprint: {minimum} to {maximum}")
+ValueError: furniture.kitchen.prep-counter.variants escapes its 2 x 1 occupied footprint: [1.0730000734329224, 0.518500030040741, 0.0] to [2.927000045776367, 1.4229999780654907, 1.6200001239776611]
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-prep-counter-cycles-20261004\docs\research\2026-10-04-kitchen-prep-counter-retained-cycles\actual-shared-callback-probe.py', exiting.
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit

@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-kitchen-prep-counter-cycles-20261004
+
+ ✓ tests/unit/oblique-kitchen-prep-counter-modern-consumer.test.ts > selects genuine saved modern Kitchen prep counter q0 over its whole unchanged paid footprint 11ms
+ ✓ tests/unit/oblique-kitchen-prep-counter-modern-consumer.test.ts > selects genuine saved modern Kitchen prep counter q1 over its whole unchanged paid footprint 2ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  02:30:52
+   Duration  653ms (transform 173ms, setup 0ms, import 515ms, tests 13ms, environment 0ms)
