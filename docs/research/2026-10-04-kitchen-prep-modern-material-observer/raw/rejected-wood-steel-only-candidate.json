@@ -1,0 +1,113 @@
+{
+  "native": [
+    {
+      "name": "dedicated-kitchen-prep-counter-worker-completed-fullhd.png",
+      "wood": {
+        "body": 167,
+        "rim": 0
+      },
+      "rim": {
+        "body": 156,
+        "rim": 134
+      }
+    },
+    {
+      "name": "dedicated-kitchen-prep-counter-loaded-fullhd.png",
+      "wood": {
+        "body": 167,
+        "rim": 0
+      },
+      "rim": {
+        "body": 156,
+        "rim": 134
+      }
+    }
+  ],
+  "controls": [
+    {
+      "name": "oblique-cell-chair.v1.json",
+      "maxima": {
+        "body": 1042,
+        "rim": 4
+      }
+    },
+    {
+      "name": "oblique-reception-employee-desk.v1.json",
+      "maxima": {
+        "body": 0,
+        "rim": 153
+      }
+    },
+    {
+      "name": "oblique-furniture-office-desk-generic.v1.json",
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-furniture-classroom-teacher-desk.v1.json",
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-square-brick-full-wall.v1.json",
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-wall-cutaway.v1.json",
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-wall-west.v1.json",
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-wall-west-cutaway.v1.json",
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-floor-cell.v1.json",
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-floor-terrain-dirt.v1.json",
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-furniture.kitchen-stove.v1.json",
+      "maxima": {
+        "body": 0,
+        "rim": 57
+      }
+    },
+    {
+      "name": "oblique-furniture.kitchen-fridge.v1.json",
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    }
+  ],
+  "failures": []
+}

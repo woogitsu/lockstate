@@ -1,0 +1,29 @@
+from pathlib import Path
+import importlib.util,hashlib,json,sys,os
+import bpy
+from mathutils import Vector
+root=Path.cwd();here=root/'tooling/blender';sys.path.insert(0,str(here))
+spec=importlib.util.spec_from_file_location('actual_stove',here/'render-kitchen-prep-counter-cycles.py');producer=importlib.util.module_from_spec(spec);spec.loader.exec_module(producer)
+scene,camera=producer.configure();path=root/'assets/source/blender/furniture.kitchen.prep-counter.soft-light.blend';before=hashlib.sha256(path.read_bytes()).hexdigest();poses=[]
+for yaw in (30,300):
+ producer.source.point_camera(camera,producer.TARGET,yaw,40);bpy.context.view_layer.update();graph=bpy.context.evaluated_depsgraph_get();quat=camera.matrix_world.to_quaternion();direction=quat@Vector((0,0,-1));labels=[];objects=[]
+ for y in range(256):
+  for x in range(256):
+   origin=camera.location+quat@Vector(((x+.5-128)/64,(128-y-.5)/64,0))
+   hit,location,normal,face,obj,matrix=scene.ray_cast(graph,origin,direction,distance=20)
+   if not hit: labels.append(None);objects.append(None);continue
+   evaluated=obj.evaluated_get(graph);material_index=evaluated.data.polygons[face].material_index
+   material=evaluated.data.materials[material_index].name
+   labels.append(material);objects.append(obj.name)
+ rows=[]
+ for material in sorted(set(labels)-{None}):
+  hits=[i for i,m in enumerate(labels) if m==material];inset=[]
+  for i in hits:
+   y,x=divmod(i,256)
+   if 1<=x<=254 and 1<=y<=254 and all(labels[(y+dy)*256+x+dx]==material for dx in (-1,0,1) for dy in (-1,0,1)):inset.append(i)
+  rows.append({'material':material,'meshes':sorted({objects[i] for i in hits}),'rayHitPixelIndices':hits,'sameMaterial3x3InsetPixelIndices':inset})
+ mesh_rows=[{'mesh':name,'material':labels[objects.index(name)],'rayHitPixelIndices':[i for i,n in enumerate(objects) if n==name]} for name in sorted(set(objects)-{None}) if 'pan rim' in name]
+ poses.append({'yawDegrees':yaw,'elevationDegrees':40,'materials':rows,'physicalPanRims':mesh_rows})
+assert before==hashlib.sha256(path.read_bytes()).hexdigest()==producer.SOURCE_SHA
+out={'sourceSha256':before,'blenderVersion':list(bpy.app.version),'sourceUnchanged':True,'renderPerformed':False,'sourceEdited':False,'resolution':[256,256],'pixelsPerTile':64,'poses':poses}
+output=Path(os.environ['TEMP'])/'lockstate-prep-actual-material-rays-20261004.json';output.write_text(json.dumps(out,indent=2)+'\n',encoding='utf8');print('ACTUAL_MATERIAL_RAYS',str(output),[(p['yawDegrees'],[(r['material'],len(r['rayHitPixelIndices']),len(r['sameMaterial3x3InsetPixelIndices'])) for r in p['materials']]) for p in poses],flush=True)

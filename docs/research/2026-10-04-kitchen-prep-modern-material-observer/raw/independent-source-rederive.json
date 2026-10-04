@@ -1,0 +1,96 @@
+{
+  "sourceOnly": true,
+  "nativePhotoRead": false,
+  "sourceSha256": "91a5aa7e9027221e36b115a43f23f342596d927eda4523bc68964d5e0a308d1d",
+  "woodKeyCount": 1012,
+  "rimKeyCount": 285,
+  "sourceSamples": {
+    "wood": 3816,
+    "rim": 303,
+    "panCore": 14
+  },
+  "woodBounds": [
+    [
+      120,
+      201
+    ],
+    [
+      82,
+      172
+    ],
+    [
+      51,
+      152
+    ],
+    [
+      29,
+      49
+    ],
+    [
+      20,
+      43
+    ],
+    [
+      49,
+      86
+    ]
+  ],
+  "rimBounds": [
+    [
+      144,
+      198
+    ],
+    [
+      125,
+      187
+    ],
+    [
+      105,
+      182
+    ],
+    [
+      -1,
+      39
+    ],
+    [
+      2,
+      31
+    ],
+    [
+      1,
+      70
+    ]
+  ],
+  "panBounds": [
+    [
+      170,
+      192
+    ],
+    [
+      110,
+      136
+    ],
+    [
+      52,
+      86
+    ],
+    [
+      55,
+      65
+    ],
+    [
+      50,
+      58
+    ],
+    [
+      106,
+      122
+    ]
+  ],
+  "sourceMaximumWoodDistancePixels": 2.8284271247461903,
+  "sourceMaximumPanCoreDistancePixels": 19.209372712298546,
+  "nativeZoom": 1.25,
+  "woodRadius": 4,
+  "panRadius": 25,
+  "actualCurrentHelperConstantsMatch": true
+}

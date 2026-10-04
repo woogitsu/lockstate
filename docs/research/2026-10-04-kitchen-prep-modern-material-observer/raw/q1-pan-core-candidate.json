@@ -1,0 +1,28 @@
+{
+  "native": [
+    {
+      "name": "dedicated-kitchen-prep-counter-worker-completed-fullhd.png",
+      "wood": {
+        "body": 343,
+        "rim": 0
+      },
+      "rim": {
+        "body": 154,
+        "rim": 162
+      }
+    },
+    {
+      "name": "dedicated-kitchen-prep-counter-loaded-fullhd.png",
+      "wood": {
+        "body": 343,
+        "rim": 0
+      },
+      "rim": {
+        "body": 154,
+        "rim": 162
+      }
+    }
+  ],
+  "controls": [],
+  "failures": []
+}

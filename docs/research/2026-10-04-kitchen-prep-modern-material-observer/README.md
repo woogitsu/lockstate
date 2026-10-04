@@ -19,3 +19,15 @@ Own Blender5.2.1 CPU1 executed exact existing configure/hash checks and evaluate
 A first editing recipe stopped before writing the spec because a CRLF substring did not match. The partially prepared shared-helper pin was restored, then the corrected source-only edit completed. This is a fixture-preparation error, not a product failure.
 
 Current boundary: application strict types GREEN. Tools/scoped controls and source-material observer correction are still pending. No browser, server, build, native acceptance, source palette classification or q1 pixel result is claimed at this checkpoint.
+
+## Source-derived correction checkpoint
+
+Root separately executed original capacity+q1 on the same immutable25f source: capacity GREEN, q1 RED with original [0,18] before/after Load. Both original reports, both real worker/owners/pixels records and four actual photos are retained. The first q1 serial skip remains the first-run outcome; it is not relabelled.
+
+The actual TypeScript observer now reads those unchanged original rectangles and strict floors offline: q0[167,134], q1[343,162], equal after Load. Body keys/extrema come from3816 opaque 3x3 same-material butcher-block source samples; rim keys/extrema from303 source pixels hitting actual physical pan-rim meshes with brushed-stainless material. Fourteen complete3x3 ingredient-pan source inset samples define the distinct pan core. Source-only rederivation reads no native photos and verifies actual saved-source and both current source PNG hashes plus all literal helper constants.
+
+Wood requires a complete opaque3x3 connected gradient with at least three colours. Qualified rims exclude wood-coloured pixels and require both a connected wood gradient and a connected ingredient-pan gradient. Measured maximum nearest source-projected pan-rim distances are sqrt(8)px to wood and sqrt(369)px to the retained pan inset: original public zoom1.25 yields ceil4px and25px respectively. These projected bounds describe the retained visible source samples, not an invented physical contact guarantee.
+
+The simpler wood+nearby-metal candidate was rejected: five genuine modern dining-table source poses falsely met the compound floors. Its actual output is retained. Adding the distinct source-derived pan core preserves both native-photo positives and yields qualified rim0 on all1080 genuine PNGs across15 unrelated families, including current Cot/Table/Bench. Table/chair wood alone still matches; no material-ID mask or unique wood colour is claimed.
+
+Original browser pixel decoding is replaced by the existing actual PNG decoder on the captured screenshot buffer; original ROI literals, soft strict-floor assertions, pixel equality, public build/camera actions and all other guards remain. No native pixel colours were used to choose palette/bounds. Actual helper omission/restoration and final bounded neighboring checks are next; no new native acceptance is claimed.
