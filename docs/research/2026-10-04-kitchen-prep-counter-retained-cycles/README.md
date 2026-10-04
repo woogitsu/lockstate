@@ -25,3 +25,18 @@ The two before bodies match published Workbench hashes exactly. Reopened saved-s
 - before-workbench yaw300/e40: `daa34902b62027994251f9e67b7b6264e8ebd86ab8938e94d2edef7a506f96a7`
 - after-soft-original-materials yaw60/e40: `cb2f68bf10ba42b528ed58cd6e3d4562a99f49ec1c20ec67cbe71d325790177f`
 - after-soft-original-materials yaw300/e40: `9714eeca9737699fa2b641bab02d5a24251b7d7d7266e861aceb5f1c23e23fb6`
+
+## Completed source/export proof
+
+- Actual Blender5.2.1 LTS CPU1,128 samples, seed0, no adaptive sampling, CPU OpenImageDenoise, AgX, original three soft area lights, no added floor plane.
+- Complete genuine72 export:259.9707267 seconds. Four actual30/120/210/300-degree elevation40 repeats:13.9921301 seconds, all byte exact.
+- Eight real RED controls: saved source foot disconnected; saved warm key removed; producer source dispatch changed; decoded opaque border with matching descriptor/filename hash; old Workbench descriptor selected by actual q0/q1 consumer; registry entry omitted; standalone canonical callback omitted; shared Kitchen callback omitted. Each restored GREEN;11,384 protected source/assets/producer/native/UI/renderer files restored byte exactly. Generated Python caches are excluded from physical-source restoration accounting.
+- Original current-consumer baseline:two RED cases. Final bounded neighbors:13 suites,38 GREEN and one optional live-Blender-on-PATH skip. Both strict application/tool TypeScript checks GREEN.
+
+The initial thin-rim contact attempt, inapplicable stove normal expectation, callback probe targeting the legacy wrapper, exact shared-entry footprint failure and initial cache restoration scope failure remain recorded. The final probe loads the genuine shared Kitchen producer directly: callback omission produces a second anchor translation and escapes2x1. Its restored callback selects the saved Cycles model without translating twice.
+
+The64 draft receipt preserves its original candidate destination and original frame labels as a historical execution record; its archived physical body is `furniture.kitchen.prep-counter.soft64-draft.blend`, and its after images have the `draft64-` prefix. Its SHA is the literal receipt source SHA. The production source/receipt and72 descriptor point only to the selected128 source.
+
+## Pending actual game boundary
+
+No browser/server/build/native run was performed here. Existing object mapping, registry entry, room template, prices, footprint, aliases, palette and all native fixtures are unchanged. Root must build this revision and inspect genuine public Kitchen q0/q1. The same selected source60/e40 body is required at world60 for orientation0 and world-30 for orientation1; no pixel classifier or ROI is invented here.

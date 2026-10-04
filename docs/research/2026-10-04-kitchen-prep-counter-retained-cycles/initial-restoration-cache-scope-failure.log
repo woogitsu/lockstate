@@ -1,0 +1,12 @@
+python.exe : Traceback (most recent call last):
+At line:8 char:1
++ & 'C:\Users\matma\AppData\Local\Programs\Python\Python314\python.exe' ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-prep-counter-cycles-20261004\docs\research\2026-10-04-ki
+tchen-prep-counter-retained-cycles\verify-production-controls.py", line 77, in <module>
+    if after!=before:raise ValueError('Protected bytes not exactly restored')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Protected bytes not exactly restored

@@ -45,8 +45,8 @@ it('retains the original prep-counter assembly/materials and registers dedicated
   expect(obliqueAssetIdForObject('object.prep-counter')).toBe('furniture.kitchen.prep-counter.variants');
   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL('public/game-content/oblique-furniture.kitchen-prep-counter.v1.json', root), 'utf8')));
   expect(catalog.assetId).toBe('furniture.kitchen.prep-counter.variants');
-  expect(catalog.source).toBe(provenance.source);
-  expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+  expect(catalog.source).toBe('assets/source/blender/furniture.kitchen.prep-counter.soft-light.blend');
+  expect(catalog.sourceSha256).toBe('91a5aa7e9027221e36b115a43f23f342596d927eda4523bc68964d5e0a308d1d');
   expect(catalog.cameraTargetTiles).toEqual(provenance.cameraTargetTiles);
   expect(catalog.resolutionPx).toEqual([256, 256]);
   expect(catalog.nominalPixelsPerTile).toBe(64);

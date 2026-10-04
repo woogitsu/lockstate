@@ -1,0 +1,36 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-kitchen-prep-counter-cycles-20261004
+
+ × tests/unit/oblique-kitchen-prep-counter-modern-consumer.test.ts > selects genuine saved modern Kitchen prep counter q0 over its whole unchanged paid footprint 10ms
+   → expected 'assets/source/blender/furniture.kitch…' to be 'assets/source/blender/furniture.kitch…' // Object.is equality
+ × tests/unit/oblique-kitchen-prep-counter-modern-consumer.test.ts > selects genuine saved modern Kitchen prep counter q1 over its whole unchanged paid footprint 2ms
+   → expected 'assets/source/blender/furniture.kitch…' to be 'assets/source/blender/furniture.kitch…' // Object.is equality
+node :
+At line:9 char:1
++ node node_modules/vitest/vitest.mjs run tests/unit/oblique-kitchen-pr ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-kitchen-prep-counter-modern-consumer.test.ts > selects genuine saved modern Kitchen prep coun
+ter q0 over its whole unchanged paid footprint
+ FAIL  tests/unit/oblique-kitchen-prep-counter-modern-consumer.test.ts > selects genuine saved modern Kitchen prep coun
+ter q1 over its whole unchanged paid footprint
+AssertionError: expected 'assets/source/blender/furniture.kitch…' to be 'assets/source/blender/furniture.kitch…' // Obj
+ect.is equality
+
+Expected: "assets/source/blender/furniture.kitchen.prep-counter.soft-light.blend"
+Received: "assets/source/blender/furniture.kitchen.prep-counter.angled.blend"
+
+ ❯ tests/unit/oblique-kitchen-prep-counter-modern-consumer.test.ts:41:26
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  02:20:55
+   Duration  934ms (transform 327ms, setup 0ms, import 762ms, tests 13ms, environment 0ms)

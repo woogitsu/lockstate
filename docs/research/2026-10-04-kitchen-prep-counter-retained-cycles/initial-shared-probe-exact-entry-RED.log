@@ -1,0 +1,22 @@
+python.exe : Traceback (most recent call last):
+At line:9 char:1
++ & 'C:\Users\matma\AppData\Local\Programs\Python\Python314\python.exe' ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-prep-counter-cycles-20261004\docs\research\2026-10-04-ki
+tchen-prep-counter-retained-cycles\verify-production-controls.py", line 73, in <module>
+    try:blender('actual-shared-Kitchen-callback-RED',probe,'--verify','retained geometry/full materials/normals/contact
+s/bounds changed')
+        ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-prep-counter-cycles-20261004\docs\research\2026-10-04-ki
+tchen-prep-counter-retained-cycles\verify-production-controls.py", line 31, in blender
+    return command(label,[str(BLENDER),'--background','--threads','1','--python-exit-code','1','--python',str(script),'
+--',flag],needle)
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-prep-counter-cycles-20261004\docs\research\2026-10-04-ki
+tchen-prep-counter-retained-cycles\verify-production-controls.py", line 27, in command
+    elif result.returncode==0 or needle not in result.stdout:raise ValueError('Actual expected RED absent '+label)
+                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Actual expected RED absent actual-shared-Kitchen-callback-RED

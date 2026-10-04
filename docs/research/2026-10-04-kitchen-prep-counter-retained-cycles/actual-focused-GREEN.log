@@ -1,0 +1,47 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-kitchen-prep-counter-cycles-20261004
+
+ ↓ tests/determinism/art-pipeline-determinism.test.ts > Blender-to-atlas pipeline determinism > produces byte-identical artefacts from two independent runs
+ ✓ tests/determinism/art-pipeline-determinism.test.ts > Blender-to-atlas pipeline determinism > pins a concrete Blender version and asserts it in every Blender entry point 8ms
+ ✓ tests/determinism/art-pipeline-determinism.test.ts > Blender-to-atlas pipeline determinism > never builds geometry through an order-unstable primitive operator 9ms
+ ✓ tests/determinism/art-pipeline-determinism.test.ts > Blender-to-atlas pipeline determinism > disables dither and pins every byte-visible image setting 0ms
+ ✓ tests/determinism/art-pipeline-determinism.test.ts > Blender-to-atlas pipeline determinism > writes every generated text file with LF endings on all platforms 9ms
+ ✓ tests/unit/oblique-kitchen-laundry-aliases.test.ts > connects object.washing-machine to its authored oblique asset when its catalog loads 1ms
+ ✓ tests/unit/oblique-kitchen-laundry-aliases.test.ts > connects object.stove to its authored oblique asset when its catalog loads 0ms
+ ✓ tests/unit/oblique-kitchen-laundry-aliases.test.ts > connects object.fridge to its authored oblique asset when its catalog loads 0ms
+ ✓ tests/unit/oblique-kitchen-square-fixtures.test.ts > square-aligned Kitchen fixture exports > pins the authored camera scale to the exact 64-pixel world-tile contract 1ms
+ ✓ tests/unit/oblique-kitchen-square-fixtures.test.ts > square-aligned Kitchen fixture exports > object.stove loads all 72 source-backed frames with verified bytes 10ms
+ ✓ tests/unit/oblique-kitchen-square-fixtures.test.ts > square-aligned Kitchen fixture exports > object.prep-counter loads all 72 source-backed frames with verified bytes 8ms
+ ✓ tests/unit/oblique-kitchen-square-fixtures.test.ts > square-aligned Kitchen fixture exports > object.fridge loads all 72 source-backed frames with verified bytes 8ms
+ ✓ tests/unit/oblique-module-registry.test.ts > uses fallback when registry fetch fails 2ms
+ ✓ tests/unit/oblique-module-registry.test.ts > rejects duplicate asset ids in the registry contract 1ms
+ ✓ tests/unit/oblique-module-registry.test.ts > applies each concurrent caller fallback when the shared request fails 0ms
+ ✓ tests/unit/oblique-module-registry.test.ts > retries after a shared failure and does not mutate the fallback map 0ms
+ ✓ tests/unit/oblique-kitchen-prep-counter-angled-integrity.test.ts > retains the original prep-counter assembly/materials and registers dedicated physical details under the existing identity 49ms
+ ✓ tests/unit/kitchen-fridge-retained-cycles-production.test.ts > preserves all97 authored parts/six full graphs/24 original mesh-bound mount guards and the whole 1x1 fridge using actual saved soft shaders 11ms
+ ✓ tests/unit/kitchen-fridge-retained-cycles-production.test.ts > preserves every historical72 body, genuine two inspected samples and real72 production with four exact independent repeats 141ms
+ ✓ tests/unit/kitchen-fridge-retained-cycles-production.test.ts > requires genuine production source/dispatch/hash-valid border/old consumer/registry REDs and exact restoration 6ms
+ ✓ tests/unit/kitchen-prep-counter-retained-cycles-production.test.ts > preserves all78 retained parts/six complete graphs and30 genuine core contacts without mislabeling legacy trim separations 13ms
+ ✓ tests/unit/kitchen-prep-counter-retained-cycles-production.test.ts > retains original72 bodies and requires genuine current72 plus four exact independent renders 164ms
+ ✓ tests/unit/kitchen-prep-counter-retained-cycles-production.test.ts > requires real saved-source/contact/light/dispatch/image/current-consumer/callback omissions with exact restoration 17ms
+ ✓ tests/unit/kitchen-stove-retained-cycles-production.test.ts > preserves all96 authored parts/six full graphs/32 triangle contacts and the whole 2x1 stove using actual saved soft shaders 14ms
+ ✓ tests/unit/kitchen-stove-retained-cycles-production.test.ts > preserves every historical72 body, genuine two inspected samples and real72 production with four exact independent repeats 210ms
+ ✓ tests/unit/kitchen-stove-retained-cycles-production.test.ts > requires genuine production source/dispatch/hash-valid border/old consumer/registry REDs and exact restoration 6ms
+ ✓ tests/unit/oblique-kitchen-fridge-modern-consumer.test.ts > selects genuine saved modern Kitchen fridge q0 over its whole unchanged paid footprint 6ms
+ ✓ tests/unit/oblique-kitchen-fridge-modern-consumer.test.ts > selects genuine saved modern Kitchen fridge q1 over its whole unchanged paid footprint 2ms
+ ✓ tests/unit/oblique-kitchen-stove-modern-consumer.test.ts > selects genuine saved modern Kitchen stove q0 over its whole unchanged paid footprint 6ms
+ ✓ tests/unit/oblique-kitchen-stove-modern-consumer.test.ts > selects genuine saved modern Kitchen stove q1 over its whole unchanged paid footprint 2ms
+ ✓ tests/unit/oblique-kitchen-prep-counter-modern-consumer.test.ts > selects genuine saved modern Kitchen prep counter q0 over its whole unchanged paid footprint 7ms
+ ✓ tests/unit/oblique-kitchen-prep-counter-modern-consumer.test.ts > selects genuine saved modern Kitchen prep counter q1 over its whole unchanged paid footprint 2ms
+ ✓ tests/foundation/research-index-contract.test.ts > research index contract > finds records and rows to check 10ms
+ ✓ tests/foundation/research-index-contract.test.ts > research index contract > gives every record in docs/research/ exactly one row 9ms
+ ✓ tests/foundation/research-index-contract.test.ts > research index contract > points every row at a file docs/research/ holds 17ms
+ ✓ tests/foundation/research-index-contract.test.ts > research index contract > names every collection of records that lives in a subdirectory 2400ms
+ ✓ tests/foundation/research-index-contract.test.ts > research index contract > keeps every row inside the one table 2ms
+ ✓ tests/unit/room-template-kitchen.test.ts > quotes the exact kitchen orders and refuses an occupied tile without partial work 14ms
+ ✓ tests/unit/room-template-kitchen.test.ts > restores a pending kitchen and finishes a mechanically valid furnished room 80ms
+
+ Test Files  13 passed (13)
+      Tests  38 passed | 1 skipped (39)
+   Start at  02:31:24
+   Duration  4.14s (transform 2.82s, setup 0ms, import 5.95s, tests 3.26s, environment 1ms)
