@@ -41,6 +41,22 @@ const pins = {
     rearSha256: 'a6d73e1d54a877812e867aa877d5deda3c944259b35dd95506be64e31ce77fbc',
     target: [.5,.5,1.1999999284744263], prefix: '/assets/environment/oblique/furniture.kitchen.fridge.variants-',
   },
+  medicine: {
+    assetId: 'fixture.medicine-cabinet.variants', descriptorPath: '/game-content/oblique-fixture.medicine-cabinet.v1.json',
+    source: 'assets/source/blender/fixture.medicine-cabinet.soft-light.blend', sourceSha256: '1bb3821056d58d39dc51de6788689ad780e3bed59c20a5f3625714f2480e9732',
+    descriptorLfSha256: 'f301d4def0086c6eae4c7ba8c34de972a1844a0b684a1761855659683fdeab0d',
+    exposedFrame: '/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev40.bdd5f5183c55.png', exposedSha256: 'bdd5f5183c55984e20fe289701dadfb7ff9e350c06e4919e339c85bcb4d8a0bd',
+    rearFrame: '/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev40.511adeeed0f9.png', rearSha256: '511adeeed0f9051373ae1adc48c9bf424ad5424d41a4512c041e2d5525adc711',
+    target: [0.5,0.5,0.5899999737739563], prefix: '/assets/environment/oblique/fixture.medicine-cabinet.variants-',
+  },
+  medicalBed: {
+    assetId: 'furniture.medical-bed.variants', descriptorPath: '/game-content/oblique-furniture.medical-bed.v1.json',
+    source: 'assets/source/blender/furniture.medical-bed.soft-light.blend', sourceSha256: '786abf1ae0e37b99ddb507618918f04472560a68f78bcd22a7f3b5097c822c2c',
+    descriptorLfSha256: '293bfa9389e3dd04eb704d39bcdc78e97ef3693cb1910f9ab8fa0601d24fe757',
+    exposedFrame: '/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev40.a2c875cba534.png', exposedSha256: 'a2c875cba5348fa4bfcc76947f0dbf3e335a7a93aaf8de5731700df8fc28f7aa',
+    rearFrame: '/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev40.d7b0bb53fa1f.png', rearSha256: 'd7b0bb53fa1fbcad780009f57cde8396327d5e5dcb44ecf6709bd72727c360e9',
+    target: [0.5,1,0.675000011920929], prefix: '/assets/environment/oblique/furniture.medical-bed.variants-',
+  },
 } as const;
 
 /** Production decoder and transport hydrator preserve the entire V10 domain bundle. */

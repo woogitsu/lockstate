@@ -1,0 +1,16 @@
+{
+  "preserved": [
+    {
+      "file": "dedicated-medicine-cabinet-player-build.spec.ts",
+      "unchangedPaletteReader": true,
+      "retainedGuardLines": 10
+    },
+    {
+      "file": "dedicated-medical-bed-player-build.spec.ts",
+      "unchangedPaletteReader": true,
+      "retainedGuardLines": 10
+    }
+  ],
+  "sharedHelperOriginalBlocksAndFunctionsUnchanged": true,
+  "noNativeExecution": true
+}

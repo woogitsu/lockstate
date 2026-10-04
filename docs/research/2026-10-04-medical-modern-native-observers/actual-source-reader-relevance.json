@@ -1,0 +1,143 @@
+{
+  "method": "Existing installed Playwright PNG decoder; genuine current hashed PNG bodies, full opaque source-frame equality, not native ROI or material IDs",
+  "rows": [
+    {
+      "key": "medicine",
+      "yaw": 300,
+      "elevation": 40,
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev40.511adeeed0f9.png",
+      "sha256": "511adeeed0f9051373ae1adc48c9bf424ad5424d41a4512c041e2d5525adc711",
+      "exactOriginalColours": [
+        [
+          64,
+          76,
+          76
+        ],
+        [
+          72,
+          86,
+          86
+        ]
+      ],
+      "fullOpaqueSourceFrameCounts": [
+        0,
+        0
+      ]
+    },
+    {
+      "key": "medicine",
+      "yaw": 30,
+      "elevation": 40,
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev40.cfb19173290f.png",
+      "sha256": "cfb19173290fccb4e38093494a39e75c406afb184a47e47e33ec2221d025cc52",
+      "exactOriginalColours": [
+        [
+          64,
+          76,
+          76
+        ],
+        [
+          72,
+          86,
+          86
+        ]
+      ],
+      "fullOpaqueSourceFrameCounts": [
+        0,
+        0
+      ]
+    },
+    {
+      "key": "medicine",
+      "yaw": 60,
+      "elevation": 40,
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev40.bdd5f5183c55.png",
+      "sha256": "bdd5f5183c55984e20fe289701dadfb7ff9e350c06e4919e339c85bcb4d8a0bd",
+      "exactOriginalColours": [
+        [
+          64,
+          76,
+          76
+        ],
+        [
+          72,
+          86,
+          86
+        ]
+      ],
+      "fullOpaqueSourceFrameCounts": [
+        0,
+        0
+      ]
+    },
+    {
+      "key": "medicalBed",
+      "yaw": 300,
+      "elevation": 40,
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev40.d7b0bb53fa1f.png",
+      "sha256": "d7b0bb53fa1fbcad780009f57cde8396327d5e5dcb44ecf6709bd72727c360e9",
+      "exactOriginalColours": [
+        [
+          79,
+          102,
+          108
+        ],
+        [
+          89,
+          113,
+          120
+        ]
+      ],
+      "fullOpaqueSourceFrameCounts": [
+        0,
+        0
+      ]
+    },
+    {
+      "key": "medicalBed",
+      "yaw": 30,
+      "elevation": 40,
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev40.b5686f1915c5.png",
+      "sha256": "b5686f1915c56a9614d5e102e3627f75f0bf29f7daf719bf84c7dd5e82d77aa8",
+      "exactOriginalColours": [
+        [
+          79,
+          102,
+          108
+        ],
+        [
+          89,
+          113,
+          120
+        ]
+      ],
+      "fullOpaqueSourceFrameCounts": [
+        0,
+        0
+      ]
+    },
+    {
+      "key": "medicalBed",
+      "yaw": 60,
+      "elevation": 40,
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev40.a2c875cba534.png",
+      "sha256": "a2c875cba5348fa4bfcc76947f0dbf3e335a7a93aaf8de5731700df8fc28f7aa",
+      "exactOriginalColours": [
+        [
+          79,
+          102,
+          108
+        ],
+        [
+          89,
+          113,
+          120
+        ]
+      ],
+      "fullOpaqueSourceFrameCounts": [
+        0,
+        0
+      ]
+    }
+  ]
+}
