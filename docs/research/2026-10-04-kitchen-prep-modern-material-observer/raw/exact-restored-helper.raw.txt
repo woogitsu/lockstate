@@ -1,0 +1,21 @@
+ACTUAL [{"turns":0,"stage":"completed","sha256":"c52dd0b5335cd79621a7654a97e35fb55bec544af7adbda089fabb9e7f305521","values":[167,134]},{"turns":0,"stage":"loaded","sha256":"d3b54c34abc4f16d5f72193da291100b3b2976f09b1f3970fbe198c7257292c7","values":[167,134]}]
+ACTUAL [{"turns":1,"stage":"completed","sha256":"ac4722bec0aa7fc6cb446d3c09e3e43db158d8704844f5fbe195141f4bfb9cb7","values":[343,162]},{"turns":1,"stage":"loaded","sha256":"c85d875dbe3269dff84f78e34a96781b464e70b9e644acdbbe9a874377164fac","values":[343,162]}]
+CONTROL oblique-cell-chair.v1.json {"body":1042,"rim":0}
+CONTROL oblique-reception-employee-desk.v1.json {"body":0,"rim":0}
+CONTROL oblique-furniture-office-desk-generic.v1.json {"body":0,"rim":0}
+CONTROL oblique-furniture-classroom-teacher-desk.v1.json {"body":0,"rim":0}
+CONTROL oblique-square-brick-full-wall.v1.json {"body":0,"rim":0}
+CONTROL oblique-wall-cutaway.v1.json {"body":0,"rim":0}
+CONTROL oblique-wall-west.v1.json {"body":0,"rim":0}
+CONTROL oblique-wall-west-cutaway.v1.json {"body":0,"rim":0}
+CONTROL oblique-floor-cell.v1.json {"body":0,"rim":0}
+CONTROL oblique-floor-terrain-dirt.v1.json {"body":0,"rim":0}
+CONTROL oblique-furniture.kitchen-stove.v1.json {"body":0,"rim":0}
+CONTROL oblique-furniture.kitchen-fridge.v1.json {"body":0,"rim":0}
+CONTROL oblique-furniture.cell-cot.v1.json {"body":35,"rim":0}
+CONTROL oblique-furniture.canteen-dining-table.v1.json {"body":675,"rim":0}
+CONTROL oblique-canteen-bench.v1.json {"body":152,"rim":0}
+RESULT {"images":1080,"failures":0}
+
+(node:22420) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)

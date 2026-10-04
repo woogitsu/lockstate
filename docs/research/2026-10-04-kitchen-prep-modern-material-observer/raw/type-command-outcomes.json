@@ -1,0 +1,23 @@
+{
+  "app": {
+    "argv": [
+      "node_modules/typescript/bin/tsc",
+      "-b",
+      "--pretty",
+      "false"
+    ],
+    "exitCode": 0
+  },
+  "tools": {
+    "argv": [
+      "node_modules/typescript/bin/tsc",
+      "-b",
+      "tsconfig.tools.json",
+      "--pretty",
+      "false"
+    ],
+    "exitCode": 0
+  },
+  "actualStdout": "app=0 tools=0",
+  "note": "Successful compiler commands emitted no text; corresponding raw files are empty."
+}

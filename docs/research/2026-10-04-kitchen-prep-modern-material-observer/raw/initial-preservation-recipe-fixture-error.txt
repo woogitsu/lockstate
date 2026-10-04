@@ -1,0 +1,1 @@
+Initial preservation recipe compared the shared helper after removing the added prep block but retained one extra blank line. It failed solely on that extra line before writing a success receipt. Corrected block removal reconstructs the exact original LF-normalized helper, with all other pins and entire functions unchanged; no source or assertion guard was altered.

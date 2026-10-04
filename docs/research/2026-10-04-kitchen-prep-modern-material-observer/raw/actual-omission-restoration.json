@@ -1,0 +1,100 @@
+{
+  "checkpoint": "4e608787cbae6180051570b0a95977a8e30e11a8",
+  "helperBytesSha256": "3d0ac1bcf17c50e50ab06d05e862ee8b4f748e331b2d2123a5a8c554f5a463b7",
+  "mutations": [
+    {
+      "name": "actual-pan-core-reader-omitted",
+      "exitCode": 1,
+      "mutantBytesSha256": "11a09f63920ea6ab3063399a35fd40bc7279fd370b77122127ce99765a7fe0ce",
+      "failures": 4,
+      "actual": [
+        {
+          "turns": 0,
+          "stage": "completed",
+          "sha256": "c52dd0b5335cd79621a7654a97e35fb55bec544af7adbda089fabb9e7f305521",
+          "values": [
+            167,
+            0
+          ]
+        },
+        {
+          "turns": 0,
+          "stage": "loaded",
+          "sha256": "d3b54c34abc4f16d5f72193da291100b3b2976f09b1f3970fbe198c7257292c7",
+          "values": [
+            167,
+            0
+          ]
+        },
+        {
+          "turns": 1,
+          "stage": "completed",
+          "sha256": "ac4722bec0aa7fc6cb446d3c09e3e43db158d8704844f5fbe195141f4bfb9cb7",
+          "values": [
+            343,
+            0
+          ]
+        },
+        {
+          "turns": 1,
+          "stage": "loaded",
+          "sha256": "c85d875dbe3269dff84f78e34a96781b464e70b9e644acdbbe9a874377164fac",
+          "values": [
+            343,
+            0
+          ]
+        }
+      ],
+      "sourceFrames": 1080
+    },
+    {
+      "name": "actual-pan-core-association-omitted",
+      "exitCode": 1,
+      "mutantBytesSha256": "107caedc6db539696bb9a9e33111d5b73376f3188d175e86dc0a86d36d4f0a46",
+      "failures": 259,
+      "actual": [
+        {
+          "turns": 0,
+          "stage": "completed",
+          "sha256": "c52dd0b5335cd79621a7654a97e35fb55bec544af7adbda089fabb9e7f305521",
+          "values": [
+            167,
+            134
+          ]
+        },
+        {
+          "turns": 0,
+          "stage": "loaded",
+          "sha256": "d3b54c34abc4f16d5f72193da291100b3b2976f09b1f3970fbe198c7257292c7",
+          "values": [
+            167,
+            134
+          ]
+        },
+        {
+          "turns": 1,
+          "stage": "completed",
+          "sha256": "ac4722bec0aa7fc6cb446d3c09e3e43db158d8704844f5fbe195141f4bfb9cb7",
+          "values": [
+            343,
+            162
+          ]
+        },
+        {
+          "turns": 1,
+          "stage": "loaded",
+          "sha256": "c85d875dbe3269dff84f78e34a96781b464e70b9e644acdbbe9a874377164fac",
+          "values": [
+            343,
+            162
+          ]
+        }
+      ],
+      "sourceFrames": 1080
+    }
+  ],
+  "finalBytesSha256": "3d0ac1bcf17c50e50ab06d05e862ee8b4f748e331b2d2123a5a8c554f5a463b7",
+  "finalExitCode": 0,
+  "observerDiff": "",
+  "productionDiff": ""
+}
