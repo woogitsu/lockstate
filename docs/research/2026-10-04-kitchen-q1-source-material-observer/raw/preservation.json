@@ -1,0 +1,40 @@
+{
+  "base": "bd6351f7f982381ee79f181d2567f65d1004d91e",
+  "snapshots": [
+    {
+      "turns": 0,
+      "stage": "completed",
+      "original": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-completed-fullhd.png",
+      "retained": "native-original/q0-completed.png",
+      "sha256": "3df1c8cf49292680aade3bcb7879ba62454cd0add62d79b1a01f004a10ff3113"
+    },
+    {
+      "turns": 0,
+      "stage": "loaded",
+      "original": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-loaded-fullhd.png",
+      "retained": "native-original/q0-loaded.png",
+      "sha256": "a46c7f0aa16080f757f784c92156a2529ce56dae204486fbf9b19e51a7d65416"
+    },
+    {
+      "turns": 1,
+      "stage": "completed",
+      "original": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-completed-fullhd.png",
+      "retained": "native-original/q1-completed.png",
+      "sha256": "e6c30cf66cb1b629e3c237c4a03117e4d6dcba3050b403c2b0d66f62a428b6c4"
+    },
+    {
+      "turns": 1,
+      "stage": "loaded",
+      "original": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\dedicated-kitchen-stove-loaded-fullhd.png",
+      "retained": "native-original/q1-loaded.png",
+      "sha256": "f087aadcb01167126941130ddf76a58834b408f6b0d0a9ad71f1819899da779a"
+    }
+  ],
+  "specsUnchanged": [
+    "tests/browser/dedicated-kitchen-stove-player-build.spec.ts",
+    "tests/browser/dedicated-kitchen-fridge-player-build.spec.ts"
+  ],
+  "productionConfigPackageDiff": "",
+  "rectanglesUnchanged": true,
+  "radiusUnchanged": "const radius=Math.ceil(.192*64*1.25);"
+}

@@ -1,0 +1,34 @@
+ACTUAL [{"turns":0,"name":"dedicated-kitchen-stove-worker-completed-fullhd.png","path":"C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-completed-fullhd.png","sha256":"3df1c8cf49292680aade3bcb7879ba62454cd0add62d79b1a01f004a10ff3113","stove":[734,273],"fridge":[363,394]},{"turns":0,"name":"dedicated-kitchen-stove-loaded-fullhd.png","path":"C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-loaded-fullhd.png","sha256":"a46c7f0aa16080f757f784c92156a2529ce56dae204486fbf9b19e51a7d65416","stove":[734,273],"fridge":[363,394]}]
+ACTUAL [{"turns":1,"name":"dedicated-kitchen-stove-worker-completed-fullhd.png","path":"C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-completed-fullhd.png","sha256":"e6c30cf66cb1b629e3c237c4a03117e4d6dcba3050b403c2b0d66f62a428b6c4","stove":[68,0],"fridge":[1055,107]},{"turns":1,"name":"dedicated-kitchen-stove-loaded-fullhd.png","path":"C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\dedicated-kitchen-stove-loaded-fullhd.png","sha256":"f087aadcb01167126941130ddf76a58834b408f6b0d0a9ad71f1819899da779a","stove":[68,0],"fridge":[1055,107]}]
+SOURCE oblique-cell-chair.v1.json {"body":0,"iron":0,"freezer":0,"louvre":1044}
+SOURCE oblique-reception-employee-desk.v1.json {"body":0,"iron":0,"freezer":0,"louvre":1949}
+SOURCE oblique-furniture-office-desk-generic.v1.json {"body":0,"iron":0,"freezer":0,"louvre":2515}
+SOURCE oblique-furniture-classroom-teacher-desk.v1.json {"body":0,"iron":0,"freezer":0,"louvre":2515}
+SOURCE oblique-square-brick-full-wall.v1.json {"body":0,"iron":0,"freezer":0,"louvre":0}
+SOURCE oblique-wall-cutaway.v1.json {"body":87,"iron":0,"freezer":0,"louvre":0}
+SOURCE oblique-wall-west.v1.json {"body":19,"iron":0,"freezer":0,"louvre":0}
+SOURCE oblique-wall-west-cutaway.v1.json {"body":20,"iron":0,"freezer":0,"louvre":0}
+SOURCE oblique-floor-cell.v1.json {"body":0,"iron":0,"freezer":0,"louvre":0}
+SOURCE oblique-floor-terrain-dirt.v1.json {"body":0,"iron":0,"freezer":0,"louvre":0}
+SOURCE oblique-furniture.kitchen-prep-counter.v1.json {"body":0,"iron":0,"freezer":0,"louvre":9830}
+SOURCE oblique-furniture.kitchen-fridge.v1.json {"body":4746,"iron":0,"freezer":758,"louvre":3261}
+RESULT {"images":864,"failures":["1 dedicated-kitchen-stove-worker-completed-fullhd.png stove hardware original floor","1 dedicated-kitchen-stove-loaded-fullhd.png stove hardware original floor"]}
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: All original current native floors and real source negatives must hold
+
+2 !== 0
+
+    at file:///C:/Users/matma/AppData/Local/Temp/lockstate-kitchen-q1-full-source-proof-20261004.mjs:47:8 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 2,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

@@ -1,0 +1,32 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {spawnSync,execFileSync} from 'node:child_process';
+import assert from 'node:assert/strict';
+import {resolve} from 'node:path';
+const root=process.cwd(),file=resolve(root,'tests/browser/kitchen-modern-material-observer.ts');
+const raw=resolve(root,'docs/research/2026-10-04-kitchen-q1-source-material-observer/raw');
+const node=process.execPath,recipe=resolve(process.env.TEMP,'lockstate-kitchen-q1-full-source-proof-20261004.mjs');
+const before=readFileSync(file),hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+const branch=execFileSync('git',['branch','--show-current'],{encoding:'utf8'}).trim();
+assert.equal(execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),'b5569235834ecd54517e7ea33a486907f0b25b41');
+execFileSync('git',['switch','--detach','b5569235834ecd54517e7ea33a486907f0b25b41']);
+const receipt={subject:'b5569235834ecd54517e7ea33a486907f0b25b41',originalBytesSha256:hash(before),mutations:[]};
+try{
+ for(const [name,needle,replacement] of [
+ ['authored-core-omitted','burner.has(key)||authoredBurnerCore(key)','burner.has(key)'],
+ ['spatial-collar-omitted','qualifiedCores.some(core=>(x-core%width)**2+(y-Math.floor(core/width))**2<=radius**2)','true']]){
+  const source=before.toString('utf8');assert.equal(source.split(needle).length,2);writeFileSync(file,source.replace(needle,replacement));
+  const result=spawnSync(node,[recipe,resolve(raw,name+'.json')],{encoding:'utf8'});
+  writeFileSync(resolve(raw,name+'.raw.txt'),result.stdout+'\n'+result.stderr);
+  const outcome=JSON.parse(readFileSync(resolve(raw,name+'.json'),'utf8'));
+  assert.equal(result.status,1);assert.ok(outcome.failures.length>0);
+  receipt.mutations.push({name,exitCode:result.status,sourceSha256:hash(readFileSync(file)),failures:outcome.failures,actual:outcome.actual.map(row=>({turns:row.turns,name:row.name,stove:row.stove})),controlCount:outcome.controls.length});
+  writeFileSync(file,before);assert.deepEqual(readFileSync(file),before);
+ }
+}finally{writeFileSync(file,before);assert.deepEqual(readFileSync(file),before);execFileSync('git',['switch',branch]);}
+const result=spawnSync(node,[recipe,resolve(raw,'exact-restored-offline.json')],{encoding:'utf8'});
+writeFileSync(resolve(raw,'exact-restored-offline.raw.txt'),result.stdout+'\n'+result.stderr);assert.equal(result.status,0);
+receipt.finalBytesSha256=hash(readFileSync(file));receipt.finalExitCode=result.status;
+receipt.productionDiff=execFileSync('git',['diff','--','src'],{encoding:'utf8'});receipt.observerDiff=execFileSync('git',['diff','--','tests/browser/kitchen-modern-material-observer.ts'],{encoding:'utf8'});
+assert.equal(receipt.observerDiff,'');assert.equal(receipt.productionDiff,'');writeFileSync(resolve(raw,'actual-omission-restoration.json'),JSON.stringify(receipt,null,2)+'\n');
+console.log(JSON.stringify(receipt,null,2));

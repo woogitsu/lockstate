@@ -1,0 +1,28 @@
+import {readFileSync,writeFileSync,mkdirSync,copyFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import {resolve} from 'node:path';
+import assert from 'node:assert/strict';
+const root=process.cwd(),record=resolve(root,'docs/research/2026-10-04-kitchen-q1-source-material-observer');
+const hash=b=>createHash('sha256').update(b).digest('hex');
+mkdirSync(resolve(record,'native-original'),{recursive:true});
+const snapshots=[];
+for(const [turns,directory] of [[0,'dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load'],[1,'dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load']])for(const [stage,name] of [['completed','dedicated-kitchen-stove-worker-completed-fullhd.png'],['loaded','dedicated-kitchen-stove-loaded-fullhd.png']]){
+const original=resolve(process.env.TEMP,'lockstate-modern-integrated-21d-kitchen-material-native-20261004/results',directory,name);
+const retained=resolve(record,'native-original',`q${turns}-${stage}.png`);copyFileSync(original,retained);assert.deepEqual(readFileSync(original),readFileSync(retained));snapshots.push({turns,stage,original,retained:`native-original/q${turns}-${stage}.png`,sha256:hash(readFileSync(retained))});}
+copyFileSync(resolve(process.env.TEMP,'lockstate-kitchen-q1-mutations-20261004.mjs'),resolve(record,'actual-omission-recipe.mjs.txt'));
+copyFileSync(resolve(process.env.TEMP,'lockstate-kitchen-q1-full-source-proof-20261004.mjs'),resolve(record,'source-proof-original-executed.mjs.txt'));
+const proofFile=resolve(record,'source-proof.mjs.txt');let proof=readFileSync(proofFile,'utf8');
+proof=proof.replace("const native=resolve(process.env.TEMP,'lockstate-modern-integrated-21d-kitchen-material-native-20261004/results');","const native=resolve(root,'docs/research/2026-10-04-kitchen-q1-source-material-observer/native-original');");
+proof=proof.replace("const path=resolve(native,directory,name),bytes=", "const path=resolve(native,`q${turns}-${name.includes('worker-completed')?'completed':'loaded'}.png`),bytes=");
+writeFileSync(proofFile,proof);
+const base='bd6351f7f982381ee79f181d2567f65d1004d91e';
+const specs=['tests/browser/dedicated-kitchen-stove-player-build.spec.ts','tests/browser/dedicated-kitchen-fridge-player-build.spec.ts'];
+for(const file of specs)assert.equal(execFileSync('git',['diff',base,'--',file],{encoding:'utf8'}),'');
+assert.equal(execFileSync('git',['diff',base,'--','src','.github','playwright.config.ts','playwright.artifact.config.ts','package.json'],{encoding:'utf8'}),'');
+const old=readFileSync(resolve(record,'raw/original-observer.ts.txt'),'utf8'),current=readFileSync(resolve(root,'tests/browser/kitchen-modern-material-observer.ts'),'utf8');
+const blocks=['export const KITCHEN_STOVE_MATERIAL_RECTS','export const KITCHEN_FRIDGE_MATERIAL_RECTS'];
+for(const start of blocks){const statement=s=>s.slice(s.indexOf(start),s.indexOf(';',s.indexOf(start))+1);assert.equal(statement(old),statement(current));}
+const radius='const radius=Math.ceil(.192*64*1.25);';assert.ok(old.includes(radius)&&current.includes(radius));
+writeFileSync(resolve(record,'raw/preservation.json'),JSON.stringify({base,snapshots,specsUnchanged:specs,productionConfigPackageDiff:'',rectanglesUnchanged:true,radiusUnchanged:radius},null,2)+'\n');
+console.log('Four retained actual original PNGs byte-identical; exact Kitchen specs/production/config/package unchanged; rectangles/radius unchanged');
