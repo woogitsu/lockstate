@@ -1790,3 +1790,14 @@ Later source integrates modern Canteen table/bench plus#2027 empty-order-ID,
 Those later producer changes require a new combined build and release gates.
 Current lanes cover Kitchen/Toilet material observers and the existing manual
 fold paint defect. New matrices or passing source checks alone are not release.
+
+The next frozen21d acceptance adds three GREEN Toilet and three GREEN Common
+Room routes, including both rotations and whole public V10 Save/Load. Kitchen
+q0 now passes; q1 preserves ownership/state but still fails its original stove
+material floors. The genuine active-Build manual-fold DOM is RED at both scales,
+and its minimal source fix is integrated alongside missed-release recovery
+(#2030) and atomic template order-ID admission (#2031). All original native
+failures remain preserved. Root is preparing the next combined game build.
+Three independent lanes now produce the actual Kitchen prep counter and
+Medicine cabinet Blender matrices and correct the reached Kitchen q1 observer.
+The automatic UI200 inspector-fold proposal still awaits the owner's answer.

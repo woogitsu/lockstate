@@ -109,6 +109,10 @@ imports, including the empty-order-ID fix for#2027, were not in this client.
 | Toilet capacity/q0/q1 | 1 GREEN / 1 RED / 1 not run | q0 completed ownership, canonical source/HTTP/Blob, hardware-pose route and whole paused V10 Save/Load reach their assertions. Original palette ROIs return[0,22] before and after Load against unchanged100/8 floors; q1 does not run. |
 | Corrected Cot capacity/q0/q1 | 3 GREEN,2.1min | Both real completed owners and whole paused public V10 Save/Load pass. q0 retains the original blanket ROI and strict700 floor using keys derived from evaluated authored blanket meshes; q1 has its existing owner/HTTP/Blob/headboard-pose guards, without a new q1 blanket pixel claim. |
 | Full/cutaway square Brick wall, three public poses each | 6 GREEN,2.1min | Genuine construction, minimum200 visible masonry pixels and original20-pixel spill limits pass at−45/45,45/65 and45/80. Whole occupied1×1 footprint remains aligned with the actual authored frame at each pose. |
+| Corrected Toilet capacity/q0/q1 | 3 GREEN,2.1min | Both completed owners, whole paused public V10 Save/Load, demanded source HTTP/Blob and original100/8 material floors pass. Teal keys come from actual saved-source triangle/material samples; the original independent steel predicate remains unchanged. |
+| Common Room capacity/q0/q1 | 3 GREEN,2.3min | Both upholstered benches retain exact owners, whole paused public V10 Save/Load and actual demanded PNG bodies. The unchanged original1500 upholstery floor passes in both rotations; no classifier calibration was needed. |
+| Corrected Kitchen capacity/q0/q1 | 2 GREEN / 1 RED,2.2min | q0 original floors pass with source-gradient observers. q1 whole Save/Load/owners/network checks pass, but stove[5,0] misses both original50 floors; fridge[1055,107] passes original800/100 floors. No corrected q1 acceptance is claimed. |
+| Original active-Build manual fold, UI100/UI200 | 2 RED | Both genuine DOM routes reach hidden=true with display:contents, so aside descendants continue to paint. The one-selector source correction is integrated; restored compiled acceptance remains pending. |
 
 All original runs, including failures, screenshots, worker receipts and
 terminal traces, are retained under the `integrated21d-*` entries in
@@ -155,3 +159,24 @@ repair its clipped folded content, and preserve the current allocation. This
 requires an extra action to reveal the complete UI200 template. Neither option
 permits an invalid placement. The source/native record remains a development
 checkpoint, not deployment or a completed redesign.
+
+## Current source integration after the frozen21d measurements
+
+The later source now includes the one-selector manual-fold correction for
+[#2029](https://github.com/woogitsu/lockstate/issues/2029), the six-line missed
+primary-release recovery for [#2030](https://github.com/woogitsu/lockstate/issues/2030),
+and full generated-order identity admission before any template shell write for
+[#2031](https://github.com/woogitsu/lockstate/issues/2031). Each preserves its
+original RED, actual producer omission and exact restoration/source checks in
+its own research record. Source checks are not compiled-client acceptance.
+
+The manual-fold measurement inherits the actual artifact server,60s/10s
+budgets, one worker and zero retries. Its first external `.ts` configuration
+loaded through CJS and failed before a browser; that original output remains
+archived. Using the equivalent ESM `.mts` measurement reaches both genuine
+DOM failures. No shipped matcher or CI configuration was changed.
+
+All409 archived files and all91 actual emitted21d files were hash-verified
+before the next build. A new combined build, current full source gate and
+exact-head hosted CI remain required before release. The owner-approved V10
+format and lossless V1–V9 migration remain the current persistence direction.
