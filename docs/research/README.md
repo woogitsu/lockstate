@@ -100,6 +100,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [Medical bed retained Cycles source](./2026-10-04-medical-bed-retained-cycles/README.md) | Genuine saved89-part source,26 triangle contacts and exact authored shader synchronization; full72/native pending at first checkpoint | 2026-10-04 |
 | [2026-10-04 Kitchen prep counter: retained soft Cycles](./2026-10-04-kitchen-prep-counter-retained-cycles/README.md) | Can the actual78-part Kitchen prep counter reveal its six authored shader graphs without changing2x1 geometry? | Retained78parts/sixgraphs/30core contacts; genuine softCycles72+four byte-exact repeats, eight real RED/exact restores and typed q0/q1 consumers. Native pending. |
 | [2026-10-04 Angled missed primary release](./2026-10-04-oblique-missed-primary-release/README.md) | Can a later camera release purchase an abandoned primary square-wall run? | Issue2030; actual Phaser/main/worker original2RED, recovery omission2RED/1touchGREEN, byte-exact restore220GREEN; whole worker camera invariance, native unmeasured. |
 | [2026-10-04 Full-template order identity admission](./2026-10-04-template-order-identity-admission/README.md) | Can a rotated mirrored plan begin before all its generated IDs are available? | Issue#2031 actual packed kernel4RED/2legal; full identity guard8GREEN, real producer6RED/2legal and exact-byte restore8GREEN,130 neighboring checks. No UI-native claim. |
