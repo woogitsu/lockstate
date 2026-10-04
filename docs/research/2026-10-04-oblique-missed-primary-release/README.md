@@ -34,3 +34,8 @@ Repeat neighboring controls:
 `pnpm --config.verify-deps-before-run=false exec vitest run tests/unit/world-build-camera-button-release.test.ts tests/unit/oblique-pointer-picking-transform.test.ts tests/unit/oblique-camera-gameout.test.ts tests/unit/oblique-hud-cancel-rearm.test.ts tests/unit/ui-template-camera-preflight-coherence.test.ts --maxWorkers=4`
 
 The original source evidence, not this read-only controller check, is the proof of the bug. No native/browser acceptance is claimed. No CSS, copy, persistence, protocol, asset or observer change is included.
+## Final source checkpoint
+
+Strict app and tools typechecking was repeated after the genuine touch control: exit0. Research index, documentation links, published commit citations, strict coverage and rendering-module boundaries: **30 GREEN /5 files**, [raw receipt](./contracts-green.raw.txt). An earlier citation check could not see the already-published root ancestor because this repository's local fetch refspec tracks only main; fetching the published own branch explicitly restored its origin reachability. No citation allowlist or guard was changed.
+
+The shipped camera/picking producer correction is six added lines in ObliqueWorldScene only. The original two source failures and all original neighboring controls are retained. Native acceptance remains pending; this branch did not start any browser, build or server and has no lease to release.
