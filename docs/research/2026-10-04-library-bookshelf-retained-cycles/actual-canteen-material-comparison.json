@@ -1,0 +1,476 @@
+[
+  {
+    "assetId": "furniture.dining.table.wooden",
+    "actualSource": "assets/source/blender/furniture.canteen.dining-table.soft-light.blend",
+    "actualSourceSha256": "4f92eb8cebdb7f5d343f5ca49869c317535867932f05ab805bbd33b60144728f",
+    "meshCount": 65,
+    "engine": "CYCLES",
+    "threads": 1,
+    "materials": [
+      {
+        "name": "Canteen worn steel",
+        "viewportRGBA": [
+          0.23999999463558197,
+          0.25999999046325684,
+          0.27000001072883606,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.23999999463558197,
+          0.25999999046325684,
+          0.27000001072883606,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.6399999856948853,
+        "shaderMetallic": 0.3799999952316284,
+        "baseLinks": [
+          [
+            "Image Texture",
+            "Color"
+          ]
+        ],
+        "roughnessLinks": []
+      },
+      {
+        "name": "Corridor bench worn wood plank 0",
+        "viewportRGBA": [
+          0.47999998927116394,
+          0.27000001072883606,
+          0.10999999940395355,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.47999998927116394,
+          0.27000001072883606,
+          0.10999999940395355,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.7599999904632568,
+        "shaderMetallic": 0.0,
+        "baseLinks": [
+          [
+            "Mix (Legacy)",
+            "Color"
+          ]
+        ],
+        "roughnessLinks": []
+      },
+      {
+        "name": "Corridor bench worn wood plank 1",
+        "viewportRGBA": [
+          0.47999998927116394,
+          0.27000001072883606,
+          0.10999999940395355,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.47999998927116394,
+          0.27000001072883606,
+          0.10999999940395355,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.7599999904632568,
+        "shaderMetallic": 0.0,
+        "baseLinks": [
+          [
+            "Mix (Legacy)",
+            "Color"
+          ]
+        ],
+        "roughnessLinks": []
+      },
+      {
+        "name": "Corridor bench worn wood plank 2",
+        "viewportRGBA": [
+          0.47999998927116394,
+          0.27000001072883606,
+          0.10999999940395355,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.47999998927116394,
+          0.27000001072883606,
+          0.10999999940395355,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.7599999904632568,
+        "shaderMetallic": 0.0,
+        "baseLinks": [
+          [
+            "Mix (Legacy)",
+            "Color"
+          ]
+        ],
+        "roughnessLinks": []
+      },
+      {
+        "name": "Corridor bench worn wood plank 3",
+        "viewportRGBA": [
+          0.47999998927116394,
+          0.27000001072883606,
+          0.10999999940395355,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.47999998927116394,
+          0.27000001072883606,
+          0.10999999940395355,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.7599999904632568,
+        "shaderMetallic": 0.0,
+        "baseLinks": [
+          [
+            "Mix (Legacy)",
+            "Color"
+          ]
+        ],
+        "roughnessLinks": []
+      },
+      {
+        "name": "Worn galvanized fixture metal",
+        "viewportRGBA": [
+          0.5299999713897705,
+          0.5699999928474426,
+          0.5699999928474426,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.5299999713897705,
+          0.5699999928474426,
+          0.5699999928474426,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.5899999737739563,
+        "shaderMetallic": 0.0,
+        "baseLinks": [
+          [
+            "Color Ramp",
+            "Color"
+          ]
+        ],
+        "roughnessLinks": []
+      },
+      {
+        "name": "light",
+        "viewportRGBA": [
+          0.8999999761581421,
+          0.9200000166893005,
+          0.8199999928474426,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.8999999761581421,
+          0.9200000166893005,
+          0.8199999928474426,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.75,
+        "shaderMetallic": 0.0,
+        "baseLinks": [],
+        "roughnessLinks": []
+      },
+      {
+        "name": "porcelain",
+        "viewportRGBA": [
+          0.7799999713897705,
+          0.800000011920929,
+          0.8100000023841858,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.7799999713897705,
+          0.800000011920929,
+          0.8100000023841858,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.25,
+        "shaderMetallic": 0.0,
+        "baseLinks": [],
+        "roughnessLinks": []
+      },
+      {
+        "name": "shade",
+        "viewportRGBA": [
+          0.03500000014901161,
+          0.03999999910593033,
+          0.04500000178813934,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.03500000014901161,
+          0.03999999910593033,
+          0.04500000178813934,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.8999999761581421,
+        "shaderMetallic": 0.0,
+        "baseLinks": [],
+        "roughnessLinks": []
+      },
+      {
+        "name": "steel",
+        "viewportRGBA": [
+          0.09000000357627869,
+          0.11999999731779099,
+          0.15000000596046448,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.09000000357627869,
+          0.11999999731779099,
+          0.15000000596046448,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.44999998807907104,
+        "shaderMetallic": 0.0,
+        "baseLinks": [],
+        "roughnessLinks": []
+      }
+    ]
+  },
+  {
+    "assetId": "furniture.corridor.bench.variants",
+    "actualSource": "assets/source/blender/furniture.corridor.bench.soft-light.blend",
+    "actualSourceSha256": "b4e5ca9317c74e0f8182937658c0a3f7026f114fcb7e1661101628cbd75c4e94",
+    "meshCount": 46,
+    "engine": "CYCLES",
+    "threads": 1,
+    "materials": [
+      {
+        "name": "Bench rounded wood edge",
+        "viewportRGBA": [
+          0.5299999713897705,
+          0.3100000023841858,
+          0.11999999731779099,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.5299999713897705,
+          0.3100000023841858,
+          0.11999999731779099,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.6600000262260437,
+        "shaderMetallic": 0.0,
+        "baseLinks": [],
+        "roughnessLinks": []
+      },
+      {
+        "name": "Canteen worn steel",
+        "viewportRGBA": [
+          0.23999999463558197,
+          0.25999999046325684,
+          0.27000001072883606,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.23999999463558197,
+          0.25999999046325684,
+          0.27000001072883606,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.6399999856948853,
+        "shaderMetallic": 0.3799999952316284,
+        "baseLinks": [
+          [
+            "Image Texture",
+            "Color"
+          ]
+        ],
+        "roughnessLinks": []
+      },
+      {
+        "name": "Corridor bench worn wood plank 0",
+        "viewportRGBA": [
+          0.47999998927116394,
+          0.27000001072883606,
+          0.10999999940395355,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.47999998927116394,
+          0.27000001072883606,
+          0.10999999940395355,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.7599999904632568,
+        "shaderMetallic": 0.0,
+        "baseLinks": [
+          [
+            "Mix (Legacy)",
+            "Color"
+          ]
+        ],
+        "roughnessLinks": []
+      },
+      {
+        "name": "Corridor bench worn wood plank 1",
+        "viewportRGBA": [
+          0.47999998927116394,
+          0.27000001072883606,
+          0.10999999940395355,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.47999998927116394,
+          0.27000001072883606,
+          0.10999999940395355,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.7599999904632568,
+        "shaderMetallic": 0.0,
+        "baseLinks": [
+          [
+            "Mix (Legacy)",
+            "Color"
+          ]
+        ],
+        "roughnessLinks": []
+      },
+      {
+        "name": "Corridor bench worn wood plank 2",
+        "viewportRGBA": [
+          0.47999998927116394,
+          0.27000001072883606,
+          0.10999999940395355,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.47999998927116394,
+          0.27000001072883606,
+          0.10999999940395355,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.7599999904632568,
+        "shaderMetallic": 0.0,
+        "baseLinks": [
+          [
+            "Mix (Legacy)",
+            "Color"
+          ]
+        ],
+        "roughnessLinks": []
+      },
+      {
+        "name": "Corridor bench worn wood plank 3",
+        "viewportRGBA": [
+          0.47999998927116394,
+          0.27000001072883606,
+          0.10999999940395355,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.47999998927116394,
+          0.27000001072883606,
+          0.10999999940395355,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.7599999904632568,
+        "shaderMetallic": 0.0,
+        "baseLinks": [
+          [
+            "Mix (Legacy)",
+            "Color"
+          ]
+        ],
+        "roughnessLinks": []
+      },
+      {
+        "name": "metal_recess",
+        "viewportRGBA": [
+          0.07500000298023224,
+          0.08500000089406967,
+          0.08500000089406967,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.07500000298023224,
+          0.08500000089406967,
+          0.08500000089406967,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.8199999928474426,
+        "shaderMetallic": 0.0,
+        "baseLinks": [],
+        "roughnessLinks": []
+      },
+      {
+        "name": "shade",
+        "viewportRGBA": [
+          0.03500000014901161,
+          0.03999999910593033,
+          0.04500000178813934,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.03500000014901161,
+          0.03999999910593033,
+          0.04500000178813934,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.8999999761581421,
+        "shaderMetallic": 0.0,
+        "baseLinks": [],
+        "roughnessLinks": []
+      },
+      {
+        "name": "steel",
+        "viewportRGBA": [
+          0.09000000357627869,
+          0.11999999731779099,
+          0.15000000596046448,
+          1.0
+        ],
+        "shaderRGBA": [
+          0.09000000357627869,
+          0.11999999731779099,
+          0.15000000596046448,
+          1.0
+        ],
+        "shaderRGBAMatchesViewport": true,
+        "viewportRoughnessProperty": 0.4000000059604645,
+        "shaderRoughness": 0.44999998807907104,
+        "shaderMetallic": 0.0,
+        "baseLinks": [],
+        "roughnessLinks": []
+      }
+    ]
+  }
+]
