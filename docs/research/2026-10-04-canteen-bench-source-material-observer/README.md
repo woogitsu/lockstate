@@ -1,4 +1,4 @@
-﻿# Canteen table and wooden Bench material observer — original native evidence
+# Canteen table and wooden Bench material observer — original native evidence
 
 Subject: frozen genuine game25f8dbc45138b2c14c05ee98dd71789321bc7c25; preparation base b4df55c9306d3d5600632f700298c3ad00560e2c.
 
@@ -26,7 +26,7 @@ The table qualifier requires three comparable opaque3x3 gradient components, mat
 | Table three plate interiors | 1612,1604 / identical | 1606,1582 / identical | each >200 |
 | Bench edge-qualified timber interiors | 1555,1164 / identical | 1146,1215 / identical | each >300 |
 
-Actual PNG decoding and SHA checks cover5049 frames in71 current registry families (70 actual72 matrices and one historical9-frame bed matrix). Unrelated-source table maximum0; unrelated-source Bench maximum5 in the Linen rack, below300. Actual table timber itself is rejected with0. Default chair, desks, wall full/cutaway/junction/square, floor, cabinet/cot/fridge and other current bodies cannot meet the original material acceptance floors.
+Actual PNG decoding and SHA checks cover5049 frames in71 current registry families (70 actual72 matrices and one historical9-frame bed matrix). Unrelated-source table maximum3 in the Fridge (below200); unrelated-source Bench maximum5 in the Linen rack, below300. Actual table timber itself is rejected with0. Default chair, desks, wall full/cutaway/junction/square, floor, cabinet/cot/fridge and other current bodies cannot meet the original material acceptance floors.
 
 Only the two old material reader bodies delegate to the new helper. Original ROI tuples, every original threshold, cost, owner, command, whole V10 snapshot equality, real HTTP/Blob/current source, public camera route, budgets and serial control remain unchanged. No common-room-kitchen-modern-evidence edits. App/tools typechecks and18 existing focused consumer/producer checks passed. Actual native correction and actual renderer-consumer omission remain pending root's sole lease.
 
@@ -35,3 +35,9 @@ Only the two old material reader bodies delegate to the new helper. Original ROI
 From this worktree root, copy `source-proof.mjs.txt` to a uniquely named TEMP `.mjs`; execute Node24 with that temporary path and an output JSON path. The inert script loads the current production observer through TypeScript stripping and the actual PNG decoder. It checks all eight archived actual root PNGs and every real current source frame, including original floors and before/Load equality. It starts no browser or server. The raw output and JSON are stored in `raw/`.
 
 `material-rays.py.txt` is an inert read-only Blender recipe. Run it with Blender5.2.1 background/factory-startup/threads1/python-exit-code1, from this worktree root. It writes only the research ray receipt; source byte hashes must remain equal. `source-rederive.py.txt` independently rederives palettes from those ray indices and canonical source PNGs. `source-spatial-prototype.py.txt` records the source-only rounded-edge exclusion, held-out checks and registry negatives. Those historical prototype scripts are inert evidence, not strict-tools executables.
+
+## Actual observer omission and exact restoration
+
+Two genuine modifications of `tests/browser/canteen-bench-material-observer.ts` were applied sequentially. Omitting only the authored plate area comparability check produced43 unrelated-source false positives and exit1. Omitting only the rounded-edge requirement produced66 unrelated-source false positives and exit1. The fixed helper bytes were restored in `finally` after each omission. Full helper SHA2565792c09a061dc74ec9e5a1b38328699cf80c175c512a6302e4bf66f6d63b13d5 is byte exact after both; the full8 held-out PNG/5049 source-frame proof then returned exit0. No production renderer/model/material consumer was modified. This is an actual observer-source negative, not a new game-native run or renderer-consumer omission claim.
+
+Raw omission failures and the exact-restored output are retained under `raw/`. Both app/tools types passed;18 existing Canteen producer/consumer tests passed;11 research-index/type-coverage/path contracts passed. All original native budgets, pixel floors, control sequences and whole Save/Load comparisons are unchanged. Root must still run these corrected observers on its real compiled game and then remove/restore only the actual asset consumer for genuine native absence rejection.

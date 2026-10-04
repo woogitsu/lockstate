@@ -1,0 +1,17 @@
+﻿{
+    "mutations":  [
+                      {
+                          "exitCode":  1,
+                          "mutation":  "plate-triplet",
+                          "failures":  43
+                      },
+                      {
+                          "exitCode":  1,
+                          "mutation":  "bench-rounded-edge",
+                          "failures":  66
+                      }
+                  ],
+    "byteExactRestore":  true,
+    "sourceSha256":  "5792C09A061DC74EC9E5A1B38328699CF80C175C512A6302E4BF66F6D63B13D5",
+    "restoreExit":  0
+}
