@@ -19,6 +19,13 @@ def load_module(name, path):
     return module
 
 
+# Running the canonical entry must use the saved Cycles source. Importing this
+# module still exposes the immutable legacy assembly audit used by preparation.
+if __name__ == '__main__':
+    modern = load_module('medicine_cabinet_retained_cycles_entry', HERE / 'render-medicine-cabinet-cycles.py')
+    modern.main()
+    raise SystemExit(0)
+
 exporter = load_module('medicine_cabinet_square_exporter', HERE / 'render-kitchen-fixtures-oblique.py')
 audit = load_module('medicine_cabinet_authored_audit', HERE / 'refine-medicine-cabinet-angled-detail.py')
 ASSET_ID = 'fixture.medicine-cabinet.variants'

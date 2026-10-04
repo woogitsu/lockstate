@@ -1,0 +1,14 @@
+00:01.437  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-infirmary-medicine-cabinet-cycles-20261004\assets\source\blender\fixture.medicine-cabinet.angled-detail.blend"
+KITCHEN_BOUNDS fixture.medicine-cabinet.variants [0.09000000357627869, 0.11499999463558197, 0.0] [0.9099999666213989, 0.9324999451637268, 1.1799999475479126]
+MEDICINE_CABINET_DETAIL_EVALUATED_BOUNDS [0.09000000357627869, 0.11499999463558197, 0.0] [0.9099999666213989, 0.9324999451637268, 1.1799999475479126]
+MEDICINE_CABINET_DETAIL_VERIFY72 cameras/allfour orientations/outward evaluated surfaces
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-infirmary-medicine-cabinet-cycles-20261004\assets\intermediate\medicine-cabinet-cycles-controls\actual-canonical-medicine-entry.py", line 9, in <module>
+    assert Path(bpy.data.filepath)==r/'assets/source/blender/fixture.medicine-cabinet.soft-light.blend' and s.render.engine=='CYCLES','Actual canonical Medicine entry did not select saved Cycles'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Actual canonical Medicine entry did not select saved Cycles
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-infirmary-medicine-cabinet-cycles-20261004\assets\intermediate\medicine-cabinet-cycles-controls\actual-canonical-medicine-entry.py', exiting.
