@@ -248,6 +248,11 @@ export class RoomTemplateCoordinator implements SystemRegistration {
     const built = createRoomTemplateBuildPlan(request.templateId, request.origin, request.mirrorX, request.sequence, request.quarterTurns ?? 0);
     const verdict = this.preflight(built.plan);
     if (!verdict.ok) return verdict;
+    // Every generated ID belongs to this transaction, including furniture
+    // submitted after the shell completes. An existing order retains its ID
+    // even when terminal; never overwrite it or start a partly admitted plan.
+    const claimedOrder = built.orders.find((order) => this.construction.getOrder(order.id) !== undefined);
+    if (claimedOrder !== undefined) return { ok: false, reason: 'structure-occupied', tile: claimedOrder.location };
     // An all-footprint preflight precedes the first mutation. If a build rule
     // still rejects a shell order, cancel earlier orders before any tick runs.
     const accepted: string[] = [];
