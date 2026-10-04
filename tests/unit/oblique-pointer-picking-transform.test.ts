@@ -26,11 +26,11 @@ afterEach(() => { plumbing.handlers.clear(); vi.unstubAllGlobals(); });
 
 // Independent forward projection; never use production inverse/forward to
 // choose the point whose callback command we then assert.
-function at(world: WorldPoint, pose: ObliqueCameraState) {
+function at(world: WorldPoint, pose: ObliqueCameraState, buttons = 0) {
   const dx = world.x - pose.target.x, dy = world.y - pose.target.y;
   const along = dx * Math.cos(pose.yawRadians) - dy * Math.sin(pose.yawRadians);
   const depth = dx * Math.sin(pose.yawRadians) + dy * Math.cos(pose.yawRadians);
-  return { id: 1, wasTouch: false, button: 0, buttons: 0,
+  return { id: 1, wasTouch: false, button: 0, buttons,
     x: pose.viewport.width / 2 + along * pose.zoom,
     y: pose.viewport.height / 2 + depth * Math.sin(pose.elevationRadians) * pose.zoom };
 }
@@ -81,10 +81,10 @@ it.each(yaws.flatMap(yaw => elevations.map(elevation => ({ yaw, elevation }))))(
       mode = 'wall';
       move(at(start, pose));
       expect(squareTarget).toHaveBeenLastCalledWith([{ x: 15, y: 15 }]);
-      down(at(start, pose)); move(at(end, pose)); up(at(end, pose));
+      down(at(start, pose, 1)); move(at(end, pose, 1)); up(at(end, pose));
       expect(squarePlace).toHaveBeenLastCalledWith([{ x: 15, y: 15 }, { x: 16, y: 15 }, { x: 17, y: 15 }, { x: 18, y: 15 }]);
       mode = 'room';
-      down(at(start, pose)); move(at(end, pose));
+      down(at(start, pose, 1)); move(at(end, pose, 1));
       expect(roomTarget).toHaveBeenLastCalledWith({ tileX: 15, tileY: 15, width: 4, height: 3 });
       up(at(end, pose));
       expect(roomPlace).toHaveBeenLastCalledWith({ tileX: 15, tileY: 15, width: 4, height: 3 });
@@ -93,7 +93,7 @@ it.each(yaws.flatMap(yaw => elevations.map(elevation => ({ yaw, elevation }))))(
         size = quarterTurns % 2 === 0 ? { width: 1, height: 2 } : { width: 2, height: 1 };
         move(at(start, pose));
         expect(objectTarget).toHaveBeenLastCalledWith({ tileX: 15, tileY: 15, ...size } satisfies TileRect);
-        down(at(start, pose)); up(at(start, pose));
+        down(at(start, pose, 1)); up(at(start, pose));
         expect(objectPlace).toHaveBeenLastCalledWith({ tileX: 15, tileY: 15, edge: 'north' });
       }
     }

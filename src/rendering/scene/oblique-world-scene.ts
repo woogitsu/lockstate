@@ -261,6 +261,12 @@ export class ObliqueWorldScene extends Phaser.Scene {
       this.paintSelection();
     });
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      // A missing primary release must not leave an old drag available for a
+      // later camera-button release to commit. Recover only the owning mouse
+      // on a no-button move; touch and still-held button chords stay intact.
+      if (!pointer.wasTouch && pointer.buttons === 0 && this.gesture?.pointerId === pointer.id) {
+        this.cancelGesture();
+      }
       if (pointer.wasTouch) {
         const motion = this.touchGestures.move({ id: pointer.id, x: pointer.x, y: pointer.y });
         if (motion?.kind === 'pinch' || (motion?.kind === 'pan' && this.gesture === undefined)) {
