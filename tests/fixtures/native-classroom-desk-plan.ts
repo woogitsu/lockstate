@@ -28,10 +28,10 @@ export function classroomOwner(kind: 'wall' | 'door' | 'object', ordinal: number
 }
 export const CLASSROOM_ART = {
   assetId: 'furniture.classroom.teacher-desk', descriptor: '/game-content/oblique-furniture-classroom-teacher-desk.v1.json',
-  source: 'assets/source/blender/furniture.classroom.teacher-desk.blend',
-  sourceSha256: 'c1dd80d253667f8e1bca5b17371b183ec18b5a292bebdf9fd2062e85b01d55ff',
-  exposedFrame: '/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev40.721cae760da7.png',
-  exposedFrameSha256: '721cae760da76bdb6830e99255ee7e9c01c0d1733735621b419a62997094a561',
+  source: 'assets/source/blender/furniture.classroom.teacher-desk.soft-light.blend',
+  sourceSha256: 'a879bba0f04a4f8b08a66fb9e607d1d815a7a6c2a8f7cb84c1d20c7c0d26d376',
+  exposedFrame: '/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev40.5c8ee6a0fc92.png',
+  exposedFrameSha256: '5c8ee6a0fc927377c5e6ea80f92444764d0ba794a25ddd14acafeec79dfa25e7',
   cameraTarget: [1, .5, .6349999904632568], cameraRightClicks: 7,
 } as const;
 

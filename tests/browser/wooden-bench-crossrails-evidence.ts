@@ -2,7 +2,7 @@
 import { createHash } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
 import { expect, type Page, type TestInfo } from './network-changed-fixture';
-import pins from './canteen-modern-source-pins.json';
+import pins from './canteen-modern-source-pins.json' with { type: 'json' };
 import type { SessionSnapshotBundle } from '../../src/simulation/runtime/restore-session';
 import type { BuildOrder } from '../../src/simulation/construction/build-order';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';

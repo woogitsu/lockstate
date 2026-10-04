@@ -1,6 +1,6 @@
 import { openCameraControls } from './public-camera-controls';
 import { createHash } from 'node:crypto';
-import pins from './canteen-modern-source-pins.json';
+import pins from './canteen-modern-source-pins.json' with { type: 'json' };
 import type { BuildOrder } from '../../src/simulation/construction/build-order';
 import { tileCoordinate } from '../../src/simulation/world/coordinates';
 import { expect, type Page } from './network-changed-fixture';
