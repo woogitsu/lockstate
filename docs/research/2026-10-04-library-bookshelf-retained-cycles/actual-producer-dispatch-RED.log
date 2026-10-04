@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-material-inputs-20261004\tooling\blender\render-library-bookshelf-cycles.py", line 229, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-material-inputs-20261004\tooling\blender\render-library-bookshelf-cycles.py", line 149, in main
+    scene,camera = configure()
+                   ~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-material-inputs-20261004\tooling\blender\render-library-bookshelf-cycles.py", line 65, in configure
+    raise ValueError('Library bookshelf Cycles dedicated producer dispatch changed')
+ValueError: Library bookshelf Cycles dedicated producer dispatch changed
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-material-inputs-20261004\tooling\blender\render-library-bookshelf-cycles.py', exiting.
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit

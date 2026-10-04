@@ -17,3 +17,9 @@ Prepare genuine Workbench vs saved soft-Cycles60/300e40 samples; reopen and insp
 Both genuine before poses byte-match the released Workbench PNGs. Opened the actual reopened saved-source60/300e40 images: oak is warmer with continuous softer face shading, book bevels and metal details respond to their preserved shaders. Actual64-sample grain on large oak/steel faces is archived together with its saved source; the final bookshelf-only128CPU OIDN profile removes that stochastic grain. No material input changed, no floor plane added.
 
 Saved source SHA256: `aff857256da9b5895e3acd8a5fabe387e19b0f15dc36ab0327aa2e28cba0cf9f`. All63raw/evaluated parts, nine full graphs, outward evaluated normals,48triangle-interior contacts and exact accepted bounds remain. `actual-before-after.json` contains full protected-before/after equality including old source/72, palette, templates, registry, renderer/UI and native fixtures. Current runtime still uses old descriptor at this checkpoint. Native acceptance unmeasured.
+
+Control preparation limitation retained: the first registry-control draft targeted the incomplete ID furniture.library.bookshelf, so removed zero entries and remained2GREEN. This was not a semantic negative and is archived as actual-wrong-registry-id-attempt-NO-MUTATION.log. Corrected producer asserts exactly one accepted .variants entry is removed before testing.
+
+## Completed production proof
+
+Actual72/CPU1/128OIDN: 287.8239953999873s; four byte-exact repeats; eight genuine RED/exact-restores over 11467 files. Current typed Classroom q0/q1 selects the same accepted ID and literal source60e40 over the whole occupied footprint. Twelve focused suites56GREEN/1optional live skip, both strict TS checks0. See HANDOFF.md for exact pins/commands and pending native boundary.

@@ -1,0 +1,15 @@
+00:01.141  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-material-inputs-20261004\assets\source\blender\furniture.library.bookshelf.angled-detail.blend"
+KITCHEN_BOUNDS furniture.library.bookshelf.variants [0.02499997615814209, 0.02399998903274536, 0.0] [1.9750001430511475, 0.8485000133514404, 2.0999999046325684]
+BOOKSHELF_DETAIL_EVALUATED_BOUNDS [0.02499997615814209, 0.02399998903274536, 0.0] [1.9750001430511475, 0.8485000133514404, 2.0999999046325684]
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-material-inputs-20261004\tooling\blender\render-library-bookshelf-oblique.py", line 104, in <module>
+    modern.prepare.verify_scene(scene, camera, modern.EXPECTED)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-material-inputs-20261004\tooling\blender\prepare-library-bookshelf-cycles.py", line 82, in verify_scene
+    raise ValueError('Library bookshelf actual bounded saved soft lighting changed')
+ValueError: Library bookshelf actual bounded saved soft lighting changed
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-canteen-material-inputs-20261004\tooling\blender\render-library-bookshelf-oblique.py', exiting.
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit

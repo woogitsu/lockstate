@@ -1,0 +1,47 @@
+[
+  {
+    "label": "actual-typecheck-game",
+    "command": [
+      "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "node_modules/typescript/bin/tsc",
+      "-b",
+      "--pretty",
+      "false"
+    ],
+    "exitCode": 0
+  },
+  {
+    "label": "actual-typecheck-tools",
+    "command": [
+      "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "node_modules/typescript/bin/tsc",
+      "-b",
+      "tsconfig.tools.json",
+      "--pretty",
+      "false"
+    ],
+    "exitCode": 0
+  },
+  {
+    "label": "actual-focused-contracts",
+    "command": [
+      "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/unit/library-bookshelf-retained-cycles-source.test.ts",
+      "tests/unit/library-bookshelf-retained-cycles-production.test.ts",
+      "tests/unit/oblique-library-bookshelf-modern-consumer.test.ts",
+      "tests/unit/oblique-library-bookshelf-detail-integrity.test.ts",
+      "tests/unit/oblique-library-bookshelf-integrity.test.ts",
+      "tests/unit/oblique-world-projection.test.ts",
+      "tests/unit/oblique-object-mapping.test.ts",
+      "tests/unit/oblique-module-registry.test.ts",
+      "tests/unit/room-template-build-plan.test.ts",
+      "tests/unit/canteen-dining-table-retained-cycles-production.test.ts",
+      "tests/unit/canteen-bench-retained-cycles-production.test.ts",
+      "tests/determinism/art-pipeline-determinism.test.ts",
+      "--reporter=verbose"
+    ],
+    "exitCode": 0
+  }
+]

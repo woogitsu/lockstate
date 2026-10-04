@@ -46,12 +46,7 @@ def point_camera(camera, target, yaw, elevation):
 exporter.point_camera = point_camera
 
 if __name__ == '__main__':
-    if '--verify' in sys.argv:
-        for model in exporter.MODELS:
-            _, camera, target = configure(model)
-            for yaw in exporter.YAW:
-                for elevation in exporter.ELEVATION:
-                    point_camera(camera, target, yaw, elevation)
-        print('LIBRARY_BOOKSHELF_VERIFY72 actual cameras/four oriented rectangles/outward evaluated surfaces', flush=True)
-    else:
-        exporter.main()
+    modern_spec = importlib.util.spec_from_file_location('library_bookshelf_saved_cycles_dispatch', HERE / 'render-library-bookshelf-cycles.py')
+    modern = importlib.util.module_from_spec(modern_spec)
+    modern_spec.loader.exec_module(modern)
+    modern.main()

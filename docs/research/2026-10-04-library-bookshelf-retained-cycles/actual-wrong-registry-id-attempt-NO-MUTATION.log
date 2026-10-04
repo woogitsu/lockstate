@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-canteen-material-inputs-20261004
+
+ ✓ tests/unit/oblique-library-bookshelf-modern-consumer.test.ts > selects genuine saved modern Classroom bookshelf q0 over its whole unchanged paid footprint 12ms
+ ✓ tests/unit/oblique-library-bookshelf-modern-consumer.test.ts > selects genuine saved modern Classroom bookshelf q1 over its whole unchanged paid footprint 2ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  03:16:03
+   Duration  640ms (transform 169ms, setup 0ms, import 512ms, tests 14ms, environment 0ms)

@@ -66,8 +66,12 @@ it('preserves original library bookshelf geometry/materials/modifiers and publis
   expect(obliqueAssetIdForObject('object.bookshelf')).toBe('furniture.library.bookshelf.variants');
   const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL('public/game-content/oblique-furniture.library-bookshelf.v1.json', root), 'utf8')));
   expect(catalog.assetId).toBe('furniture.library.bookshelf.variants');
-  expect(catalog.source).toBe(provenance.source);
-  expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+  const soft=JSON.parse(readFileSync(new URL('assets/source/blender/furniture.library.bookshelf.soft-light.provenance.json',root),'utf8')) as {source:string;sourceSha256:string;physicalAssembly:{rawMeshes:unknown[];completeStoredMaterialGraphs:unknown[]}};
+  expect(catalog.source).toBe('assets/source/blender/furniture.library.bookshelf.soft-light.blend');
+  expect(catalog.source).toBe(soft.source);
+  expect(catalog.sourceSha256).toBe(soft.sourceSha256);
+  expect(soft.physicalAssembly.rawMeshes).toEqual(provenance.allAuthoredRawMeshes);
+  expect(soft.physicalAssembly.completeStoredMaterialGraphs).toEqual(provenance.retainedMaterialValues);
   expect(catalog.resolutionPx).toEqual([256, 256]);
   expect(catalog.nominalPixelsPerTile).toBe(64);
   expect(catalog.cameraTargetTiles).toEqual([1, .5, 1.05]);

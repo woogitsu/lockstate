@@ -89,4 +89,3 @@ def verify_contacts(scene):
         if witness is None: raise ValueError('Bookshelf retained triangle-interior contact absent: ' + part + ' / ' + target)
         witnesses.append({'part': part, 'retainedTarget': target, 'actualInteriorWitness': witness, 'overlapDepths': [high[i] - low[i] for i in range(3)]})
     return witnesses
-
