@@ -1,0 +1,30 @@
+from pathlib import Path
+import importlib.util, hashlib, json, sys, os
+import bpy
+from mathutils import Vector
+root=Path.cwd();here=root/'tooling/blender';sys.path.insert(0,str(here));models=[]
+for name,module in [('medicine','render-medicine-cabinet-cycles.py'),('medicalBed','render-medical-bed-cycles.py')]:
+ spec=importlib.util.spec_from_file_location('readonly_'+name,here/module);producer=importlib.util.module_from_spec(spec);spec.loader.exec_module(producer)
+ scene,camera=producer.configure();path=root/'assets/source/blender'/producer.SOURCE_NAME;before=hashlib.sha256(path.read_bytes()).hexdigest();poses=[]
+ material_graphs=[{'name':m.name,'diffuseColor':list(m.diffuse_color),'roughness':m.roughness,'principledInputs':{n.name:{i.name:list(i.default_value) if hasattr(i.default_value,'__len__') else i.default_value for i in n.inputs if i.name in ['Base Color','Metallic','Roughness']} for n in m.node_tree.nodes if n.type=='BSDF_PRINCIPLED'}} for m in bpy.data.materials if m.use_nodes]
+ for yaw in (30,300,60):
+  producer.source.point_camera(camera,producer.TARGET,yaw,40);bpy.context.view_layer.update();graph=bpy.context.evaluated_depsgraph_get();quat=camera.matrix_world.to_quaternion();direction=quat@Vector((0,0,-1));labels=[];objects=[]
+  for y in range(256):
+   for x in range(256):
+    origin=camera.location+quat@Vector(((x+.5-128)/64,(128-y-.5)/64,0))
+    hit,location,normal,face,obj,matrix=scene.ray_cast(graph,origin,direction,distance=20)
+    if not hit:labels.append(None);objects.append(None);continue
+    evaluated=obj.evaluated_get(graph);material_index=evaluated.data.polygons[face].material_index
+    labels.append(evaluated.data.materials[material_index].name);objects.append(obj.name)
+  rows=[]
+  for material in sorted(set(labels)-{None}):
+   hits=[i for i,m in enumerate(labels) if m==material];inset=[]
+   for i in hits:
+    y,x=divmod(i,256)
+    if 1<=x<=254 and 1<=y<=254 and all(labels[(y+dy)*256+x+dx]==material for dx in (-1,0,1) for dy in (-1,0,1)):inset.append(i)
+   rows.append({'material':material,'meshes':sorted({objects[i] for i in hits}),'rayHitPixelIndices':hits,'sameMaterial3x3InsetPixelIndices':inset,'perMeshRayHitPixelIndices':{name:[i for i in hits if objects[i]==name] for name in sorted({objects[i] for i in hits})},'perMesh3x3InsetPixelIndices':{name:[i for i in inset if all(objects[(i//256+dy)*256+i%256+dx]==name for dx in (-1,0,1) for dy in (-1,0,1))] for name in sorted({objects[i] for i in hits})}})
+  poses.append({'yawDegrees':yaw,'elevationDegrees':40,'materials':rows})
+ assert before==hashlib.sha256(path.read_bytes()).hexdigest()==producer.SOURCE_SHA
+ models.append({'model':name,'source':str(path.relative_to(root)),'sourceSha256':before,'sourceUnchanged':True,'renderPerformed':False,'sourceEdited':False,'materialGraphs':material_graphs,'poses':poses})
+output=Path(os.environ['TEMP'])/'lockstate-medical-actual-material-rays-20261004.json';output.write_text(json.dumps({'blenderVersion':list(bpy.app.version),'resolution':[256,256],'pixelsPerTile':64,'models':models},indent=2)+'\n',encoding='utf8')
+print('MEDICAL_ACTUAL_READONLY_RAYS',str(output),[(m['model'],[(p['yawDegrees'],[(r['material'],len(r['rayHitPixelIndices']),len(r['sameMaterial3x3InsetPixelIndices'])) for r in p['materials']]) for p in m['poses']]) for m in models],flush=True)

@@ -1,0 +1,21 @@
+# Medical source-only material observer investigation
+
+## Verified subject and actual read-only derivation
+
+Own isolated worktree `ls-medical-modern-native-observers-20261004`, branch `codex/medical-source-material-observers-20261004`, from published observer checkpoint `eeb3dc28e484cdb4bafc0af74237536b21041a3b`. Root owns native execution; native photographs have not been used to derive a palette. Original Medical native reader functions/ROIs/>100 floors remain unchanged.
+
+Genuine Blender5.2.1 LTS read-only saved-source inspection at30/300/60,e40 uses the actual canonical configure/point-camera and evaluated nearest triangle/material rays. No image rendering, source edit, save or model modification occurred. Both source bytes remain exact: Medicine `1bb3821056d58d39dc51de6788689ad780e3bed59c20a5f3625714f2480e9732`, Bed `786abf1ae0e37b99ddb507618918f04472560a68f78bcd22a7f3b5097c822c2c`. [Actual rays/material graphs/per-mesh hit and3x3 inset indices](./raw/lockstate-medical-actual-material-rays-20261004.json); [raw Blender output](./raw/lockstate-medical-actual-material-rays-20261004.raw.txt); [executed inert recipe](./lockstate-medical-actual-material-rays-20261004.py.txt). The second bounded read adds per-mesh indices to separate actual headboard from caster wheels sharing its material; it does not render or alter geometry.
+
+Literal target cabinet mesh `inner` uses `cabinet inset`; its buddy body uses `cabinet warm white`. Literal Bed `headboard` uses `mattress edge`, not `warm painted steel`; nearby mattress/pillow use `medical linen`. All opaque complete3x3 samples from those actual meshes give234 inset,447 headboard,558 warm-body and648 linen rendered colors. The [source-only palette/radius derivation](./raw/lockstate-medical-material-observer-candidate-20261004.json) contains exact six RGB/channel-difference bounds and source-projected nearest distances: max38/37.054px, publiczoom1.25 -> ceil48/47px. These are projected appearance relationships, not proof of physical contact or shader material-ID decoding.
+
+## Actual rejected candidates
+
+First candidate requires an opaque connected3x3 primary-gradient response and nearby connected>=3-color warm-body/linen response. It retains exact independent rectangles and does not alter the >100 floors. Source positives are Cabinet300/30/60 counts828/1614/870 and Bed883/1370/798. Cross-Medical source checks are0. However the genuine hashed1080 unrelated source PNG corpus exposes **71 false-positive observations**, including Teacher blue surfaces and Cot; [original rejected result](./raw/lockstate-medical-source-controls-first-candidate-20261004.json). This candidate is not accepted or wired into native tests.
+
+A second candidate additionally requires actual source-derived nearby exclusive warm-painted-steel appearance. Its six positive counts and71 false observations are unchanged: generic gray surfaces still substitute. [Rejected second result](./raw/lockstate-medical-source-controls-third-candidate-20261004.json), [actual rejected helper source](./rejected-third-surface-candidate.ts.txt). This is an observer-design RED, not a game/model defect and not native execution. The actual script filenames retain 'third' because they name the third material, not a third successful candidate.
+
+Controls cover fifteen complete72-pose families including Teacher/other desks, chairs, square/legacy walls, floors, stove/fridge, Cot, Table and Bench; each literal image hash is verified before decoding with the existing real PNG decoder. Palette alone is insufficient. Current further work derives an independent surface-size/spatial relation from genuine source geometry before native photos are opened. No threshold, ROI, native budget, copy, schema, shared pin helper or renderer change is made at this checkpoint.
+
+## Pending and weakest claim
+
+Root will capture original actual paid q0/q1 Medical scenes. New helper design is unaccepted; it cannot yet safely replace the flat original reader. No native acceptance, source producer mutation/restoration, latency gain or private texture binding is claimed. Actual original native photos and valid held-out replay, unrelated-source rejection and meaningful actual reader omission/restoration remain required before a correction is ready.
