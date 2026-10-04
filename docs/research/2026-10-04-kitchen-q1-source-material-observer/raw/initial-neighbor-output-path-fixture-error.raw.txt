@@ -1,0 +1,1 @@
+Initial neighbor invocation did not execute Vitest: PowerShell Out-File DirectoryNotFoundException for docs/research/2026-10-04/kitchen-neighbors-scratch.txt. The corrected invocation retained the actual 2R/8G LFS-pointer result separately before exact asset hydration. No product failure is inferred from this command-path fixture error.

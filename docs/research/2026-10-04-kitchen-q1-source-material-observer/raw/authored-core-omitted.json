@@ -1,0 +1,225 @@
+{
+  "subject": "21dba6ee55823ff1283c0b47254ff8d01e2a6ca9",
+  "mode": "actual preserved native PNGs, offline current-helper read; no new native run",
+  "helperSha256": "422630819389591bb8f5f20c21a43caabec957361438adbd8f95fd2c5b0878ac",
+  "actual": [
+    {
+      "turns": 0,
+      "name": "dedicated-kitchen-stove-worker-completed-fullhd.png",
+      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-completed-fullhd.png",
+      "sha256": "3df1c8cf49292680aade3bcb7879ba62454cd0add62d79b1a01f004a10ff3113",
+      "stove": [
+        734,
+        273
+      ],
+      "fridge": [
+        363,
+        394
+      ]
+    },
+    {
+      "turns": 0,
+      "name": "dedicated-kitchen-stove-loaded-fullhd.png",
+      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-loaded-fullhd.png",
+      "sha256": "a46c7f0aa16080f757f784c92156a2529ce56dae204486fbf9b19e51a7d65416",
+      "stove": [
+        734,
+        273
+      ],
+      "fridge": [
+        363,
+        394
+      ]
+    },
+    {
+      "turns": 1,
+      "name": "dedicated-kitchen-stove-worker-completed-fullhd.png",
+      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-completed-fullhd.png",
+      "sha256": "e6c30cf66cb1b629e3c237c4a03117e4d6dcba3050b403c2b0d66f62a428b6c4",
+      "stove": [
+        68,
+        0
+      ],
+      "fridge": [
+        1055,
+        107
+      ]
+    },
+    {
+      "turns": 1,
+      "name": "dedicated-kitchen-stove-loaded-fullhd.png",
+      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\dedicated-kitchen-stove-loaded-fullhd.png",
+      "sha256": "f087aadcb01167126941130ddf76a58834b408f6b0d0a9ad71f1819899da779a",
+      "stove": [
+        68,
+        0
+      ],
+      "fridge": [
+        1055,
+        107
+      ]
+    }
+  ],
+  "controls": [
+    {
+      "name": "oblique-cell-chair.v1.json",
+      "descriptorSha256": "77d161b013f23c1b0aaf0ff1aaf8bc6a699ef8da219a02bc61ddd47a2d266104",
+      "source": "assets/source/blender/furniture.chair.wooden.angled-detail.blend",
+      "sourceSha256": "acd0e9decb3bb451b44e8354e797fb5656825f4748bbed832bab61659f06cd88",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "iron": 0,
+        "freezer": 0,
+        "louvre": 1044
+      }
+    },
+    {
+      "name": "oblique-reception-employee-desk.v1.json",
+      "descriptorSha256": "25fd7c1e0928a55cd7b078b8b71a0a6de20ca88f65f34f08773e6600a55cd1f8",
+      "source": "assets/source/blender/furniture.office.desk.employee.blend",
+      "sourceSha256": "4a7134622b170fae660aeb1a8155aa9adee4b54cff02c2fcdd8a0ea19dd7218c",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "iron": 0,
+        "freezer": 0,
+        "louvre": 1949
+      }
+    },
+    {
+      "name": "oblique-furniture-office-desk-generic.v1.json",
+      "descriptorSha256": "7efe0783dd039dbeb35349a0d5502b69293d06bf6f747bc60e203c12872e7b56",
+      "source": "assets/source/blender/furniture.office.desk.generic.angled-detail.blend",
+      "sourceSha256": "486b83b5079698faeb1cd58e989d1a1dfe524996813474b04550dd4c82a2fd46",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "iron": 0,
+        "freezer": 0,
+        "louvre": 2515
+      }
+    },
+    {
+      "name": "oblique-furniture-classroom-teacher-desk.v1.json",
+      "descriptorSha256": "701d89104a0ed18b5750a1ffabb9dfb7fa389504b0e80495d671a67797ddb4ff",
+      "source": "assets/source/blender/furniture.classroom.teacher-desk.blend",
+      "sourceSha256": "c1dd80d253667f8e1bca5b17371b183ec18b5a292bebdf9fd2062e85b01d55ff",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "iron": 0,
+        "freezer": 0,
+        "louvre": 2515
+      }
+    },
+    {
+      "name": "oblique-square-brick-full-wall.v1.json",
+      "descriptorSha256": "818aefbbe6bcde5515e2ae8c0096e1baddb3fe8009fd1fab81895ae07b7e9fe2",
+      "source": "wall.square.brick.full.soft-light.blend",
+      "sourceSha256": "53c35a0013a93ed662983a2888031c8377ba1965981e3ef98757e20547bd9cd8",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "iron": 0,
+        "freezer": 0,
+        "louvre": 0
+      }
+    },
+    {
+      "name": "oblique-wall-cutaway.v1.json",
+      "descriptorSha256": "e2adcbbc495ed13a95ad9f56de4bd435e29235e466dda14060b4cf16452c56ba",
+      "source": "wall.interior.cutaway.blend",
+      "sourceSha256": "98b264c5b3ea15658d7d8996f403024928c660135a66025adccba1d385927e6c",
+      "images": 72,
+      "maxima": {
+        "body": 87,
+        "iron": 0,
+        "freezer": 0,
+        "louvre": 0
+      }
+    },
+    {
+      "name": "oblique-wall-west.v1.json",
+      "descriptorSha256": "6a8859564271931a26befae7b45e4045a50bbe8009c2e2964e40f6fd0571d85f",
+      "source": "wall.interior.cutaway.blend",
+      "sourceSha256": "98b264c5b3ea15658d7d8996f403024928c660135a66025adccba1d385927e6c",
+      "images": 72,
+      "maxima": {
+        "body": 19,
+        "iron": 0,
+        "freezer": 0,
+        "louvre": 0
+      }
+    },
+    {
+      "name": "oblique-wall-west-cutaway.v1.json",
+      "descriptorSha256": "60bcad0e00b8a5e444843289c70aa963b3919dbad67513265ba4d39fff59d7c4",
+      "source": "wall.interior.cutaway.blend",
+      "sourceSha256": "98b264c5b3ea15658d7d8996f403024928c660135a66025adccba1d385927e6c",
+      "images": 72,
+      "maxima": {
+        "body": 20,
+        "iron": 0,
+        "freezer": 0,
+        "louvre": 0
+      }
+    },
+    {
+      "name": "oblique-floor-cell.v1.json",
+      "descriptorSha256": "f98971e9d15f48f1e26fb4a178dab6ff65d82e54fa08e37ec044d3449f0a2aee",
+      "source": "floor.cell.warm-concrete.blend",
+      "sourceSha256": "611a9b73cf2924ec0828b6c94533ee778df811ddaa980ac179d7e6a9d7c4c81c",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "iron": 0,
+        "freezer": 0,
+        "louvre": 0
+      }
+    },
+    {
+      "name": "oblique-floor-terrain-dirt.v1.json",
+      "descriptorSha256": "4d3bc8824e085201c3acc5b0c5c87d277ded17466b670ecf761bbf51ef0b2229",
+      "source": "floor.terrain.dirt.blend",
+      "sourceSha256": "8499f28817e0dae006961f2e4da635af983dff86741fd12ac285fbaec2d3a01d",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "iron": 0,
+        "freezer": 0,
+        "louvre": 0
+      }
+    },
+    {
+      "name": "oblique-furniture.kitchen-prep-counter.v1.json",
+      "descriptorSha256": "4f605fcb1643a562a73a86ec06acb89e79f4ebd67e4537e2cb23c9c050b3a922",
+      "source": "assets/source/blender/furniture.kitchen.prep-counter.angled.blend",
+      "sourceSha256": "b20bffb79d6ffe66a6c741fc420bd163651faa4813ca4d77740eb3dd55914a8a",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "iron": 0,
+        "freezer": 0,
+        "louvre": 9830
+      }
+    },
+    {
+      "name": "oblique-furniture.kitchen-fridge.v1.json",
+      "descriptorSha256": "637dd6dc2ffd7529a3cc24a777de344119e735b82b0f4c500949e9df64730d3a",
+      "source": "assets/source/blender/furniture.kitchen.fridge.soft-light.blend",
+      "sourceSha256": "1bad1e58abc9cd6c7a5773742df6b365ceb85db0a1e20d3c20a46c2e2508ce7d",
+      "images": 72,
+      "maxima": {
+        "body": 4746,
+        "iron": 0,
+        "freezer": 758,
+        "louvre": 3261
+      }
+    }
+  ],
+  "failures": [
+    "1 dedicated-kitchen-stove-worker-completed-fullhd.png stove hardware original floor",
+    "1 dedicated-kitchen-stove-loaded-fullhd.png stove hardware original floor"
+  ]
+}

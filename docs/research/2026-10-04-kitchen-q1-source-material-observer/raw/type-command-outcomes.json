@@ -1,0 +1,29 @@
+{
+  "subject": "b5569235834ecd54517e7ea33a486907f0b25b41",
+  "node": "C:/Users/matma/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe",
+  "commands": [
+    {
+      "argv": [
+        "node_modules/typescript/bin/tsc",
+        "-b",
+        "--pretty",
+        "false"
+      ],
+      "exitCode": 0,
+      "raw": "app-types.raw.txt"
+    },
+    {
+      "argv": [
+        "node_modules/typescript/bin/tsc",
+        "-b",
+        "tsconfig.tools.json",
+        "--pretty",
+        "false"
+      ],
+      "exitCode": 0,
+      "raw": "tools-types.raw.txt"
+    }
+  ],
+  "observedOutput": "app=0 tools=0",
+  "note": "Successful compiler commands are silent; raw files are intentionally empty."
+}

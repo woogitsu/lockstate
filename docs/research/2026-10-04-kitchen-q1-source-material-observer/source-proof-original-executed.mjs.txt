@@ -14,11 +14,11 @@ assert.deepEqual(observer.KITCHEN_STOVE_MATERIAL_RECTS,{0:[[735,490,50,35],[790,
 assert.deepEqual(observer.KITCHEN_FRIDGE_MATERIAL_RECTS,{0:[[890,495,25,35],[843,606,33,27]],1:[[780,375,35,42],[843,474,17,23]]});
 const report={subject:'21dba6ee55823ff1283c0b47254ff8d01e2a6ca9',mode:'actual preserved native PNGs, offline current-helper read; no new native run',helperSha256:sha(Buffer.from(source)),actual:[],controls:[],failures:[]};
 function check(condition,message){if(!condition)report.failures.push(message);}
-const native=resolve(root,'docs/research/2026-10-04-kitchen-q1-source-material-observer/native-original');
+const native=resolve(process.env.TEMP,'lockstate-modern-integrated-21d-kitchen-material-native-20261004/results');
 for(const [turns,directory] of [[0,'dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load'],[1,'dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load']]) {
  const pair=[];
  for(const name of ['dedicated-kitchen-stove-worker-completed-fullhd.png','dedicated-kitchen-stove-loaded-fullhd.png']) {
-  const path=resolve(native,`q${turns}-${name.includes('worker-completed')?'completed':'loaded'}.png`),bytes=readFileSync(path),stove=observer.kitchenStoveMaterialPixels(bytes,turns),fridge=observer.kitchenFridgeMaterialPixels(bytes,turns);
+  const path=resolve(native,directory,name),bytes=readFileSync(path),stove=observer.kitchenStoveMaterialPixels(bytes,turns),fridge=observer.kitchenFridgeMaterialPixels(bytes,turns);
   pair.push({turns,name,path,sha256:sha(bytes),stove,fridge});
   check(stove[0]>(turns===0?500:50),`${turns} ${name} stove body original floor`);
   check(stove[1]>(turns===0?25:50),`${turns} ${name} stove hardware original floor`);
