@@ -1,45 +1,23 @@
 {
-  "schemaVersion": 1,
-  "assetId": "fixture.medicine-cabinet.variants",
-  "source": "assets/source/blender/fixture.medicine-cabinet.soft-light.blend",
+  "genuineBlenderVersion": [
+    5,
+    2,
+    1
+  ],
+  "engine": "CYCLES",
+  "device": "CPU",
+  "threads": 1,
+  "samples": 128,
+  "seed": 0,
+  "adaptiveSampling": false,
+  "denoising": true,
+  "denoiser": "OPENIMAGEDENOISE",
+  "denoisingUseGpu": false,
+  "viewTransform": "AgX",
+  "realRenderCount": 72,
+  "actualExportSeconds": 170.9421932999976,
   "sourceSha256": "1bb3821056d58d39dc51de6788689ad780e3bed59c20a5f3625714f2480e9732",
-  "resolutionPx": [
-    256,
-    256
-  ],
-  "nominalPixelsPerTile": 64,
-  "pivotPx": [
-    128,
-    128
-  ],
-  "cameraTargetTiles": [
-    0.5,
-    0.5,
-    0.5899999737739563
-  ],
-  "projection": "orthographic",
-  "yawDegrees": [
-    0,
-    30,
-    60,
-    90,
-    120,
-    150,
-    180,
-    210,
-    240,
-    270,
-    300,
-    330
-  ],
-  "elevationDegrees": [
-    20,
-    30,
-    40,
-    50,
-    60,
-    70
-  ],
+  "descriptorSha256": "f301d4def0086c6eae4c7ba8c34de972a1844a0b684a1761855659683fdeab0d",
   "frames": [
     {
       "yawDegrees": 0,
@@ -473,5 +451,7 @@
       "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+330-elev70.070864d8436e.png",
       "sha256": "070864d8436e3990385148f4bc392fe9a6338a8e07a7c3c9fb541bb2b88f714c"
     }
-  ]
+  ],
+  "groundPlaneAdded": false,
+  "nativeAcceptance": false
 }

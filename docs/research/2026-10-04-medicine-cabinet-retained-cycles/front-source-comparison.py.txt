@@ -1,0 +1,14 @@
+from pathlib import Path
+import importlib.util,json,bpy
+root=Path.cwd(); p=root/'tooling/blender/prepare-medicine-cabinet-cycles.py'
+spec=importlib.util.spec_from_file_location('prepare',p);prepare=importlib.util.module_from_spec(spec);spec.loader.exec_module(prepare)
+bpy.ops.wm.open_mainfile(filepath=str(prepare.SAVED));scene=bpy.context.scene
+receipt=json.loads(prepare.PROVENANCE.read_text());prepare.verify_scene(scene,scene.camera,receipt)
+scene.render.engine='BLENDER_WORKBENCH'
+before=prepare.render(scene,scene.camera,150,'front-connected71-workbench')
+scene.render.engine='CYCLES';prepare.verify_scene(scene,scene.camera,receipt)
+after=prepare.render(scene,scene.camera,150,'front-soft-authored-materials')
+catalog=json.loads(prepare.MANIFEST.read_text());actual=next(r for r in catalog['frames'] if (r['yawDegrees'],r['elevationDegrees'])==(150,40))
+if after['sha256']!=actual['sha256']:raise ValueError('Actual front comparison does not match published full72 body')
+prepare.pipeline_common.write_text(prepare.REPORT/'actual-front-source-comparison.json',json.dumps({'sourceSha256':prepare.sha(prepare.SAVED),'actualSavedSource':True,'identicalPhysicalAssembly':True,'before':before,'after':after,'actualCurrentFrameSHA':actual['sha256'],'nativeAcceptance':False},indent=2)+'\n')
+print('ACTUAL_SAVED_FRONT150_TWO_ENGINE_COMPARISON_GREEN')

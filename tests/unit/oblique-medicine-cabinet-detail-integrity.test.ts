@@ -7,7 +7,7 @@ import { parseObliqueModuleCatalog } from '../../src/rendering/assets/oblique-mo
 import { obliqueAssetIdForObject } from '../../src/rendering/assets/oblique-object-mapping';
 const root = new URL('../../', import.meta.url);
 const hash = (bytes: Buffer): string => createHash('sha256').update(bytes).digest('hex');
-it('publishes the retained cabinet assembly with outward physical hinges and canonical decoded pose bytes', () => {
+it('preserves the original cabinet assembly with outward hinges and all archived canonical decoded pose bytes', () => {
   const provenance = JSON.parse(readFileSync(new URL('assets/source/blender/fixture.medicine-cabinet.angled-detail.provenance.json', root), 'utf8')) as {
     originalSource: string; originalSourceSha256: string; source: string; sourceSha256: string;
     footprintTiles: number[]; cameraTargetTiles: number[]; originalSceneMeshCount: number;
@@ -50,7 +50,7 @@ it('publishes the retained cabinet assembly with outward physical hinges and can
   expect(provenance.footprintTiles).toEqual([1,1]);
   expect(defaultObjectRegistry.getById('object.medicine-cabinet')!.footprint).toEqual({width:1,height:1});
   expect(obliqueAssetIdForObject('object.medicine-cabinet')).toBe('fixture.medicine-cabinet.variants');
-  const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL('public/game-content/oblique-fixture.medicine-cabinet.v1.json',root),'utf8')));
+  const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL('assets/source/blender/fixture.medicine-cabinet.workbench-descriptor.v1.json',root),'utf8')));
   expect(catalog.assetId).toBe('fixture.medicine-cabinet.variants');
   expect(catalog.source).toBe(provenance.source);
   expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
