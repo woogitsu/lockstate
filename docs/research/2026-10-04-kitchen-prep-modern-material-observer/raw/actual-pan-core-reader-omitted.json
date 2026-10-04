@@ -1,0 +1,216 @@
+{
+  "subject": "25f8dbc45138b2c14c05ee98dd71789321bc7c25",
+  "mode": "offline actual preserved native photos, real current helper; not new native",
+  "helperByteSha256": "11a09f63920ea6ab3063399a35fd40bc7279fd370b77122127ce99765a7fe0ce",
+  "actual": [
+    {
+      "turns": 0,
+      "stage": "completed",
+      "sha256": "c52dd0b5335cd79621a7654a97e35fb55bec544af7adbda089fabb9e7f305521",
+      "values": [
+        167,
+        0
+      ]
+    },
+    {
+      "turns": 0,
+      "stage": "loaded",
+      "sha256": "d3b54c34abc4f16d5f72193da291100b3b2976f09b1f3970fbe198c7257292c7",
+      "values": [
+        167,
+        0
+      ]
+    },
+    {
+      "turns": 1,
+      "stage": "completed",
+      "sha256": "ac4722bec0aa7fc6cb446d3c09e3e43db158d8704844f5fbe195141f4bfb9cb7",
+      "values": [
+        343,
+        0
+      ]
+    },
+    {
+      "turns": 1,
+      "stage": "loaded",
+      "sha256": "c85d875dbe3269dff84f78e34a96781b464e70b9e644acdbbe9a874377164fac",
+      "values": [
+        343,
+        0
+      ]
+    }
+  ],
+  "controls": [
+    {
+      "name": "oblique-cell-chair.v1.json",
+      "descriptorSha256": "77d161b013f23c1b0aaf0ff1aaf8bc6a699ef8da219a02bc61ddd47a2d266104",
+      "source": "assets/source/blender/furniture.chair.wooden.angled-detail.blend",
+      "sourceSha256": "acd0e9decb3bb451b44e8354e797fb5656825f4748bbed832bab61659f06cd88",
+      "images": 72,
+      "maxima": {
+        "body": 1042,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-reception-employee-desk.v1.json",
+      "descriptorSha256": "25fd7c1e0928a55cd7b078b8b71a0a6de20ca88f65f34f08773e6600a55cd1f8",
+      "source": "assets/source/blender/furniture.office.desk.employee.blend",
+      "sourceSha256": "4a7134622b170fae660aeb1a8155aa9adee4b54cff02c2fcdd8a0ea19dd7218c",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-furniture-office-desk-generic.v1.json",
+      "descriptorSha256": "7efe0783dd039dbeb35349a0d5502b69293d06bf6f747bc60e203c12872e7b56",
+      "source": "assets/source/blender/furniture.office.desk.generic.angled-detail.blend",
+      "sourceSha256": "486b83b5079698faeb1cd58e989d1a1dfe524996813474b04550dd4c82a2fd46",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-furniture-classroom-teacher-desk.v1.json",
+      "descriptorSha256": "701d89104a0ed18b5750a1ffabb9dfb7fa389504b0e80495d671a67797ddb4ff",
+      "source": "assets/source/blender/furniture.classroom.teacher-desk.blend",
+      "sourceSha256": "c1dd80d253667f8e1bca5b17371b183ec18b5a292bebdf9fd2062e85b01d55ff",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-square-brick-full-wall.v1.json",
+      "descriptorSha256": "818aefbbe6bcde5515e2ae8c0096e1baddb3fe8009fd1fab81895ae07b7e9fe2",
+      "source": "wall.square.brick.full.soft-light.blend",
+      "sourceSha256": "53c35a0013a93ed662983a2888031c8377ba1965981e3ef98757e20547bd9cd8",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-wall-cutaway.v1.json",
+      "descriptorSha256": "e2adcbbc495ed13a95ad9f56de4bd435e29235e466dda14060b4cf16452c56ba",
+      "source": "wall.interior.cutaway.blend",
+      "sourceSha256": "98b264c5b3ea15658d7d8996f403024928c660135a66025adccba1d385927e6c",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-wall-west.v1.json",
+      "descriptorSha256": "6a8859564271931a26befae7b45e4045a50bbe8009c2e2964e40f6fd0571d85f",
+      "source": "wall.interior.cutaway.blend",
+      "sourceSha256": "98b264c5b3ea15658d7d8996f403024928c660135a66025adccba1d385927e6c",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-wall-west-cutaway.v1.json",
+      "descriptorSha256": "60bcad0e00b8a5e444843289c70aa963b3919dbad67513265ba4d39fff59d7c4",
+      "source": "wall.interior.cutaway.blend",
+      "sourceSha256": "98b264c5b3ea15658d7d8996f403024928c660135a66025adccba1d385927e6c",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-floor-cell.v1.json",
+      "descriptorSha256": "f98971e9d15f48f1e26fb4a178dab6ff65d82e54fa08e37ec044d3449f0a2aee",
+      "source": "floor.cell.warm-concrete.blend",
+      "sourceSha256": "611a9b73cf2924ec0828b6c94533ee778df811ddaa980ac179d7e6a9d7c4c81c",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-floor-terrain-dirt.v1.json",
+      "descriptorSha256": "4d3bc8824e085201c3acc5b0c5c87d277ded17466b670ecf761bbf51ef0b2229",
+      "source": "floor.terrain.dirt.blend",
+      "sourceSha256": "8499f28817e0dae006961f2e4da635af983dff86741fd12ac285fbaec2d3a01d",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-furniture.kitchen-stove.v1.json",
+      "descriptorSha256": "c913819464aef1c9f64c203fa7e93245eb66402cfd2e2c9b6fb5d942ca3d670f",
+      "source": "assets/source/blender/furniture.kitchen.stove.soft-light.blend",
+      "sourceSha256": "7ac1027aca308b946acf902ebf611547621227535dc70b29db1c06d3db2d03bb",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-furniture.kitchen-fridge.v1.json",
+      "descriptorSha256": "637dd6dc2ffd7529a3cc24a777de344119e735b82b0f4c500949e9df64730d3a",
+      "source": "assets/source/blender/furniture.kitchen.fridge.soft-light.blend",
+      "sourceSha256": "1bad1e58abc9cd6c7a5773742df6b365ceb85db0a1e20d3c20a46c2e2508ce7d",
+      "images": 72,
+      "maxima": {
+        "body": 0,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-furniture.cell-cot.v1.json",
+      "descriptorSha256": "a7d9dd1bad339bd228aefa3de378557e58e3513bf1b824bf0afbacef5c94e741",
+      "source": "assets/source/blender/furniture.cell.cot.single.soft-light.blend",
+      "sourceSha256": "1e3710b77601d6864f1de30d7b37a6220357320ae832354d3920b9fa95b17eba",
+      "images": 72,
+      "maxima": {
+        "body": 35,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-furniture.canteen-dining-table.v1.json",
+      "descriptorSha256": "1c163e1a5fb639ea74ee336657ae71a61369296249eed6cedf3da9cb02930aa6",
+      "source": "assets/source/blender/furniture.canteen.dining-table.soft-light.blend",
+      "sourceSha256": "4f92eb8cebdb7f5d343f5ca49869c317535867932f05ab805bbd33b60144728f",
+      "images": 72,
+      "maxima": {
+        "body": 675,
+        "rim": 0
+      }
+    },
+    {
+      "name": "oblique-canteen-bench.v1.json",
+      "descriptorSha256": "88516dc11d0b4757f30c00424004368221a8770ad1b1dffa7c9f5c7f3effefb2",
+      "source": "assets/source/blender/furniture.corridor.bench.soft-light.blend",
+      "sourceSha256": "b4e5ca9317c74e0f8182937658c0a3f7026f114fcb7e1661101628cbd75c4e94",
+      "images": 72,
+      "maxima": {
+        "body": 152,
+        "rim": 0
+      }
+    }
+  ],
+  "failures": [
+    "0 completed physical rim original strict floor",
+    "0 loaded physical rim original strict floor",
+    "1 completed physical rim original strict floor",
+    "1 loaded physical rim original strict floor"
+  ]
+}

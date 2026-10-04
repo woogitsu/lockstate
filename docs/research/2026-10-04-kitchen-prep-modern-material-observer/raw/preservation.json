@@ -1,0 +1,36 @@
+{
+  "base": "25f8dbc45138b2c14c05ee98dd71789321bc7c25",
+  "productionConfigPackageDiff": "",
+  "sharedHelperChange": "prep pins only; all other pins and complete functions exactly equal normalized base",
+  "nativeFloorsExpression": ".toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 100 : 80 : index === 0 ? 150 : 100)",
+  "beforeAfterFloorExpressionOccurrences": 2,
+  "guardStringsRetained": true,
+  "independentROIs": [
+    [
+      948,
+      338,
+      15,
+      15
+    ],
+    [
+      912,
+      329,
+      34,
+      24
+    ],
+    [
+      1030,
+      455,
+      42,
+      12
+    ],
+    [
+      1048,
+      432,
+      30,
+      23
+    ]
+  ],
+  "nativeBrowserRun": false,
+  "sourceFrames": 1080
+}
