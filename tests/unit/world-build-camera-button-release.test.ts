@@ -41,7 +41,7 @@ try {
   Camera = require(resolve(phaserSource, 'cameras/2d/Camera.js')) as typeof Phaser.Cameras.Scene2D.Camera;
 } finally { if (cached === undefined) delete require.cache[components]; else require.cache[components] = cached; }
 vi.stubGlobal('window', new EventTarget());
-type NativePointer = Phaser.Input.Pointer & { down(event: MouseEvent): void; up(event: MouseEvent): void; move(event: MouseEvent): void; touchstart(touch: Touch, event: TouchEvent): void; touchend(touch: Touch, event: TouchEvent): void };
+type NativePointer = Phaser.Input.Pointer & { down(event: MouseEvent): void; up(event: MouseEvent): void; move(event: MouseEvent): void; touchstart(touch: Touch, event: TouchEvent): void; touchmove(touch: Touch, event: TouchEvent): void; touchend(touch: Touch, event: TouchEvent): void };
 const Pointer = require(resolve(phaserSource, 'input/Pointer.js')) as new (manager: Phaser.Input.InputManager, id: number) => NativePointer;
 const pluginSource = readFileSync(resolve(phaserSource, 'input/InputPlugin.js'), 'utf8');
 const upBody = pluginSource.match(/processUpEvents: function \(pointer\)\r?\n    (\{[\s\S]*?\r?\n    \}),/);
@@ -55,8 +55,8 @@ if (build === null || object === null) throw Error('Actual main command producer
 const producers = { wall: new Function('intent', 'commands', 'requireSimulation', build[1]!),
   object: new Function('intent', 'commands', 'requireSimulation', object[1]!) };
 function worker() {
-  const listeners: ((message: WorkerToMainMessage) => void)[] = [], sent: MainToWorkerMessage[] = [];
-  const machine = new SimulationWorkerStateMachine({ postMessage: (message: WorkerToMainMessage) => listeners.forEach(listener => listener(message)) }, 'button-release', () => 0);
+  const listeners: ((message: WorkerToMainMessage) => void)[] = [], sent: MainToWorkerMessage[] = [], responses: WorkerToMainMessage[] = [];
+  const machine = new SimulationWorkerStateMachine({ postMessage: (message: WorkerToMainMessage) => { responses.push(message); listeners.forEach(listener => listener(message)); } }, 'button-release', () => 0);
   const channel = { addListener: (listener: (message: WorkerToMainMessage) => void) => listeners.push(listener), send: (message: MainToWorkerMessage) => { sent.push(message); machine.handleMessage(message); } };
   const commands = new SimulationCommandSender(channel);
   const snapshot = captureSessionSnapshot(createNewSimulationRuntime(73));
@@ -64,7 +64,14 @@ function worker() {
     transport: 'structured-clone', schemaId: SESSION_SNAPSHOT_SCHEMA_ID, schemaVersion: SESSION_SNAPSHOT_SCHEMA_VERSION, data: snapshot as unknown as null,
   } } } });
   channel.send({ protocolVersion: 1, messageId: 'baseline', kind: 'simulation/request-snapshot', payload: { reason: 'consistency-check' } });
-  return { commands, sent, submitted: () => sent.filter(message => message.kind === 'simulation/submit-command') };
+  let snapshotRequest = 0;
+  const wholeSnapshot = () => {
+    channel.send({ protocolVersion: 1, messageId: 'whole-' + snapshotRequest++, kind: 'simulation/request-snapshot', payload: { reason: 'consistency-check' } });
+    const message = responses.at(-1);
+    if (message?.kind !== 'simulation/snapshot') throw Error('Real worker whole snapshot absent');
+    return message.payload.snapshot;
+  };
+  return { commands, sent, wholeSnapshot, submitted: () => sent.filter(message => message.kind === 'simulation/submit-command') };
 }
 type Tool = 'wall' | 'object' | 'room';
 async function setup(mode: 'world' | 'oblique', selected: Tool) {
@@ -178,14 +185,18 @@ it('Oblique: after pose/zoom, a missed primary release becomes one hover square 
     commands: h.actors.submitted().map(message => message.payload.command.data) }));
   expect(recovered?.segments, 'released mouse must show only its current hover square').toBe(1);
   expect(h.actors.submitted()).toHaveLength(0);
+  const wholeBefore = h.actors.wholeSnapshot();
   const beforeTurn = h.actual.captureCameraView();
   h.mouse('down', 2, 2, 1140); h.mouse('move', 2, 2, 1180); h.mouse('up', 2, 0, 1180);
   expect(h.actual.captureCameraView()).not.toEqual(beforeTurn);
   expect(h.actors.submitted(), 'later camera release must not purchase the abandoned construction run').toHaveLength(0);
-  h.mouse('down', 0, 1, 1180); h.mouse('up', 0, 0, 1180);
+  expect(h.actors.wholeSnapshot()).toEqual(wholeBefore);
+  h.mouse('down', 0, 1, 1180);
+  const fresh = readout.mock.lastCall?.[0];
+  h.mouse('up', 0, 0, 1180);
   expect(h.actors.submitted()).toHaveLength(1);
   expect(h.actors.submitted()[0]?.payload.command.data).toMatchObject({ type: 'PlaceBuildOrder', footprint: 'square',
-    x: readout.mock.calls.at(-2)?.[0]?.x, y: readout.mock.calls.at(-2)?.[0]?.y });
+    x: fresh?.x, y: fresh?.y });
 });
 
 it('Oblique: a lost primary release cannot be purchased by the next genuine right-camera release', async () => {
@@ -195,4 +206,21 @@ it('Oblique: a lost primary release cannot be purchased by the next genuine righ
   h.mouse('down', 2, 2, 1140); h.mouse('move', 2, 2, 1180); h.mouse('up', 2, 0, 1180);
   console.log('ACTUAL_ABANDONED_CAMERA_RELEASE', JSON.stringify(h.actors.submitted().map(message => message.payload.command.data)));
   expect(h.actors.submitted()).toHaveLength(0);
+});
+it('Oblique: a real held touch continues its construction preview and commits on its own touchend', async () => {
+  const h = await setup('oblique', 'wall');
+  const touch = new Pointer(h.pointer.manager, 1);
+  const readout = vi.fn(); h.tools.wall.attachReadout(readout);
+  const contact = { identifier: 1, target: h.actual.game.canvas, pageX: 780, pageY: 460 } as unknown as Touch;
+  const moved = { ...contact, pageX: 1120 } as Touch;
+  const event = { timeStamp: 1 } as TouchEvent;
+  touch.touchstart(contact, event); plumbing.handlers.get('pointerdown')!(touch);
+  touch.touchmove(moved, event); plumbing.handlers.get('pointermove')!(touch);
+  expect(touch.wasTouch).toBe(true);
+  expect(readout.mock.lastCall?.[0]?.segments).toBeGreaterThan(1);
+  expect(h.actors.submitted()).toHaveLength(0);
+  const preview = readout.mock.lastCall?.[0];
+  touch.touchend(moved, event); plumbing.handlers.get('pointerup')!(touch);
+  expect(h.actors.submitted()).toHaveLength(preview?.segments);
+  expect(h.actors.submitted()[0]?.payload.command.data).toMatchObject({ type: 'PlaceBuildOrder', footprint: 'square', x: preview?.x, y: preview?.y });
 });
