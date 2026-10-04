@@ -1,0 +1,29 @@
+﻿from pathlib import Path
+import json,hashlib
+from PIL import Image
+root=Path.cwd();record=root/'docs/research/2026-10-04-canteen-bench-source-material-observer'
+rays=json.loads((record/'material-rays.json').read_text());palettes={};report={'sourceOnlyDerivation':True,'nativeInputUsedForPalette':False,'families':[]}
+rects={'table':[[[680,410,170,150],[860,295,190,125]],[[850,320,210,95],[1040,420,190,125]]],'bench':[[[720,415,150,145],[945,410,150,115]],[[875,350,135,100],[875,510,145,110]]]}
+for family in rays['families']:
+ palette=set();inputs=[]
+ manifest=json.loads((root/'public/game-content'/family['descriptor']).read_text())
+ for pose in family['poses']:
+  frame=next(f for f in manifest['frames'] if f['yawDegrees']==pose['yawDegrees'] and f['elevationDegrees']==40)
+  path=root/'public'/frame['image'].lstrip('/');assert hashlib.sha256(path.read_bytes()).hexdigest()==frame['sha256'];im=Image.open(path).convert('RGBA');pixels=list(im.getdata())
+  for mesh in pose['meshes']:
+   for index in mesh['rayHitPixelIndices']:
+    rgb=pixels[index];
+    if rgb[3]==255:palette.add(rgb[:3])
+  inputs.append({'image':frame['image'],'sha256':frame['sha256']})
+ palettes[family['family']]=palette
+ results=[]
+ for q in (0,1):
+  for file in sorted((record/'original').glob(f"{family['family']}-q{q}-*.png")):
+   image=Image.open(file).convert('RGBA');counts=[];interiors=[]
+   for x,y,w,h in rects[family['family']][q]:
+    pix=list(image.crop((x,y,x+w,y+h)).getdata());mask=[p[3]==255 and p[:3] in palette for p in pix];counts.append(sum(mask));interiors.append(sum(all(mask[(yy+dy)*w+xx+dx] for dx in (-1,0,1) for dy in (-1,0,1)) for yy in range(1,h-1) for xx in range(1,w-1)))
+   results.append({'image':file.name,'paletteCount':counts,'completeOpaque3x3Interior':interiors})
+ report['families'].append({'family':family['family'],'paletteKeys':len(palette),'inputs':inputs,'heldOut':results})
+(record/'source-palette-prototype.json').write_text(json.dumps(report,indent=2)+'\n')
+(record/'source-palettes.json').write_text(json.dumps({k:sorted((r<<16)|(g<<8)|b for r,g,b in v) for k,v in palettes.items()},indent=2)+'\n')
+print(json.dumps(report,indent=2))

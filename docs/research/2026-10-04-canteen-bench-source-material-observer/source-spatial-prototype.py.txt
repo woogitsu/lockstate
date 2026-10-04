@@ -1,0 +1,53 @@
+﻿from pathlib import Path
+from PIL import Image
+import numpy as np,json,hashlib
+root=Path.cwd();record=root/'docs/research/2026-10-04-canteen-bench-source-material-observer';keys=json.loads((record/'source-palettes.json').read_text());palettes={k:set(v) for k,v in keys.items()};rays=json.loads((record/'material-rays.json').read_text())
+def image(path):
+ data=np.array(Image.open(path).convert('RGBA'),dtype=np.uint32);return data, (data[:,:,0]<<16)|(data[:,:,1]<<8)|data[:,:,2]
+def mask(data,rgb,palette):
+ candidate=(data[:,:,3]==255)&np.isin(rgb,list(palette));a=candidate[1:-1,1:-1].copy()
+ for dy in range(3):
+  for dx in range(3):a&=candidate[dy:dy+a.shape[0],dx:dx+a.shape[1]]
+ return np.pad(a,1)
+def components(a):
+ h,w=a.shape;pending=set(np.flatnonzero(a));cs=[]
+ while pending:
+  start=pending.pop();todo=[start];cs.append([start])
+  while todo:
+   i=todo.pop()
+   for j in (i-1,i+1,i-w,i+w):
+    if j in pending:pending.remove(j);todo.append(j);cs[-1].append(j)
+ return sorted(cs,key=len,reverse=True)
+def plates(data,rgb):
+ cs=components(mask(data,rgb,palettes['table']))
+ return sum(map(len,cs[:3])) if len(cs)>=3 and len(cs[2])*379>=len(cs[0])*318 else 0
+# Separate authored rounded-edge ray pixels from timber. Exclude every real table texel: same retained timber maps are intentionally shared.
+table=json.loads((root/'public/game-content/oblique-furniture.canteen-dining-table.v1.json').read_text());tablekeys=set()
+for frame in table['frames']:
+ data,rgb=image(root/'public'/frame['image'].lstrip('/'));tablekeys.update(map(int,rgb[data[:,:,3]==255]))
+witness=set();family=next(f for f in rays['families'] if f['family']=='bench');manifest=json.loads((root/'public/game-content'/family['descriptor']).read_text())
+for pose in family['poses']:
+ frame=next(f for f in manifest['frames'] if f['yawDegrees']==pose['yawDegrees'] and f['elevationDegrees']==40);data,rgb=image(root/'public'/frame['image'].lstrip('/'));flat=rgb.ravel();alpha=data[:,:,3].ravel()
+ for mesh in pose['meshes']:
+  if mesh['mesh'].startswith('Crowned wood edge.'):
+   witness.update(int(flat[i]) for i in mesh['rayHitPixelIndices'] if alpha[i]==255)
+witness-=tablekeys
+print('Authored edge witness keys',len(witness),flush=True)
+def bench(data,rgb):
+ m=mask(data,rgb,palettes['bench']);return int(m.sum()) if np.any(m&np.isin(rgb,list(witness))) else 0
+rects={'table':[[[680,410,170,150],[860,295,190,125]],[[850,320,210,95],[1040,420,190,125]]],'bench':[[[720,415,150,145],[945,410,150,115]],[[875,350,135,100],[875,510,145,110]]]};report={'sourceOnly':True,'nativeUsedForDerivation':False,'tableThirdToLargestAreaLowerBound':[318,379],'benchEdgeExclusiveSourceKeys':len(witness),'heldOut':[],'sourceFamilies':[]}
+for k in keys:
+ for q in (0,1):
+  for path in sorted((record/'original').glob(f'{k}-q{q}-*.png')):
+   data,rgb=image(path);counts=[]
+   for x,y,w,h in rects[k][q]:counts.append((plates if k=='table' else bench)(data[y:y+h,x:x+w],rgb[y:y+h,x:x+w]))
+   report['heldOut'].append({'image':path.name,'counts':counts});print(path.name,counts,flush=True)
+registry=json.loads((root/'public/game-content/oblique-module-registry.v1.json').read_text())
+for entry in registry['entries']:
+ manifest=json.loads((root/'public'/entry['manifest'].lstrip('/')).read_text());mx={'table':0,'bench':0};decoded=0
+ for frame in manifest['frames']:
+  path=root/'public'/frame['image'].lstrip('/');body=path.read_bytes()
+  if not body.startswith(b'\x89PNG'):continue
+  assert hashlib.sha256(body).hexdigest()==frame['sha256'];data,rgb=image(path);decoded+=1;mx['table']=max(mx['table'],plates(data,rgb));mx['bench']=max(mx['bench'],bench(data,rgb))
+ report['sourceFamilies'].append({'assetId':entry['assetId'],'decodedFrames':decoded,'maximum':mx});print(entry['assetId'],decoded,mx,flush=True)
+(record/'source-spatial-prototype.json').write_text(json.dumps(report,indent=2)+'\n');(record/'bench-edge-source-keys.json').write_text(json.dumps(sorted(witness))+'\n')

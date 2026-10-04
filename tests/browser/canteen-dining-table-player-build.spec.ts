@@ -1,3 +1,4 @@
+import { diningPlatePixels } from './canteen-bench-material-observer';
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
@@ -55,25 +56,8 @@ async function fixtureAnchors(page: Page): Promise<string[]> {
 }
 
 async function platePixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promise<number[]> {
-  return page.evaluate(async ({ base64, quarterTurns }) => {
-    const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
-    const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
-    const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Measure the authored plate palette; the evidence note records actual region calibration.
-    // Plate-rim source colour is independent of simulation object completion.
-    const rects = quarterTurns === 0
-      ? [[680, 410, 170, 150], [860, 295, 190, 125]]
-      : [[850, 320, 210, 95], [1040, 420, 190, 125]];
-    const colour = [177, 177, 173];
-    return rects.map(rect => {
-      const pixels = context.getImageData(...rect as [number, number, number, number]).data;
-      let count = 0;
-      for (let i = 0; i < pixels.length; i += 4) {
-        if (pixels[i] === colour[0] && pixels[i + 1] === colour[1] && pixels[i + 2] === colour[2]) count++;
-      }
-      return count;
-    });
-  }, { base64: png.toString('base64'), quarterTurns });
+  void page;
+  return diningPlatePixels(png, quarterTurns);
 }
 let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
 const test = base.extend({
