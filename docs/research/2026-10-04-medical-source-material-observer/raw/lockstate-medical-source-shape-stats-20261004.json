@@ -1,0 +1,1936 @@
+[
+  {
+    "name": "oblique-fixture.medicine-cabinet.v1.json",
+    "model": "medicine",
+    "yaw": 30,
+    "count": 1614,
+    "stats": {
+      "primary": [
+        {
+          "pixels": 1614,
+          "uniqueColors": 78,
+          "box": [
+            99,
+            112,
+            133,
+            170
+          ]
+        }
+      ],
+      "buddy": [
+        {
+          "pixels": 2831,
+          "uniqueColors": 289
+        },
+        {
+          "pixels": 9,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 11,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 15,
+          "uniqueColors": 9
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        }
+      ],
+      "steel": []
+    }
+  },
+  {
+    "name": "oblique-fixture.medicine-cabinet.v1.json",
+    "model": "medicine",
+    "yaw": 60,
+    "count": 870,
+    "stats": {
+      "primary": [
+        {
+          "pixels": 870,
+          "uniqueColors": 82,
+          "box": [
+            98,
+            104,
+            117,
+            168
+          ]
+        }
+      ],
+      "buddy": [
+        {
+          "pixels": 3741,
+          "uniqueColors": 318
+        }
+      ],
+      "steel": []
+    }
+  },
+  {
+    "name": "oblique-fixture.medicine-cabinet.v1.json",
+    "model": "medicine",
+    "yaw": 300,
+    "count": 828,
+    "stats": {
+      "primary": [
+        {
+          "pixels": 828,
+          "uniqueColors": 67,
+          "box": [
+            139,
+            105,
+            157,
+            166
+          ]
+        }
+      ],
+      "buddy": [
+        {
+          "pixels": 3740,
+          "uniqueColors": 360
+        }
+      ],
+      "steel": []
+    }
+  },
+  {
+    "name": "oblique-furniture.medical-bed.v1.json",
+    "model": "medicalBed",
+    "yaw": 30,
+    "count": 1370,
+    "stats": {
+      "primary": [
+        {
+          "pixels": 1370,
+          "uniqueColors": 169,
+          "box": [
+            130,
+            61,
+            175,
+            107
+          ]
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3,
+          "box": [
+            174,
+            106,
+            174,
+            108
+          ]
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 3,
+          "box": [
+            123,
+            194,
+            124,
+            195
+          ]
+        }
+      ],
+      "buddy": [
+        {
+          "pixels": 33,
+          "uniqueColors": 28
+        },
+        {
+          "pixels": 3973,
+          "uniqueColors": 622
+        },
+        {
+          "pixels": 14,
+          "uniqueColors": 9
+        },
+        {
+          "pixels": 38,
+          "uniqueColors": 31
+        },
+        {
+          "pixels": 9,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 10,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 8,
+          "uniqueColors": 8
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 9,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 9,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 8,
+          "uniqueColors": 8
+        }
+      ],
+      "steel": [
+        {
+          "pixels": 7,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 869,
+          "uniqueColors": 374
+        },
+        {
+          "pixels": 8,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 69,
+          "uniqueColors": 24
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 235,
+          "uniqueColors": 50
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 8,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 33,
+          "uniqueColors": 14
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 13,
+          "uniqueColors": 10
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 9,
+          "uniqueColors": 8
+        },
+        {
+          "pixels": 10,
+          "uniqueColors": 9
+        },
+        {
+          "pixels": 36,
+          "uniqueColors": 26
+        },
+        {
+          "pixels": 14,
+          "uniqueColors": 10
+        },
+        {
+          "pixels": 8,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 14,
+          "uniqueColors": 13
+        },
+        {
+          "pixels": 51,
+          "uniqueColors": 31
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 5
+        }
+      ]
+    }
+  },
+  {
+    "name": "oblique-furniture.medical-bed.v1.json",
+    "model": "medicalBed",
+    "yaw": 60,
+    "count": 798,
+    "stats": {
+      "primary": [
+        {
+          "pixels": 798,
+          "uniqueColors": 180,
+          "box": [
+            158,
+            67,
+            185,
+            126
+          ]
+        }
+      ],
+      "buddy": [
+        {
+          "pixels": 6,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 25,
+          "uniqueColors": 19
+        },
+        {
+          "pixels": 4282,
+          "uniqueColors": 597
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 9,
+          "uniqueColors": 8
+        },
+        {
+          "pixels": 11,
+          "uniqueColors": 10
+        },
+        {
+          "pixels": 13,
+          "uniqueColors": 11
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 8,
+          "uniqueColors": 8
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        }
+      ],
+      "steel": [
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 1342,
+          "uniqueColors": 411
+        },
+        {
+          "pixels": 31,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 182,
+          "uniqueColors": 53
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 9,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 9,
+          "uniqueColors": 8
+        },
+        {
+          "pixels": 14,
+          "uniqueColors": 10
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 16,
+          "uniqueColors": 12
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 22,
+          "uniqueColors": 20
+        }
+      ]
+    }
+  },
+  {
+    "name": "oblique-furniture.medical-bed.v1.json",
+    "model": "medicalBed",
+    "yaw": 300,
+    "count": 883,
+    "stats": {
+      "primary": [
+        {
+          "pixels": 883,
+          "uniqueColors": 210,
+          "box": [
+            71,
+            67,
+            97,
+            126
+          ]
+        }
+      ],
+      "buddy": [
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 47,
+          "uniqueColors": 37
+        },
+        {
+          "pixels": 4929,
+          "uniqueColors": 923
+        },
+        {
+          "pixels": 23,
+          "uniqueColors": 18
+        },
+        {
+          "pixels": 10,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 10,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 8,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 14,
+          "uniqueColors": 12
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 9,
+          "uniqueColors": 9
+        }
+      ],
+      "steel": [
+        {
+          "pixels": 5,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 31,
+          "uniqueColors": 23
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 9,
+          "uniqueColors": 9
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 11,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 48,
+          "uniqueColors": 12
+        },
+        {
+          "pixels": 44,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 275,
+          "uniqueColors": 199
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 45,
+          "uniqueColors": 43
+        },
+        {
+          "pixels": 79,
+          "uniqueColors": 54
+        },
+        {
+          "pixels": 9,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 8,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 19,
+          "uniqueColors": 17
+        },
+        {
+          "pixels": 52,
+          "uniqueColors": 51
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 26,
+          "uniqueColors": 25
+        },
+        {
+          "pixels": 10,
+          "uniqueColors": 10
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 78,
+          "uniqueColors": 53
+        },
+        {
+          "pixels": 196,
+          "uniqueColors": 110
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 13,
+          "uniqueColors": 9
+        },
+        {
+          "pixels": 25,
+          "uniqueColors": 23
+        }
+      ]
+    }
+  },
+  {
+    "name": "oblique-furniture-classroom-teacher-desk.v1.json",
+    "model": "medicalBed",
+    "yaw": 30,
+    "count": 9,
+    "stats": {
+      "primary": [
+        {
+          "pixels": 9,
+          "uniqueColors": 5,
+          "box": [
+            174,
+            152,
+            175,
+            156
+          ]
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3,
+          "box": [
+            175,
+            162,
+            175,
+            164
+          ]
+        },
+        {
+          "pixels": 9,
+          "uniqueColors": 5,
+          "box": [
+            165,
+            169,
+            167,
+            173
+          ]
+        }
+      ],
+      "buddy": [
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 6
+        }
+      ],
+      "steel": [
+        {
+          "pixels": 762,
+          "uniqueColors": 300
+        },
+        {
+          "pixels": 29,
+          "uniqueColors": 28
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 105,
+          "uniqueColors": 74
+        },
+        {
+          "pixels": 54,
+          "uniqueColors": 47
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 21,
+          "uniqueColors": 19
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 153,
+          "uniqueColors": 60
+        },
+        {
+          "pixels": 47,
+          "uniqueColors": 41
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 3
+        }
+      ]
+    }
+  },
+  {
+    "name": "oblique-furniture-classroom-teacher-desk.v1.json",
+    "model": "medicalBed",
+    "yaw": 60,
+    "count": 451,
+    "stats": {
+      "primary": [
+        {
+          "pixels": 22,
+          "uniqueColors": 13,
+          "box": [
+            169,
+            157,
+            169,
+            178
+          ]
+        },
+        {
+          "pixels": 451,
+          "uniqueColors": 33,
+          "box": [
+            140,
+            160,
+            161,
+            189
+          ]
+        }
+      ],
+      "buddy": [
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 11,
+          "uniqueColors": 8
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        }
+      ],
+      "steel": [
+        {
+          "pixels": 568,
+          "uniqueColors": 292
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 9,
+          "uniqueColors": 9
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 76,
+          "uniqueColors": 43
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 241,
+          "uniqueColors": 84
+        },
+        {
+          "pixels": 21,
+          "uniqueColors": 17
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 7
+        }
+      ]
+    }
+  },
+  {
+    "name": "oblique-furniture-classroom-teacher-desk.v1.json",
+    "model": "medicalBed",
+    "yaw": 300,
+    "count": 0,
+    "stats": {
+      "primary": [],
+      "buddy": [
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 10,
+          "uniqueColors": 8
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        }
+      ],
+      "steel": [
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 245,
+          "uniqueColors": 153
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 612,
+          "uniqueColors": 334
+        },
+        {
+          "pixels": 212,
+          "uniqueColors": 48
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 18,
+          "uniqueColors": 16
+        },
+        {
+          "pixels": 79,
+          "uniqueColors": 49
+        },
+        {
+          "pixels": 106,
+          "uniqueColors": 66
+        }
+      ]
+    }
+  },
+  {
+    "name": "oblique-furniture.cell-cot.v1.json",
+    "model": "medicalBed",
+    "yaw": 30,
+    "count": 41,
+    "stats": {
+      "primary": [
+        {
+          "pixels": 10,
+          "uniqueColors": 10,
+          "box": [
+            165,
+            105,
+            169,
+            107
+          ]
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 7,
+          "box": [
+            162,
+            109,
+            164,
+            111
+          ]
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 5,
+          "box": [
+            159,
+            113,
+            161,
+            114
+          ]
+        },
+        {
+          "pixels": 9,
+          "uniqueColors": 9,
+          "box": [
+            156,
+            115,
+            158,
+            118
+          ]
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3,
+          "box": [
+            153,
+            120,
+            154,
+            121
+          ]
+        },
+        {
+          "pixels": 16,
+          "uniqueColors": 15,
+          "box": [
+            144,
+            125,
+            149,
+            131
+          ]
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3,
+          "box": [
+            142,
+            132,
+            143,
+            133
+          ]
+        },
+        {
+          "pixels": 12,
+          "uniqueColors": 12,
+          "box": [
+            137,
+            135,
+            140,
+            139
+          ]
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 5,
+          "box": [
+            134,
+            140,
+            136,
+            142
+          ]
+        },
+        {
+          "pixels": 41,
+          "uniqueColors": 33,
+          "box": [
+            123,
+            143,
+            133,
+            157
+          ]
+        }
+      ],
+      "buddy": [
+        {
+          "pixels": 31,
+          "uniqueColors": 27
+        },
+        {
+          "pixels": 1275,
+          "uniqueColors": 254
+        },
+        {
+          "pixels": 10,
+          "uniqueColors": 10
+        }
+      ],
+      "steel": [
+        {
+          "pixels": 127,
+          "uniqueColors": 76
+        },
+        {
+          "pixels": 9,
+          "uniqueColors": 8
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 11,
+          "uniqueColors": 11
+        },
+        {
+          "pixels": 14,
+          "uniqueColors": 13
+        }
+      ]
+    }
+  },
+  {
+    "name": "oblique-furniture.cell-cot.v1.json",
+    "model": "medicalBed",
+    "yaw": 60,
+    "count": 274,
+    "stats": {
+      "primary": [
+        {
+          "pixels": 274,
+          "uniqueColors": 151,
+          "box": [
+            96,
+            119,
+            179,
+            152
+          ]
+        }
+      ],
+      "buddy": [
+        {
+          "pixels": 1313,
+          "uniqueColors": 246
+        },
+        {
+          "pixels": 74,
+          "uniqueColors": 54
+        }
+      ],
+      "steel": [
+        {
+          "pixels": 5,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 8,
+          "uniqueColors": 8
+        },
+        {
+          "pixels": 188,
+          "uniqueColors": 96
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 7
+        }
+      ]
+    }
+  },
+  {
+    "name": "oblique-furniture.cell-cot.v1.json",
+    "model": "medicalBed",
+    "yaw": 300,
+    "count": 0,
+    "stats": {
+      "primary": [],
+      "buddy": [
+        {
+          "pixels": 1363,
+          "uniqueColors": 319
+        }
+      ],
+      "steel": [
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 8,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 20,
+          "uniqueColors": 20
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 12,
+          "uniqueColors": 11
+        },
+        {
+          "pixels": 14,
+          "uniqueColors": 14
+        },
+        {
+          "pixels": 15,
+          "uniqueColors": 15
+        },
+        {
+          "pixels": 17,
+          "uniqueColors": 16
+        },
+        {
+          "pixels": 80,
+          "uniqueColors": 65
+        },
+        {
+          "pixels": 58,
+          "uniqueColors": 45
+        }
+      ]
+    }
+  },
+  {
+    "name": "oblique-furniture.kitchen-fridge.v1.json",
+    "model": "medicalBed",
+    "yaw": 30,
+    "count": 0,
+    "stats": {
+      "primary": [],
+      "buddy": [
+        {
+          "pixels": 2524,
+          "uniqueColors": 296
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 10,
+          "uniqueColors": 10
+        }
+      ],
+      "steel": [
+        {
+          "pixels": 1560,
+          "uniqueColors": 108
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 14,
+          "uniqueColors": 12
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 10,
+          "uniqueColors": 9
+        },
+        {
+          "pixels": 9,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 20,
+          "uniqueColors": 13
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 87,
+          "uniqueColors": 53
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 73,
+          "uniqueColors": 46
+        },
+        {
+          "pixels": 146,
+          "uniqueColors": 48
+        },
+        {
+          "pixels": 230,
+          "uniqueColors": 162
+        },
+        {
+          "pixels": 8,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 12,
+          "uniqueColors": 10
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 8,
+          "uniqueColors": 8
+        }
+      ]
+    }
+  },
+  {
+    "name": "oblique-furniture.kitchen-fridge.v1.json",
+    "model": "medicalBed",
+    "yaw": 60,
+    "count": 0,
+    "stats": {
+      "primary": [],
+      "buddy": [
+        {
+          "pixels": 4176,
+          "uniqueColors": 277
+        }
+      ],
+      "steel": [
+        {
+          "pixels": 1643,
+          "uniqueColors": 133
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 15,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 336,
+          "uniqueColors": 42
+        },
+        {
+          "pixels": 8,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 72,
+          "uniqueColors": 44
+        },
+        {
+          "pixels": 8,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 71,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 370,
+          "uniqueColors": 300
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        }
+      ]
+    }
+  },
+  {
+    "name": "oblique-furniture.kitchen-fridge.v1.json",
+    "model": "medicalBed",
+    "yaw": 300,
+    "count": 0,
+    "stats": {
+      "primary": [],
+      "buddy": [
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 13,
+          "uniqueColors": 10
+        },
+        {
+          "pixels": 263,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 15,
+          "uniqueColors": 13
+        },
+        {
+          "pixels": 175,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 155,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 68,
+          "uniqueColors": 36
+        },
+        {
+          "pixels": 336,
+          "uniqueColors": 33
+        },
+        {
+          "pixels": 112,
+          "uniqueColors": 23
+        },
+        {
+          "pixels": 33,
+          "uniqueColors": 9
+        },
+        {
+          "pixels": 19,
+          "uniqueColors": 12
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 23,
+          "uniqueColors": 16
+        },
+        {
+          "pixels": 17,
+          "uniqueColors": 8
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 7
+        }
+      ],
+      "steel": [
+        {
+          "pixels": 3942,
+          "uniqueColors": 340
+        },
+        {
+          "pixels": 19,
+          "uniqueColors": 17
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 541,
+          "uniqueColors": 101
+        },
+        {
+          "pixels": 16,
+          "uniqueColors": 9
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 12,
+          "uniqueColors": 10
+        },
+        {
+          "pixels": 22,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 21,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 45,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 60,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 21,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 8,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 6
+        },
+        {
+          "pixels": 21,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 8,
+          "uniqueColors": 8
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 8,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 7,
+          "uniqueColors": 7
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 9,
+          "uniqueColors": 8
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 6,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 5
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 5,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 19,
+          "uniqueColors": 18
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        },
+        {
+          "pixels": 4,
+          "uniqueColors": 4
+        },
+        {
+          "pixels": 3,
+          "uniqueColors": 3
+        }
+      ]
+    }
+  }
+]

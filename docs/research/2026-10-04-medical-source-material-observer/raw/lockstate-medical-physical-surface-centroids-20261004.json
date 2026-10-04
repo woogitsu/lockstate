@@ -1,0 +1,20 @@
+[
+  {
+    "yaw": 30,
+    "headboardProjectedInsetCentroidY": 83.03742613263296,
+    "linenProjectedInsetCentroidY": 129.97599399849963,
+    "linenBelowHeadboard": true
+  },
+  {
+    "yaw": 300,
+    "headboardProjectedInsetCentroidY": 96.30853174603175,
+    "linenProjectedInsetCentroidY": 133.35431088735052,
+    "linenBelowHeadboard": true
+  },
+  {
+    "yaw": 60,
+    "headboardProjectedInsetCentroidY": 94.42995689655173,
+    "linenProjectedInsetCentroidY": 133.35431088735052,
+    "linenBelowHeadboard": true
+  }
+]
