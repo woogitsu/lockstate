@@ -31,11 +31,35 @@ policy below still awaits the owner's answer; this is the existing manual
 control's source correction.
 
 The original prep-counter native route reaches actual completion/Save/Load
-and exact paid fixture ownership, but its unchanged flat-color observer
-returns[0,0] atq0 before/after Load. Capacity passes; q0 fails four original
-material-floor assertions, andq1 is serial-skipped. A visible modern model is
-not called a passed material gate. Source-derived observer work continues in
-its independent worktree; no lower floor or substituted source preview is used.
+and exact paid fixture ownership, but its old flat-color observer fails atq0;
+q1 is serial-skipped. A separate unchanged capacity+q1 run also fails its
+original material floors. Both actual failures are preserved. The corrected
+source-derived observer now passes all3 public routes on25f in2.1min, including
+whole pausedV10, exact three fixture owners and actual canonical PNG HTTP/Blob
+bytes. Original ROIs and floors remain. Its genuine source-material pan
+association rejects1080 unrelated source frames; actual helper omissions and
+exact restorations are retained in
+[the observer record](../2026-10-04-kitchen-prep-modern-material-observer/README.md).
+
+The later b4 source run is8761 GREEN/1 RED/2 inherited skips across763 files
+in136.09s. Its sole RED is the real published25f commit citation, because the
+local own tracking ref was stale. Fetching the already-published own branch
+returns the unchanged citation suite to8 GREEN in16.42s. An earlier command
+used a wrong test path and collected no tests; that diagnostic is also retained.
+
+The actual25f Canteen/Holding Cell routes reach paid completion and Save/Load.
+After a Node24 JSON import-attribute repair, each original q0 material reader
+fails and its q1 is serial-skipped (2 GREEN/2 RED/2 skipped). A separate original
+capacity+q1 run obtains both q1 failures (2 GREEN/2 RED). The modern furniture
+is visible, but the old flat-color assertions are not reported as GREEN.
+Source-derived relevance correction is a separate continuing task.
+
+Teacher desk, medicine cabinet, medical bed and bookshelf source/descriptor
+chains are integrated after this frozen build. The two medical shared-export
+callbacks were combined without discarding either model. Both real canonical
+and shared callback omissions fail; exact restoration passes1046 protected
+files for each family. These are source-export controls, not new game-native
+acceptance. The next actual build and medical/Classroom captures remain required.
 
 The corrected Kitchen stove family is now3 GREEN in2.2min on this same actual
 25f client. Both q0/q1 retain precise paid fixture owners, whole pausedV10

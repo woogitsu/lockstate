@@ -1,0 +1,195 @@
+node : [2m[WebServer] [22m(node:52716) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:5 char:1
++ node node_modules/@playwright/test/cli.js test --config tests/browser ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 4 tests using 1 worker
+
+(node:46328) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46328) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\canteen-dining-table-player-build.spec.ts:169:1 › player creates storage and delivery capacity before Canteen (41.7s)
+  x  2 tests\browser\canteen-dining-table-player-build.spec.ts:233:3 › player builds Canteen at quarterTurns1 and retains authored plates after Save/Load (51.3s)
+(node:48396) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:48396) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 tests\browser\wooden-bench-player-build.spec.ts:180:1 › player creates storage and delivery capacity before Holding Cell (42.3s)
+  x  4 tests\browser\wooden-bench-player-build.spec.ts:246:3 › player builds Holding Cell at quarterTurns1 and retains authored timber palette after Save/Load (41.2s)
+
+
+  1) tests\browser\canteen-dining-table-player-build.spec.ts:233:3 › player builds Canteen at quarterTurns1 and retains authored plates after Save/Load 
+
+    Error: table1 authored plate rims after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m1[39m
+
+      191 |     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
+      192 |   }, null, 2));
+    > 193 |   beforePixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after construction`).toBeGreaterThan(200));
+          |                                                                                                                         ^
+      194 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      195 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      196 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\canteen-dining-table-player-build.spec.ts:193:121)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\canteen-dining-table-player-build.spec.ts:193:16
+
+    Error: table2 authored plate rims after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m0[39m
+
+      191 |     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
+      192 |   }, null, 2));
+    > 193 |   beforePixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after construction`).toBeGreaterThan(200));
+          |                                                                                                                         ^
+      194 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      195 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      196 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\canteen-dining-table-player-build.spec.ts:193:121)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\canteen-dining-table-player-build.spec.ts:193:16
+
+    Error: table1 authored plate rims after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m1[39m
+
+      207 |   const loaded = await page.screenshot({ path: info.outputPath('dining-loaded-fullhd.png') });
+      208 |   const afterPixels = await platePixels(page, loaded, quarterTurns);
+    > 209 |   afterPixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after Load`).toBeGreaterThan(200));
+          |                                                                                                                ^
+      210 |   expect(afterPixels).toEqual(beforePixels);
+      211 |   // Keep the historical plate crop/palette/threshold above unchanged. This new
+      212 |   // low camera capture is pending native support-pixel calibration by root.
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\canteen-dining-table-player-build.spec.ts:209:112)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\canteen-dining-table-player-build.spec.ts:209:15
+
+    Error: table2 authored plate rims after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m200[39m
+    Received:   [31m0[39m
+
+      207 |   const loaded = await page.screenshot({ path: info.outputPath('dining-loaded-fullhd.png') });
+      208 |   const afterPixels = await platePixels(page, loaded, quarterTurns);
+    > 209 |   afterPixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after Load`).toBeGreaterThan(200));
+          |                                                                                                                ^
+      210 |   expect(afterPixels).toEqual(beforePixels);
+      211 |   // Keep the historical plate crop/palette/threshold above unchanged. This new
+      212 |   // low camera capture is pending native support-pixel calibration by root.
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\canteen-dining-table-player-build.spec.ts:209:112)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\canteen-dining-table-player-build.spec.ts:209:15
+
+    attachment #1: dining-worker-and-pixel-evidence (application/json) ─────────────────────────────
+    ..\..\..\AppData\Local\Temp\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\results\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\attachments\dining-worker-and-pixel-evidence-6a6457d68b3ecf5d973121e7d3f057ac1a3251a7.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\results\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\error-context.md
+
+  2) tests\browser\wooden-bench-player-build.spec.ts:246:3 › player builds Holding Cell at quarterTurns1 and retains authored timber palette after Save/Load 
+
+    Error: fixture1 authored timber assembly after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m300[39m
+    Received:   [31m0[39m
+
+      200 |   }, null, 2));
+      201 |   beforePixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored timber assembly after construction`)
+    > 202 |     .toBeGreaterThan(300));
+          |      ^
+      203 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      204 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      205 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\wooden-bench-player-build.spec.ts:202:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\wooden-bench-player-build.spec.ts:201:16
+
+    Error: fixture2 authored timber assembly after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m300[39m
+    Received:   [31m0[39m
+
+      200 |   }, null, 2));
+      201 |   beforePixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored timber assembly after construction`)
+    > 202 |     .toBeGreaterThan(300));
+          |      ^
+      203 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      204 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      205 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\wooden-bench-player-build.spec.ts:202:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\wooden-bench-player-build.spec.ts:201:16
+
+    Error: fixture1 authored timber assembly after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m300[39m
+    Received:   [31m0[39m
+
+      219 |   const afterPixels = await timberPixels(page, loaded, quarterTurns);
+      220 |   afterPixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored timber assembly after Load`)
+    > 221 |     .toBeGreaterThan(300));
+          |      ^
+      222 |   expect(afterPixels).toEqual(beforePixels);
+      223 |   const evidencePath = info.outputPath('wooden-bench-worker-and-pixel-evidence.json');
+      224 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\wooden-bench-player-build.spec.ts:221:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\wooden-bench-player-build.spec.ts:220:15
+
+    Error: fixture2 authored timber assembly after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m300[39m
+    Received:   [31m0[39m
+
+      219 |   const afterPixels = await timberPixels(page, loaded, quarterTurns);
+      220 |   afterPixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored timber assembly after Load`)
+    > 221 |     .toBeGreaterThan(300));
+          |      ^
+      222 |   expect(afterPixels).toEqual(beforePixels);
+      223 |   const evidencePath = info.outputPath('wooden-bench-worker-and-pixel-evidence.json');
+      224 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\wooden-bench-player-build.spec.ts:221:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\wooden-bench-player-build.spec.ts:220:15
+
+    attachment #1: wooden-bench-worker-and-pixel-evidence (application/json) ───────────────────────
+    ..\..\..\AppData\Local\Temp\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\results\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\attachments\wooden-bench-worker-and-pixel-evidence-90a133eb2295e51eca2f51e60184d6bbc59a4aa9.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\results\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\error-context.md
+
+  2 failed
+    tests\browser\canteen-dining-table-player-build.spec.ts:233:3 › player builds Canteen at quarterTurns1 and retains authored plates after Save/Load 
+    tests\browser\wooden-bench-player-build.spec.ts:246:3 › player builds Holding Cell at quarterTurns1 and retains authored timber palette after Save/Load 
+  2 passed (3.0m)

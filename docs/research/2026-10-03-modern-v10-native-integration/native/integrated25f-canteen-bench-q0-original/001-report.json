@@ -1,0 +1,413 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\playwright.artifact.config.ts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004/results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/(?:production-artifact|rotated-security-console-player-build|infirmary-player-build|room-template-live-orientation|room-plan-dialog-escape|canteen-dining-table-player-build|room-plan-native-picker|shower-head-player-build|live-view-held-native-arrow|wooden-bench-player-build|live-view-native-popup-held-key|hud-separator-held-arrow|wooden-chair-player-build|build-category-native-camera|generic-wooden-rack-player-build|build-category-native-popup-held-key|build-category-native-typeahead|bookshelf-player-build|utility-panel-player-build|hud-layout-menu-fullhd|generic-office-desk-player-build|oblique-build-drag-under-hud|dedicated-kitchen-stove-player-build|live-view-native-mouse-target|oblique-object-area-drag-under-hud|dedicated-kitchen-fridge-player-build|dedicated-kitchen-prep-counter-player-build|room-preview-retained-hover-fit|oblique-square-wall-native-footprint|dedicated-laundry-washing-machine-player-build|camera-wheel-axis-native|oblique-camera-gameout-native|default-waste-bin-player-build|navigation-drawer-escape-native|dedicated-cell-toilet-player-build|dedicated-utility-panel-player-build|room-template-world-camera-origin|dedicated-office-desk-player-build|room-template-renderer-preflight-receipt|dedicated-medicine-cabinet-player-build|dedicated-security-console-player-build|dedicated-medical-bed-player-build|dedicated-loading-dock-door-player-build|dedicated-camera-pan-player|oblique-pending-wall-player|room-template-renderer-stationary-hover|world-construction-chord-release|room-template-session-preflight|world-build-session-ownership|cell-cot-player-build|room-template-second-touch-ownership|hired-guard-player-build|room-template-history-verdict-player|room-template-numeric-held-primary|common-room-upholstered-player-build)\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5402 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5402/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "canteen-dining-table-player-build.spec.ts",
+      "file": "canteen-dining-table-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Canteen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 42175,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T01:09:35.757Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b692cd9cd048f51d3b66-472b23b7516399244e0f",
+          "file": "canteen-dining-table-player-build.spec.ts",
+          "line": 169,
+          "column": 1
+        },
+        {
+          "title": "player builds Canteen at quarterTurns0 and retains authored plates after Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 56079,
+                  "error": {
+                    "message": "Error: table1 authored plate rims after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: table1 authored plate rims after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:193:121)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:193:16",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts",
+                      "column": 121,
+                      "line": 193
+                    },
+                    "snippet": "  191 |     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),\n  192 |   }, null, 2));\n> 193 |   beforePixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after construction`).toBeGreaterThan(200));\n      |                                                                                                                         ^\n  194 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  195 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  196 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts",
+                        "column": 121,
+                        "line": 193
+                      },
+                      "message": "Error: table1 authored plate rims after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  191 |     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),\n  192 |   }, null, 2));\n> 193 |   beforePixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after construction`).toBeGreaterThan(200));\n      |                                                                                                                         ^\n  194 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  195 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  196 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:193:121)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:193:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts",
+                        "column": 121,
+                        "line": 193
+                      },
+                      "message": "Error: table2 authored plate rims after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m1\u001b[39m\n\n  191 |     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),\n  192 |   }, null, 2));\n> 193 |   beforePixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after construction`).toBeGreaterThan(200));\n      |                                                                                                                         ^\n  194 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  195 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  196 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:193:121)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:193:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts",
+                        "column": 112,
+                        "line": 209
+                      },
+                      "message": "Error: table1 authored plate rims after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  207 |   const loaded = await page.screenshot({ path: info.outputPath('dining-loaded-fullhd.png') });\n  208 |   const afterPixels = await platePixels(page, loaded, quarterTurns);\n> 209 |   afterPixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after Load`).toBeGreaterThan(200));\n      |                                                                                                                ^\n  210 |   expect(afterPixels).toEqual(beforePixels);\n  211 |   // Keep the historical plate crop/palette/threshold above unchanged. This new\n  212 |   // low camera capture is pending native support-pixel calibration by root.\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:209:112)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:209:15"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts",
+                        "column": 112,
+                        "line": 209
+                      },
+                      "message": "Error: table2 authored plate rims after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m200\u001b[39m\nReceived:   \u001b[31m1\u001b[39m\n\n  207 |   const loaded = await page.screenshot({ path: info.outputPath('dining-loaded-fullhd.png') });\n  208 |   const afterPixels = await platePixels(page, loaded, quarterTurns);\n> 209 |   afterPixels.forEach((count, index) => expect.soft(count, `table${index + 1} authored plate rims after Load`).toBeGreaterThan(200));\n      |                                                                                                                ^\n  210 |   expect(afterPixels).toEqual(beforePixels);\n  211 |   // Keep the historical plate crop/palette/threshold above unchanged. This new\n  212 |   // low camera capture is pending native support-pixel calibration by root.\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:209:112)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts:209:15"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T01:10:18.002Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dining-worker-and-pixel-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\attachments\\dining-worker-and-pixel-evidence-9c78777e145ba38314e696ec6cf97b7afe88e388.json"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\canteen-dining-table-player-build.spec.ts",
+                    "column": 121,
+                    "line": 193
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b692cd9cd048f51d3b66-e7a386b8238d58647434",
+          "file": "canteen-dining-table-player-build.spec.ts",
+          "line": 233,
+          "column": 3
+        },
+        {
+          "title": "player builds Canteen at quarterTurns1 and retains authored plates after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T01:11:14.150Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "b692cd9cd048f51d3b66-4f16157b13aab1e63149",
+          "file": "canteen-dining-table-player-build.spec.ts",
+          "line": 233,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "wooden-bench-player-build.spec.ts",
+      "file": "wooden-bench-player-build.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "player creates storage and delivery capacity before Holding Cell",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 41999,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T01:11:14.644Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7262a4a9fc1306d6e6b5-1ffdf51a62ba3e3b6130",
+          "file": "wooden-bench-player-build.spec.ts",
+          "line": 180,
+          "column": 1
+        },
+        {
+          "title": "player builds Holding Cell at quarterTurns0 and retains authored timber palette after Save/Load",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 45058,
+                  "error": {
+                    "message": "Error: fixture1 authored timber assembly after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m300\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: fixture1 authored timber assembly after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m300\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\wooden-bench-player-build.spec.ts:202:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\wooden-bench-player-build.spec.ts:201:16",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\wooden-bench-player-build.spec.ts",
+                      "column": 6,
+                      "line": 202
+                    },
+                    "snippet": "  200 |   }, null, 2));\n  201 |   beforePixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored timber assembly after construction`)\n> 202 |     .toBeGreaterThan(300));\n      |      ^\n  203 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  204 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  205 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\wooden-bench-player-build.spec.ts",
+                        "column": 6,
+                        "line": 202
+                      },
+                      "message": "Error: fixture1 authored timber assembly after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m300\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  200 |   }, null, 2));\n  201 |   beforePixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored timber assembly after construction`)\n> 202 |     .toBeGreaterThan(300));\n      |      ^\n  203 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  204 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  205 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\wooden-bench-player-build.spec.ts:202:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\wooden-bench-player-build.spec.ts:201:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\wooden-bench-player-build.spec.ts",
+                        "column": 6,
+                        "line": 202
+                      },
+                      "message": "Error: fixture2 authored timber assembly after construction\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m300\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  200 |   }, null, 2));\n  201 |   beforePixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored timber assembly after construction`)\n> 202 |     .toBeGreaterThan(300));\n      |      ^\n  203 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();\n  204 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();\n  205 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\wooden-bench-player-build.spec.ts:202:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\wooden-bench-player-build.spec.ts:201:16"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\wooden-bench-player-build.spec.ts",
+                        "column": 6,
+                        "line": 221
+                      },
+                      "message": "Error: fixture1 authored timber assembly after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m300\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  219 |   const afterPixels = await timberPixels(page, loaded, quarterTurns);\n  220 |   afterPixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored timber assembly after Load`)\n> 221 |     .toBeGreaterThan(300));\n      |      ^\n  222 |   expect(afterPixels).toEqual(beforePixels);\n  223 |   const evidencePath = info.outputPath('wooden-bench-worker-and-pixel-evidence.json');\n  224 |   await writeFile(evidencePath, JSON.stringify({\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\wooden-bench-player-build.spec.ts:221:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\wooden-bench-player-build.spec.ts:220:15"
+                    },
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\wooden-bench-player-build.spec.ts",
+                        "column": 6,
+                        "line": 221
+                      },
+                      "message": "Error: fixture2 authored timber assembly after Load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m300\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  219 |   const afterPixels = await timberPixels(page, loaded, quarterTurns);\n  220 |   afterPixels.forEach((count, index) => expect.soft(count, `fixture${index + 1} authored timber assembly after Load`)\n> 221 |     .toBeGreaterThan(300));\n      |      ^\n  222 |   expect(afterPixels).toEqual(beforePixels);\n  223 |   const evidencePath = info.outputPath('wooden-bench-worker-and-pixel-evidence.json');\n  224 |   await writeFile(evidencePath, JSON.stringify({\n    at forEach (C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\wooden-bench-player-build.spec.ts:221:6)\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\wooden-bench-player-build.spec.ts:220:15"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T01:11:56.715Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "wooden-bench-worker-and-pixel-evidence",
+                      "contentType": "application/json",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\attachments\\wooden-bench-worker-and-pixel-evidence-c3ce69fa33ac1916bbeead79d2424ac938b79dea.json"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\wooden-bench-player-build.spec.ts",
+                    "column": 6,
+                    "line": 202
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "7262a4a9fc1306d6e6b5-e6f4e09aae5f0397e7a0",
+          "file": "wooden-bench-player-build.spec.ts",
+          "line": 246,
+          "column": 3
+        },
+        {
+          "title": "player builds Holding Cell at quarterTurns1 and retains authored timber palette after Save/Load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T01:12:41.824Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "7262a4a9fc1306d6e6b5-a90d3493dca4c312db95",
+          "file": "wooden-bench-player-build.spec.ts",
+          "line": 246,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-04T01:09:33.109Z",
+    "duration": 189037.94,
+    "expected": 2,
+    "skipped": 2,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

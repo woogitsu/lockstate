@@ -1,0 +1,9 @@
+pnpm : $ node tooling/validate-runtime-atlas.mjs public/assets/actors && node tooling/validate-rendered-art-catalog.mjs
+At line:12 char:1
++ pnpm --config.verify-deps-before-run=false verify:assets *> (Join-Pat ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ node tooling/...art-catalog.mjs:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Validated 10 clip atlases in C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\public\assets\actors
+Validated 40 rendered-art catalog entries.

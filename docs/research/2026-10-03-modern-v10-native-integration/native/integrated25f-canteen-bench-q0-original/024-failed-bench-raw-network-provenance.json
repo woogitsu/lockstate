@@ -1,0 +1,116 @@
+[
+  {
+    "url": "http://127.0.0.1:5402/assets/worker-BeZzlLvh.js",
+    "decodedPath": "/assets/worker-BeZzlLvh.js",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "sha256": "6d562f6786c686df0a60138621fd067d55b13f903ed719dbcc361565918ae04d",
+    "bytes": 445265
+  },
+  {
+    "url": "http://127.0.0.1:5402/game-content/oblique-canteen-bench.v1.json",
+    "decodedPath": "/game-content/oblique-canteen-bench.v1.json",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "sha256": "88516dc11d0b4757f30c00424004368221a8770ad1b1dffa7c9f5c7f3effefb2",
+    "bytes": 20019
+  },
+  {
+    "url": "http://127.0.0.1:5402/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev40.b3f980fa0b73.png",
+    "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev40.b3f980fa0b73.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B30-elev40.b3f980fa0b73.png"
+  },
+  {
+    "url": "http://127.0.0.1:5402/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B30-elev40.b3f980fa0b73.png",
+    "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev40.b3f980fa0b73.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "b3f980fa0b73d92a3e94e4264f9e1765da3cedb57218d55b6a5b46da0ce0ac74",
+    "bytes": 17150
+  },
+  {
+    "url": "http://127.0.0.1:5402/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev40.68b214f70569.png",
+    "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev40.68b214f70569.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B300-elev40.68b214f70569.png"
+  },
+  {
+    "url": "http://127.0.0.1:5402/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B300-elev40.68b214f70569.png",
+    "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev40.68b214f70569.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "68b214f705690e56ccf978a18223ccb6b850627055d641b74a1e2d960344dc29",
+    "bytes": 16972
+  },
+  {
+    "url": "http://127.0.0.1:5402/assets/worker-BeZzlLvh.js",
+    "decodedPath": "/assets/worker-BeZzlLvh.js",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "sha256": "6d562f6786c686df0a60138621fd067d55b13f903ed719dbcc361565918ae04d",
+    "bytes": 445265
+  },
+  {
+    "url": "http://127.0.0.1:5402/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev40.fc35db4cf16b.png",
+    "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev40.fc35db4cf16b.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B330-elev40.fc35db4cf16b.png"
+  },
+  {
+    "url": "http://127.0.0.1:5402/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B330-elev40.fc35db4cf16b.png",
+    "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev40.fc35db4cf16b.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "fc35db4cf16b15844e0182fed53021fef161dbad4b4174b4673b27bffe52166a",
+    "bytes": 17092
+  },
+  {
+    "url": "http://127.0.0.1:5402/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev40.c23472082497.png",
+    "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev40.c23472082497.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B00-elev40.c23472082497.png"
+  },
+  {
+    "url": "http://127.0.0.1:5402/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B00-elev40.c23472082497.png",
+    "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev40.c23472082497.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "c23472082497658bbadb1f30f28af3fa5b8df9fce4341f76c05c72a522047aeb",
+    "bytes": 15115
+  },
+  {
+    "url": "http://127.0.0.1:5402/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev40.b3f980fa0b73.png",
+    "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev40.b3f980fa0b73.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B30-elev40.b3f980fa0b73.png"
+  },
+  {
+    "url": "http://127.0.0.1:5402/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B30-elev40.b3f980fa0b73.png",
+    "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev40.b3f980fa0b73.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "b3f980fa0b73d92a3e94e4264f9e1765da3cedb57218d55b6a5b46da0ce0ac74",
+    "bytes": 17150
+  },
+  {
+    "url": "http://127.0.0.1:5402/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev40.5ad7afdb520e.png",
+    "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev40.5ad7afdb520e.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B60-elev40.5ad7afdb520e.png"
+  },
+  {
+    "url": "http://127.0.0.1:5402/assets/environment/oblique/furniture.corridor.bench.variants-yaw%2B60-elev40.5ad7afdb520e.png",
+    "decodedPath": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev40.5ad7afdb520e.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "5ad7afdb520ed6cb58c5dd87e652a5e7165d7095d593b48708f40746bc90ac8f",
+    "bytes": 16919
+  }
+]

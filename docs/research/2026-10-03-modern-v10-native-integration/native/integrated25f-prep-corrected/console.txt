@@ -1,0 +1,34 @@
+node : [2m[WebServer] [22m(node:51220) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:5 char:1
++ node node_modules/@playwright/test/cli.js test --config tests/browser ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 3 tests using 1 worker
+
+(node:5056) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5056) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\dedicated-kitchen-prep-counter-player-build.spec.ts:205:1 › player creates storage and delivery capacity before Kitchen (41.8s)
+  ok 2 tests\browser\dedicated-kitchen-prep-counter-player-build.spec.ts:268:3 › player builds Kitchen at quarterTurns0 and retains authored prep counter worktop and detail palettes and anchors after Save/Load (42.7s)
+  ok 3 tests\browser\dedicated-kitchen-prep-counter-player-build.spec.ts:268:3 › player builds Kitchen at quarterTurns1 and retains authored prep counter worktop and detail palettes and anchors after Save/Load (40.4s)
+
+  3 passed (2.1m)

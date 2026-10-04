@@ -1,0 +1,17 @@
+pnpm : $ vitest run "tests/documentation-commit-citation.test.ts" "--maxWorkers=1"
+At line:4 char:1
++ pnpm --config.verify-deps-before-run=false test tests/documentation-c ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=1":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003
+
+No test files found, exiting with code 1
+
+filter: tests/documentation-commit-citation.test.ts
+include: src/**/*.test.ts, tests/**/*.test.ts
+exclude:  **/node_modules/**, **/dist/**, benchmarks/**
+
+[ELIFECYCLE] Test failed. See above for more details.

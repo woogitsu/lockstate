@@ -1821,3 +1821,17 @@ floors/actual demanded source HTTP and Blob decode. This checkpoint fixes the
 reached q1 observer without lowering thresholds. Classroom and Medicine source
 matrices are published in their isolated worktrees; their next combined native
 acceptance and exact-head hosted release gates remain to be obtained.
+
+### 2026-10-04 retained Classroom and Infirmary integration checkpoint
+
+Teacher desk, medicine cabinet, medical bed and bookshelf saved Blender Cycles
+sources and current descriptor/registry consumers are integrated together.
+Medical shared export preserves both dedicated callbacks; both genuine
+canonical/shared omissions fail and exact restoration passes1046 protected
+files per family. This is source integration, not native gameplay acceptance.
+The frozen25f Kitchen prep routes now pass all3 real FullHD build/Load tests
+with unchanged material floors, precise owners, whole pausedV10 and actual
+PNG HTTP/Blob. Canteen and Holding Cell are visibly built/loaded, but their old
+flat-color observers still fail; their exact q0/q1 captures are preserved for
+source-derived correction. Current-build Classroom and Infirmary verification
+is the next step. See the current [integrated evidence record](../../research/2026-10-03-modern-v10-native-integration/README.md).

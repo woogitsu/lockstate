@@ -3807,5 +3807,1040 @@
     "sourceSha256": "5b7a1bee9f73db2623b5b14621205a97b2a3c69cfc86106de6924623cfbe3a4b",
     "archivedBytes": 419,
     "archivedSha256": "5b7a1bee9f73db2623b5b14621205a97b2a3c69cfc86106de6924623cfbe3a4b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-q1-original-native-20261004.txt",
+    "archived": "integrated25f-prep-q1-original/console.txt",
+    "sourceBytes": 15616,
+    "sourceSha256": "b9b920ea0dd1e35960e1529d79f5d10e1cd16947c460ec0a10474f32e3c5fb99",
+    "archivedBytes": 8029,
+    "archivedSha256": "c00304ed5f6fb28229be74d295b1ba94ca138da0acdfe71d3020c6dd684220ca",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-q1-original-native-20261004\\report.json",
+    "archived": "integrated25f-prep-q1-original/001-report.json",
+    "sourceBytes": 16223,
+    "sourceSha256": "1d6b41ce1d6794ec2bb18341fbcfaec9750cc90402b176e62e7974a2b957cf8e",
+    "archivedBytes": 16223,
+    "archivedSha256": "1d6b41ce1d6794ec2bb18341fbcfaec9750cc90402b176e62e7974a2b957cf8e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-q1-original-native-20261004\\results\\.last-run.json",
+    "archived": "integrated25f-prep-q1-original/002-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "706020fe76654cc8edaf7967ded4ad612e5c568d4d079a62fa8d5efaa0fa1716",
+    "archivedBytes": 96,
+    "archivedSha256": "706020fe76654cc8edaf7967ded4ad612e5c568d4d079a62fa8d5efaa0fa1716"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-q1-original-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\attachments\\dedicated-kitchen-prep-counter-worker-and-save-evidence-aa934af10441dfc0d311babbb8e6152047974ed3.json",
+    "archived": "integrated25f-prep-q1-original/003-dedicated-kitchen-prep-counter-worker-and-save-evidence-aa934af1.json",
+    "sourceBytes": 4756,
+    "sourceSha256": "33e9b81b651d20cbdcf1c49126920bd77a6baac8bea659a9a5eb30dd59f26626",
+    "archivedBytes": 4756,
+    "archivedSha256": "33e9b81b651d20cbdcf1c49126920bd77a6baac8bea659a9a5eb30dd59f26626"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-q1-original-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\dedicated-kitchen-prep-counter-loaded-fullhd.png",
+    "archived": "integrated25f-prep-q1-original/004-dedicated-kitchen-prep-counter-loaded-fullhd.png",
+    "sourceBytes": 1534360,
+    "sourceSha256": "c85d875dbe3269dff84f78e34a96781b464e70b9e644acdbbe9a874377164fac",
+    "archivedBytes": 1534360,
+    "archivedSha256": "c85d875dbe3269dff84f78e34a96781b464e70b9e644acdbbe9a874377164fac"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-q1-original-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\dedicated-kitchen-prep-counter-worker-and-save-evidence.json",
+    "archived": "integrated25f-prep-q1-original/005-dedicated-kitchen-prep-counter-worker-and-save-evidence.json",
+    "sourceBytes": 4756,
+    "sourceSha256": "33e9b81b651d20cbdcf1c49126920bd77a6baac8bea659a9a5eb30dd59f26626",
+    "archivedBytes": 4756,
+    "archivedSha256": "33e9b81b651d20cbdcf1c49126920bd77a6baac8bea659a9a5eb30dd59f26626"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-q1-original-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\dedicated-kitchen-prep-counter-worker-completed-fullhd.png",
+    "archived": "integrated25f-prep-q1-original/006-dedicated-kitchen-prep-counter-worker-completed-fullhd.png",
+    "sourceBytes": 1568539,
+    "sourceSha256": "ac4722bec0aa7fc6cb446d3c09e3e43db158d8704844f5fbe195141f4bfb9cb7",
+    "archivedBytes": 1568539,
+    "archivedSha256": "ac4722bec0aa7fc6cb446d3c09e3e43db158d8704844f5fbe195141f4bfb9cb7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-q1-original-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\error-context.md",
+    "archived": "integrated25f-prep-q1-original/007-error-context.md",
+    "sourceBytes": 8256,
+    "sourceSha256": "9e2427d20395bcd818c4ce2c769a3b590ebcfe3521fcc3be774c407adedefd71",
+    "archivedBytes": 8256,
+    "archivedSha256": "9e2427d20395bcd818c4ce2c769a3b590ebcfe3521fcc3be774c407adedefd71"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-q1-original-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "integrated25f-prep-q1-original/008-failed-player-fullhd.png",
+    "sourceBytes": 1534360,
+    "sourceSha256": "c85d875dbe3269dff84f78e34a96781b464e70b9e644acdbbe9a874377164fac",
+    "archivedBytes": 1534360,
+    "archivedSha256": "c85d875dbe3269dff84f78e34a96781b464e70b9e644acdbbe9a874377164fac"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-q1-original-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\failed-player-worker-snapshot.json",
+    "archived": "integrated25f-prep-q1-original/009-failed-player-worker-snapshot.json",
+    "sourceBytes": 80451,
+    "sourceSha256": "3ca0032413b7a5295d480685fbb01e0d99aa5c4b3bb26120cb7dd6061fe9de6b",
+    "archivedBytes": 80451,
+    "archivedSha256": "3ca0032413b7a5295d480685fbb01e0d99aa5c4b3bb26120cb7dd6061fe9de6b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-q1-original-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "integrated25f-prep-q1-original/010-worker-and-completed-save-evidence.json",
+    "sourceBytes": 399,
+    "sourceSha256": "25372de6baa9fcc1fa57e62dc27e1f50b900e8e950626d9148174b002fbeeaaa",
+    "archivedBytes": 399,
+    "archivedSha256": "25372de6baa9fcc1fa57e62dc27e1f50b900e8e950626d9148174b002fbeeaaa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004.txt",
+    "archived": "integrated25f-prep-corrected/console.txt",
+    "sourceBytes": 4448,
+    "sourceSha256": "e5ce756a3495dddd1b0f1eb21101fad21fb69261ad3ecfe345ac6b27c134fc8e",
+    "archivedBytes": 2231,
+    "archivedSha256": "319d870c878d90feaeb93e779ffe617c35e4d80afe0862ba45ae0aa60271d7be",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\report.json",
+    "archived": "integrated25f-prep-corrected/001-report.json",
+    "sourceBytes": 8738,
+    "sourceSha256": "71104497ed5623ee068c89436aab62bc70c4077262c94fece51b788d9335fa1e",
+    "archivedBytes": 8738,
+    "archivedSha256": "71104497ed5623ee068c89436aab62bc70c4077262c94fece51b788d9335fa1e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\.last-run.json",
+    "archived": "integrated25f-prep-corrected/002-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\attachments\\dedicated-kitchen-prep-counter-worker-and-save-evidence-456f9e4a16a4bdabd5a250ac17174226eda4f134.json",
+    "archived": "integrated25f-prep-corrected/003-dedicated-kitchen-prep-counter-worker-and-save-evidence-456f9e4a.json",
+    "sourceBytes": 4762,
+    "sourceSha256": "61dfde1e8cf2fa21fbd366de83c8c2a90ae28b70c62483781358f7a2367bca21",
+    "archivedBytes": 4762,
+    "archivedSha256": "61dfde1e8cf2fa21fbd366de83c8c2a90ae28b70c62483781358f7a2367bca21"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\dedicated-kitchen-prep-counter-loaded-fullhd.png",
+    "archived": "integrated25f-prep-corrected/004-dedicated-kitchen-prep-counter-loaded-fullhd.png",
+    "sourceBytes": 1534393,
+    "sourceSha256": "5fc1b43055776b9faa27eaca1faab589469fcc5a7f36ef052ebf802a9ed4f533",
+    "archivedBytes": 1534393,
+    "archivedSha256": "5fc1b43055776b9faa27eaca1faab589469fcc5a7f36ef052ebf802a9ed4f533"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\dedicated-kitchen-prep-counter-worker-and-save-evidence.json",
+    "archived": "integrated25f-prep-corrected/005-dedicated-kitchen-prep-counter-worker-and-save-evidence.json",
+    "sourceBytes": 4762,
+    "sourceSha256": "61dfde1e8cf2fa21fbd366de83c8c2a90ae28b70c62483781358f7a2367bca21",
+    "archivedBytes": 4762,
+    "archivedSha256": "61dfde1e8cf2fa21fbd366de83c8c2a90ae28b70c62483781358f7a2367bca21"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\dedicated-kitchen-prep-counter-worker-completed-fullhd.png",
+    "archived": "integrated25f-prep-corrected/006-dedicated-kitchen-prep-counter-worker-completed-fullhd.png",
+    "sourceBytes": 1568605,
+    "sourceSha256": "f4c73b8924f6e90017a9489ea1a48f8b2829468cd262acf3a0fef5edd8f77073",
+    "archivedBytes": 1568605,
+    "archivedSha256": "f4c73b8924f6e90017a9489ea1a48f8b2829468cd262acf3a0fef5edd8f77073"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\kitchen-modern-actual-network-and-htmlimage-evidence.json",
+    "archived": "integrated25f-prep-corrected/007-kitchen-modern-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 25116,
+    "sourceSha256": "b15b313ea68ef58753c1b6abd57c468abbc4a4e19e91674d60044a700498cc53",
+    "archivedBytes": 25116,
+    "archivedSha256": "b15b313ea68ef58753c1b6abd57c468abbc4a4e19e91674d60044a700498cc53"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\kitchen-modern-actual200-exposed-frame.png",
+    "archived": "integrated25f-prep-corrected/008-kitchen-modern-actual200-exposed-frame.png",
+    "sourceBytes": 26275,
+    "sourceSha256": "cb2f68bf10ba42b528ed58cd6e3d4562a99f49ec1c20ec67cbe71d325790177f",
+    "archivedBytes": 26275,
+    "archivedSha256": "cb2f68bf10ba42b528ed58cd6e3d4562a99f49ec1c20ec67cbe71d325790177f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\kitchen-modern-raw-response-provenance.json",
+    "archived": "integrated25f-prep-corrected/009-kitchen-modern-raw-response-provenance.json",
+    "sourceBytes": 3432,
+    "sourceSha256": "f85c335e152731b287582b2d5cc1c8c1f3e1ce67aa1758b55545f93e449d1e17",
+    "archivedBytes": 3432,
+    "archivedSha256": "f85c335e152731b287582b2d5cc1c8c1f3e1ce67aa1758b55545f93e449d1e17"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\kitchen-prep-canonical-source60-e40-fullhd.png",
+    "archived": "integrated25f-prep-corrected/010-kitchen-prep-canonical-source60-e40-fullhd.png",
+    "sourceBytes": 1619584,
+    "sourceSha256": "3ebcd3283bd864032981d8b0c8289384d18a36cfe364222f35495860093cfd02",
+    "archivedBytes": 1619584,
+    "archivedSha256": "3ebcd3283bd864032981d8b0c8289384d18a36cfe364222f35495860093cfd02"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\kitchen-prep-canonical-whole-state.json",
+    "archived": "integrated25f-prep-corrected/011-kitchen-prep-canonical-whole-state.json",
+    "sourceBytes": 80451,
+    "sourceSha256": "26c2b6eb332de652f63b42e344534382d6494a19ac2781f3d21135f98a67dc3d",
+    "archivedBytes": 80451,
+    "archivedSha256": "26c2b6eb332de652f63b42e344534382d6494a19ac2781f3d21135f98a67dc3d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\kitchen-prep-paused-after-load.json",
+    "archived": "integrated25f-prep-corrected/012-kitchen-prep-paused-after-load.json",
+    "sourceBytes": 80451,
+    "sourceSha256": "2bde7f950a9deebc30c557f910d610b66c3737c7105df0c77e0d368e7fbf5a3a",
+    "archivedBytes": 80451,
+    "archivedSha256": "2bde7f950a9deebc30c557f910d610b66c3737c7105df0c77e0d368e7fbf5a3a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\kitchen-prep-paused-before-save.json",
+    "archived": "integrated25f-prep-corrected/013-kitchen-prep-paused-before-save.json",
+    "sourceBytes": 80451,
+    "sourceSha256": "bd0f5701fa3793eba7ab74f9a12274f4a574d8ecd90a71aeba6c58c61987fb7c",
+    "archivedBytes": 80451,
+    "archivedSha256": "bd0f5701fa3793eba7ab74f9a12274f4a574d8ecd90a71aeba6c58c61987fb7c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-9de2f-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "integrated25f-prep-corrected/014-worker-and-completed-save-evidence.json",
+    "sourceBytes": 402,
+    "sourceSha256": "3b62609cac141bba01cb830ed3045a7b41c66aa9fd2d4112b5191abd7f93c65d",
+    "archivedBytes": 402,
+    "archivedSha256": "3b62609cac141bba01cb830ed3045a7b41c66aa9fd2d4112b5191abd7f93c65d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\attachments\\dedicated-kitchen-prep-counter-worker-and-save-evidence-0091c13af2febfc286c181c2b3e2c01de60438d7.json",
+    "archived": "integrated25f-prep-corrected/015-dedicated-kitchen-prep-counter-worker-and-save-evidence-0091c13a.json",
+    "sourceBytes": 4545,
+    "sourceSha256": "670327d6d09cac7856c64c48be2fb69d7605f25e9acb2750a2305b8a8ff7fe72",
+    "archivedBytes": 4545,
+    "archivedSha256": "670327d6d09cac7856c64c48be2fb69d7605f25e9acb2750a2305b8a8ff7fe72"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\dedicated-kitchen-prep-counter-loaded-fullhd.png",
+    "archived": "integrated25f-prep-corrected/016-dedicated-kitchen-prep-counter-loaded-fullhd.png",
+    "sourceBytes": 1540769,
+    "sourceSha256": "1e087d6518c7ce2fff0ed85f8319c0c6373de2c74a9abc5fed82c17f0cab912a",
+    "archivedBytes": 1540769,
+    "archivedSha256": "1e087d6518c7ce2fff0ed85f8319c0c6373de2c74a9abc5fed82c17f0cab912a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\dedicated-kitchen-prep-counter-worker-and-save-evidence.json",
+    "archived": "integrated25f-prep-corrected/017-dedicated-kitchen-prep-counter-worker-and-save-evidence.json",
+    "sourceBytes": 4545,
+    "sourceSha256": "670327d6d09cac7856c64c48be2fb69d7605f25e9acb2750a2305b8a8ff7fe72",
+    "archivedBytes": 4545,
+    "archivedSha256": "670327d6d09cac7856c64c48be2fb69d7605f25e9acb2750a2305b8a8ff7fe72"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\dedicated-kitchen-prep-counter-worker-completed-fullhd.png",
+    "archived": "integrated25f-prep-corrected/018-dedicated-kitchen-prep-counter-worker-completed-fullhd.png",
+    "sourceBytes": 1575539,
+    "sourceSha256": "9c63ef24683fcff578d74baef17e987f3d6b547e1ec3c288b6c43214adf65a3e",
+    "archivedBytes": 1575539,
+    "archivedSha256": "9c63ef24683fcff578d74baef17e987f3d6b547e1ec3c288b6c43214adf65a3e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\kitchen-modern-actual-network-and-htmlimage-evidence.json",
+    "archived": "integrated25f-prep-corrected/019-kitchen-modern-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 27763,
+    "sourceSha256": "b125de7aa1ac867899449a3ed0d6ae7ed9e6f3398e3f8e98db54dd51cbfa49d0",
+    "archivedBytes": 27763,
+    "archivedSha256": "b125de7aa1ac867899449a3ed0d6ae7ed9e6f3398e3f8e98db54dd51cbfa49d0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\kitchen-modern-actual200-exposed-frame.png",
+    "archived": "integrated25f-prep-corrected/020-kitchen-modern-actual200-exposed-frame.png",
+    "sourceBytes": 26275,
+    "sourceSha256": "cb2f68bf10ba42b528ed58cd6e3d4562a99f49ec1c20ec67cbe71d325790177f",
+    "archivedBytes": 26275,
+    "archivedSha256": "cb2f68bf10ba42b528ed58cd6e3d4562a99f49ec1c20ec67cbe71d325790177f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\kitchen-modern-raw-response-provenance.json",
+    "archived": "integrated25f-prep-corrected/021-kitchen-modern-raw-response-provenance.json",
+    "sourceBytes": 5989,
+    "sourceSha256": "28bf9a538696235b2ac4cba3aab13a110cf9a720be009f8bd3f44318ff90b532",
+    "archivedBytes": 5989,
+    "archivedSha256": "28bf9a538696235b2ac4cba3aab13a110cf9a720be009f8bd3f44318ff90b532"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\kitchen-prep-canonical-source60-e40-fullhd.png",
+    "archived": "integrated25f-prep-corrected/022-kitchen-prep-canonical-source60-e40-fullhd.png",
+    "sourceBytes": 1562570,
+    "sourceSha256": "d6b3c8d65476ae865e297b4ace18f917a4ded37ad4c5aa4d21621e4abda2a706",
+    "archivedBytes": 1562570,
+    "archivedSha256": "d6b3c8d65476ae865e297b4ace18f917a4ded37ad4c5aa4d21621e4abda2a706"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\kitchen-prep-canonical-whole-state.json",
+    "archived": "integrated25f-prep-corrected/023-kitchen-prep-canonical-whole-state.json",
+    "sourceBytes": 80614,
+    "sourceSha256": "b50de92a3e1d5715c4df3f739e6abb7256442f6d554266fa4732b0ce7ddb3eca",
+    "archivedBytes": 80614,
+    "archivedSha256": "b50de92a3e1d5715c4df3f739e6abb7256442f6d554266fa4732b0ce7ddb3eca"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\kitchen-prep-paused-after-load.json",
+    "archived": "integrated25f-prep-corrected/024-kitchen-prep-paused-after-load.json",
+    "sourceBytes": 80614,
+    "sourceSha256": "19cf02c390f991d51b4d6fc6a580af665edd56b09b8613566c7006b89632f191",
+    "archivedBytes": 80614,
+    "archivedSha256": "19cf02c390f991d51b4d6fc6a580af665edd56b09b8613566c7006b89632f191"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\kitchen-prep-paused-before-save.json",
+    "archived": "integrated25f-prep-corrected/025-kitchen-prep-paused-before-save.json",
+    "sourceBytes": 80614,
+    "sourceSha256": "38a28c721e71d553b9f28a512cab8fe3b4161699ff30464fe8200d3b8fa9fe90",
+    "archivedBytes": 80614,
+    "archivedSha256": "38a28c721e71d553b9f28a512cab8fe3b4161699ff30464fe8200d3b8fa9fe90"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-corrected-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "integrated25f-prep-corrected/026-worker-and-completed-save-evidence.json",
+    "sourceBytes": 377,
+    "sourceSha256": "54e56a96ec7e0b4d448537c3279307d19b5be9a6743869775463ccafb780b15a",
+    "archivedBytes": 377,
+    "archivedSha256": "54e56a96ec7e0b4d448537c3279307d19b5be9a6743869775463ccafb780b15a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-original-native-20261004.txt",
+    "archived": "integrated25f-canteen-bench-node24-original/console.txt",
+    "sourceBytes": 3666,
+    "sourceSha256": "1dc655916853563afdcaf7267ef48dcfd0fcee5b21ee5c15b248ab341c9ec22f",
+    "archivedBytes": 1834,
+    "archivedSha256": "d3e025635105afd0cbbefe8b0bb0b8cbba9c80bfc2e57f104a1facca5c28aeec",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-original-native-20261004\\report.json",
+    "archived": "integrated25f-canteen-bench-node24-original/001-report.json",
+    "sourceBytes": 5357,
+    "sourceSha256": "d44415081740bb519489bfa25fdce4bafe2ab6993300ca30bc8b44fb324c07fa",
+    "archivedBytes": 5357,
+    "archivedSha256": "d44415081740bb519489bfa25fdce4bafe2ab6993300ca30bc8b44fb324c07fa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-original-native-20261004\\results\\.last-run.json",
+    "archived": "integrated25f-canteen-bench-node24-original/002-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "e22df5d0991eb28c09093b1e678b3fa8cd1fab48185d38e67cf79fb6e63ad5ea",
+    "archivedBytes": 45,
+    "archivedSha256": "e22df5d0991eb28c09093b1e678b3fa8cd1fab48185d38e67cf79fb6e63ad5ea"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004.txt",
+    "archived": "integrated25f-canteen-bench-q0-original/console.txt",
+    "sourceBytes": 28296,
+    "sourceSha256": "9546e76113ba1b367e1eba192e9fe5175aeee2550bf54e00d15109c82764e10d",
+    "archivedBytes": 14673,
+    "archivedSha256": "140bd9b3850bf181929698e7d5ce575b864a9847378cad234eed330b7cb730fa",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\report.json",
+    "archived": "integrated25f-canteen-bench-q0-original/001-report.json",
+    "sourceBytes": 30014,
+    "sourceSha256": "86efd6e26e84a1140bc5310c0f2c81c79544d17183e56350633d4bcdbaf12915",
+    "archivedBytes": 30014,
+    "archivedSha256": "86efd6e26e84a1140bc5310c0f2c81c79544d17183e56350633d4bcdbaf12915"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\.last-run.json",
+    "archived": "integrated25f-canteen-bench-q0-original/002-.last-run.json",
+    "sourceBytes": 145,
+    "sourceSha256": "7bd10635252ec5fd288c6ec7af53f384708f37d0def10eb2ef6bb44ef60b3c2a",
+    "archivedBytes": 145,
+    "archivedSha256": "7bd10635252ec5fd288c6ec7af53f384708f37d0def10eb2ef6bb44ef60b3c2a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\attachments\\dining-worker-and-pixel-evidence-9c78777e145ba38314e696ec6cf97b7afe88e388.json",
+    "archived": "integrated25f-canteen-bench-q0-original/003-dining-worker-and-pixel-evidence-9c78777e145ba38314e696ec6cf97b7.json",
+    "sourceBytes": 377448,
+    "sourceSha256": "d92dc4672d557238e166099b0c1b632e492bf3e3e0d564b0748fc5945e3c669a",
+    "archivedBytes": 377448,
+    "archivedSha256": "d92dc4672d557238e166099b0c1b632e492bf3e3e0d564b0748fc5945e3c669a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\dining-loaded-fullhd.png",
+    "archived": "integrated25f-canteen-bench-q0-original/004-dining-loaded-fullhd.png",
+    "sourceBytes": 1580452,
+    "sourceSha256": "5cf0af126a4a603bd2bae8c09568f39876fc090a0566d160f131da9c5e88f10d",
+    "archivedBytes": 1580452,
+    "archivedSha256": "5cf0af126a4a603bd2bae8c09568f39876fc090a0566d160f131da9c5e88f10d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\dining-support-angle-pending-calibration-fullhd.png",
+    "archived": "integrated25f-canteen-bench-q0-original/005-dining-support-angle-pending-calibration-fullhd.png",
+    "sourceBytes": 1540267,
+    "sourceSha256": "068d22a09dca553352c106d880e0586d9cfd52bf5f2b7ca74610fed8643c102a",
+    "archivedBytes": 1540267,
+    "archivedSha256": "068d22a09dca553352c106d880e0586d9cfd52bf5f2b7ca74610fed8643c102a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\dining-worker-and-pixel-evidence.json",
+    "archived": "integrated25f-canteen-bench-q0-original/006-dining-worker-and-pixel-evidence.json",
+    "sourceBytes": 377448,
+    "sourceSha256": "d92dc4672d557238e166099b0c1b632e492bf3e3e0d564b0748fc5945e3c669a",
+    "archivedBytes": 377448,
+    "archivedSha256": "d92dc4672d557238e166099b0c1b632e492bf3e3e0d564b0748fc5945e3c669a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\dining-worker-completed-fullhd.png",
+    "archived": "integrated25f-canteen-bench-q0-original/007-dining-worker-completed-fullhd.png",
+    "sourceBytes": 1619333,
+    "sourceSha256": "4bd460f9f6a4b1e9f7b17727b6144025aa336c8c6d9404e8e25b2c7d1f1af36a",
+    "archivedBytes": 1619333,
+    "archivedSha256": "4bd460f9f6a4b1e9f7b17727b6144025aa336c8c6d9404e8e25b2c7d1f1af36a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\error-context.md",
+    "archived": "integrated25f-canteen-bench-q0-original/008-error-context.md",
+    "sourceBytes": 9614,
+    "sourceSha256": "42fcb2883ac86c7064533152d0dde8b75ac2c19776a4d64b5b16daa06e664407",
+    "archivedBytes": 9614,
+    "archivedSha256": "42fcb2883ac86c7064533152d0dde8b75ac2c19776a4d64b5b16daa06e664407"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\failed-construction-fullhd.png",
+    "archived": "integrated25f-canteen-bench-q0-original/009-failed-construction-fullhd.png",
+    "sourceBytes": 1540267,
+    "sourceSha256": "068d22a09dca553352c106d880e0586d9cfd52bf5f2b7ca74610fed8643c102a",
+    "archivedBytes": 1540267,
+    "archivedSha256": "068d22a09dca553352c106d880e0586d9cfd52bf5f2b7ca74610fed8643c102a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\failed-construction-worker-snapshot.json",
+    "archived": "integrated25f-canteen-bench-q0-original/010-failed-construction-worker-snapshot.json",
+    "sourceBytes": 90482,
+    "sourceSha256": "3e042b9087dae5143b6f21e97d7b1bec4333d9a49c5c239154645e01ae82cb4c",
+    "archivedBytes": 90482,
+    "archivedSha256": "3e042b9087dae5143b6f21e97d7b1bec4333d9a49c5c239154645e01ae82cb4c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\canteen-dining-table-playe-34971-ored-plates-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "integrated25f-canteen-bench-q0-original/011-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 340,
+    "sourceSha256": "0658834fe33c61ccf6858521ec51294298d5db3c14e07c46e87e4835b34ddae6",
+    "archivedBytes": 340,
+    "archivedSha256": "0658834fe33c61ccf6858521ec51294298d5db3c14e07c46e87e4835b34ddae6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--9989a-apacity-before-Holding-Cell\\capacity-completed-worker-snapshot.json",
+    "archived": "integrated25f-canteen-bench-q0-original/012-capacity-completed-worker-snapshot.json",
+    "sourceBytes": 56745,
+    "sourceSha256": "37cf37c411973463a12ec386f889036117864aafa2ba659030e001f840f24cc0",
+    "archivedBytes": 56745,
+    "archivedSha256": "37cf37c411973463a12ec386f889036117864aafa2ba659030e001f840f24cc0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\attachments\\wooden-bench-worker-and-pixel-evidence-c3ce69fa33ac1916bbeead79d2424ac938b79dea.json",
+    "archived": "integrated25f-canteen-bench-q0-original/013-wooden-bench-worker-and-pixel-evidence-c3ce69fa33ac1916bbeead79d.json",
+    "sourceBytes": 137230,
+    "sourceSha256": "fc17723b3607ea70b30dd2ca94a02877f8f31ac64ed07d14cc2e5fe168faa614",
+    "archivedBytes": 137230,
+    "archivedSha256": "fc17723b3607ea70b30dd2ca94a02877f8f31ac64ed07d14cc2e5fe168faa614"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-actual-network-and-htmlimage-evidence.json",
+    "archived": "integrated25f-canteen-bench-q0-original/014-bench-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 26976,
+    "sourceSha256": "0eb3da5a80906e34e14cd3c7b40ec46d203c8ec56dfaeceaff673f6d8d45d3a5",
+    "archivedBytes": 26976,
+    "archivedSha256": "0eb3da5a80906e34e14cd3c7b40ec46d203c8ec56dfaeceaff673f6d8d45d3a5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-actual200-exposed-frame.png",
+    "archived": "integrated25f-canteen-bench-q0-original/015-bench-actual200-exposed-frame.png",
+    "sourceBytes": 16919,
+    "sourceSha256": "5ad7afdb520ed6cb58c5dd87e652a5e7165d7095d593b48708f40746bc90ac8f",
+    "archivedBytes": 16919,
+    "archivedSha256": "5ad7afdb520ed6cb58c5dd87e652a5e7165d7095d593b48708f40746bc90ac8f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-completed-whole-paused-worker-snapshot.json",
+    "archived": "integrated25f-canteen-bench-q0-original/016-bench-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 79482,
+    "sourceSha256": "d8385ae8dc40360767fbca254c3b517a2e4ae7b173e97bda433f01bd9b616a3a",
+    "archivedBytes": 79482,
+    "archivedSha256": "d8385ae8dc40360767fbca254c3b517a2e4ae7b173e97bda433f01bd9b616a3a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-connected-rails-local60-elev40-loaded-fullhd.png",
+    "archived": "integrated25f-canteen-bench-q0-original/017-bench-connected-rails-local60-elev40-loaded-fullhd.png",
+    "sourceBytes": 1560154,
+    "sourceSha256": "678d582b5950dba672a550ca59b88a6fd57849a556f92f0cc33b99f8c2d75e02",
+    "archivedBytes": 1560154,
+    "archivedSha256": "678d582b5950dba672a550ca59b88a6fd57849a556f92f0cc33b99f8c2d75e02"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-detail-pending-native-recipe.json",
+    "archived": "integrated25f-canteen-bench-q0-original/018-bench-detail-pending-native-recipe.json",
+    "sourceBytes": 101209,
+    "sourceSha256": "6255018675350bd14e00581304128ccbf0de35897731a8fe6305559494ff7c82",
+    "archivedBytes": 101209,
+    "archivedSha256": "6255018675350bd14e00581304128ccbf0de35897731a8fe6305559494ff7c82"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-detail-whole-paused-worker-snapshot.json",
+    "archived": "integrated25f-canteen-bench-q0-original/019-bench-detail-whole-paused-worker-snapshot.json",
+    "sourceBytes": 79482,
+    "sourceSha256": "11c5909f8bdb576be953b678fc04299fea483814b02bf1bb225895df4a47beb7",
+    "archivedBytes": 79482,
+    "archivedSha256": "11c5909f8bdb576be953b678fc04299fea483814b02bf1bb225895df4a47beb7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-loaded-whole-paused-worker-snapshot.json",
+    "archived": "integrated25f-canteen-bench-q0-original/020-bench-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 79482,
+    "sourceSha256": "13a3fe035b192b47d444160ff23c7b1ac33547c654e9015e59b7a385b7d03539",
+    "archivedBytes": 79482,
+    "archivedSha256": "13a3fe035b192b47d444160ff23c7b1ac33547c654e9015e59b7a385b7d03539"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\bench-raw-response-provenance.json",
+    "archived": "integrated25f-canteen-bench-q0-original/021-bench-raw-response-provenance.json",
+    "sourceBytes": 5775,
+    "sourceSha256": "cf3f726e43bbe5147d7faedad77e5f4076411096299a8a6daa163e162ffa200c",
+    "archivedBytes": 5775,
+    "archivedSha256": "cf3f726e43bbe5147d7faedad77e5f4076411096299a8a6daa163e162ffa200c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "integrated25f-canteen-bench-q0-original/022-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 56745,
+    "sourceSha256": "3cd10bee769978561e290779ee885d838aff0cfac41edd97a856936040897b50",
+    "archivedBytes": 56745,
+    "archivedSha256": "3cd10bee769978561e290779ee885d838aff0cfac41edd97a856936040897b50"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\error-context.md",
+    "archived": "integrated25f-canteen-bench-q0-original/023-error-context.md",
+    "sourceBytes": 9614,
+    "sourceSha256": "ab6514476f1be5d826397e73a94d660ceef563b1f3fe08bd56401c995d1fb965",
+    "archivedBytes": 9614,
+    "archivedSha256": "ab6514476f1be5d826397e73a94d660ceef563b1f3fe08bd56401c995d1fb965"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\failed-bench-raw-network-provenance.json",
+    "archived": "integrated25f-canteen-bench-q0-original/024-failed-bench-raw-network-provenance.json",
+    "sourceBytes": 5775,
+    "sourceSha256": "cf3f726e43bbe5147d7faedad77e5f4076411096299a8a6daa163e162ffa200c",
+    "archivedBytes": 5775,
+    "archivedSha256": "cf3f726e43bbe5147d7faedad77e5f4076411096299a8a6daa163e162ffa200c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "integrated25f-canteen-bench-q0-original/025-failed-player-fullhd.png",
+    "sourceBytes": 1560154,
+    "sourceSha256": "678d582b5950dba672a550ca59b88a6fd57849a556f92f0cc33b99f8c2d75e02",
+    "archivedBytes": 1560154,
+    "archivedSha256": "678d582b5950dba672a550ca59b88a6fd57849a556f92f0cc33b99f8c2d75e02"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\failed-player-worker-snapshot.json",
+    "archived": "integrated25f-canteen-bench-q0-original/026-failed-player-worker-snapshot.json",
+    "sourceBytes": 79482,
+    "sourceSha256": "447583751ff7da5f3ed459bdcfc0552c469daeecd146fd1612fc59beaf82d7a3",
+    "archivedBytes": 79482,
+    "archivedSha256": "447583751ff7da5f3ed459bdcfc0552c469daeecd146fd1612fc59beaf82d7a3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\wooden-bench-loaded-fullhd.png",
+    "archived": "integrated25f-canteen-bench-q0-original/027-wooden-bench-loaded-fullhd.png",
+    "sourceBytes": 1518811,
+    "sourceSha256": "b5fa55cdcbfaf6de59947710285ca4050236451ce2fedc198769e2bab612d25d",
+    "archivedBytes": 1518811,
+    "archivedSha256": "b5fa55cdcbfaf6de59947710285ca4050236451ce2fedc198769e2bab612d25d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\wooden-bench-worker-and-pixel-evidence.json",
+    "archived": "integrated25f-canteen-bench-q0-original/028-wooden-bench-worker-and-pixel-evidence.json",
+    "sourceBytes": 137230,
+    "sourceSha256": "fc17723b3607ea70b30dd2ca94a02877f8f31ac64ed07d14cc2e5fe168faa614",
+    "archivedBytes": 137230,
+    "archivedSha256": "fc17723b3607ea70b30dd2ca94a02877f8f31ac64ed07d14cc2e5fe168faa614"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\wooden-bench-worker-completed-fullhd.png",
+    "archived": "integrated25f-canteen-bench-q0-original/029-wooden-bench-worker-completed-fullhd.png",
+    "sourceBytes": 1552915,
+    "sourceSha256": "ee23262e2b38523eb97a78a6bf877cb71bada67d5864355c3740bfa34124d8e9",
+    "archivedBytes": 1552915,
+    "archivedSha256": "ee23262e2b38523eb97a78a6bf877cb71bada67d5864355c3740bfa34124d8e9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-json-fixed-native-20261004\\results\\wooden-bench-player-build--a32d4-ber-palette-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "integrated25f-canteen-bench-q0-original/030-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 331,
+    "sourceSha256": "32064409088fafb94eaa3ed157551135c98a96f8d95bbca828dc9d941efef45b",
+    "archivedBytes": 331,
+    "archivedSha256": "32064409088fafb94eaa3ed157551135c98a96f8d95bbca828dc9d941efef45b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004.txt",
+    "archived": "integrated25f-canteen-bench-q1-original/console.txt",
+    "sourceBytes": 27640,
+    "sourceSha256": "730aedcdc621af2c10cae13c17924b3d306a546edcd92cc056368e88ee2a12dc",
+    "archivedBytes": 14341,
+    "archivedSha256": "06f2489a2ab163bd489eb1ccc1d2a28ac1a3e8b7d5e474c88f3c7810d0f70109",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\report.json",
+    "archived": "integrated25f-canteen-bench-q1-original/001-report.json",
+    "sourceBytes": 27831,
+    "sourceSha256": "9e434896b55ff51be9773dabcd9f00205f7c98998674234a914847f1a5012056",
+    "archivedBytes": 27831,
+    "archivedSha256": "9e434896b55ff51be9773dabcd9f00205f7c98998674234a914847f1a5012056"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\.last-run.json",
+    "archived": "integrated25f-canteen-bench-q1-original/002-.last-run.json",
+    "sourceBytes": 145,
+    "sourceSha256": "570bda4bfd72c757b17dabef8cca5f576fbb1610139dffed47983baefb0235dd",
+    "archivedBytes": 145,
+    "archivedSha256": "570bda4bfd72c757b17dabef8cca5f576fbb1610139dffed47983baefb0235dd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\attachments\\dining-worker-and-pixel-evidence-6a6457d68b3ecf5d973121e7d3f057ac1a3251a7.json",
+    "archived": "integrated25f-canteen-bench-q1-original/003-dining-worker-and-pixel-evidence-6a6457d68b3ecf5d973121e7d3f057a.json",
+    "sourceBytes": 363386,
+    "sourceSha256": "53b6d86dd4666c43f0665ecf59b2a55e88649ff3eeeddaaa7d2d0b30cf7427b2",
+    "archivedBytes": 363386,
+    "archivedSha256": "53b6d86dd4666c43f0665ecf59b2a55e88649ff3eeeddaaa7d2d0b30cf7427b2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\dining-loaded-fullhd.png",
+    "archived": "integrated25f-canteen-bench-q1-original/004-dining-loaded-fullhd.png",
+    "sourceBytes": 1564126,
+    "sourceSha256": "91b1f81da7f5c24757cdfeeac1ef2501b85a151af5cf22ab296a386a81420f7e",
+    "archivedBytes": 1564126,
+    "archivedSha256": "91b1f81da7f5c24757cdfeeac1ef2501b85a151af5cf22ab296a386a81420f7e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\dining-support-angle-pending-calibration-fullhd.png",
+    "archived": "integrated25f-canteen-bench-q1-original/005-dining-support-angle-pending-calibration-fullhd.png",
+    "sourceBytes": 1619301,
+    "sourceSha256": "9b41598978c529bb0e75fb056d7268ac795503230da27d67b5a2666b601fec71",
+    "archivedBytes": 1619301,
+    "archivedSha256": "9b41598978c529bb0e75fb056d7268ac795503230da27d67b5a2666b601fec71"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\dining-worker-and-pixel-evidence.json",
+    "archived": "integrated25f-canteen-bench-q1-original/006-dining-worker-and-pixel-evidence.json",
+    "sourceBytes": 363386,
+    "sourceSha256": "53b6d86dd4666c43f0665ecf59b2a55e88649ff3eeeddaaa7d2d0b30cf7427b2",
+    "archivedBytes": 363386,
+    "archivedSha256": "53b6d86dd4666c43f0665ecf59b2a55e88649ff3eeeddaaa7d2d0b30cf7427b2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\dining-worker-completed-fullhd.png",
+    "archived": "integrated25f-canteen-bench-q1-original/007-dining-worker-completed-fullhd.png",
+    "sourceBytes": 1603640,
+    "sourceSha256": "fad74042dbeac9e5dfd1016585b425e86eb8bbcbbe9718fa9c87be6bb8bc0983",
+    "archivedBytes": 1603640,
+    "archivedSha256": "fad74042dbeac9e5dfd1016585b425e86eb8bbcbbe9718fa9c87be6bb8bc0983"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\error-context.md",
+    "archived": "integrated25f-canteen-bench-q1-original/008-error-context.md",
+    "sourceBytes": 9614,
+    "sourceSha256": "42fcb2883ac86c7064533152d0dde8b75ac2c19776a4d64b5b16daa06e664407",
+    "archivedBytes": 9614,
+    "archivedSha256": "42fcb2883ac86c7064533152d0dde8b75ac2c19776a4d64b5b16daa06e664407"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\failed-construction-fullhd.png",
+    "archived": "integrated25f-canteen-bench-q1-original/009-failed-construction-fullhd.png",
+    "sourceBytes": 1619301,
+    "sourceSha256": "9b41598978c529bb0e75fb056d7268ac795503230da27d67b5a2666b601fec71",
+    "archivedBytes": 1619301,
+    "archivedSha256": "9b41598978c529bb0e75fb056d7268ac795503230da27d67b5a2666b601fec71"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\failed-construction-worker-snapshot.json",
+    "archived": "integrated25f-canteen-bench-q1-original/010-failed-construction-worker-snapshot.json",
+    "sourceBytes": 90429,
+    "sourceSha256": "56eb6e23f8960d76ebb614cbab0dc08f1cab2f07a01bef46bce76854d143efb5",
+    "archivedBytes": 90429,
+    "archivedSha256": "56eb6e23f8960d76ebb614cbab0dc08f1cab2f07a01bef46bce76854d143efb5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\canteen-dining-table-playe-d4997-ored-plates-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "integrated25f-canteen-bench-q1-original/011-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 365,
+    "sourceSha256": "51545c40de07ae4e3fab5c5d643807e1e9b045baf85d1b1962411b159b2d8f32",
+    "archivedBytes": 365,
+    "archivedSha256": "51545c40de07ae4e3fab5c5d643807e1e9b045baf85d1b1962411b159b2d8f32"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--9989a-apacity-before-Holding-Cell\\capacity-completed-worker-snapshot.json",
+    "archived": "integrated25f-canteen-bench-q1-original/012-capacity-completed-worker-snapshot.json",
+    "sourceBytes": 56740,
+    "sourceSha256": "c5b02813ff8684d80f2ef4b171490af35fdf2cd62fe5e18d3e8c2a49b466cbce",
+    "archivedBytes": 56740,
+    "archivedSha256": "c5b02813ff8684d80f2ef4b171490af35fdf2cd62fe5e18d3e8c2a49b466cbce"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\attachments\\wooden-bench-worker-and-pixel-evidence-90a133eb2295e51eca2f51e60184d6bbc59a4aa9.json",
+    "archived": "integrated25f-canteen-bench-q1-original/013-wooden-bench-worker-and-pixel-evidence-90a133eb2295e51eca2f51e60.json",
+    "sourceBytes": 136947,
+    "sourceSha256": "7e19bfce8131e1f33f0fdfc09c290f94963fdd75ee1a07de43ff0ed76dbcefbe",
+    "archivedBytes": 136947,
+    "archivedSha256": "7e19bfce8131e1f33f0fdfc09c290f94963fdd75ee1a07de43ff0ed76dbcefbe"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-actual-network-and-htmlimage-evidence.json",
+    "archived": "integrated25f-canteen-bench-q1-original/014-bench-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 24419,
+    "sourceSha256": "bb184a3122f21c1f5c4360d2e8c163b066d49f715e584df436beeeb3bbfbcec5",
+    "archivedBytes": 24419,
+    "archivedSha256": "bb184a3122f21c1f5c4360d2e8c163b066d49f715e584df436beeeb3bbfbcec5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-actual200-exposed-frame.png",
+    "archived": "integrated25f-canteen-bench-q1-original/015-bench-actual200-exposed-frame.png",
+    "sourceBytes": 16919,
+    "sourceSha256": "5ad7afdb520ed6cb58c5dd87e652a5e7165d7095d593b48708f40746bc90ac8f",
+    "archivedBytes": 16919,
+    "archivedSha256": "5ad7afdb520ed6cb58c5dd87e652a5e7165d7095d593b48708f40746bc90ac8f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-completed-whole-paused-worker-snapshot.json",
+    "archived": "integrated25f-canteen-bench-q1-original/016-bench-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 79276,
+    "sourceSha256": "9cf8914499cfb9cd0046109c3d347d672d688883cd7207f9ccf1c0dd468d15c8",
+    "archivedBytes": 79276,
+    "archivedSha256": "9cf8914499cfb9cd0046109c3d347d672d688883cd7207f9ccf1c0dd468d15c8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-connected-rails-local60-elev40-loaded-fullhd.png",
+    "archived": "integrated25f-canteen-bench-q1-original/017-bench-connected-rails-local60-elev40-loaded-fullhd.png",
+    "sourceBytes": 1631957,
+    "sourceSha256": "84d8f29e75313dfcb517610c5869fc0482c8a462ac323edf766af20c2f70e802",
+    "archivedBytes": 1631957,
+    "archivedSha256": "84d8f29e75313dfcb517610c5869fc0482c8a462ac323edf766af20c2f70e802"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-detail-pending-native-recipe.json",
+    "archived": "integrated25f-canteen-bench-q1-original/018-bench-detail-pending-native-recipe.json",
+    "sourceBytes": 87378,
+    "sourceSha256": "c0c92199e9323b6f30dab4c3aae7598813827d208bf7335728c17564a460d013",
+    "archivedBytes": 87378,
+    "archivedSha256": "c0c92199e9323b6f30dab4c3aae7598813827d208bf7335728c17564a460d013"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-detail-whole-paused-worker-snapshot.json",
+    "archived": "integrated25f-canteen-bench-q1-original/019-bench-detail-whole-paused-worker-snapshot.json",
+    "sourceBytes": 79276,
+    "sourceSha256": "7872b1f43b753516807933de8da2be742e0bd3285d00dee3e499add300335cf7",
+    "archivedBytes": 79276,
+    "archivedSha256": "7872b1f43b753516807933de8da2be742e0bd3285d00dee3e499add300335cf7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-loaded-whole-paused-worker-snapshot.json",
+    "archived": "integrated25f-canteen-bench-q1-original/020-bench-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 79276,
+    "sourceSha256": "8246178b808e13bc443e3df535dc544111fa9622a7d7cf8437873833a8921dda",
+    "archivedBytes": 79276,
+    "archivedSha256": "8246178b808e13bc443e3df535dc544111fa9622a7d7cf8437873833a8921dda"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\bench-raw-response-provenance.json",
+    "archived": "integrated25f-canteen-bench-q1-original/021-bench-raw-response-provenance.json",
+    "sourceBytes": 3308,
+    "sourceSha256": "2c5da2d2cd7cf206e03714dcf9bc0361a930712ab6b2d28adc44616a1e8216b1",
+    "archivedBytes": 3308,
+    "archivedSha256": "2c5da2d2cd7cf206e03714dcf9bc0361a930712ab6b2d28adc44616a1e8216b1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "integrated25f-canteen-bench-q1-original/022-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 56740,
+    "sourceSha256": "af307d18fd38d91bcd75b928011cc550f723d3028c661929524e9eb416e12d98",
+    "archivedBytes": 56740,
+    "archivedSha256": "af307d18fd38d91bcd75b928011cc550f723d3028c661929524e9eb416e12d98"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\error-context.md",
+    "archived": "integrated25f-canteen-bench-q1-original/023-error-context.md",
+    "sourceBytes": 9614,
+    "sourceSha256": "eb7fffd78ed9756a63874f2bfa4826454ad85bcbb6c3e31c86e74208d16c9517",
+    "archivedBytes": 9614,
+    "archivedSha256": "eb7fffd78ed9756a63874f2bfa4826454ad85bcbb6c3e31c86e74208d16c9517"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\failed-bench-raw-network-provenance.json",
+    "archived": "integrated25f-canteen-bench-q1-original/024-failed-bench-raw-network-provenance.json",
+    "sourceBytes": 3308,
+    "sourceSha256": "2c5da2d2cd7cf206e03714dcf9bc0361a930712ab6b2d28adc44616a1e8216b1",
+    "archivedBytes": 3308,
+    "archivedSha256": "2c5da2d2cd7cf206e03714dcf9bc0361a930712ab6b2d28adc44616a1e8216b1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "integrated25f-canteen-bench-q1-original/025-failed-player-fullhd.png",
+    "sourceBytes": 1631957,
+    "sourceSha256": "84d8f29e75313dfcb517610c5869fc0482c8a462ac323edf766af20c2f70e802",
+    "archivedBytes": 1631957,
+    "archivedSha256": "84d8f29e75313dfcb517610c5869fc0482c8a462ac323edf766af20c2f70e802"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\failed-player-worker-snapshot.json",
+    "archived": "integrated25f-canteen-bench-q1-original/026-failed-player-worker-snapshot.json",
+    "sourceBytes": 79276,
+    "sourceSha256": "36abadeeb2fd9fb07933bedef2996ec88e1f8bfa04549814c279e6907f5a3c59",
+    "archivedBytes": 79276,
+    "archivedSha256": "36abadeeb2fd9fb07933bedef2996ec88e1f8bfa04549814c279e6907f5a3c59"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\wooden-bench-loaded-fullhd.png",
+    "archived": "integrated25f-canteen-bench-q1-original/027-wooden-bench-loaded-fullhd.png",
+    "sourceBytes": 1524248,
+    "sourceSha256": "564b078e849f67de03533d80fd429db10bc6c91e9d723d933d7002ac97dacdfa",
+    "archivedBytes": 1524248,
+    "archivedSha256": "564b078e849f67de03533d80fd429db10bc6c91e9d723d933d7002ac97dacdfa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\wooden-bench-worker-and-pixel-evidence.json",
+    "archived": "integrated25f-canteen-bench-q1-original/028-wooden-bench-worker-and-pixel-evidence.json",
+    "sourceBytes": 136947,
+    "sourceSha256": "7e19bfce8131e1f33f0fdfc09c290f94963fdd75ee1a07de43ff0ed76dbcefbe",
+    "archivedBytes": 136947,
+    "archivedSha256": "7e19bfce8131e1f33f0fdfc09c290f94963fdd75ee1a07de43ff0ed76dbcefbe"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\wooden-bench-worker-completed-fullhd.png",
+    "archived": "integrated25f-canteen-bench-q1-original/029-wooden-bench-worker-completed-fullhd.png",
+    "sourceBytes": 1558195,
+    "sourceSha256": "79dfc4556b99ad9c444f655ec8231b2c84b9ca24664e0af9f9b881758e22804e",
+    "archivedBytes": 1558195,
+    "archivedSha256": "79dfc4556b99ad9c444f655ec8231b2c84b9ca24664e0af9f9b881758e22804e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-canteen-bench-q1-original-native-20261004\\results\\wooden-bench-player-build--af6ad-ber-palette-after-Save-Load\\worker-and-completed-pixel-evidence.json",
+    "archived": "integrated25f-canteen-bench-q1-original/030-worker-and-completed-pixel-evidence.json",
+    "sourceBytes": 356,
+    "sourceSha256": "c614a04a4bcf1ec641278724170fa6f790f1e83113ba187f6d7a166fd4f69335",
+    "archivedBytes": 356,
+    "archivedSha256": "c614a04a4bcf1ec641278724170fa6f790f1e83113ba187f6d7a166fd4f69335"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-b4-full-source-20261004.json",
+    "archived": "integratedb4-source/report.json",
+    "sourceBytes": 3400536,
+    "sourceSha256": "5980b716ddc384330c325548e9a15c585124c217d27dcd69b39786b483ce39af",
+    "archivedBytes": 3400536,
+    "archivedSha256": "5980b716ddc384330c325548e9a15c585124c217d27dcd69b39786b483ce39af"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-b4-full-source-20261004.txt",
+    "archived": "integratedb4-source/console.txt",
+    "sourceBytes": 277390,
+    "sourceSha256": "bcb60c1796faa58f714d6dc6dbac1d3c98909ecbd74495f6896c11f1ac3b5d99",
+    "archivedBytes": 140628,
+    "archivedSha256": "dcf69b0e9933bb2e5b54725d65cc7155d1edd467dcbcc1823e819a7c5ac5752e",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-b4-citation-restored-20261004.txt",
+    "archived": "integratedb4-citation-wrong-path/console.txt",
+    "sourceBytes": 1548,
+    "sourceSha256": "3f5861e5b735d69ec057945d2122b3efae4b15f9457dd5009c0c06035466863f",
+    "archivedBytes": 774,
+    "archivedSha256": "bc509bc0a334b1701dd9070a5aa7d45954c9438b32a9afb88e4d32cd5055a521",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-b4-citation-restored-correct-path-20261004.txt",
+    "archived": "integratedb4-citation-restored/console.txt",
+    "sourceBytes": 1418,
+    "sourceSha256": "3565163413af41c68b9ee0235b8e7de2ecab4f3473f400ee7a8169a596ad8103",
+    "archivedBytes": 709,
+    "archivedSha256": "a2d106391a1c8f691a08e4862580cf4c32bf66a5f9b6f1991be3773bfac17311",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-teacher-medicine-types-20261004.txt",
+    "archived": "integratedb4-types/console.txt",
+    "sourceBytes": 816,
+    "sourceSha256": "fae0b7a9da9253f426209eee71a460266b6a5f3cb0bbc39e0ba98653419367b5",
+    "archivedBytes": 407,
+    "archivedSha256": "d966a37d144ad291f285d185e6cf668b4bc023cf61da621cf3adecf8b3aaeb17",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-teacher-medicine-assets-20261004.txt",
+    "archived": "integratedb4-assets/console.txt",
+    "sourceBytes": 1260,
+    "sourceSha256": "a0c03140f8de022232ba8a2e5c37f75e6f25fcef323b300fc4c3021ea60205ae",
+    "archivedBytes": 630,
+    "archivedSha256": "1e86a34a9573f5847efbf18defa65402e6ce58dc29ba391fd396b1ecfc68acbc",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004.txt",
+    "archived": "integrated-medical-union-controls/console.txt",
+    "sourceBytes": 1252,
+    "sourceSha256": "a7446749b50a02093bca8d1cc78ea3c867954fbf914f68c832848f1a91ebf748",
+    "archivedBytes": 625,
+    "archivedSha256": "48cd4119c264a6f4aaf5a493404c286d86c21e94c1676d53fab9e96af0195895",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004\\medical-bed\\actual-canonical-decoded72-GREEN.log",
+    "archived": "integrated-medical-union-controls/001-actual-canonical-decoded72-GREEN.log",
+    "sourceBytes": 296,
+    "sourceSha256": "47b86f21e6168c93fb2200f31f841a28d0db919df93b0ef6a7c3320b74f8844f",
+    "archivedBytes": 296,
+    "archivedSha256": "47b86f21e6168c93fb2200f31f841a28d0db919df93b0ef6a7c3320b74f8844f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004\\medical-bed\\actual-canonical-entry-controls.json",
+    "archived": "integrated-medical-union-controls/002-actual-canonical-entry-controls.json",
+    "sourceBytes": 262767,
+    "sourceSha256": "d004c192fc7cd2bf2ebdc3a82108432979f4d2027ed358c247aef1b4ef72b200",
+    "archivedBytes": 262767,
+    "archivedSha256": "d004c192fc7cd2bf2ebdc3a82108432979f4d2027ed358c247aef1b4ef72b200"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004\\medical-bed\\actual-canonical-entry-omission-RED.log",
+    "archived": "integrated-medical-union-controls/003-actual-canonical-entry-omission-RED.log",
+    "sourceBytes": 1440,
+    "sourceSha256": "6b3d4a4f74384fbd966e4aec2dc7e7433408286d353aaaaa09b26e8f6305b3eb",
+    "archivedBytes": 1440,
+    "archivedSha256": "6b3d4a4f74384fbd966e4aec2dc7e7433408286d353aaaaa09b26e8f6305b3eb"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004\\medical-bed\\actual-production-controls.json",
+    "archived": "integrated-medical-union-controls/004-actual-production-controls.json",
+    "sourceBytes": 265072,
+    "sourceSha256": "8a870dd9574eabaf4b37a13ca0b6691a46033fca0b70019b3105a409191d1ab3",
+    "archivedBytes": 265072,
+    "archivedSha256": "8a870dd9574eabaf4b37a13ca0b6691a46033fca0b70019b3105a409191d1ab3"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004\\medical-bed\\actual-shared-Infirmary-omission-RED.log",
+    "archived": "integrated-medical-union-controls/005-actual-shared-Infirmary-omission-RED.log",
+    "sourceBytes": 1835,
+    "sourceSha256": "83d7ca7a0c3df64893723ca45281660e685af452994474e1449f468a28ee5985",
+    "archivedBytes": 1835,
+    "archivedSha256": "83d7ca7a0c3df64893723ca45281660e685af452994474e1449f468a28ee5985"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004\\medical-bed\\exact-canonical-entry-restore-GREEN.log",
+    "archived": "integrated-medical-union-controls/006-exact-canonical-entry-restore-GREEN.log",
+    "sourceBytes": 377,
+    "sourceSha256": "cedc05312eed9dffbe82063e753a3531f523e9cc637d6c096ea964fa3803b493",
+    "archivedBytes": 377,
+    "archivedSha256": "cedc05312eed9dffbe82063e753a3531f523e9cc637d6c096ea964fa3803b493"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004\\medical-bed\\exact-shared-Infirmary-restore-GREEN.log",
+    "archived": "integrated-medical-union-controls/007-exact-shared-Infirmary-restore-GREEN.log",
+    "sourceBytes": 322,
+    "sourceSha256": "9353f6cdeaa0cbdb7770bffcddb7997f25a1a0e3d1d6d77388cdf3298c933fac",
+    "archivedBytes": 322,
+    "archivedSha256": "9353f6cdeaa0cbdb7770bffcddb7997f25a1a0e3d1d6d77388cdf3298c933fac"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004\\medical-bed\\scratch\\actual-canonical-medical-bed-entry.py",
+    "archived": "integrated-medical-union-controls/008-actual-canonical-medical-bed-entry.py",
+    "sourceBytes": 667,
+    "sourceSha256": "6b3f008cbe8cfe7238ff8a81fc37e85436833bac82ac0b81f9ac4145a8d8223d",
+    "archivedBytes": 667,
+    "archivedSha256": "6b3f008cbe8cfe7238ff8a81fc37e85436833bac82ac0b81f9ac4145a8d8223d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004\\medical-bed\\scratch\\actual-shared-medical-bed-configure.py",
+    "archived": "integrated-medical-union-controls/009-actual-shared-medical-bed-configure.py",
+    "sourceBytes": 1113,
+    "sourceSha256": "2302f3a05fa8f83274b97c833a39c06e611f6c8735043ebda5266d0962990872",
+    "archivedBytes": 1113,
+    "archivedSha256": "2302f3a05fa8f83274b97c833a39c06e611f6c8735043ebda5266d0962990872"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004\\medicine-cabinet\\actual-canonical-decoded72-GREEN.log",
+    "archived": "integrated-medical-union-controls/010-actual-canonical-decoded72-GREEN.log",
+    "sourceBytes": 304,
+    "sourceSha256": "3bb135f492f5c21b2a7dc1753e75aefdecf63d6e731cd8598b80b6c6abbb10f9",
+    "archivedBytes": 304,
+    "archivedSha256": "3bb135f492f5c21b2a7dc1753e75aefdecf63d6e731cd8598b80b6c6abbb10f9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004\\medicine-cabinet\\actual-canonical-entry-controls.json",
+    "archived": "integrated-medical-union-controls/011-actual-canonical-entry-controls.json",
+    "sourceBytes": 263705,
+    "sourceSha256": "f4ae57a6e0957996e3562efe972dd34be8689962df0d3e607963cb95800f7bde",
+    "archivedBytes": 263705,
+    "archivedSha256": "f4ae57a6e0957996e3562efe972dd34be8689962df0d3e607963cb95800f7bde"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004\\medicine-cabinet\\actual-canonical-entry-omission-RED.log",
+    "archived": "integrated-medical-union-controls/012-actual-canonical-entry-omission-RED.log",
+    "sourceBytes": 1462,
+    "sourceSha256": "e7e333b6bde7e440967b40b4f45bf4a8dd71f0de64def574855f950eb7e269f0",
+    "archivedBytes": 1462,
+    "archivedSha256": "e7e333b6bde7e440967b40b4f45bf4a8dd71f0de64def574855f950eb7e269f0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004\\medicine-cabinet\\actual-production-controls.json",
+    "archived": "integrated-medical-union-controls/013-actual-production-controls.json",
+    "sourceBytes": 266008,
+    "sourceSha256": "a5af0ff6a315dd6ca29dca407b72ca77b3a76d8e78ddce5ca746814372cafb29",
+    "archivedBytes": 266008,
+    "archivedSha256": "a5af0ff6a315dd6ca29dca407b72ca77b3a76d8e78ddce5ca746814372cafb29"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004\\medicine-cabinet\\actual-shared-Infirmary-omission-RED.log",
+    "archived": "integrated-medical-union-controls/014-actual-shared-Infirmary-omission-RED.log",
+    "sourceBytes": 1869,
+    "sourceSha256": "fbbb58355b04a3118268b6a203849a2eb7a5c41c8f367483668088190a86a141",
+    "archivedBytes": 1869,
+    "archivedSha256": "fbbb58355b04a3118268b6a203849a2eb7a5c41c8f367483668088190a86a141"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004\\medicine-cabinet\\exact-canonical-entry-restore-GREEN.log",
+    "archived": "integrated-medical-union-controls/015-exact-canonical-entry-restore-GREEN.log",
+    "sourceBytes": 382,
+    "sourceSha256": "e811abd177bd7017d94205f491a4e69117e041900f6ddac3137c5237e88524d4",
+    "archivedBytes": 382,
+    "archivedSha256": "e811abd177bd7017d94205f491a4e69117e041900f6ddac3137c5237e88524d4"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004\\medicine-cabinet\\exact-shared-Infirmary-restore-GREEN.log",
+    "archived": "integrated-medical-union-controls/016-exact-shared-Infirmary-restore-GREEN.log",
+    "sourceBytes": 322,
+    "sourceSha256": "ba0b45f87b51ad2d16b702012910244392904b02a96e0d42d8bd3d628edb4482",
+    "archivedBytes": 322,
+    "archivedSha256": "ba0b45f87b51ad2d16b702012910244392904b02a96e0d42d8bd3d628edb4482"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004\\medicine-cabinet\\scratch\\actual-canonical-medicine-entry.py",
+    "archived": "integrated-medical-union-controls/017-actual-canonical-medicine-entry.py",
+    "sourceBytes": 674,
+    "sourceSha256": "fd4e9bd988557b8274f06d8344f04a01766f00aec54d85a554c08fbf14eb4f47",
+    "archivedBytes": 674,
+    "archivedSha256": "fd4e9bd988557b8274f06d8344f04a01766f00aec54d85a554c08fbf14eb4f47"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-medical-union-controls-20261004\\medicine-cabinet\\scratch\\actual-shared-medicine-configure.py",
+    "archived": "integrated-medical-union-controls/018-actual-shared-medicine-configure.py",
+    "sourceBytes": 1118,
+    "sourceSha256": "8f98c507b7eb8d5f6f443b9e819174d618c741bbfb4111dd0de39bc6ec77135e",
+    "archivedBytes": 1118,
+    "archivedSha256": "8f98c507b7eb8d5f6f443b9e819174d618c741bbfb4111dd0de39bc6ec77135e"
   }
 ]

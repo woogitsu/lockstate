@@ -1,0 +1,13 @@
+actual-canonical-entry-omission-RED RED 1
+exact-canonical-entry-restore-GREEN GREEN 0
+actual-shared-Infirmary-omission-RED RED 1
+exact-shared-Infirmary-restore-GREEN GREEN 0
+actual-canonical-decoded72-GREEN GREEN 0
+MEDICAL_BED_CANONICAL_SHARED_ACTUAL_OMISSIONS_EXACT_RESTORE_GREEN 1046
+actual-canonical-entry-omission-RED RED 1
+exact-canonical-entry-restore-GREEN GREEN 0
+actual-shared-Infirmary-omission-RED RED 1
+exact-shared-Infirmary-restore-GREEN GREEN 0
+actual-canonical-decoded72-GREEN GREEN 0
+MEDICINE_CANONICAL_SHARED_ACTUAL_OMISSIONS_EXACT_RESTORE_GREEN 1046
+BOTH_CANONICAL_SHARED_UNION_CONTROLS_GREEN

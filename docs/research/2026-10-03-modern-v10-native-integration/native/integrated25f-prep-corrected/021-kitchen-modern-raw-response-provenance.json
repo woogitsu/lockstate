@@ -1,0 +1,116 @@
+[
+  {
+    "url": "http://127.0.0.1:5404/assets/worker-BeZzlLvh.js",
+    "decodedPath": "/assets/worker-BeZzlLvh.js",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "sha256": "6d562f6786c686df0a60138621fd067d55b13f903ed719dbcc361565918ae04d",
+    "bytes": 445265
+  },
+  {
+    "url": "http://127.0.0.1:5404/game-content/oblique-furniture.kitchen-prep-counter.v1.json",
+    "decodedPath": "/game-content/oblique-furniture.kitchen-prep-counter.v1.json",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "sha256": "a3ff7e3f0d29e6dadc41cef9197b6f4d626b2399d8afa0418c41d240cebe4512",
+    "bytes": 20474
+  },
+  {
+    "url": "http://127.0.0.1:5404/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev40.d5242c727612.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev40.d5242c727612.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw%2B30-elev40.d5242c727612.png"
+  },
+  {
+    "url": "http://127.0.0.1:5404/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw%2B30-elev40.d5242c727612.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev40.d5242c727612.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "d5242c727612bd9f13965b92a72ab611700db4b4c9675989fe402db0e79e93d5",
+    "bytes": 31839
+  },
+  {
+    "url": "http://127.0.0.1:5404/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev40.9714eeca9737.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev40.9714eeca9737.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw%2B300-elev40.9714eeca9737.png"
+  },
+  {
+    "url": "http://127.0.0.1:5404/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw%2B300-elev40.9714eeca9737.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev40.9714eeca9737.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "9714eeca9737699fa2b641bab02d5a24251b7d7d7266e861aceb5f1c23e23fb6",
+    "bytes": 26577
+  },
+  {
+    "url": "http://127.0.0.1:5404/assets/worker-BeZzlLvh.js",
+    "decodedPath": "/assets/worker-BeZzlLvh.js",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "sha256": "6d562f6786c686df0a60138621fd067d55b13f903ed719dbcc361565918ae04d",
+    "bytes": 445265
+  },
+  {
+    "url": "http://127.0.0.1:5404/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+330-elev40.7c2bdf87e3af.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+330-elev40.7c2bdf87e3af.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw%2B330-elev40.7c2bdf87e3af.png"
+  },
+  {
+    "url": "http://127.0.0.1:5404/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw%2B330-elev40.7c2bdf87e3af.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+330-elev40.7c2bdf87e3af.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "7c2bdf87e3af9af70d59d0db45ce96a47ae32d1a9641067da75bdf6b6117b914",
+    "bytes": 30477
+  },
+  {
+    "url": "http://127.0.0.1:5404/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+00-elev40.176ae8ebed8e.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+00-elev40.176ae8ebed8e.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw%2B00-elev40.176ae8ebed8e.png"
+  },
+  {
+    "url": "http://127.0.0.1:5404/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw%2B00-elev40.176ae8ebed8e.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+00-elev40.176ae8ebed8e.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "176ae8ebed8e45b0b7cca38aff60a3d4f37347a7a9c61fd1b8430306dc0c8339",
+    "bytes": 25519
+  },
+  {
+    "url": "http://127.0.0.1:5404/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev40.d5242c727612.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev40.d5242c727612.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw%2B30-elev40.d5242c727612.png"
+  },
+  {
+    "url": "http://127.0.0.1:5404/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw%2B30-elev40.d5242c727612.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev40.d5242c727612.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "d5242c727612bd9f13965b92a72ab611700db4b4c9675989fe402db0e79e93d5",
+    "bytes": 31839
+  },
+  {
+    "url": "http://127.0.0.1:5404/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+60-elev40.cb2f68bf10ba.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+60-elev40.cb2f68bf10ba.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw%2B60-elev40.cb2f68bf10ba.png"
+  },
+  {
+    "url": "http://127.0.0.1:5404/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw%2B60-elev40.cb2f68bf10ba.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+60-elev40.cb2f68bf10ba.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "cb2f68bf10ba42b528ed58cd6e3d4562a99f49ec1c20ec67cbe71d325790177f",
+    "bytes": 26275
+  }
+]
