@@ -1,0 +1,170 @@
+{
+  "sourceOnlyDerivation": true,
+  "nativeInputUsedForPalette": false,
+  "families": [
+    {
+      "family": "table",
+      "paletteKeys": 243,
+      "inputs": [
+        {
+          "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+30-elev40.1237330992df.png",
+          "sha256": "1237330992df85e50cfa9714d504f149719c344d6eeb41a4813d1eafc60f8d5f"
+        },
+        {
+          "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+60-elev40.035429e3f502.png",
+          "sha256": "035429e3f5027d77cec5224b1a8edd9ef19a2ad07ab3b315327599486006b2c0"
+        },
+        {
+          "image": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+300-elev40.52b7a3854df2.png",
+          "sha256": "52b7a3854df2e27210552fe8896bcc56b2012d4d392d9e3dff2c9b42e4a22e8d"
+        }
+      ],
+      "heldOut": [
+        {
+          "image": "table-q0-dining-loaded-fullhd.png",
+          "paletteCount": [
+            3345,
+            3340
+          ],
+          "completeOpaque3x3Interior": [
+            1702,
+            1715
+          ]
+        },
+        {
+          "image": "table-q0-dining-worker-completed-fullhd.png",
+          "paletteCount": [
+            3345,
+            3340
+          ],
+          "completeOpaque3x3Interior": [
+            1702,
+            1715
+          ]
+        },
+        {
+          "image": "table-q1-dining-loaded-fullhd.png",
+          "paletteCount": [
+            3292,
+            3306
+          ],
+          "completeOpaque3x3Interior": [
+            1692,
+            1664
+          ]
+        },
+        {
+          "image": "table-q1-dining-worker-completed-fullhd.png",
+          "paletteCount": [
+            3292,
+            3306
+          ],
+          "completeOpaque3x3Interior": [
+            1692,
+            1664
+          ]
+        }
+      ]
+    },
+    {
+      "family": "bench",
+      "paletteKeys": 8552,
+      "inputs": [
+        {
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+00-elev40.c23472082497.png",
+          "sha256": "c23472082497658bbadb1f30f28af3fa5b8df9fce4341f76c05c72a522047aeb"
+        },
+        {
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+30-elev40.b3f980fa0b73.png",
+          "sha256": "b3f980fa0b73d92a3e94e4264f9e1765da3cedb57218d55b6a5b46da0ce0ac74"
+        },
+        {
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+60-elev40.5ad7afdb520e.png",
+          "sha256": "5ad7afdb520ed6cb58c5dd87e652a5e7165d7095d593b48708f40746bc90ac8f"
+        },
+        {
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+90-elev40.0835c2b80459.png",
+          "sha256": "0835c2b8045904448b897791fb72f846992bae4f659e1fbd4b9aae50d1907977"
+        },
+        {
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+120-elev40.cc2f3ab39569.png",
+          "sha256": "cc2f3ab3956938f78d96599b69dfb3facff3521727d3365defecc56ca9e96f74"
+        },
+        {
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+150-elev40.af1be5aec297.png",
+          "sha256": "af1be5aec297e0ccf9a7aec5b8f0a1a66928df6bb3af9a6832f4039e16ca8c40"
+        },
+        {
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+180-elev40.25b6a65fd116.png",
+          "sha256": "25b6a65fd11612573f964ae4de09de75fadb70de3a46f1db1b932b18da3f3f1e"
+        },
+        {
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+210-elev40.bb1de4315f97.png",
+          "sha256": "bb1de4315f97f392aa3774e3652993bc01b2d1090ae854876a32af80d33bd556"
+        },
+        {
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+240-elev40.3865048cd09d.png",
+          "sha256": "3865048cd09d6261740541ebd00a0d964021eb49ae2f15d37b91b7d0dcd8f76e"
+        },
+        {
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+270-elev40.9c2004c4f0fc.png",
+          "sha256": "9c2004c4f0fc55ce1f073b1b6bb1f6290f0d1350791208e56ce2eee522073c4f"
+        },
+        {
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+300-elev40.68b214f70569.png",
+          "sha256": "68b214f705690e56ccf978a18223ccb6b850627055d641b74a1e2d960344dc29"
+        },
+        {
+          "image": "/assets/environment/oblique/furniture.corridor.bench.variants-yaw+330-elev40.fc35db4cf16b.png",
+          "sha256": "fc35db4cf16b15844e0182fed53021fef161dbad4b4174b4673b27bffe52166a"
+        }
+      ],
+      "heldOut": [
+        {
+          "image": "bench-q0-wooden-bench-loaded-fullhd.png",
+          "paletteCount": [
+            3410,
+            2537
+          ],
+          "completeOpaque3x3Interior": [
+            1555,
+            1164
+          ]
+        },
+        {
+          "image": "bench-q0-wooden-bench-worker-completed-fullhd.png",
+          "paletteCount": [
+            3410,
+            2537
+          ],
+          "completeOpaque3x3Interior": [
+            1555,
+            1164
+          ]
+        },
+        {
+          "image": "bench-q1-wooden-bench-loaded-fullhd.png",
+          "paletteCount": [
+            3047,
+            3276
+          ],
+          "completeOpaque3x3Interior": [
+            1146,
+            1215
+          ]
+        },
+        {
+          "image": "bench-q1-wooden-bench-worker-completed-fullhd.png",
+          "paletteCount": [
+            3047,
+            3276
+          ],
+          "completeOpaque3x3Interior": [
+            1146,
+            1215
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,5 @@
-// Pending native acceptance of the complete floor-mounted Bench source; historical crops/colour/minima retained.
+import { woodenBenchPixels } from './canteen-bench-material-observer';
+// Pending native acceptance of the complete floor-mounted Bench source; historical crops/minima retained; source-derived retained-material observer.
 import { writeFile } from 'node:fs/promises';
 import { openCameraControls } from './public-camera-controls';
 import { expect, test as base, type Page } from './network-changed-fixture';
@@ -60,27 +61,8 @@ async function fixtureAnchors(page: Page): Promise<string[]> {
 }
 
 async function timberPixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promise<number[]> {
-  return page.evaluate(async ({ base64, quarterTurns }) => {
-    const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
-    const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
-    const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Calibrated from opened native worker-built Holding Cell FullHD frames.
-    // Each disjoint region contains one bench; the rotated rear bench is partly
-    // occluded by its wall. Removing only the default bench consumer must zero
-    // both regions while completed objects and Save/Load anchors remain intact.
-    const rects = quarterTurns === 0
-      ? [[720, 415, 150, 145], [945, 410, 150, 115]]
-      : [[875, 350, 135, 100], [875, 510, 145, 110]];
-    const colour = [150, 115, 75];
-    return rects.map(rect => {
-      const pixels = context.getImageData(...rect as [number, number, number, number]).data;
-      let count = 0;
-      for (let i = 0; i < pixels.length; i += 4) {
-        if (pixels[i] === colour[0] && pixels[i + 1] === colour[1] && pixels[i + 2] === colour[2]) count++;
-      }
-      return count;
-    });
-  }, { base64: png.toString('base64'), quarterTurns });
+  void page;
+  return woodenBenchPixels(png, quarterTurns);
 }
 let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;
 const test = base.extend({

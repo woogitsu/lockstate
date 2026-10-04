@@ -1,0 +1,637 @@
+{
+  "sourceOnly": true,
+  "nativeUsedForDerivation": false,
+  "tableThirdToLargestAreaLowerBound": [
+    318,
+    379
+  ],
+  "benchEdgeExclusiveSourceKeys": 907,
+  "heldOut": [
+    {
+      "image": "table-q0-dining-loaded-fullhd.png",
+      "counts": [
+        1612,
+        1604
+      ]
+    },
+    {
+      "image": "table-q0-dining-worker-completed-fullhd.png",
+      "counts": [
+        1612,
+        1604
+      ]
+    },
+    {
+      "image": "table-q1-dining-loaded-fullhd.png",
+      "counts": [
+        1606,
+        1582
+      ]
+    },
+    {
+      "image": "table-q1-dining-worker-completed-fullhd.png",
+      "counts": [
+        1606,
+        1582
+      ]
+    },
+    {
+      "image": "bench-q0-wooden-bench-loaded-fullhd.png",
+      "counts": [
+        1555,
+        1164
+      ]
+    },
+    {
+      "image": "bench-q0-wooden-bench-worker-completed-fullhd.png",
+      "counts": [
+        1555,
+        1164
+      ]
+    },
+    {
+      "image": "bench-q1-wooden-bench-loaded-fullhd.png",
+      "counts": [
+        1146,
+        1215
+      ]
+    },
+    {
+      "image": "bench-q1-wooden-bench-worker-completed-fullhd.png",
+      "counts": [
+        1146,
+        1215
+      ]
+    }
+  ],
+  "sourceFamilies": [
+    {
+      "assetId": "furniture.yard.exercise-station",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.common-room.upholstered-bench",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.classroom.school-chair",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.classroom.student-chair",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.staff-room.padded-chair",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.cell.cot.single",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.storage-room.timber-rack",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "wall.interior.module.full",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "wall.interior.module.west.full",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "wall.interior.module.cutaway",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "wall.interior.module.west.cutaway",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.cell.bed.single.variants",
+      "decodedFrames": 9,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "door.interior.open.full",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "door.interior.open.cutaway",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "door.interior.open.west.full",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "door.interior.open.west.cutaway",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "fixture.cell.toilet_sink",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.storage.rack.wooden",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.chair.wooden",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 4
+      }
+    },
+    {
+      "assetId": "floor.cell.sealed-concrete",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "floor.linoleum.institutional",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "floor.canteen.terrazzo",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "actor.prisoner.base",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "actor.guard.base",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "actor.cook.base",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "actor.medic.base",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 3,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "actor.staff.base",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "wall.interior.corner.inner.north-west.full",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "wall.interior.corner.inner.north-west.cutaway",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "floor.shower.ceramic",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "fixture.shower.head",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "door.shower.privacy.open.full",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "door.shower.privacy.open.cutaway",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "floor.terrain.dirt",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "floor.terrain.grass",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "floor.terrain.dirt-grass.edge.north",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "floor.terrain.dirt-grass.edge.east",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "floor.terrain.dirt-grass.edge.south",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "floor.terrain.dirt-grass.edge.west",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "wall.interior.corner.inner.north-east.full",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "wall.interior.corner.inner.north-east.cutaway",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "wall.interior.corner.inner.south-east.full",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "wall.interior.corner.inner.south-east.cutaway",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "wall.interior.junction.t.west.full",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "wall.interior.junction.t.west.cutaway",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "wall.square.brick.full",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "wall.square.brick.low",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.dining.table.wooden",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 1429,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.corridor.bench.variants",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 2847
+      }
+    },
+    {
+      "assetId": "floor.reception.linoleum",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.office.desk.employee.variants",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.medical-bed.variants",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "fixture.medicine-cabinet.variants",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "utility.security-console.variants",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "utility.loading-dock-door.variants",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "utility.utility-panel.variants",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.library.bookshelf.variants",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.kitchen.stove.variants",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.kitchen.prep-counter.variants",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 3,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.kitchen.fridge.variants",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 3,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "utility.washing-machine.variants",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "fixture.cell.waste_bin",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.office.desk.generic",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "fixture.cell.sink.handwash",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.yard.steel-bench",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "fixture.yard.steel-waste-bin",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "fixture.garbage-room.waste-bin",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.classroom.teacher-desk",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.reception.waiting-armchair",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    },
+    {
+      "assetId": "furniture.laundry.linen-rack",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 5
+      }
+    },
+    {
+      "assetId": "furniture.reception.registration-desk",
+      "decodedFrames": 72,
+      "maximum": {
+        "table": 0,
+        "bench": 0
+      }
+    }
+  ]
+}

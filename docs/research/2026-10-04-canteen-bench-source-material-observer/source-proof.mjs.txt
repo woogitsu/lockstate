@@ -1,0 +1,46 @@
+// Historical inert recipe: copy this exact file to a private TEMP .mjs, run from repo root.
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {stripTypeScriptTypes} from 'node:module';
+import assert from 'node:assert/strict';
+const record='docs/research/2026-10-04-canteen-bench-source-material-observer';
+const sha=body=>createHash('sha256').update(body).digest('hex');
+const helper=readFileSync('tests/browser/canteen-bench-material-observer.ts','utf8');
+const decoder=readFileSync('tests/browser/staff-room-padded-chair/material-observer.ts','utf8');
+const moduleUrl=text=>'data:text/javascript;base64,'+Buffer.from(stripTypeScriptTypes(text,{mode:'strip'})).toString('base64');
+const decoderUrl=moduleUrl(decoder),{decodeStaffMaterialPng}=await import(decoderUrl);
+let code=helper.replace("'./staff-room-padded-chair/material-observer'",JSON.stringify(decoderUrl));
+code=code.replace(/import palettes[^\n]+/,`const palettes=${readFileSync('tests/browser/canteen-bench-source-material-keys.json','utf8')};`);
+code=code.replace(/import edgeKeys[^\n]+/,`const edgeKeys=${readFileSync('tests/browser/canteen-bench-rounded-edge-source-keys.json','utf8')};`);
+const observer=await import(moduleUrl(code));
+assert.deepEqual(observer.TABLE_MATERIAL_RECTS,[[[680,410,170,150],[860,295,190,125]],[[850,320,210,95],[1040,420,190,125]]]);
+assert.deepEqual(observer.BENCH_MATERIAL_RECTS,[[[720,415,150,145],[945,410,150,115]],[[875,350,135,100],[875,510,145,110]]]);
+const report={subject:'25f8dbc45138b2c14c05ee98dd71789321bc7c25',helperSha256:sha(Buffer.from(helper)),mode:'offline held-out real native PNGs + genuine source-family PNGs; no native/build run',actual:[],sourceControls:[],failures:[]};
+const check=(condition,message)=>{if(!condition)report.failures.push(message);};
+for(const family of ['table','bench'])for(const q of [0,1]) {
+ const pairs=[];
+ for(const phase of ['worker-completed','loaded']) {
+  const name=`${family}-q${q}-${family==='table'?'dining':'wooden-bench'}-${phase}-fullhd.png`,body=readFileSync(`${record}/original/${name}`);
+  const values=(family==='table'?observer.diningPlatePixels:observer.woodenBenchPixels)(body,q);
+  values.forEach(value=>check(value>(family==='table'?200:300),`${name} original per-object floor`));
+  pairs.push(values);report.actual.push({name,sha256:sha(body),values});
+ }
+ assert.deepEqual(pairs[0],pairs[1],'Before/Load material counts remain identical');
+}
+const registry=JSON.parse(readFileSync('public/game-content/oblique-module-registry.v1.json'));
+for(const entry of registry.entries) {
+ const descriptorBody=readFileSync('public'+entry.manifest),manifest=JSON.parse(descriptorBody);
+ const maximum={table:0,bench:0};
+ for(const frame of manifest.frames) {
+  const body=readFileSync('public'+frame.image);assert.equal(sha(body),frame.sha256);
+  const b=decodeStaffMaterialPng(body),rect=[0,0,b.width,b.height];
+  const table=observer.diningPlateMaterialPixels(b,rect),bench=observer.woodenBenchMaterialPixels(b,rect);
+  maximum.table=Math.max(maximum.table,table);maximum.bench=Math.max(maximum.bench,bench);
+  if(entry.assetId!=='furniture.dining.table.wooden')check(table<=200,`${frame.image} unrelated source cannot substitute plate set`);
+  if(entry.assetId!=='furniture.corridor.bench.variants')check(bench<=300,`${frame.image} unrelated source cannot substitute rounded-edge timber`);
+ }
+ report.sourceControls.push({assetId:entry.assetId,descriptorSha256:sha(descriptorBody),sourceSha256:manifest.sourceSha256,frames:manifest.frames.length,maximum});
+}
+writeFileSync(process.argv[2],JSON.stringify(report,null,2)+'\n');
+console.log(JSON.stringify({actual:report.actual,sourceFamilies:report.sourceControls.length,sourceFrames:report.sourceControls.reduce((n,row)=>n+row.frames,0),failures:report.failures}));
+assert.equal(report.failures.length,0,'Original object floors and all real unrelated-source controls');
