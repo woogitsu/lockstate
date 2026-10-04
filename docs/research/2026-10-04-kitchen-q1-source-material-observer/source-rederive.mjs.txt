@@ -1,0 +1,44 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {stripTypeScriptTypes} from 'node:module';
+import assert from 'node:assert/strict';
+const record='docs/research/2026-10-04-kitchen-q1-source-material-observer';
+const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+const decoder=readFileSync('tests/browser/staff-room-padded-chair/material-observer.ts','utf8');
+const {decodeStaffMaterialPng}=await import('data:text/javascript;base64,'+Buffer.from(stripTypeScriptTypes(decoder,{mode:'strip'})).toString('base64'));
+const original=readFileSync(`${record}/raw/original-observer.ts.txt`,'utf8');
+const current=readFileSync('tests/browser/kitchen-modern-material-observer.ts','utf8');
+const sourceKeys=(text,key)=>JSON.parse(text.match(new RegExp(`KITCHEN_${key}_SOURCE_RGB_KEYS: readonly number\\[\\] = (\\[[^;]+);`))[1]);
+const rayBytes=readFileSync(`${record}/raw/root-executed-material-rays.json`),rays=JSON.parse(rayBytes);
+const manifest=JSON.parse(readFileSync('public/game-content/oblique-furniture.kitchen-stove.v1.json'));
+assert.equal(rays.sourceSha256,manifest.sourceSha256);assert.equal(rays.sourceUnchanged,true);assert.equal(rays.renderPerformed,false);assert.equal(rays.sourceEdited,false);
+assert.deepEqual(rays.resolution,[256,256]);assert.equal(rays.pixelsPerTile,64);
+const report={method:'actual saved-source triangle material rays and opaque canonical PNG samples only; no native PNG inputs',sourceSha256:rays.sourceSha256,rayArtifactSha256:sha(rayBytes),inputs:[],palettes:{},coreSamples:[],coreBounds:[]};
+const decoded=rays.poses.map(pose=>{
+ assert.equal(pose.elevationDegrees,40);
+ const frame=manifest.frames.find(frame=>frame.yawDegrees===pose.yawDegrees&&frame.elevationDegrees===40);
+ const bytes=readFileSync('public'+frame.image);assert.equal(sha(bytes),frame.sha256);
+ report.inputs.push({image:frame.image,sha256:frame.sha256});
+ return {pose,bitmap:decodeStaffMaterialPng(bytes)};
+});
+for(const [key,material,indices] of [['ENAMEL','enamel','sameMaterial3x3InsetPixelIndices'],['IRON','cast iron','rayHitPixelIndices'],['HOT','burner glow','rayHitPixelIndices']]) {
+ const old=sourceKeys(original,key),keys=new Set(old);let samples=0;
+ for(const {pose,bitmap} of decoded)for(const index of pose.materials.find(row=>row.material===material)[indices]) {
+  const at=index*4;if(bitmap.rgba[at+3]!==255)continue;
+  keys.add((bitmap.rgba[at]<<16)|(bitmap.rgba[at+1]<<8)|bitmap.rgba[at+2]);samples++;
+ }
+ const expected=[...keys].sort((a,b)=>a-b);assert.deepEqual(sourceKeys(current,key),expected);
+ report.palettes[key]={material,oldKeys:old.length,currentKeys:expected.length,samples};
+}
+for(const {pose,bitmap} of decoded)for(const index of pose.materials.find(row=>row.material==='burner glow').sameMaterial3x3InsetPixelIndices) {
+ const at=index*4;assert.equal(bitmap.rgba[at+3],255);
+ const rgb=[bitmap.rgba[at],bitmap.rgba[at+1],bitmap.rgba[at+2]];
+ report.coreSamples.push({yawDegrees:pose.yawDegrees,index,rgb});
+}
+assert.equal(report.coreSamples.length,30);
+const coordinates=report.coreSamples.map(({rgb:[r,g,b]})=>[r,g,b,r-g,g-b,r-b]);
+report.coreBounds=[0,1,2,3,4,5].map(c=>[Math.min(...coordinates.map(row=>row[c])),Math.max(...coordinates.map(row=>row[c]))]);
+const bounds=JSON.parse(current.match(/const coreBounds: readonly \(readonly \[number,number\]\)\[\] = (\[[^;]+);/)[1]);
+assert.deepEqual(bounds,report.coreBounds);
+assert.deepEqual(sourceKeys(current,'FREEZER'),sourceKeys(original,'FREEZER'));
+writeFileSync(process.argv[2],JSON.stringify(report,null,2)+'\n');console.log('SOURCE_REDERIVED',JSON.stringify(report.palettes),JSON.stringify(report.coreBounds));

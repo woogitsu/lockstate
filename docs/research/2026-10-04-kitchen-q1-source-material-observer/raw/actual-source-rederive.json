@@ -1,0 +1,333 @@
+{
+  "method": "actual saved-source triangle material rays and opaque canonical PNG samples only; no native PNG inputs",
+  "sourceSha256": "7ac1027aca308b946acf902ebf611547621227535dc70b29db1c06d3db2d03bb",
+  "rayArtifactSha256": "50fb6fd374810bbaaec923f7c2862ce1db311869a3ca1187a7db7fdf88f423a7",
+  "inputs": [
+    {
+      "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.86340147e019.png",
+      "sha256": "86340147e0195e8ed2ea057f0614360a1fee777e878f0c5afb9e3c12f9e118a7"
+    },
+    {
+      "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev40.aed487667fa9.png",
+      "sha256": "aed487667fa98273e0110f43295fa78f196edffb4415397f37d2797321f6ab1e"
+    }
+  ],
+  "palettes": {
+    "ENAMEL": {
+      "material": "enamel",
+      "oldKeys": 288,
+      "currentKeys": 425,
+      "samples": 2483
+    },
+    "IRON": {
+      "material": "cast iron",
+      "oldKeys": 279,
+      "currentKeys": 1841,
+      "samples": 4692
+    },
+    "HOT": {
+      "material": "burner glow",
+      "oldKeys": 1108,
+      "currentKeys": 1108,
+      "samples": 250
+    }
+  },
+  "coreSamples": [
+    {
+      "yawDegrees": 30,
+      "index": 25196,
+      "rgb": [
+        166,
+        102,
+        57
+      ]
+    },
+    {
+      "yawDegrees": 30,
+      "index": 25451,
+      "rgb": [
+        175,
+        108,
+        62
+      ]
+    },
+    {
+      "yawDegrees": 30,
+      "index": 25452,
+      "rgb": [
+        160,
+        91,
+        40
+      ]
+    },
+    {
+      "yawDegrees": 30,
+      "index": 25453,
+      "rgb": [
+        173,
+        103,
+        53
+      ]
+    },
+    {
+      "yawDegrees": 30,
+      "index": 25454,
+      "rgb": [
+        188,
+        123,
+        80
+      ]
+    },
+    {
+      "yawDegrees": 30,
+      "index": 28258,
+      "rgb": [
+        167,
+        96,
+        44
+      ]
+    },
+    {
+      "yawDegrees": 30,
+      "index": 28259,
+      "rgb": [
+        171,
+        98,
+        42
+      ]
+    },
+    {
+      "yawDegrees": 30,
+      "index": 28260,
+      "rgb": [
+        187,
+        122,
+        78
+      ]
+    },
+    {
+      "yawDegrees": 30,
+      "index": 30110,
+      "rgb": [
+        174,
+        108,
+        62
+      ]
+    },
+    {
+      "yawDegrees": 30,
+      "index": 30111,
+      "rgb": [
+        159,
+        89,
+        35
+      ]
+    },
+    {
+      "yawDegrees": 30,
+      "index": 32916,
+      "rgb": [
+        180,
+        111,
+        62
+      ]
+    },
+    {
+      "yawDegrees": 30,
+      "index": 32917,
+      "rgb": [
+        165,
+        94,
+        42
+      ]
+    },
+    {
+      "yawDegrees": 30,
+      "index": 33172,
+      "rgb": [
+        164,
+        93,
+        36
+      ]
+    },
+    {
+      "yawDegrees": 30,
+      "index": 33173,
+      "rgb": [
+        173,
+        102,
+        47
+      ]
+    },
+    {
+      "yawDegrees": 300,
+      "index": 24198,
+      "rgb": [
+        193,
+        125,
+        79
+      ]
+    },
+    {
+      "yawDegrees": 300,
+      "index": 24199,
+      "rgb": [
+        196,
+        125,
+        76
+      ]
+    },
+    {
+      "yawDegrees": 300,
+      "index": 24200,
+      "rgb": [
+        196,
+        130,
+        86
+      ]
+    },
+    {
+      "yawDegrees": 300,
+      "index": 24453,
+      "rgb": [
+        186,
+        114,
+        62
+      ]
+    },
+    {
+      "yawDegrees": 300,
+      "index": 24454,
+      "rgb": [
+        188,
+        116,
+        61
+      ]
+    },
+    {
+      "yawDegrees": 300,
+      "index": 25752,
+      "rgb": [
+        191,
+        119,
+        66
+      ]
+    },
+    {
+      "yawDegrees": 300,
+      "index": 26007,
+      "rgb": [
+        190,
+        117,
+        63
+      ]
+    },
+    {
+      "yawDegrees": 300,
+      "index": 26008,
+      "rgb": [
+        193,
+        121,
+        69
+      ]
+    },
+    {
+      "yawDegrees": 300,
+      "index": 32361,
+      "rgb": [
+        192,
+        121,
+        73
+      ]
+    },
+    {
+      "yawDegrees": 300,
+      "index": 32362,
+      "rgb": [
+        191,
+        119,
+        67
+      ]
+    },
+    {
+      "yawDegrees": 300,
+      "index": 32363,
+      "rgb": [
+        188,
+        119,
+        72
+      ]
+    },
+    {
+      "yawDegrees": 300,
+      "index": 32617,
+      "rgb": [
+        190,
+        115,
+        58
+      ]
+    },
+    {
+      "yawDegrees": 300,
+      "index": 33915,
+      "rgb": [
+        190,
+        122,
+        77
+      ]
+    },
+    {
+      "yawDegrees": 300,
+      "index": 34170,
+      "rgb": [
+        193,
+        122,
+        73
+      ]
+    },
+    {
+      "yawDegrees": 300,
+      "index": 34171,
+      "rgb": [
+        194,
+        121,
+        69
+      ]
+    },
+    {
+      "yawDegrees": 300,
+      "index": 34172,
+      "rgb": [
+        196,
+        125,
+        77
+      ]
+    }
+  ],
+  "coreBounds": [
+    [
+      159,
+      196
+    ],
+    [
+      89,
+      130
+    ],
+    [
+      35,
+      86
+    ],
+    [
+      64,
+      75
+    ],
+    [
+      43,
+      57
+    ],
+    [
+      108,
+      132
+    ]
+  ]
+}

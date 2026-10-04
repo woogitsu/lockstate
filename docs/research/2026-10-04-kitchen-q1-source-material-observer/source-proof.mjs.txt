@@ -1,0 +1,47 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {stripTypeScriptTypes} from 'node:module';
+import {resolve} from 'node:path';
+import assert from 'node:assert/strict';
+const root=process.cwd(),sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+const source=readFileSync(process.argv[3]??resolve(root,'tests/browser/kitchen-modern-material-observer.ts'),'utf8');
+const decoder=readFileSync(resolve(root,'tests/browser/staff-room-padded-chair/material-observer.ts'),'utf8');
+const decoderUrl='data:text/javascript;base64,'+Buffer.from(stripTypeScriptTypes(decoder,{mode:'strip'})).toString('base64');
+const code=source.replace("'./staff-room-padded-chair/material-observer'",JSON.stringify(decoderUrl));
+const observer=await import('data:text/javascript;base64,'+Buffer.from(stripTypeScriptTypes(code,{mode:'strip'})).toString('base64'));
+const {decodeStaffMaterialPng}=await import(decoderUrl);
+assert.deepEqual(observer.KITCHEN_STOVE_MATERIAL_RECTS,{0:[[735,490,50,35],[790,390,45,30]],1:[[885,375,70,40],[905,320,50,35]]});
+assert.deepEqual(observer.KITCHEN_FRIDGE_MATERIAL_RECTS,{0:[[890,495,25,35],[843,606,33,27]],1:[[780,375,35,42],[843,474,17,23]]});
+const report={subject:'21dba6ee55823ff1283c0b47254ff8d01e2a6ca9',mode:'actual preserved native PNGs, offline current-helper read; no new native run',helperSha256:sha(Buffer.from(source)),actual:[],controls:[],failures:[]};
+function check(condition,message){if(!condition)report.failures.push(message);}
+const native=resolve(process.env.TEMP,'lockstate-modern-integrated-21d-kitchen-material-native-20261004/results');
+for(const [turns,directory] of [[0,'dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load'],[1,'dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load']]) {
+ const pair=[];
+ for(const name of ['dedicated-kitchen-stove-worker-completed-fullhd.png','dedicated-kitchen-stove-loaded-fullhd.png']) {
+  const path=resolve(native,directory,name),bytes=readFileSync(path),stove=observer.kitchenStoveMaterialPixels(bytes,turns),fridge=observer.kitchenFridgeMaterialPixels(bytes,turns);
+  pair.push({turns,name,path,sha256:sha(bytes),stove,fridge});
+  check(stove[0]>(turns===0?500:50),`${turns} ${name} stove body original floor`);
+  check(stove[1]>(turns===0?25:50),`${turns} ${name} stove hardware original floor`);
+  check(fridge[0]>(turns===0?350:800),`${turns} ${name} fridge freezer original floor`);
+  check(fridge[1]>(turns===0?350:100),`${turns} ${name} fridge louvre original floor`);
+ }
+ assert.deepEqual(pair[0].stove,pair[1].stove);assert.deepEqual(pair[0].fridge,pair[1].fridge);
+ report.actual.push(...pair);console.log('ACTUAL',JSON.stringify(pair));
+}
+const families=['oblique-cell-chair.v1.json','oblique-reception-employee-desk.v1.json','oblique-furniture-office-desk-generic.v1.json','oblique-furniture-classroom-teacher-desk.v1.json','oblique-square-brick-full-wall.v1.json','oblique-wall-cutaway.v1.json','oblique-wall-west.v1.json','oblique-wall-west-cutaway.v1.json','oblique-floor-cell.v1.json','oblique-floor-terrain-dirt.v1.json','oblique-furniture.kitchen-prep-counter.v1.json','oblique-furniture.kitchen-fridge.v1.json'];
+const enamel=new Set(observer.KITCHEN_ENAMEL_SOURCE_RGB_KEYS),freezer=new Set(observer.KITCHEN_FREEZER_SOURCE_RGB_KEYS);
+for(const name of families) {
+ const manifestBytes=readFileSync(resolve(root,'public/game-content',name)),manifest=JSON.parse(manifestBytes);assert.equal(manifest.frames.length,72);
+ const maxima={body:0,iron:0,freezer:0,louvre:0};let total=0;
+ for(const frame of manifest.frames) {
+  const bytes=readFileSync(resolve(root,'public'+frame.image));assert.equal(sha(bytes),frame.sha256);const b=decodeStaffMaterialPng(bytes),r=[0,0,b.width,b.height];
+  const values={body:observer.kitchenSourceGradientInterior(b,r,enamel),iron:observer.kitchenBurnerAssociatedIron(b,r),freezer:observer.kitchenSourceGradientInterior(b,r,freezer),louvre:observer.kitchenFridgeLouvrePixels(b,r)};
+  for(const key of Object.keys(maxima))maxima[key]=Math.max(maxima[key],values[key]);
+  check(values.iron<=25,`${frame.image} cannot substitute stove hardware`);
+  if(name!=='oblique-furniture.kitchen-fridge.v1.json')check(values.freezer<=350,`${frame.image} cannot substitute freezer`);
+  check(!(values.body>50&&values.iron>25),`${frame.image} cannot substitute both stove surfaces`);total++;
+ }
+ report.controls.push({name,descriptorSha256:sha(manifestBytes),source:manifest.source,sourceSha256:manifest.sourceSha256,images:total,maxima});console.log('SOURCE',name,JSON.stringify(maxima));
+}
+writeFileSync(process.argv[2],JSON.stringify(report,null,2)+'\n');console.log('RESULT',JSON.stringify({images:report.controls.reduce((n,row)=>n+row.images,0),failures:report.failures}));
+assert.equal(report.failures.length,0,'All original current native floors and real source negatives must hold');
