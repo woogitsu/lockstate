@@ -1,0 +1,218 @@
+[
+  {
+    "rim": "angled-prep.pan rim long 0 -1",
+    "pan": "ingredient-pan",
+    "actualTriangleSurfaceIntersections": 0,
+    "nearestVertexTriangleDistanceTiles": 0.0023488521110266447,
+    "rimSurfacePoint": [
+      0.8472071290016174,
+      0.3154999911785126,
+      1.1577929258346558
+    ],
+    "panSurfacePoint": [
+      0.8492647409439087,
+      0.3154999911785126,
+      1.1566600799560547
+    ],
+    "vertexDistancePixelsAt64": 0.15032653510570526,
+    "vertexDistanceIsUpperBoundOnly": true
+  },
+  {
+    "rim": "angled-prep.pan rim long 0 1",
+    "pan": "ingredient-pan",
+    "actualTriangleSurfaceIntersections": 0,
+    "nearestVertexTriangleDistanceTiles": 0.002348904497921467,
+    "rimSurfacePoint": [
+      1.0627928972244263,
+      0.3154999911785126,
+      1.1577929258346558
+    ],
+    "panSurfacePoint": [
+      1.0607352256774902,
+      0.3154999911785126,
+      1.1566600799560547
+    ],
+    "vertexDistancePixelsAt64": 0.15032988786697388,
+    "vertexDistanceIsUpperBoundOnly": true
+  },
+  {
+    "rim": "angled-prep.pan rim end 0 -0.202",
+    "pan": "ingredient-pan",
+    "actualTriangleSurfaceIntersections": 0,
+    "nearestVertexTriangleDistanceTiles": 0.002348904497921467,
+    "rimSurfacePoint": [
+      0.8604999780654907,
+      0.3022070825099945,
+      1.1577929258346558
+    ],
+    "panSurfacePoint": [
+      0.8604999780654907,
+      0.30426475405693054,
+      1.1566600799560547
+    ],
+    "vertexDistancePixelsAt64": 0.15032988786697388,
+    "vertexDistanceIsUpperBoundOnly": true
+  },
+  {
+    "rim": "angled-prep.pan rim end 0 0.166",
+    "pan": "ingredient-pan",
+    "actualTriangleSurfaceIntersections": 0,
+    "nearestVertexTriangleDistanceTiles": 0.002348904497921467,
+    "rimSurfacePoint": [
+      0.8604999780654907,
+      0.6617928743362427,
+      1.1577929258346558
+    ],
+    "panSurfacePoint": [
+      0.8604999780654907,
+      0.6597352027893066,
+      1.1566600799560547
+    ],
+    "vertexDistancePixelsAt64": 0.15032988786697388,
+    "vertexDistanceIsUpperBoundOnly": true
+  },
+  {
+    "rim": "angled-prep.pan rim long 1 -1",
+    "pan": "ingredient-pan.001",
+    "actualTriangleSurfaceIntersections": 0,
+    "nearestVertexTriangleDistanceTiles": 0.002348904497921467,
+    "rimSurfacePoint": [
+      1.1622071266174316,
+      0.3154999911785126,
+      1.1577929258346558
+    ],
+    "panSurfacePoint": [
+      1.1642647981643677,
+      0.3154999911785126,
+      1.1566600799560547
+    ],
+    "vertexDistancePixelsAt64": 0.15032988786697388,
+    "vertexDistanceIsUpperBoundOnly": true
+  },
+  {
+    "rim": "angled-prep.pan rim long 1 1",
+    "pan": "ingredient-pan.001",
+    "actualTriangleSurfaceIntersections": 0,
+    "nearestVertexTriangleDistanceTiles": 0.002348904497921467,
+    "rimSurfacePoint": [
+      1.3777928352355957,
+      0.3154999911785126,
+      1.1577929258346558
+    ],
+    "panSurfacePoint": [
+      1.3757351636886597,
+      0.3154999911785126,
+      1.1566600799560547
+    ],
+    "vertexDistancePixelsAt64": 0.15032988786697388,
+    "vertexDistanceIsUpperBoundOnly": true
+  },
+  {
+    "rim": "angled-prep.pan rim end 1 -0.202",
+    "pan": "ingredient-pan.001",
+    "actualTriangleSurfaceIntersections": 0,
+    "nearestVertexTriangleDistanceTiles": 0.002348904497921467,
+    "rimSurfacePoint": [
+      1.1755000352859497,
+      0.3022070825099945,
+      1.1577929258346558
+    ],
+    "panSurfacePoint": [
+      1.1755000352859497,
+      0.30426475405693054,
+      1.1566600799560547
+    ],
+    "vertexDistancePixelsAt64": 0.15032988786697388,
+    "vertexDistanceIsUpperBoundOnly": true
+  },
+  {
+    "rim": "angled-prep.pan rim end 1 0.166",
+    "pan": "ingredient-pan.001",
+    "actualTriangleSurfaceIntersections": 0,
+    "nearestVertexTriangleDistanceTiles": 0.002348904497921467,
+    "rimSurfacePoint": [
+      1.1755000352859497,
+      0.6617928743362427,
+      1.1577929258346558
+    ],
+    "panSurfacePoint": [
+      1.1755000352859497,
+      0.6597352027893066,
+      1.1566600799560547
+    ],
+    "vertexDistancePixelsAt64": 0.15032988786697388,
+    "vertexDistanceIsUpperBoundOnly": true
+  },
+  {
+    "rim": "angled-prep.pan rim long 2 -1",
+    "pan": "ingredient-pan.002",
+    "actualTriangleSurfaceIntersections": 0,
+    "nearestVertexTriangleDistanceTiles": 0.002348904497921467,
+    "rimSurfacePoint": [
+      1.4772071838378906,
+      0.3154999911785126,
+      1.1577929258346558
+    ],
+    "panSurfacePoint": [
+      1.4792648553848267,
+      0.3154999911785126,
+      1.1566600799560547
+    ],
+    "vertexDistancePixelsAt64": 0.15032988786697388,
+    "vertexDistanceIsUpperBoundOnly": true
+  },
+  {
+    "rim": "angled-prep.pan rim long 2 1",
+    "pan": "ingredient-pan.002",
+    "actualTriangleSurfaceIntersections": 0,
+    "nearestVertexTriangleDistanceTiles": 0.002348904497921467,
+    "rimSurfacePoint": [
+      1.6927928924560547,
+      0.3154999911785126,
+      1.1577929258346558
+    ],
+    "panSurfacePoint": [
+      1.6907352209091187,
+      0.3154999911785126,
+      1.1566600799560547
+    ],
+    "vertexDistancePixelsAt64": 0.15032988786697388,
+    "vertexDistanceIsUpperBoundOnly": true
+  },
+  {
+    "rim": "angled-prep.pan rim end 2 -0.202",
+    "pan": "ingredient-pan.002",
+    "actualTriangleSurfaceIntersections": 0,
+    "nearestVertexTriangleDistanceTiles": 0.002348904497921467,
+    "rimSurfacePoint": [
+      1.4905000925064087,
+      0.3022070825099945,
+      1.1577929258346558
+    ],
+    "panSurfacePoint": [
+      1.4905000925064087,
+      0.30426475405693054,
+      1.1566600799560547
+    ],
+    "vertexDistancePixelsAt64": 0.15032988786697388,
+    "vertexDistanceIsUpperBoundOnly": true
+  },
+  {
+    "rim": "angled-prep.pan rim end 2 0.166",
+    "pan": "ingredient-pan.002",
+    "actualTriangleSurfaceIntersections": 0,
+    "nearestVertexTriangleDistanceTiles": 0.002348904497921467,
+    "rimSurfacePoint": [
+      1.4905000925064087,
+      0.6617928743362427,
+      1.1577929258346558
+    ],
+    "panSurfacePoint": [
+      1.4905000925064087,
+      0.6597352027893066,
+      1.1566600799560547
+    ],
+    "vertexDistancePixelsAt64": 0.15032988786697388,
+    "vertexDistanceIsUpperBoundOnly": true
+  }
+]
