@@ -84,4 +84,17 @@ it('requires actual saved-source and selected-producer omissions plus real curre
   expect(proof.protectedAfter).toEqual(proof.protectedBefore);
   expect(proof.exactRestoredFiles).toBe(Object.keys(proof.protectedBefore).length);
   expect(proof.exactRestoredFiles).toBeGreaterThan(1000); expect(proof.nativeRun).toBe(false);
+  const entries = json(folder + 'actual-canonical-entry-controls.json') as {
+    controls: {label: string; exitCode: number; expectedFailure: string | null}[];
+    protectedBefore: Record<string,string>; protectedAfter: Record<string,string>;
+    exactRestoredFiles: number; nativeRun: boolean; realAdditionalRenders: number;
+  };
+  expect(entries.controls.map(row => [row.label, row.exitCode])).toEqual([
+    ['actual-canonical-entry-omission-RED', 1], ['exact-canonical-entry-restore-GREEN', 0],
+    ['actual-shared-Infirmary-omission-RED', 1], ['exact-shared-Infirmary-restore-GREEN', 0],
+    ['actual-canonical-decoded72-GREEN', 0]]);
+  expect(entries.protectedAfter).toEqual(entries.protectedBefore);
+  expect(entries.exactRestoredFiles).toBe(Object.keys(entries.protectedBefore).length);
+  expect(entries.exactRestoredFiles).toBeGreaterThan(proof.exactRestoredFiles);
+  expect(entries.nativeRun).toBe(false); expect(entries.realAdditionalRenders).toBe(0);
 });

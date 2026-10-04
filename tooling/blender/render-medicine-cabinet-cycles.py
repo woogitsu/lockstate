@@ -1,4 +1,4 @@
-"""Dedicated actual saved Medicine cabinet Cycles72 producer; no shared dispatch edits."""
+"""Dedicated actual saved Medicine cabinet Cycles72 producer and canonical target."""
 from pathlib import Path
 import hashlib
 import json
