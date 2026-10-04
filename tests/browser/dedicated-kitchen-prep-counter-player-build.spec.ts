@@ -2,6 +2,7 @@
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
+import { kitchenPrepMaterialPixels } from './kitchen-prep-modern-material-observer';
 import { assertOwnedObjectOrders, type OwnedObjectSnapshotData } from './owned-object-worker-evidence';
 import { observeKitchenModernNetwork, frameKitchenModernSource, readKitchenWholeSnapshot } from './common-room-kitchen-modern-evidence';
 
@@ -83,34 +84,8 @@ async function fixtureOwnership(page: Page) {
   });
 }
 
-async function prepPalettePixels(page: Page, png: Buffer, quarterTurns: 0 | 1): Promise<number[]> {
-  return page.evaluate(async ({ base64, quarterTurns }) => {
-    const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(base64), c => c.charCodeAt(0))], { type: 'image/png' }));
-    const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
-    const context = canvas.getContext('2d')!; context.drawImage(bitmap, 0, 0);
-    // Disjoint native wood and physical tray-rim regions: q0 counts149/122,
-    // q1 counts238/151 before and after actual Load. The rotated right wall
-    // hides farther trays; only the genuinely exposed first tray is sampled.
-    const rects = quarterTurns === 0
-      ? [[948, 338, 15, 15], [912, 329, 34, 24]]
-      : [[1030, 455, 42, 12], [1048, 432, 30, 23]];
-    const colour = [150, 105, 67];
-    return rects.map((rect, regionIndex) => {
-      const pixels = context.getImageData(...rect as [number, number, number, number]).data;
-      let count = 0;
-      for (let i = 0; i < pixels.length; i += 4) {
-        const r = pixels[i]!, g = pixels[i + 1]!, b = pixels[i + 2]!;
-        const matches = regionIndex === 0
-          ? r === colour[0] && g === colour[1] && b === colour[2]
-          // Thin steel rims blend with neighboring authored brown surfaces.
-          // Wood/contents have much larger negative channel gaps; room walls
-          // are brighter than this actual native steel/antialias envelope.
-          : r >= 90 && r <= 155 && g - r >= -25 && g - r <= 18 && b - g >= -25 && b - g <= 8;
-        if (matches) count++;
-      }
-      return count;
-    });
-  }, { base64: png.toString('base64'), quarterTurns });
+async function prepPalettePixels(_page: Page,png: Buffer,quarterTurns: 0 | 1): Promise<number[]> {
+  return kitchenPrepMaterialPixels(png,quarterTurns);
 }
 
 let routeStorage: Awaited<ReturnType<ReturnType<Page['context']>['storageState']>> | undefined;

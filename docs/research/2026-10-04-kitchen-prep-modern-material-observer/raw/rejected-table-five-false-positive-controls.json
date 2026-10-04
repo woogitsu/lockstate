@@ -1,0 +1,86 @@
+{
+  "native": [
+    {
+      "name": "dedicated-kitchen-prep-counter-worker-completed-fullhd.png",
+      "wood": {
+        "body": 167,
+        "rim": 0
+      },
+      "rim": {
+        "body": 156,
+        "rim": 134
+      }
+    },
+    {
+      "name": "dedicated-kitchen-prep-counter-loaded-fullhd.png",
+      "wood": {
+        "body": 167,
+        "rim": 0
+      },
+      "rim": {
+        "body": 156,
+        "rim": 134
+      }
+    }
+  ],
+  "controls": [
+    {
+      "name": "oblique-furniture.cell-cot.v1.json",
+      "maxima": {
+        "body": 35,
+        "rim": 157
+      }
+    },
+    {
+      "name": "oblique-furniture.canteen-dining-table.v1.json",
+      "maxima": {
+        "body": 675,
+        "rim": 287
+      }
+    },
+    {
+      "name": "oblique-canteen-bench.v1.json",
+      "maxima": {
+        "body": 152,
+        "rim": 56
+      }
+    }
+  ],
+  "failures": [
+    {
+      "frame": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+00-elev20.171285927d78.png",
+      "m": {
+        "body": 211,
+        "rim": 266
+      }
+    },
+    {
+      "frame": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+240-elev20.a758a232224a.png",
+      "m": {
+        "body": 153,
+        "rim": 225
+      }
+    },
+    {
+      "frame": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+270-elev20.4b0e9be8e9ca.png",
+      "m": {
+        "body": 675,
+        "rim": 116
+      }
+    },
+    {
+      "frame": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+300-elev20.aa5ca016f886.png",
+      "m": {
+        "body": 129,
+        "rim": 251
+      }
+    },
+    {
+      "frame": "/assets/environment/oblique/furniture.dining.table.wooden-yaw+330-elev20.3269ae6cee84.png",
+      "m": {
+        "body": 359,
+        "rim": 287
+      }
+    }
+  ]
+}
