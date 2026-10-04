@@ -1,0 +1,212 @@
+[
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/README.md",
+    "bytes": 8440,
+    "sha256": "c823d7c4a4c7ccf2939f4f23e99fb03751eab79517da7d5ce79816062100a69c"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/lockstate-medical-actual-material-rays-20261004.py.txt",
+    "bytes": 3325,
+    "sha256": "c82db8c749ab8e3df815154a2cee68848c583fc1a546f7be6563bb408e14164f"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/lockstate-medical-auxiliary-palettes-20261004.cjs.txt",
+    "bytes": 1589,
+    "sha256": "906c46d27b5d2b4669cc6195aac02168c4422c714747980e1604883e3f242586"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/lockstate-medical-bed-steel-derivation-20261004.cjs.txt",
+    "bytes": 2320,
+    "sha256": "83b78e9d0cccc1ec1fcca8342aaebcc642d38cc77b2b340e6f7e43dee0f82432"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/lockstate-medical-direction-candidate-20261004.cjs.txt",
+    "bytes": 1011,
+    "sha256": "90f732b3dd958df6a89de0e2672d7de9fd280a459b9e551d69b3e07b4cd077a4"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/lockstate-medical-helper-real-omissions-20261004.cjs.txt",
+    "bytes": 2128,
+    "sha256": "03b2998a5b9f8f66c76ef3056c6c1ffcf872e0a09157b59458beb31f556e258b"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/lockstate-medical-material-helper-build-20261004.cjs.txt",
+    "bytes": 4290,
+    "sha256": "b271890dd7dbe1be66d7a8ca25cd412d2e4c7eca037adc2a16044b65ba08061f"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/lockstate-medical-material-observer-candidate-20261004.cjs.txt",
+    "bytes": 2585,
+    "sha256": "ec49a91809ebb4619af4a5b580707b1738fd4a94146bf453b563a80009cf384f"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/lockstate-medical-physical-surface-centroids-20261004.cjs.txt",
+    "bytes": 762,
+    "sha256": "0d5f6277bf131ab92e7df7bc6cff939c9147639208decad79c1741f77f7fe7da"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/lockstate-medical-source-candidate-derivation-20261004.cjs.txt",
+    "bytes": 1793,
+    "sha256": "db7853e2fbf74bb9ef72874d941869f6639d6f68fcd84a3a45d8dcba5b713e61"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/lockstate-medical-source-controls-20261004.mjs.txt",
+    "bytes": 3930,
+    "sha256": "604b6f3215d0ed6a21d23921dffcc612161ed16d0f24c73b4571d95e5d371d32"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/lockstate-medical-source-shape-stats-20261004.mjs.txt",
+    "bytes": 2644,
+    "sha256": "0965c6e3afbe4eaca09b7b2a96642156dda15cb3b2137cd66318f79e7fd03578"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/lockstate-medical-third-surface-candidate-20261004.cjs.txt",
+    "bytes": 1283,
+    "sha256": "5fff4894be66bd06e267afc227edb235b4588020239f344c502ae296169b6eaa"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/actual-bed-spatial-omission-RED.json",
+    "bytes": 6284,
+    "sha256": "f9237b08c445c21037bdad44c84328554c83bacd4b0147c65b2213dbc2bd3762"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/actual-bed-spatial-omission-RED.raw.txt",
+    "bytes": 1979,
+    "sha256": "6b22aa5dd7ae18fa5355d3ff87945a01f3c4ca04c93c13034da1f48586616abf"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/actual-byte-restored-GREEN.json",
+    "bytes": 5975,
+    "sha256": "b0f5a993ad0c1fd75e0d906b9dc81ec32639345c83089280b959580f481187a0"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/actual-byte-restored-GREEN.raw.txt",
+    "bytes": 2851,
+    "sha256": "482d916e760b53005c2eb495017edebef31409aa4eb6c580bb0c94e18fc2dd09"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/actual-omission-exact-restoration.json",
+    "bytes": 2798,
+    "sha256": "4039d45d38e77e6f14c833f703e614d7713e25bfa76247f97316ed0503cde707"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/actual-primary-reader-omission-RED.json",
+    "bytes": 2898,
+    "sha256": "2071d60fef35bdf80f5d45582e09d8a258cccd752fd0a2885e230164fdb94290"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/actual-primary-reader-omission-RED.raw.txt",
+    "bytes": 1718,
+    "sha256": "3fb82f2e842a1a758bb45836db2f334dd2cadd883a9c4c62babd1725225ae31b"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/app-types.raw.txt",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/docs.raw.txt",
+    "bytes": 552,
+    "sha256": "ad742387b7df65c97c8b2f4f10afe64da6238e653502e552949cefbfaad443b6"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/lockstate-medical-actual-material-rays-20261004.json",
+    "bytes": 3617911,
+    "sha256": "f3b4aefee3180469e5e2d9cd76338a44c71795bfaa21730bffc9aef9ad149186"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/lockstate-medical-actual-material-rays-20261004.raw.txt",
+    "bytes": 4436,
+    "sha256": "b204c187398a150273f97627e64aa834ddadc5037c1a081ac13383692fee66e9"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/lockstate-medical-auxiliary-palettes-20261004.json",
+    "bytes": 9970,
+    "sha256": "44fdd15e6a1549fbe57008f882d1785869bb9b5579bb8ef72a4ca6ffe2c4e88d"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/lockstate-medical-bed-steel-derivation-20261004.json",
+    "bytes": 9672,
+    "sha256": "f80d54a6ab023d3a77555e76e73e7c9f591a4bb74cb643b81ea4a87115740ec2"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/lockstate-medical-material-observer-candidate-20261004.json",
+    "bytes": 39529,
+    "sha256": "f6196583c7cea3980820f6ff7a6f64d76f1989238646f4129c7ffdb8fd4906fa"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/lockstate-medical-material-observer-candidate-20261004.raw.txt",
+    "bytes": 5498,
+    "sha256": "99f8594fca7fb173eaa7d6282f2ffbc4e6f1511041ad8d57798af4085c93efbc"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/lockstate-medical-physical-surface-centroids-20261004.json",
+    "bytes": 517,
+    "sha256": "4a40298935697629f686da8072379bdab8d76d531dbaade85e760a6614f7218b"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/lockstate-medical-source-candidate-derivation-20261004.json",
+    "bytes": 64142,
+    "sha256": "04bad872fae72f10b0e40dbe5b05b38cc8c8fb98991ea357d998f5ab2378929b"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/lockstate-medical-source-candidate-derivation-20261004.raw.txt",
+    "bytes": 14754,
+    "sha256": "21dd15dbf0f3c016d79c3ca94b07b2f661b02d5e1b6158349826aa7f7e988260"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/lockstate-medical-source-controls-direction-candidate-20261004.json",
+    "bytes": 5975,
+    "sha256": "fcd432beaeb067d4e652f2cdcc11db506c6e30bb2479401fb9b04c25b3151b0d"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/lockstate-medical-source-controls-direction-candidate-20261004.raw.txt",
+    "bytes": 6444,
+    "sha256": "63e70c0593f6bda4a3c2e2d2469ee14fc1a76dd42df44caee56d53476265b107"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/lockstate-medical-source-controls-first-candidate-20261004.json",
+    "bytes": 13737,
+    "sha256": "a7b28acddf6c8d8116f62d23b688f646fa83fb010418b6738d81c15e8c476d51"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/lockstate-medical-source-controls-first-candidate-20261004.raw.txt",
+    "bytes": 6456,
+    "sha256": "cf535395fced33f6fd33793414319f787e9cee4db63c4e2e41f9146cee01ac19"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/lockstate-medical-source-controls-third-candidate-20261004.json",
+    "bytes": 13737,
+    "sha256": "cfa940872c4b9aba9b928792be168fe7d0e64fac15d8cc5f3b986d6b88198913"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/lockstate-medical-source-controls-third-candidate-20261004.raw.txt",
+    "bytes": 6456,
+    "sha256": "0087c2287431c83e0980daa450a94f492e99f4f0095a09e0d7e56913353b2af3"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/lockstate-medical-source-shape-stats-20261004.json",
+    "bytes": 34573,
+    "sha256": "e99a942ee32f1ce6590d295d0852d19cd8b4455e79a5a7d9035004eaa0f86181"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/lockstate-medical-source-shape-stats-20261004.raw.txt",
+    "bytes": 16536,
+    "sha256": "5f22221c9cd3af93e989a36ed94d10d95f7a874cb2c3ba87218fdd092f2709d5"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/terminal-preservation.json",
+    "bytes": 364,
+    "sha256": "9dc9706c01de35b08a420303d09941b8b1de8174417c3ab5d6bbd6efa8c1952d"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/raw/tools-types.raw.txt",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-source-material-observer/rejected-third-surface-candidate.ts.txt",
+    "bytes": 26523,
+    "sha256": "64cae00d998b6c9c23ed8577b877383cd43b69258181c866c4fdd5c3e329765d"
+  }
+]

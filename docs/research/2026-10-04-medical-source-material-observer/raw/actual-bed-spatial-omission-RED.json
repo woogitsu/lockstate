@@ -1,0 +1,127 @@
+{
+  "helperSha256": "4e03534b570c8cd22d8b0087c8e9d5655f4d3a065c56b018cef2a91b9f550120",
+  "mode": "genuine hashed source PNGs only; native held out",
+  "positives": [
+    {
+      "asset": "medicine",
+      "yaw": 300,
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev40.511adeeed0f9.png",
+      "sha256": "511adeeed0f9051373ae1adc48c9bf424ad5424d41a4512c041e2d5525adc711",
+      "counts": {
+        "medicine": 671,
+        "medicalBed": 0
+      }
+    },
+    {
+      "asset": "medicine",
+      "yaw": 30,
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev40.cfb19173290f.png",
+      "sha256": "cfb19173290fccb4e38093494a39e75c406afb184a47e47e33ec2221d025cc52",
+      "counts": {
+        "medicine": 1412,
+        "medicalBed": 0
+      }
+    },
+    {
+      "asset": "medicine",
+      "yaw": 60,
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev40.bdd5f5183c55.png",
+      "sha256": "bdd5f5183c55984e20fe289701dadfb7ff9e350c06e4919e339c85bcb4d8a0bd",
+      "counts": {
+        "medicine": 705,
+        "medicalBed": 0
+      }
+    },
+    {
+      "asset": "medicalBed",
+      "yaw": 300,
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev40.d7b0bb53fa1f.png",
+      "sha256": "d7b0bb53fa1fbcad780009f57cde8396327d5e5dcb44ecf6709bd72727c360e9",
+      "counts": {
+        "medicine": 0,
+        "medicalBed": 713
+      }
+    },
+    {
+      "asset": "medicalBed",
+      "yaw": 30,
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev40.b5686f1915c5.png",
+      "sha256": "b5686f1915c56a9614d5e102e3627f75f0bf29f7daf719bf84c7dd5e82d77aa8",
+      "counts": {
+        "medicine": 0,
+        "medicalBed": 1174
+      }
+    },
+    {
+      "asset": "medicalBed",
+      "yaw": 60,
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev40.a2c875cba534.png",
+      "sha256": "a2c875cba5348fa4bfcc76947f0dbf3e335a7a93aaf8de5731700df8fc28f7aa",
+      "counts": {
+        "medicine": 0,
+        "medicalBed": 600
+      }
+    }
+  ],
+  "controls": [
+    {
+      "name": "oblique-furniture-classroom-teacher-desk.v1.json",
+      "descriptorSha256": "48b5ecaae67b401ae12d4ab1b6fe1d157724bf00017c5f475e751a9d2d987b33",
+      "images": 72,
+      "maxima": {
+        "medicine": 0,
+        "medicalBed": 453
+      }
+    },
+    {
+      "name": "oblique-furniture.kitchen-fridge.v1.json",
+      "descriptorSha256": "637dd6dc2ffd7529a3cc24a777de344119e735b82b0f4c500949e9df64730d3a",
+      "images": 72,
+      "maxima": {
+        "medicine": 0,
+        "medicalBed": 0
+      }
+    },
+    {
+      "name": "oblique-furniture.cell-cot.v1.json",
+      "descriptorSha256": "a7d9dd1bad339bd228aefa3de378557e58e3513bf1b824bf0afbacef5c94e741",
+      "images": 72,
+      "maxima": {
+        "medicine": 0,
+        "medicalBed": 116
+      }
+    }
+  ],
+  "failures": [
+    "medicalBed /assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev20.30c9a8a1b661.png=124",
+    "medicalBed /assets/environment/oblique/furniture.classroom.teacher-desk-yaw+30-elev30.db75a34b7ab4.png=26",
+    "medicalBed /assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev20.35f7741d5d11.png=224",
+    "medicalBed /assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev30.88fbafd7e65f.png=309",
+    "medicalBed /assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev40.5c8ee6a0fc92.png=353",
+    "medicalBed /assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev50.3fbdde246e9e.png=210",
+    "medicalBed /assets/environment/oblique/furniture.classroom.teacher-desk-yaw+90-elev20.3817f5e95093.png=453",
+    "medicalBed /assets/environment/oblique/furniture.classroom.teacher-desk-yaw+90-elev30.9d3044ecae2f.png=394",
+    "medicalBed /assets/environment/oblique/furniture.classroom.teacher-desk-yaw+90-elev40.773cfb1985d4.png=360",
+    "medicalBed /assets/environment/oblique/furniture.classroom.teacher-desk-yaw+90-elev50.2bf56d6a37a0.png=266",
+    "medicalBed /assets/environment/oblique/furniture.classroom.teacher-desk-yaw+90-elev60.1b388a620f5e.png=87",
+    "medicalBed /assets/environment/oblique/furniture.classroom.teacher-desk-yaw+120-elev20.a495cb23221a.png=369",
+    "medicalBed /assets/environment/oblique/furniture.classroom.teacher-desk-yaw+120-elev30.699698f2c1ee.png=342",
+    "medicalBed /assets/environment/oblique/furniture.classroom.teacher-desk-yaw+120-elev40.ff8862a623bc.png=273",
+    "medicalBed /assets/environment/oblique/furniture.classroom.teacher-desk-yaw+120-elev50.4bbe97fb7dd3.png=175",
+    "medicalBed /assets/environment/oblique/furniture.classroom.teacher-desk-yaw+150-elev20.7b3673f0f173.png=39",
+    "medicalBed /assets/environment/oblique/furniture.classroom.teacher-desk-yaw+150-elev30.67688b0e959a.png=16",
+    "medicalBed /assets/environment/oblique/furniture.classroom.teacher-desk-yaw+150-elev40.46605ef28c32.png=12",
+    "medicalBed /assets/environment/oblique/furniture.cell.cot.single-yaw+60-elev20.34fdc677a599.png=7",
+    "medicalBed /assets/environment/oblique/furniture.cell.cot.single-yaw+60-elev30.670ab7e2d740.png=4",
+    "medicalBed /assets/environment/oblique/furniture.cell.cot.single-yaw+60-elev40.9940cac80b9b.png=6",
+    "medicalBed /assets/environment/oblique/furniture.cell.cot.single-yaw+90-elev20.a3dc668af374.png=107",
+    "medicalBed /assets/environment/oblique/furniture.cell.cot.single-yaw+90-elev30.03e26bb01b44.png=48",
+    "medicalBed /assets/environment/oblique/furniture.cell.cot.single-yaw+90-elev40.9f1addc7198b.png=116",
+    "medicalBed /assets/environment/oblique/furniture.cell.cot.single-yaw+90-elev50.a8bb068db09b.png=95",
+    "medicalBed /assets/environment/oblique/furniture.cell.cot.single-yaw+90-elev60.8c008ddd5e67.png=95",
+    "medicalBed /assets/environment/oblique/furniture.cell.cot.single-yaw+90-elev70.8f064f2de15a.png=32",
+    "medicalBed /assets/environment/oblique/furniture.cell.cot.single-yaw+120-elev20.237e0e4d289a.png=10",
+    "medicalBed /assets/environment/oblique/furniture.cell.cot.single-yaw+120-elev30.aa845048d414.png=13",
+    "medicalBed /assets/environment/oblique/furniture.cell.cot.single-yaw+120-elev40.baa9c184fdea.png=3"
+  ]
+}

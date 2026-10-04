@@ -1,0 +1,126 @@
+{
+  "beforeSha256": "2ba083c3c54615a131e464647d18ba73e31d8c9c1f7b27fd2e442d0b74b5af88",
+  "afterSha256": "2ba083c3c54615a131e464647d18ba73e31d8c9c1f7b27fd2e442d0b74b5af88",
+  "byteExact": true,
+  "rows": [
+    {
+      "label": "actual-primary-reader-omission-RED",
+      "status": 1,
+      "failures": 6,
+      "helperSha256": "1977d3ed16e07163cb37ac8ac6bd76ca95576ac89e55de6bd2a1de225b93cd6a",
+      "sourcePositiveCounts": [
+        {
+          "asset": "medicine",
+          "yaw": 300,
+          "count": 0
+        },
+        {
+          "asset": "medicine",
+          "yaw": 30,
+          "count": 0
+        },
+        {
+          "asset": "medicine",
+          "yaw": 60,
+          "count": 0
+        },
+        {
+          "asset": "medicalBed",
+          "yaw": 300,
+          "count": 0
+        },
+        {
+          "asset": "medicalBed",
+          "yaw": 30,
+          "count": 0
+        },
+        {
+          "asset": "medicalBed",
+          "yaw": 60,
+          "count": 0
+        }
+      ],
+      "unrelatedImages": 0
+    },
+    {
+      "label": "actual-bed-spatial-omission-RED",
+      "status": 1,
+      "failures": 30,
+      "helperSha256": "4e03534b570c8cd22d8b0087c8e9d5655f4d3a065c56b018cef2a91b9f550120",
+      "sourcePositiveCounts": [
+        {
+          "asset": "medicine",
+          "yaw": 300,
+          "count": 671
+        },
+        {
+          "asset": "medicine",
+          "yaw": 30,
+          "count": 1412
+        },
+        {
+          "asset": "medicine",
+          "yaw": 60,
+          "count": 705
+        },
+        {
+          "asset": "medicalBed",
+          "yaw": 300,
+          "count": 713
+        },
+        {
+          "asset": "medicalBed",
+          "yaw": 30,
+          "count": 1174
+        },
+        {
+          "asset": "medicalBed",
+          "yaw": 60,
+          "count": 600
+        }
+      ],
+      "unrelatedImages": 216
+    },
+    {
+      "label": "actual-byte-restored-GREEN",
+      "status": 0,
+      "failures": 0,
+      "helperSha256": "2ba083c3c54615a131e464647d18ba73e31d8c9c1f7b27fd2e442d0b74b5af88",
+      "sourcePositiveCounts": [
+        {
+          "asset": "medicine",
+          "yaw": 300,
+          "count": 671
+        },
+        {
+          "asset": "medicine",
+          "yaw": 30,
+          "count": 1412
+        },
+        {
+          "asset": "medicine",
+          "yaw": 60,
+          "count": 705
+        },
+        {
+          "asset": "medicalBed",
+          "yaw": 300,
+          "count": 713
+        },
+        {
+          "asset": "medicalBed",
+          "yaw": 30,
+          "count": 1174
+        },
+        {
+          "asset": "medicalBed",
+          "yaw": 60,
+          "count": 600
+        }
+      ],
+      "unrelatedImages": 1080
+    }
+  ],
+  "nativeExecuted": false,
+  "gameProducerMutated": false
+}

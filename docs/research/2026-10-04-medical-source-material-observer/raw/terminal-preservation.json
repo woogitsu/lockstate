@@ -1,0 +1,10 @@
+{
+  "base": "eeb3dc28e484cdb4bafc0af74237536b21041a3b",
+  "originalTwoNativeConsumersAndSharedPinsByteExactAfterLfNormalization": true,
+  "productionModelsRuntimeAssetsWorkflowsPackagesSharedConfigsDiffEmpty": true,
+  "appTypecheckExit": 0,
+  "toolsTypecheckExit": 0,
+  "browserExecuted": false,
+  "buildExecuted": false,
+  "originalRoisAndFloorsChanged": false
+}

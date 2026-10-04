@@ -1,0 +1,204 @@
+{
+  "helperSha256": "2ba083c3c54615a131e464647d18ba73e31d8c9c1f7b27fd2e442d0b74b5af88",
+  "mode": "genuine hashed source PNGs only; native held out",
+  "positives": [
+    {
+      "asset": "medicine",
+      "yaw": 300,
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+300-elev40.511adeeed0f9.png",
+      "sha256": "511adeeed0f9051373ae1adc48c9bf424ad5424d41a4512c041e2d5525adc711",
+      "counts": {
+        "medicine": 671,
+        "medicalBed": 0
+      }
+    },
+    {
+      "asset": "medicine",
+      "yaw": 30,
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+30-elev40.cfb19173290f.png",
+      "sha256": "cfb19173290fccb4e38093494a39e75c406afb184a47e47e33ec2221d025cc52",
+      "counts": {
+        "medicine": 1412,
+        "medicalBed": 0
+      }
+    },
+    {
+      "asset": "medicine",
+      "yaw": 60,
+      "image": "/assets/environment/oblique/fixture.medicine-cabinet.variants-yaw+60-elev40.bdd5f5183c55.png",
+      "sha256": "bdd5f5183c55984e20fe289701dadfb7ff9e350c06e4919e339c85bcb4d8a0bd",
+      "counts": {
+        "medicine": 705,
+        "medicalBed": 0
+      }
+    },
+    {
+      "asset": "medicalBed",
+      "yaw": 300,
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+300-elev40.d7b0bb53fa1f.png",
+      "sha256": "d7b0bb53fa1fbcad780009f57cde8396327d5e5dcb44ecf6709bd72727c360e9",
+      "counts": {
+        "medicine": 0,
+        "medicalBed": 713
+      }
+    },
+    {
+      "asset": "medicalBed",
+      "yaw": 30,
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+30-elev40.b5686f1915c5.png",
+      "sha256": "b5686f1915c56a9614d5e102e3627f75f0bf29f7daf719bf84c7dd5e82d77aa8",
+      "counts": {
+        "medicine": 0,
+        "medicalBed": 1174
+      }
+    },
+    {
+      "asset": "medicalBed",
+      "yaw": 60,
+      "image": "/assets/environment/oblique/furniture.medical-bed.variants-yaw+60-elev40.a2c875cba534.png",
+      "sha256": "a2c875cba5348fa4bfcc76947f0dbf3e335a7a93aaf8de5731700df8fc28f7aa",
+      "counts": {
+        "medicine": 0,
+        "medicalBed": 600
+      }
+    }
+  ],
+  "controls": [
+    {
+      "name": "oblique-cell-chair.v1.json",
+      "descriptorSha256": "77d161b013f23c1b0aaf0ff1aaf8bc6a699ef8da219a02bc61ddd47a2d266104",
+      "images": 72,
+      "maxima": {
+        "medicine": 0,
+        "medicalBed": 0
+      }
+    },
+    {
+      "name": "oblique-reception-employee-desk.v1.json",
+      "descriptorSha256": "25fd7c1e0928a55cd7b078b8b71a0a6de20ca88f65f34f08773e6600a55cd1f8",
+      "images": 72,
+      "maxima": {
+        "medicine": 0,
+        "medicalBed": 0
+      }
+    },
+    {
+      "name": "oblique-furniture-office-desk-generic.v1.json",
+      "descriptorSha256": "7efe0783dd039dbeb35349a0d5502b69293d06bf6f747bc60e203c12872e7b56",
+      "images": 72,
+      "maxima": {
+        "medicine": 0,
+        "medicalBed": 0
+      }
+    },
+    {
+      "name": "oblique-furniture-classroom-teacher-desk.v1.json",
+      "descriptorSha256": "48b5ecaae67b401ae12d4ab1b6fe1d157724bf00017c5f475e751a9d2d987b33",
+      "images": 72,
+      "maxima": {
+        "medicine": 0,
+        "medicalBed": 0
+      }
+    },
+    {
+      "name": "oblique-square-brick-full-wall.v1.json",
+      "descriptorSha256": "818aefbbe6bcde5515e2ae8c0096e1baddb3fe8009fd1fab81895ae07b7e9fe2",
+      "images": 72,
+      "maxima": {
+        "medicine": 0,
+        "medicalBed": 0
+      }
+    },
+    {
+      "name": "oblique-wall-cutaway.v1.json",
+      "descriptorSha256": "e2adcbbc495ed13a95ad9f56de4bd435e29235e466dda14060b4cf16452c56ba",
+      "images": 72,
+      "maxima": {
+        "medicine": 0,
+        "medicalBed": 0
+      }
+    },
+    {
+      "name": "oblique-wall-west.v1.json",
+      "descriptorSha256": "6a8859564271931a26befae7b45e4045a50bbe8009c2e2964e40f6fd0571d85f",
+      "images": 72,
+      "maxima": {
+        "medicine": 0,
+        "medicalBed": 0
+      }
+    },
+    {
+      "name": "oblique-wall-west-cutaway.v1.json",
+      "descriptorSha256": "60bcad0e00b8a5e444843289c70aa963b3919dbad67513265ba4d39fff59d7c4",
+      "images": 72,
+      "maxima": {
+        "medicine": 0,
+        "medicalBed": 0
+      }
+    },
+    {
+      "name": "oblique-floor-cell.v1.json",
+      "descriptorSha256": "f98971e9d15f48f1e26fb4a178dab6ff65d82e54fa08e37ec044d3449f0a2aee",
+      "images": 72,
+      "maxima": {
+        "medicine": 0,
+        "medicalBed": 0
+      }
+    },
+    {
+      "name": "oblique-floor-terrain-dirt.v1.json",
+      "descriptorSha256": "4d3bc8824e085201c3acc5b0c5c87d277ded17466b670ecf761bbf51ef0b2229",
+      "images": 72,
+      "maxima": {
+        "medicine": 0,
+        "medicalBed": 0
+      }
+    },
+    {
+      "name": "oblique-furniture.kitchen-stove.v1.json",
+      "descriptorSha256": "c913819464aef1c9f64c203fa7e93245eb66402cfd2e2c9b6fb5d942ca3d670f",
+      "images": 72,
+      "maxima": {
+        "medicine": 0,
+        "medicalBed": 0
+      }
+    },
+    {
+      "name": "oblique-furniture.kitchen-fridge.v1.json",
+      "descriptorSha256": "637dd6dc2ffd7529a3cc24a777de344119e735b82b0f4c500949e9df64730d3a",
+      "images": 72,
+      "maxima": {
+        "medicine": 0,
+        "medicalBed": 0
+      }
+    },
+    {
+      "name": "oblique-furniture.cell-cot.v1.json",
+      "descriptorSha256": "a7d9dd1bad339bd228aefa3de378557e58e3513bf1b824bf0afbacef5c94e741",
+      "images": 72,
+      "maxima": {
+        "medicine": 0,
+        "medicalBed": 0
+      }
+    },
+    {
+      "name": "oblique-furniture.canteen-dining-table.v1.json",
+      "descriptorSha256": "1c163e1a5fb639ea74ee336657ae71a61369296249eed6cedf3da9cb02930aa6",
+      "images": 72,
+      "maxima": {
+        "medicine": 0,
+        "medicalBed": 0
+      }
+    },
+    {
+      "name": "oblique-canteen-bench.v1.json",
+      "descriptorSha256": "88516dc11d0b4757f30c00424004368221a8770ad1b1dffa7c9f5c7f3effefb2",
+      "images": 72,
+      "maxima": {
+        "medicine": 0,
+        "medicalBed": 0
+      }
+    }
+  ],
+  "failures": []
+}
