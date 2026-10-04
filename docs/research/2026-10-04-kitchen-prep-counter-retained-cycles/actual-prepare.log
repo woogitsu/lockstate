@@ -1,0 +1,28 @@
+00:04.906  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-prep-counter-cycles-20261004\assets\source\blender\furniture.kitchen.prep-counter.angled.blend"
+KITCHEN_BOUNDS furniture.kitchen.prep-counter.variants [0.07300007343292236, 0.01850000210106373, 0.0] [1.9269999265670776, 0.9229999780654907, 1.6200001239776611]
+DEDICATED_KITCHEN_PREP_COUNTER_EVALUATED_BOUNDS [0.07300007343292236, 0.01850000210106373, 0.0] [1.9269999265670776, 0.9229999780654907, 1.6200001239776611]; four occupied orientations verified
+blender.exe : Traceback (most recent call last):
+At line:7 char:1
++ & 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe' --bac ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-prep-counter-cycles-20261004\tooling\blender\prepare-kit
+chen-prep-counter-cycles.py", line 189, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-prep-counter-cycles-20261004\tooling\blender\prepare-kit
+chen-prep-counter-cycles.py", line 143, in main
+    original = physical(scene)
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-prep-counter-cycles-20261004\tooling\blender\prepare-kit
+chen-prep-counter-cycles.py", line 52, in physical
+    'evaluatedNormals': audit.convex_normal_audit(scene, require_outward=False),
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-kitchen-prep-counter-cycles-20261004\tooling\blender\refine-kitc
+hen-stove-angled-detail.py", line 127, in convex_normal_audit
+    raise ValueError('Stove evaluated degenerate-face count differs from retained modifier audit: ' + obj.name)
+ValueError: Stove evaluated degenerate-face count differs from retained modifier audit: basin-inner
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
