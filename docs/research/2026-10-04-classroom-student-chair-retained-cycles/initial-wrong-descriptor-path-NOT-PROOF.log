@@ -1,0 +1,35 @@
+blender.exe : Traceback (most recent call last):
+At line:28 char:1
++ & 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe' --bac ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-interior-door-cycles-20261004\tooling\blender\prepare-classroom-
+student-chair-cycles.py", line 185, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-interior-door-cycles-20261004\tooling\blender\prepare-classroom-
+student-chair-cycles.py", line 139, in main
+    held = protected()
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-interior-door-cycles-20261004\tooling\blender\prepare-classroom-
+student-chair-cycles.py", line 116, in protected
+    return {path.relative_to(ROOT).as_posix(): sha(path) for path in sorted(set(paths))}
+                                               ~~~^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-interior-door-cycles-20261004\tooling\blender\prepare-classroom-
+student-chair-cycles.py", line 42, in sha
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+                          ~~~~~~~~~~~~~~~^^
+  File "C:\Program Files\Blender Foundation\Blender 5.2\5.2\python\Lib\pathlib\_abc.py", line 625, in read_bytes
+    with self.open(mode='rb') as f:
+         ~~~~~~~~~^^^^^^^^^^^
+  File "C:\Program Files\Blender Foundation\Blender 5.2\5.2\python\Lib\pathlib\_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-interior-d
+oor-cycles-20261004\\public\\game-content\\oblique-furniture.classroom-student-chair.v1.json'
+
+Error: script failed, file: 'tooling/blender/prepare-classroom-student-chair-cycles.py', exiting.
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit

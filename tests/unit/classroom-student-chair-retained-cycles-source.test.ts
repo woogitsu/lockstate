@@ -1,0 +1,30 @@
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { expect, it } from 'vitest';
+const sourceHash=(body:Buffer):string=>/^version https:\/\/git-lfs.github.com\/spec\/v1\r?\noid sha256:([a-f0-9]{64})\r?\n/m.exec(body.toString('utf8'))?.[1]??createHash('sha256').update(body).digest('hex');
+const root = new URL('../../',import.meta.url);
+const receipt = JSON.parse(readFileSync(new URL('assets/source/blender/furniture.classroom.student-chair.soft-light.provenance.json',root),'utf8'));
+it('retains complete Student chair physical source and every authored shader input',()=> {
+  expect(receipt.physicalAssembly.meshCount).toBe(33);
+  expect(receipt.physicalAssembly.rawMeshes).toHaveLength(33);
+  expect(receipt.physicalAssembly.completeStoredMaterialGraphs).toHaveLength(8);
+  expect(receipt.physicalAssembly.actualInteriorContacts).toHaveLength(13);
+  expect(receipt.materialGraphsChanged).toBe(false);
+  expect(receipt.protectedAfter).toEqual(receipt.protectedBefore);
+  expect(receipt.cameraTargetTiles).toEqual([.5,.5,.58]);
+  expect(receipt.footprintTiles).toEqual([1,1]);
+  expect(receipt.canonicalMinCornerTranslation).toEqual([0,0,0]);
+  const steel=receipt.originalMaterialAudit.find((row:{name:string})=>row.name==='captive steel fasteners');
+  expect(steel.shaderRoughness).toBe(.41999998688697815);
+  expect(steel.shaderMetallic).toBe(.6499999761581421);
+  expect(receipt.originalMaterialAudit.every((row:{shaderBaseColor:number[];diffuseRGBA:number[]})=>JSON.stringify(row.shaderBaseColor)===JSON.stringify(row.diffuseRGBA))).toBe(true);
+  expect(sourceHash(readFileSync(new URL(receipt.source,root)))).toBe('cda6b031cbc079e66afc511f8fc864b9706c0ed601ef33d759fa2c201a916273');
+});
+it('uses only this saved source bounded CPU128 profile after genuine noisy64 evidence',()=> {
+  expect(receipt.lightingProfile).toMatchObject({engine:'CYCLES',device:'CPU',threads:1,samples:128,denoising:true,denoiser:'OPENIMAGEDENOISE',denoisingUseGpu:false});
+  expect(receipt.actual64SampleDraft.lightingProfile).toMatchObject({samples:64,denoising:false});
+  expect(sourceHash(readFileSync(new URL(receipt.actual64SampleDraft.source,root)))).toBe(receipt.actual64SampleDraft.sourceSha256);
+  expect(receipt.afterRenderedFromActualSavedSource).toBe(true);
+  expect(receipt.frames.filter((row:{stage:string;byteExactPublishedWorkbench?:boolean})=>row.stage==='before-workbench').every((row:{byteExactPublishedWorkbench:boolean})=>row.byteExactPublishedWorkbench)).toBe(true);
+  expect(receipt.nativeAcceptance).toBe(false);
+});
