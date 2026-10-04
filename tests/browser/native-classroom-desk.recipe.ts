@@ -140,7 +140,6 @@ for (const turns of [0, 1] as const) test(`Classroom plan q${turns}: genuine sep
   for (let step = 0; step < CLASSROOM_ART.cameraRightClicks; step++) await page.getByRole('button', { name: 'Rotate camera right', exact: true }).click();
   await framePublicRoom(page);
   await page.screenshot({ path: info.outputPath('actual-classroom-desk-before-save-fullhd.png') });
-  await page.locator('#game-root canvas').screenshot({ path: info.outputPath('actual-classroom-desk-before-save-canvas.png') });
   const provenance = await network.evidence(info, turns);
   expect(await showcaseSnapshot(page)).toEqual(built);
   await page.getByRole('button', { name: 'Overview', exact: true }).click();
@@ -150,11 +149,10 @@ for (const turns of [0, 1] as const) test(`Classroom plan q${turns}: genuine sep
   await expect(page.locator('.save-panel__status')).toHaveText('Loaded.');
   await expect(page.getByRole('button', { name: 'Pause', exact: true })).toHaveAttribute('aria-pressed', 'true');
   const loaded = await showcaseSnapshot(page, info.outputPath('actual-classroom-desk-whole-paused-after-load.json'));
-  expect(loaded, 'whole paused V8 native Save/Load').toEqual(built);
+  expect(loaded, 'whole paused current-session native Save/Load').toEqual(built);
   assertClassroomDesk(loaded, turns, String(objectOwner)); expect(await showcaseRooms(page)).toEqual(rooms);
   await framePublicRoom(page);
   await page.screenshot({ path: info.outputPath('actual-classroom-desk-after-load-fullhd.png') });
-  await page.locator('#game-root canvas').screenshot({ path: info.outputPath('actual-classroom-desk-after-load-canvas.png') });
   await writeFile(info.outputPath('actual-classroom-desk-prepared-route-receipt.json'), JSON.stringify({ turns, publicIndividualDeskOrientation: 0,
     commands, purchaseOwner, objectOwner, actualQuote, beforeDesk, built, loaded, rooms, provenance,
     deskTiles: CLASSROOM_CASES[turns].deskTiles, intendedSourcePose: [60, 40], deskVisualCalibrationComplete: false,
