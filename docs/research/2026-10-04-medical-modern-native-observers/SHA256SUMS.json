@@ -1,0 +1,72 @@
+[
+  {
+    "path": "docs/research/2026-10-04-medical-modern-native-observers/README.md",
+    "bytes": 6815,
+    "sha256": "76d07534541a68e62b22fc43755dd6ddcdf3e5410628f69168bfa0f254c6b533"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-modern-native-observers/actual-model-pin-inventory.json",
+    "bytes": 43135,
+    "sha256": "0fdeebd4ac31557dac15a4cab23e738f33765670ed8b43ebd6e7f579df1cddaf"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-modern-native-observers/actual-preservation.json",
+    "bytes": 401,
+    "sha256": "465dda21a3496717bbf6b23a3c44207375409b2b7218d0f15a7eff642e42b924"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-modern-native-observers/actual-source-reader-relevance.json",
+    "bytes": 3221,
+    "sha256": "3401064f4b93ad179cd75df9d3e0b42e11853733301634f6e2430fd9322c8103"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-modern-native-observers/app-types.raw.txt",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-modern-native-observers/current-consumer-neighbors.raw.txt",
+    "bytes": 548,
+    "sha256": "dd865dea874ab837d805456b6dae523aa11b563af66dacd443385dbd5090fdd1"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-modern-native-observers/docs.raw.txt",
+    "bytes": 552,
+    "sha256": "e5773335f167983b0dc562390e0f0028c95dc63c4129f43bdc4b094bd9f1fb87"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-modern-native-observers/lockstate-medical-native-observer-preservation-20261004.cjs.txt",
+    "bytes": 2920,
+    "sha256": "5e4c6d83ce2197eb5d4ec32f21231a26bd9c031deddc603758f3cc847457788a"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-modern-native-observers/lockstate-medical-observer-finalize-prep-20261004.cjs.txt",
+    "bytes": 1051,
+    "sha256": "205dde784c8e602faffd0de36ead7690f6168e1c7961182c981f81c18ff0e54d"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-modern-native-observers/lockstate-medical-observer-prepare-20261004.cjs.txt",
+    "bytes": 5550,
+    "sha256": "ee558884d8f6b4651aed63e93119628b352869bd1a053f018ba40198fe5df5cc"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-modern-native-observers/original-temp-decoder-resolution-error.raw.txt",
+    "bytes": 3014,
+    "sha256": "3f8efc53acf58bf097a9a655c321b8af524bdb684d20c74784024d8b881c6438"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-modern-native-observers/preservation-and-relevance.raw.txt",
+    "bytes": 7054,
+    "sha256": "f888a8ae997f044de56af7e2830b0f9ecc41e1ce6b4debd364a491a3d420373f"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-modern-native-observers/tools-types.raw.txt",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "docs/research/2026-10-04-medical-modern-native-observers/type-outcomes.json",
+    "bytes": 116,
+    "sha256": "d09664a9c702d10dc813903b34af7bb073cacfeaf6a9bc631daff2ad36ef25bd"
+  }
+]
