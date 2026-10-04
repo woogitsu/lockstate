@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-classroom-teacher-desk-cycles-20261004
+
+ ✓ tests/unit/oblique-classroom-teacher-desk-modern-consumer.test.ts > selects genuine authored-shader teacher desk in the existing separately paid Classroom q0 free slot 7ms
+ ✓ tests/unit/oblique-classroom-teacher-desk-modern-consumer.test.ts > selects genuine authored-shader teacher desk in the existing separately paid Classroom q1 free slot 3ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  02:46:38
+   Duration  889ms (transform 347ms, setup 0ms, import 754ms, tests 10ms, environment 0ms)

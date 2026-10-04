@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-classroom-teacher-desk-cycles-20261004
+
+ × tests/unit/oblique-classroom-teacher-desk-modern-consumer.test.ts > selects genuine authored-shader teacher desk in the existing separately paid Classroom q0 free slot 14ms
+   → expected [] to deeply equal [ { …(2) } ]
+ × tests/unit/oblique-classroom-teacher-desk-modern-consumer.test.ts > selects genuine authored-shader teacher desk in the existing separately paid Classroom q1 free slot 2ms
+   → expected [] to deeply equal [ { …(2) } ]
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-classroom-teacher-desk-modern-consumer.test.ts > selects genuine authored-shader teacher desk in the existing separately paid Classroom q0 free slot
+ FAIL  tests/unit/oblique-classroom-teacher-desk-modern-consumer.test.ts > selects genuine authored-shader teacher desk in the existing separately paid Classroom q1 free slot
+AssertionError: expected [] to deeply equal [ { …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "assetId": "furniture.classroom.teacher-desk",
+-     "manifest": "/game-content/oblique-furniture-classroom-teacher-desk.v1.json",
+-   },
+- ]
++ []
+
+ ❯ tests/unit/oblique-classroom-teacher-desk-modern-consumer.test.ts:37:73
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  02:49:00
+   Duration  670ms (transform 179ms, setup 0ms, import 532ms, tests 17ms, environment 0ms)

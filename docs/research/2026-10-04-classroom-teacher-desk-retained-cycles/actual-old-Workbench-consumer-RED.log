@@ -1,0 +1,27 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-classroom-teacher-desk-cycles-20261004
+
+ × tests/unit/oblique-classroom-teacher-desk-modern-consumer.test.ts > selects genuine authored-shader teacher desk in the existing separately paid Classroom q0 free slot 14ms
+   → expected 'assets/source/blender/furniture.class…' to be 'assets/source/blender/furniture.class…' // Object.is equality
+ × tests/unit/oblique-classroom-teacher-desk-modern-consumer.test.ts > selects genuine authored-shader teacher desk in the existing separately paid Classroom q1 free slot 2ms
+   → expected 'assets/source/blender/furniture.class…' to be 'assets/source/blender/furniture.class…' // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-classroom-teacher-desk-modern-consumer.test.ts > selects genuine authored-shader teacher desk in the existing separately paid Classroom q0 free slot
+ FAIL  tests/unit/oblique-classroom-teacher-desk-modern-consumer.test.ts > selects genuine authored-shader teacher desk in the existing separately paid Classroom q1 free slot
+AssertionError: expected 'assets/source/blender/furniture.class…' to be 'assets/source/blender/furniture.class…' // Object.is equality
+
+Expected: "assets/source/blender/furniture.classroom.teacher-desk.soft-light.blend"
+Received: "assets/source/blender/furniture.classroom.teacher-desk.blend"
+
+ ❯ tests/unit/oblique-classroom-teacher-desk-modern-consumer.test.ts:39:26
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  02:48:58
+   Duration  704ms (transform 177ms, setup 0ms, import 568ms, tests 17ms, environment 0ms)

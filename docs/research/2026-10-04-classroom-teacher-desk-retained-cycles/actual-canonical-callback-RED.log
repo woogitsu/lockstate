@@ -1,0 +1,18 @@
+00:01.187  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-cycles-20261004\assets\source\blender\furniture.classroom.teacher-desk.blend"
+CLASSROOM_DESK_SOURCE_GREEN 133 meshes/55 actual contacts/all original materials/four occupied turns
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-cycles-20261004\tooling\blender\render-classroom-teacher-desk-oblique.py", line 164, in <module>
+    modern.prepare.verify_scene(scene, camera, modern.EXPECTED)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-cycles-20261004\tooling\blender\prepare-classroom-teacher-desk-cycles.py", line 94, in verify_scene
+    verify_exact_graph_repair(expected['literalStoredGraphs'], audit.materials_record())
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-cycles-20261004\tooling\blender\prepare-classroom-teacher-desk-cycles.py", line 90, in verify_exact_graph_repair
+    raise ValueError('Teacher full shader graph changes exceed exact authored RGBA/roughness repair')
+ValueError: Teacher full shader graph changes exceed exact authored RGBA/roughness repair
+KITCHEN_BOUNDS furniture.classroom.teacher-desk [0.0899999737739563, 0.08000001311302185, 0.0] [1.9100000858306885, 0.92249995470047, 1.2699999809265137]
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-cycles-20261004\tooling\blender\render-classroom-teacher-desk-oblique.py', exiting.
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
