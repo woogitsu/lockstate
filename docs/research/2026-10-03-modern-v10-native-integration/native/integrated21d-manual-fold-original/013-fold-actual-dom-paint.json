@@ -1,0 +1,71 @@
+{
+  "uiScale": 1,
+  "before": [
+    {
+      "selector": ".hud__aside",
+      "hidden": false,
+      "display": "contents",
+      "width": 0,
+      "height": 0,
+      "laidOutDescendants": 23
+    },
+    {
+      "selector": ".hud__side",
+      "hidden": false,
+      "display": "flex",
+      "width": 363,
+      "height": 621,
+      "laidOutDescendants": 119
+    },
+    {
+      "selector": ".save-panel",
+      "hidden": false,
+      "display": "block",
+      "width": 340,
+      "height": 278,
+      "laidOutDescendants": 13
+    },
+    {
+      "selector": ".hud-build",
+      "hidden": false,
+      "display": "flex",
+      "width": 339,
+      "height": 600.5625,
+      "laidOutDescendants": 118
+    }
+  ],
+  "folded": [
+    {
+      "selector": ".hud__aside",
+      "hidden": true,
+      "display": "contents",
+      "width": 0,
+      "height": 0,
+      "laidOutDescendants": 23
+    },
+    {
+      "selector": ".hud__side",
+      "hidden": true,
+      "display": "none",
+      "width": 0,
+      "height": 0,
+      "laidOutDescendants": 0
+    },
+    {
+      "selector": ".save-panel",
+      "hidden": false,
+      "display": "block",
+      "width": 26,
+      "height": 907,
+      "laidOutDescendants": 13
+    },
+    {
+      "selector": ".hud-build",
+      "hidden": false,
+      "display": "flex",
+      "width": 0,
+      "height": 0,
+      "laidOutDescendants": 0
+    }
+  ]
+}

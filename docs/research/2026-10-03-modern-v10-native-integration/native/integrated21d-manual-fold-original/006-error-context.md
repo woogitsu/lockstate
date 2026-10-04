@@ -1,0 +1,167 @@
+# Page snapshot
+
+```yaml
+- main "Lockstate game application" [ref=e2]:
+  - generic:
+    - region "Prison status" [ref=e5]:
+      - generic [ref=e6]:
+        - note "Lockstate build":
+          - img
+          - generic: LockState.io
+          - generic: PRE-ALPHA
+          - generic: v0.0.839 · 21dba6e
+          - generic: Lockstate, PRE-ALPHA build, version 0.0.839, commit 21dba6e.
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - img [ref=e9]
+          - generic [ref=e12]:
+            - generic [ref=e13]: "0"
+            - generic [ref=e14]: Prisoners
+        - generic [ref=e16]:
+          - img [ref=e17]
+          - generic [ref=e19]:
+            - generic [ref=e20]: "0"
+            - generic [ref=e21]: High Risk
+        - generic [ref=e23]:
+          - img [ref=e24]
+          - generic [ref=e29]:
+            - generic [ref=e30]: "0"
+            - generic [ref=e31]: Staff
+        - generic [ref=e33]:
+          - img [ref=e34]
+          - generic [ref=e36]:
+            - generic [ref=e37]: "0"
+            - generic [ref=e38]: Coverage
+          - generic [ref=e41]: Covered
+        - generic [ref=e43]:
+          - img [ref=e44]
+          - generic [ref=e46]:
+            - generic [ref=e47]: "0"
+            - generic [ref=e48]: Rooms
+        - generic [ref=e50]:
+          - img [ref=e51]
+          - generic [ref=e53]:
+            - generic [ref=e54]: "0"
+            - generic [ref=e55]: Incidents
+          - generic [ref=e58]: Clear
+        - generic [ref=e60]:
+          - img [ref=e61]
+          - generic [ref=e64]:
+            - generic [ref=e65]: "0"
+            - generic [ref=e66]: Contraband
+        - generic [ref=e68]:
+          - img [ref=e69]
+          - generic [ref=e73]:
+            - generic [ref=e74]: 25,000
+            - generic [ref=e75]: Funds
+        - generic [ref=e77]:
+          - img [ref=e78]
+          - generic [ref=e81]:
+            - generic [ref=e82]: "0"
+            - generic [ref=e83]: Earned today
+      - generic [ref=e85]:
+        - img [ref=e86]
+        - generic [ref=e89]: Day
+        - generic [ref=e90]: "1"
+        - generic [ref=e91]: Through the day
+        - generic [ref=e92]: 0%
+      - group "Time controls" [ref=e93]:
+        - button "Pause" [pressed] [ref=e94] [cursor=pointer]:
+          - img [ref=e95]
+          - generic [ref=e96]: Pause
+        - button "Play at normal speed" [ref=e97] [cursor=pointer]:
+          - img [ref=e98]
+          - generic [ref=e100]: Play at normal speed
+        - button "Fast forward" [ref=e101] [cursor=pointer]:
+          - img [ref=e102]
+          - generic [ref=e105]: Fast forward
+        - generic [ref=e106]:
+          - generic [ref=e107]: Speed 1×
+          - generic [ref=e108]: PAUSED
+      - group "Undo and redo" [ref=e109]:
+        - button "Undo the last placement" [disabled] [ref=e110]:
+          - img [ref=e111]
+          - generic [ref=e114]: Undo the last placement
+        - button "Redo the last undone placement" [disabled] [ref=e115]:
+          - img [ref=e116]
+          - generic [ref=e119]: Redo the last undone placement
+      - group "Settings" [ref=e121]:
+        - button "Open the settings menu" [ref=e122] [cursor=pointer]:
+          - img [ref=e123]
+          - generic [ref=e128]: Open the settings menu
+    - generic:
+      - group "Zoom":
+        - generic: Zoom
+        - button "Zoom out" [ref=e129] [cursor=pointer]:
+          - img [ref=e130]
+          - generic [ref=e133]: Zoom out
+        - button "Zoom in" [ref=e134] [cursor=pointer]:
+          - img [ref=e135]
+          - generic [ref=e138]: Zoom in
+        - button "View" [ref=e139] [cursor=pointer]
+      - region "Minimap":
+        - generic:
+          - img
+          - heading "Minimap" [level=2]
+          - button "Expand" [ref=e140] [cursor=pointer]:
+            - img [ref=e141]
+            - generic [ref=e143]: Expand
+      - generic:
+        - button "Alerts" [expanded] [ref=e144] [cursor=pointer]:
+          - img [ref=e145]
+          - generic [ref=e147]: Alerts
+        - generic [ref=e149]:
+          - img [ref=e150]
+          - generic [ref=e152]: No active alerts
+    - generic:
+      - button "Show the panels" [active] [ref=e153] [cursor=pointer]:
+        - img [ref=e154]
+        - generic [ref=e156]: Show the panels
+      - generic:
+        - generic [ref=e157]:
+          - group "Interface scale":
+            - button "Change the interface scale" [ref=e158] [cursor=pointer]:
+              - status [ref=e159]: 200%
+          - group "Theme" [ref=e160]:
+            - button "Change the interface theme" [ref=e161] [cursor=pointer]:
+              - status [ref=e162]: System
+        - complementary "Prison saves" [ref=e163]:
+          - heading "Prisons" [level=2]
+          - generic:
+            - button "New prison" [ref=e164] [cursor=pointer]
+            - button "Save now" [ref=e165] [cursor=pointer]
+            - button "Export" [ref=e166] [cursor=pointer]
+            - button "Import" [ref=e167] [cursor=pointer]
+          - list:
+            - listitem:
+              - generic [ref=e168]: New Prison (1 gen)
+              - button "Load" [ref=e169] [cursor=pointer]
+              - button "Delete" [ref=e170] [cursor=pointer]
+          - status: Saved (generation gen-e6b26d94-18f7-4e3b-b778-740ba520e179).
+          - paragraph
+      - text: ↓
+    - navigation "Prison sections":
+      - button "Hide the sections" [expanded] [ref=e171] [cursor=pointer]:
+        - img [ref=e172]
+        - generic [ref=e174]: Hide the sections
+      - generic [ref=e175]:
+        - button "Overview" [ref=e176] [cursor=pointer]:
+          - img [ref=e177]
+          - generic [ref=e182]: Overview
+        - button "Build" [ref=e183] [cursor=pointer]:
+          - img [ref=e184]
+          - generic [ref=e188]: Build
+        - button "Zones" [ref=e189] [cursor=pointer]:
+          - img [ref=e190]
+          - generic [ref=e192]: Zones
+        - button "Manage" [ref=e193] [cursor=pointer]:
+          - img [ref=e194]
+          - generic [ref=e196]: Manage
+        - button "Schedule" [ref=e197] [cursor=pointer]:
+          - img [ref=e198]
+          - generic [ref=e200]: Schedule
+        - button "Security" [ref=e201] [cursor=pointer]:
+          - img [ref=e202]
+          - generic [ref=e204]: Security
+      - separator "Resize the sections" [ref=e205]
+```

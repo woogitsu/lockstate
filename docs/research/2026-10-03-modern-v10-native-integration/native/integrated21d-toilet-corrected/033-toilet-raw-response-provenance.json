@@ -1,0 +1,102 @@
+[
+  {
+    "url": "http://127.0.0.1:5394/assets/worker-CIHTxuxG.js",
+    "decodedPath": "/assets/worker-CIHTxuxG.js",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": false,
+    "rawPlusInUrl": false,
+    "sha256": "ede08a46b8e15e8ff679c88ad1bebbc1fd865a1c279cce5b8e2e98ff17ced201",
+    "bytes": 445113
+  },
+  {
+    "url": "http://127.0.0.1:5394/game-content/oblique-cell-toilet.v1.json",
+    "decodedPath": "/game-content/oblique-cell-toilet.v1.json",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": false,
+    "rawPlusInUrl": false,
+    "sha256": "46f07d305ab7a89883bfb48fcfd9c43f1170c686f4730a2231bdb69eea9998e0",
+    "bytes": 18489
+  },
+  {
+    "url": "http://127.0.0.1:5394/assets/environment/oblique/cell-toilet-yaw+45-elev40.12522e96db7e.png",
+    "decodedPath": "/assets/environment/oblique/cell-toilet-yaw+45-elev40.12522e96db7e.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": true,
+    "rawPlusInUrl": true,
+    "location": "/assets/environment/oblique/cell-toilet-yaw%2B45-elev40.12522e96db7e.png",
+    "redirectLocationEncodedPlus": true
+  },
+  {
+    "url": "http://127.0.0.1:5394/assets/environment/oblique/cell-toilet-yaw%2B45-elev40.12522e96db7e.png",
+    "decodedPath": "/assets/environment/oblique/cell-toilet-yaw+45-elev40.12522e96db7e.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "literalPlusInDecodedPath": true,
+    "rawPlusInUrl": false,
+    "sha256": "12522e96db7e5cd627928558800c25dda9a33f43643a999213443144a30df312",
+    "bytes": 14657
+  },
+  {
+    "url": "http://127.0.0.1:5394/assets/environment/oblique/cell-toilet-yaw+45-elev40.12522e96db7e.png",
+    "decodedPath": "/assets/environment/oblique/cell-toilet-yaw+45-elev40.12522e96db7e.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": true,
+    "rawPlusInUrl": true,
+    "location": "/assets/environment/oblique/cell-toilet-yaw%2B45-elev40.12522e96db7e.png",
+    "redirectLocationEncodedPlus": true
+  },
+  {
+    "url": "http://127.0.0.1:5394/assets/environment/oblique/cell-toilet-yaw%2B45-elev40.12522e96db7e.png",
+    "decodedPath": "/assets/environment/oblique/cell-toilet-yaw+45-elev40.12522e96db7e.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "literalPlusInDecodedPath": true,
+    "rawPlusInUrl": false,
+    "sha256": "12522e96db7e5cd627928558800c25dda9a33f43643a999213443144a30df312",
+    "bytes": 14657
+  },
+  {
+    "url": "http://127.0.0.1:5394/assets/environment/oblique/cell-toilet-yaw+15-elev40.47730375f0d1.png",
+    "decodedPath": "/assets/environment/oblique/cell-toilet-yaw+15-elev40.47730375f0d1.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": true,
+    "rawPlusInUrl": true,
+    "location": "/assets/environment/oblique/cell-toilet-yaw%2B15-elev40.47730375f0d1.png",
+    "redirectLocationEncodedPlus": true
+  },
+  {
+    "url": "http://127.0.0.1:5394/assets/environment/oblique/cell-toilet-yaw%2B15-elev40.47730375f0d1.png",
+    "decodedPath": "/assets/environment/oblique/cell-toilet-yaw+15-elev40.47730375f0d1.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "literalPlusInDecodedPath": true,
+    "rawPlusInUrl": false,
+    "sha256": "47730375f0d182cf9954923fb2e2cbdc9f86b114fbba57cccce51dfab2deccf2",
+    "bytes": 13109
+  },
+  {
+    "url": "http://127.0.0.1:5394/assets/environment/oblique/cell-toilet-yaw-15-elev40.c3d7053f333f.png",
+    "decodedPath": "/assets/environment/oblique/cell-toilet-yaw-15-elev40.c3d7053f333f.png",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": false,
+    "rawPlusInUrl": false,
+    "sha256": "c3d7053f333f65f170a25d38c030b8087922392963448a96b3e86adbcbe116a5",
+    "bytes": 13511
+  },
+  {
+    "url": "http://127.0.0.1:5394/assets/worker-CIHTxuxG.js",
+    "decodedPath": "/assets/worker-CIHTxuxG.js",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "literalPlusInDecodedPath": false,
+    "rawPlusInUrl": false,
+    "sha256": "ede08a46b8e15e8ff679c88ad1bebbc1fd865a1c279cce5b8e2e98ff17ced201",
+    "bytes": 445113
+  }
+]

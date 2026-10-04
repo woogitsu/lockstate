@@ -1,0 +1,131 @@
+[
+  {
+    "url": "http://127.0.0.1:5393/assets/worker-CIHTxuxG.js",
+    "decodedPath": "/assets/worker-CIHTxuxG.js",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "sha256": "ede08a46b8e15e8ff679c88ad1bebbc1fd865a1c279cce5b8e2e98ff17ced201",
+    "bytes": 445113
+  },
+  {
+    "url": "http://127.0.0.1:5393/game-content/oblique-furniture.kitchen-stove.v1.json",
+    "decodedPath": "/game-content/oblique-furniture.kitchen-stove.v1.json",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "sha256": "c913819464aef1c9f64c203fa7e93245eb66402cfd2e2c9b6fb5d942ca3d670f",
+    "bytes": 19956
+  },
+  {
+    "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.86340147e019.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.86340147e019.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B30-elev40.86340147e019.png"
+  },
+  {
+    "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B30-elev40.86340147e019.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.86340147e019.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "86340147e0195e8ed2ea057f0614360a1fee777e878f0c5afb9e3c12f9e118a7",
+    "bytes": 33063
+  },
+  {
+    "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev40.aed487667fa9.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev40.aed487667fa9.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B300-elev40.aed487667fa9.png"
+  },
+  {
+    "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B300-elev40.aed487667fa9.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev40.aed487667fa9.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "aed487667fa98273e0110f43295fa78f196edffb4415397f37d2797321f6ab1e",
+    "bytes": 29236
+  },
+  {
+    "url": "http://127.0.0.1:5393/assets/worker-CIHTxuxG.js",
+    "decodedPath": "/assets/worker-CIHTxuxG.js",
+    "status": 200,
+    "encodedPlusInUrl": false,
+    "sha256": "ede08a46b8e15e8ff679c88ad1bebbc1fd865a1c279cce5b8e2e98ff17ced201",
+    "bytes": 445113
+  },
+  {
+    "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+270-elev40.af08de54d47e.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+270-elev40.af08de54d47e.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B270-elev40.af08de54d47e.png"
+  },
+  {
+    "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B270-elev40.af08de54d47e.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+270-elev40.af08de54d47e.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "af08de54d47e63c17b2b0708dff69d2c7bce5da901c99944572eaac10ae3c8d7",
+    "bytes": 17279
+  },
+  {
+    "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+330-elev40.4fdef40d1dc4.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+330-elev40.4fdef40d1dc4.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B330-elev40.4fdef40d1dc4.png"
+  },
+  {
+    "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B330-elev40.4fdef40d1dc4.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+330-elev40.4fdef40d1dc4.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "4fdef40d1dc456220ff888c215e985f430603f21ad3cb7365bb92deb22ade205",
+    "bytes": 31540
+  },
+  {
+    "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+00-elev40.6ae192d2c9c2.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+00-elev40.6ae192d2c9c2.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B00-elev40.6ae192d2c9c2.png"
+  },
+  {
+    "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B00-elev40.6ae192d2c9c2.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+00-elev40.6ae192d2c9c2.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "6ae192d2c9c2519d5e6dcf40aff861063717704e3889864e610e993209167d46",
+    "bytes": 27658
+  },
+  {
+    "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.86340147e019.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.86340147e019.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B30-elev40.86340147e019.png"
+  },
+  {
+    "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B30-elev40.86340147e019.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.86340147e019.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "86340147e0195e8ed2ea057f0614360a1fee777e878f0c5afb9e3c12f9e118a7",
+    "bytes": 33063
+  },
+  {
+    "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev40.2c45a7fe1656.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev40.2c45a7fe1656.png",
+    "status": 307,
+    "encodedPlusInUrl": false,
+    "location": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B60-elev40.2c45a7fe1656.png"
+  },
+  {
+    "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B60-elev40.2c45a7fe1656.png",
+    "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev40.2c45a7fe1656.png",
+    "status": 200,
+    "encodedPlusInUrl": true,
+    "sha256": "2c45a7fe165699ebdf209ba6a092956d9e8097d3095bc5f09dd35b9344749d65",
+    "bytes": 28430
+  }
+]

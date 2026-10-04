@@ -1,0 +1,579 @@
+{
+  "asset": "stove",
+  "quarterTurns": 1,
+  "sourceSha256": "7ac1027aca308b946acf902ebf611547621227535dc70b29db1c06d3db2d03bb",
+  "catalog": {
+    "schemaVersion": 1,
+    "assetId": "furniture.kitchen.stove.variants",
+    "source": "assets/source/blender/furniture.kitchen.stove.soft-light.blend",
+    "sourceSha256": "7ac1027aca308b946acf902ebf611547621227535dc70b29db1c06d3db2d03bb",
+    "resolutionPx": [
+      256,
+      256
+    ],
+    "nominalPixelsPerTile": 64,
+    "pivotPx": [
+      128,
+      128
+    ],
+    "cameraTargetTiles": [
+      1,
+      0.5,
+      1.1230000257492065
+    ],
+    "projection": "orthographic",
+    "yawDegrees": [
+      0,
+      30,
+      60,
+      90,
+      120,
+      150,
+      180,
+      210,
+      240,
+      270,
+      300,
+      330
+    ],
+    "elevationDegrees": [
+      20,
+      30,
+      40,
+      50,
+      60,
+      70
+    ],
+    "frames": [
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+00-elev20.eef4cf2c0a56.png",
+        "sha256": "eef4cf2c0a56e642c138d754c25475564074ea11fb5f6c36daac7aa972329843"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+00-elev30.328118002d9c.png",
+        "sha256": "328118002d9c73fab9e472c76b38e6ecd770201a46106d441e7abb5c840141a3"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+00-elev40.6ae192d2c9c2.png",
+        "sha256": "6ae192d2c9c2519d5e6dcf40aff861063717704e3889864e610e993209167d46"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+00-elev50.38ba54902104.png",
+        "sha256": "38ba54902104a8f841bf2801f3c4c8b755cb86728be6391f4219701b402d02d8"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+00-elev60.b2536e09213c.png",
+        "sha256": "b2536e09213c21ac1350529671580cb37225a3accaaee63be908f86376e5fc45"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+00-elev70.bee12fc46e3f.png",
+        "sha256": "bee12fc46e3ff0878225e2d2081cdad0a6704efce353a095585e4869e9ed44c0"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev20.01a8677ded1e.png",
+        "sha256": "01a8677ded1ea2981e10a631d44f3e31c5af88672f781cbd746f3f28b1bef664"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev30.90306e4d5d2a.png",
+        "sha256": "90306e4d5d2a2e2b5f6d26e21ea490469c792afd89ff94af38b9ad748e6bae1f"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.86340147e019.png",
+        "sha256": "86340147e0195e8ed2ea057f0614360a1fee777e878f0c5afb9e3c12f9e118a7"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev50.d1f573c85e7f.png",
+        "sha256": "d1f573c85e7ff8caa89b294ee208c5557f512e51878c34f84a0ede8e2bba4814"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev60.fb37a6196441.png",
+        "sha256": "fb37a6196441ca742c2b4d8b0af73985d7e9ea39726b444f897ade17478264dc"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev70.b2d782b14b89.png",
+        "sha256": "b2d782b14b89f1c5cd5f77c6aab06299661d59b6ca582aa32957abbf36c13ff7"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev20.6947c2846ee8.png",
+        "sha256": "6947c2846ee8de8c6c881d74baa4232274e65258f2909b2ace8c2136ce125407"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev30.289b826d484d.png",
+        "sha256": "289b826d484d7367008105f068ad35a3e63cdcd6acb327240af73cc19c091dcc"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev40.2c45a7fe1656.png",
+        "sha256": "2c45a7fe165699ebdf209ba6a092956d9e8097d3095bc5f09dd35b9344749d65"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev50.90fceab920d0.png",
+        "sha256": "90fceab920d0c87eb187e0a8ba9e4accd3b8b8a509ca800d42bcadba2a5d8204"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev60.801b798eed49.png",
+        "sha256": "801b798eed49540b5f32acdd8ac5cd2c205e38740a6a1291b2c9df856c00d017"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev70.fa574600eb89.png",
+        "sha256": "fa574600eb89a9ea826d310aa9b928a86046700679fd985f75ad0409a9ae4833"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+90-elev20.b0df01337e90.png",
+        "sha256": "b0df01337e90d73d4393fd6be773c7bf4bd8729c56246cacf6a97c677a40c0ab"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+90-elev30.36d7784649bc.png",
+        "sha256": "36d7784649bc3619e25efb44bdb4ab021f2d9fa44e016301e951d69c2235c174"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+90-elev40.d075c0afbcda.png",
+        "sha256": "d075c0afbcda39df0b055177e4a58795389930e11f4f45b59cb567bf33172c91"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+90-elev50.fd53b5d6ec14.png",
+        "sha256": "fd53b5d6ec146936779693416357a2a6ab424cfc3b56def394627bd09d9b1d8f"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+90-elev60.3c1199f5d77b.png",
+        "sha256": "3c1199f5d77b725baf41de6988d09da93f5eb09430a0573a8a0532ce98e09e3c"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+90-elev70.243e1d00e98c.png",
+        "sha256": "243e1d00e98c20522f7c5ee04caca536b5c88c16b00e4736418969f877cf788a"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+120-elev20.178fabb670c9.png",
+        "sha256": "178fabb670c9e5877c8abe678ec41f4cf0fd6c63f523238758490d1ccffd1097"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+120-elev30.e469cd00c536.png",
+        "sha256": "e469cd00c5364feff8649c87bb49097afa2cf7cb1728716999584d1492eb21b7"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+120-elev40.6918d6f917b8.png",
+        "sha256": "6918d6f917b824705fb1b09e15873d508d944c711b51bb6d7045ddb38d97d1ab"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+120-elev50.6139a117bfc3.png",
+        "sha256": "6139a117bfc39e5cdc3a8e4e927cc3b6d1aa2b57ec4b45a6f5e79635abfbcb0c"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+120-elev60.74f2f2be7c93.png",
+        "sha256": "74f2f2be7c93d6ea4d4e7692b3ebf9d5d1746fcf7a0b1837b8f178209961dd58"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+120-elev70.e9b71010fd09.png",
+        "sha256": "e9b71010fd091acf014eeea4bcac42f2053b34bffdc56f5760b32e9f4288300e"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+150-elev20.52b462e3d394.png",
+        "sha256": "52b462e3d3944df7d12cc613502904ab8026060e142a77c62f6c85fde520231b"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+150-elev30.3f6987fbbd96.png",
+        "sha256": "3f6987fbbd96841f28bc8f3d4bea0f2e9a818adab28d6aa5e4c74bf2ee70d838"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+150-elev40.c4a0722057f5.png",
+        "sha256": "c4a0722057f530c3198b0eee70d9e599d4107b54660db529a476cfead59459f8"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+150-elev50.363fa4673090.png",
+        "sha256": "363fa4673090843684977cf2f0585af1206e4d7d0e8ba58b18a21dff4bb3e3c7"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+150-elev60.0e1f490ca3a4.png",
+        "sha256": "0e1f490ca3a4bd20b0b05ef6720c2116fd2b96198f3a98797bc60bde9c53efd3"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+150-elev70.8ea62173ca4a.png",
+        "sha256": "8ea62173ca4a599aec438aefa214fc2cac58aa292373fa76b57f3c73c88ddee5"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+180-elev20.9ca1ef0ca4f4.png",
+        "sha256": "9ca1ef0ca4f42f33db0639bfcdb9f4578257952b8fc64f8a341030f213e97ba9"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+180-elev30.271f8749eea1.png",
+        "sha256": "271f8749eea130035740944e2cf7621a6022a995de00fe422eb8e3b55f17516d"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+180-elev40.379863cd4e6a.png",
+        "sha256": "379863cd4e6aabda21a5545d1053366e87e7ba9b5530441c7cd7a60a4a477fac"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+180-elev50.a0cc0b45cc51.png",
+        "sha256": "a0cc0b45cc515c0ea0773b5f42cf563572ff963ade5ffd81039c8570d4a81a2b"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+180-elev60.69d4b53d632f.png",
+        "sha256": "69d4b53d632f5b906170714a89e58414ec5f107904cc8c6886a3fda7817763be"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+180-elev70.f4045de04bee.png",
+        "sha256": "f4045de04bee91538ef8da4510345f17b070a9be341ccf5273c711fa11a0a1de"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+210-elev20.e64ce1523180.png",
+        "sha256": "e64ce1523180d484a5e407e41136e9b08b868ebfac2476276265cbde72e0155c"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+210-elev30.cc2f156aaf89.png",
+        "sha256": "cc2f156aaf890c0830289a83f1073c53e2fa7de114af80ed33e9071da51608bf"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+210-elev40.e255a3c2a400.png",
+        "sha256": "e255a3c2a4004d76bcc5387bac7b218680089749a9347b4124e2b95fa643fd17"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+210-elev50.38fa89ed4c83.png",
+        "sha256": "38fa89ed4c8388f7a28920356be3132f4e13e10bbf58626b7f2202983235d69f"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+210-elev60.beae28e732b4.png",
+        "sha256": "beae28e732b4b5b30ed02a64d31032fe3a9974f2d38424e3d3ffd6e3399310ac"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+210-elev70.ed9af499ba65.png",
+        "sha256": "ed9af499ba65042bd569769410fbde79db242d87ceb40639d6f6f505b71c5599"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+240-elev20.ff44d17b0bdb.png",
+        "sha256": "ff44d17b0bdb6e8b463057bc268cafab6a1039dd1a12c717a4c677d336217972"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+240-elev30.ecbf59c09321.png",
+        "sha256": "ecbf59c09321338d5bfd3e2ee0773bf403a0bf1ca8326cbec0cd3b2e35e07e09"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+240-elev40.201648bf8f2b.png",
+        "sha256": "201648bf8f2bb769b7284474ff5441211462651caab50ed14672568de6a5b833"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+240-elev50.0f6075f8e111.png",
+        "sha256": "0f6075f8e111db704a90546f43454674c1c3bf0452935350b1ad7f38b5ef7f61"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+240-elev60.54ab6945b695.png",
+        "sha256": "54ab6945b6959b6612304bdffc6f90366bea5f11c923cdec161500eb92251a53"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+240-elev70.8a583b5e039a.png",
+        "sha256": "8a583b5e039a56e464f26d07e85eea87ee6debb79cefeb5646351bd53d668660"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+270-elev20.2c2317e47316.png",
+        "sha256": "2c2317e4731626d69dae7d11dcedeb194e9deef2531d33f8ad83a833a4c6ba1a"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+270-elev30.dac683b5febe.png",
+        "sha256": "dac683b5febe67507f8a500eb3a93843e050101c077e378070005b5060101ffa"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+270-elev40.af08de54d47e.png",
+        "sha256": "af08de54d47e63c17b2b0708dff69d2c7bce5da901c99944572eaac10ae3c8d7"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+270-elev50.628105762290.png",
+        "sha256": "628105762290cc1084b8da260e97defc1a61907b1cb31a694c808e920c3768be"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+270-elev60.ca9f2ec253ec.png",
+        "sha256": "ca9f2ec253ecce0d9bc6fa90ed159c0f0ca93665e286994691917df75ec881d2"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+270-elev70.15aa58a9e1a5.png",
+        "sha256": "15aa58a9e1a5c2857ef1515b99f79574bf15505778c203653c1c112686b069b0"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev20.7970a0fddc11.png",
+        "sha256": "7970a0fddc1105f50c384704b5c405e13dd1b43d43c301c153695a8e2dc651c2"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev30.74cc657bccb8.png",
+        "sha256": "74cc657bccb8aee83711e96ea6bc640845aa1be719adad2d661b7b65a87e6372"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev40.aed487667fa9.png",
+        "sha256": "aed487667fa98273e0110f43295fa78f196edffb4415397f37d2797321f6ab1e"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev50.c75d88579c82.png",
+        "sha256": "c75d88579c825e8e797934786af4a9f4213f5ee1aabeb65ae3a792cf35a9d40c"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev60.87080dde32d1.png",
+        "sha256": "87080dde32d1da8e5a8180da8321c8e126e4ebee7c65dacb9a1096cdc6777ba4"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+300-elev70.14119174f383.png",
+        "sha256": "14119174f3833a04863214a1f09a896be0e68067bc6c4a3aebfa533c27f91562"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+330-elev20.eab8ab307740.png",
+        "sha256": "eab8ab307740307a2366f4d0b50979e6a37c21ce4af06bdd0d99c198220b4fee"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+330-elev30.41feed660112.png",
+        "sha256": "41feed660112c2c52abe615445c5b2e4cec737f88a69eb04ab985ed07a719a15"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+330-elev40.4fdef40d1dc4.png",
+        "sha256": "4fdef40d1dc456220ff888c215e985f430603f21ad3cb7365bb92deb22ade205"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+330-elev50.68fb09fa642a.png",
+        "sha256": "68fb09fa642a837a4ef7fd3e1f78352c230da5d99cdc67185f12397c2fbb2a67"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+330-elev60.6f3b36a32055.png",
+        "sha256": "6f3b36a32055dc97b8651bba0081dada74037e30bac09bea1780ef005d9cdcf7"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+330-elev70.b039086ac86c.png",
+        "sha256": "b039086ac86cbb7f58155829d666c57a841d8199280f9a1e25b8c87e4cc3f561"
+      }
+    ]
+  },
+  "descriptorHttpBodySha256": "c913819464aef1c9f64c203fa7e93245eb66402cfd2e2c9b6fb5d942ca3d670f",
+  "network": [
+    {
+      "url": "http://127.0.0.1:5393/assets/worker-CIHTxuxG.js",
+      "decodedPath": "/assets/worker-CIHTxuxG.js",
+      "status": 200,
+      "encodedPlusInUrl": false,
+      "sha256": "ede08a46b8e15e8ff679c88ad1bebbc1fd865a1c279cce5b8e2e98ff17ced201",
+      "bytes": 445113
+    },
+    {
+      "url": "http://127.0.0.1:5393/game-content/oblique-furniture.kitchen-stove.v1.json",
+      "decodedPath": "/game-content/oblique-furniture.kitchen-stove.v1.json",
+      "status": 200,
+      "encodedPlusInUrl": false,
+      "sha256": "c913819464aef1c9f64c203fa7e93245eb66402cfd2e2c9b6fb5d942ca3d670f",
+      "bytes": 19956
+    },
+    {
+      "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.86340147e019.png",
+      "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.86340147e019.png",
+      "status": 307,
+      "encodedPlusInUrl": false,
+      "location": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B30-elev40.86340147e019.png"
+    },
+    {
+      "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B30-elev40.86340147e019.png",
+      "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.86340147e019.png",
+      "status": 200,
+      "encodedPlusInUrl": true,
+      "sha256": "86340147e0195e8ed2ea057f0614360a1fee777e878f0c5afb9e3c12f9e118a7",
+      "bytes": 33063
+    },
+    {
+      "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.86340147e019.png",
+      "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.86340147e019.png",
+      "status": 307,
+      "encodedPlusInUrl": false,
+      "location": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B30-elev40.86340147e019.png"
+    },
+    {
+      "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B30-elev40.86340147e019.png",
+      "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+30-elev40.86340147e019.png",
+      "status": 200,
+      "encodedPlusInUrl": true,
+      "sha256": "86340147e0195e8ed2ea057f0614360a1fee777e878f0c5afb9e3c12f9e118a7",
+      "bytes": 33063
+    },
+    {
+      "url": "http://127.0.0.1:5393/assets/worker-CIHTxuxG.js",
+      "decodedPath": "/assets/worker-CIHTxuxG.js",
+      "status": 200,
+      "encodedPlusInUrl": false,
+      "sha256": "ede08a46b8e15e8ff679c88ad1bebbc1fd865a1c279cce5b8e2e98ff17ced201",
+      "bytes": 445113
+    },
+    {
+      "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+00-elev40.6ae192d2c9c2.png",
+      "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+00-elev40.6ae192d2c9c2.png",
+      "status": 307,
+      "encodedPlusInUrl": false,
+      "location": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B00-elev40.6ae192d2c9c2.png"
+    },
+    {
+      "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B00-elev40.6ae192d2c9c2.png",
+      "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+00-elev40.6ae192d2c9c2.png",
+      "status": 200,
+      "encodedPlusInUrl": true,
+      "sha256": "6ae192d2c9c2519d5e6dcf40aff861063717704e3889864e610e993209167d46",
+      "bytes": 27658
+    },
+    {
+      "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev40.2c45a7fe1656.png",
+      "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev40.2c45a7fe1656.png",
+      "status": 307,
+      "encodedPlusInUrl": false,
+      "location": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B60-elev40.2c45a7fe1656.png"
+    },
+    {
+      "url": "http://127.0.0.1:5393/assets/environment/oblique/furniture.kitchen.stove.variants-yaw%2B60-elev40.2c45a7fe1656.png",
+      "decodedPath": "/assets/environment/oblique/furniture.kitchen.stove.variants-yaw+60-elev40.2c45a7fe1656.png",
+      "status": 200,
+      "encodedPlusInUrl": true,
+      "sha256": "2c45a7fe165699ebdf209ba6a092956d9e8097d3095bc5f09dd35b9344749d65",
+      "bytes": 28430
+    }
+  ],
+  "exposedFrameBodySha256": "2c45a7fe165699ebdf209ba6a092956d9e8097d3095bc5f09dd35b9344749d65",
+  "decoded": {
+    "width": 256,
+    "height": 256,
+    "nontransparent": 12489,
+    "decoder": "HTMLImageElement from actual200body Blob"
+  },
+  "syntheticFetchUsed": false,
+  "privateRendererTextureRead": false,
+  "hardwareRoiMeasured": false
+}

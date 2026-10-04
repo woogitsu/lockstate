@@ -1,0 +1,53 @@
+{
+  "quarterTurns": 1,
+  "actualBefore": [
+    "object.toilet@22,7:orientation=1"
+  ],
+  "beforePixels": [
+    279,
+    24
+  ],
+  "beforeMaterial": {
+    "rects": [
+      [
+        993,
+        440,
+        44,
+        26
+      ],
+      [
+        1040,
+        458,
+        17,
+        18
+      ]
+    ],
+    "pixels": [
+      279,
+      24
+    ],
+    "originalPixels": [
+      0,
+      24
+    ],
+    "sourceSha256": "1aa9169f65ea498fd1bfe6a2ee600f058c41f1a76685a0109a17da92db398ad5",
+    "sourcePose": {
+      "yawDegrees": -15,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/cell-toilet-yaw-15-elev40.c3d7053f333f.png",
+      "sha256": "c3d7053f333f65f170a25d38c030b8087922392963448a96b3e86adbcbe116a5"
+    },
+    "hardwareUniqueSourceIsolationClaimed": false
+  },
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "cell-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      },
+      "quarterTurns": 1
+    }
+  ]
+}

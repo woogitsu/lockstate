@@ -1,0 +1,231 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-manual-fold-native-measurement-20261004.config.mts",
+    "rootDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/tests/browser",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/matma/AppData/Local/Temp/lockstate-modern-integrated-21d-manual-fold-esm-native-20261004/results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "/hud-side-rail-collapse-fullhd\\.spec\\.ts$/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "\"C:\\\\Users\\\\matma\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\node\\\\bin\\\\node.exe\" \"C:\\\\Users\\\\matma\\\\Documents\\\\Rozwój gier\\\\lockstate-1382-doc-anchor-2026-09-24\\\\node_modules\\\\.pnpm\\\\vite@8.2.2_@types+node@24.10.1_esbuild@0.28.1\\\\node_modules\\\\vite\\\\bin\\\\vite.js\" preview --port 5395 --strictPort --host 127.0.0.1",
+      "cwd": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\",
+      "env": {
+        "CLOUDFLARE_ENV": "production"
+      },
+      "url": "http://127.0.0.1:5395/",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "hud-side-rail-collapse-fullhd.spec.ts",
+      "file": "hud-side-rail-collapse-fullhd.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Full HD active Build manual fold removes all inspector painting at UI100 and restores its public controls (#2029)",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5058,
+                  "error": {
+                    "message": "Error: .hud__aside must not flatten hidden descendants into the88px rail\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"\u001b[7mn\u001b[27mon\u001b[7me\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mc\u001b[27mon\u001b[7mtents\u001b[27m\"\u001b[39m",
+                    "stack": "Error: .hud__aside must not flatten hidden descendants into the88px rail\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"\u001b[7mn\u001b[27mon\u001b[7me\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mc\u001b[27mon\u001b[7mtents\u001b[27m\"\u001b[39m\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\hud-side-rail-collapse-fullhd.spec.ts:95:100",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\hud-side-rail-collapse-fullhd.spec.ts",
+                      "column": 100,
+                      "line": 95
+                    },
+                    "snippet": "  93 |     for (const row of folded.slice(0, 2)) {\n  94 |       expect(row.hidden).toBe(true);\n> 95 |       expect(row.display, `${row.selector} must not flatten hidden descendants into the88px rail`).toBe('none');\n     |                                                                                                    ^\n  96 |       expect(row.laidOutDescendants).toBe(0);\n  97 |     }\n  98 |     await expect(page.locator('.save-panel')).toBeHidden();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\hud-side-rail-collapse-fullhd.spec.ts",
+                        "column": 100,
+                        "line": 95
+                      },
+                      "message": "Error: .hud__aside must not flatten hidden descendants into the88px rail\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"\u001b[7mn\u001b[27mon\u001b[7me\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mc\u001b[27mon\u001b[7mtents\u001b[27m\"\u001b[39m\n\n  93 |     for (const row of folded.slice(0, 2)) {\n  94 |       expect(row.hidden).toBe(true);\n> 95 |       expect(row.display, `${row.selector} must not flatten hidden descendants into the88px rail`).toBe('none');\n     |                                                                                                    ^\n  96 |       expect(row.laidOutDescendants).toBe(0);\n  97 |     }\n  98 |     await expect(page.locator('.save-panel')).toBeHidden();\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\hud-side-rail-collapse-fullhd.spec.ts:95:100"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T00:17:31.089Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\hud-side-rail-collapse-ful-2b554-s-its-public-controls-2029-\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\hud-side-rail-collapse-ful-2b554-s-its-public-controls-2029-\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\hud-side-rail-collapse-ful-2b554-s-its-public-controls-2029-\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\hud-side-rail-collapse-fullhd.spec.ts",
+                    "column": 100,
+                    "line": 95
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "4a3ec88680a896968f02-3281fbf88f6cade6080c",
+          "file": "hud-side-rail-collapse-fullhd.spec.ts",
+          "line": 65,
+          "column": 3
+        },
+        {
+          "title": "Full HD active Build manual fold removes all inspector painting at UI200 and restores its public controls (#2029)",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5973,
+                  "error": {
+                    "message": "Error: .hud__aside must not flatten hidden descendants into the88px rail\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"\u001b[7mn\u001b[27mon\u001b[7me\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mc\u001b[27mon\u001b[7mtents\u001b[27m\"\u001b[39m",
+                    "stack": "Error: .hud__aside must not flatten hidden descendants into the88px rail\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"\u001b[7mn\u001b[27mon\u001b[7me\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mc\u001b[27mon\u001b[7mtents\u001b[27m\"\u001b[39m\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\hud-side-rail-collapse-fullhd.spec.ts:95:100",
+                    "location": {
+                      "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\hud-side-rail-collapse-fullhd.spec.ts",
+                      "column": 100,
+                      "line": 95
+                    },
+                    "snippet": "  93 |     for (const row of folded.slice(0, 2)) {\n  94 |       expect(row.hidden).toBe(true);\n> 95 |       expect(row.display, `${row.selector} must not flatten hidden descendants into the88px rail`).toBe('none');\n     |                                                                                                    ^\n  96 |       expect(row.laidOutDescendants).toBe(0);\n  97 |     }\n  98 |     await expect(page.locator('.save-panel')).toBeHidden();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\hud-side-rail-collapse-fullhd.spec.ts",
+                        "column": 100,
+                        "line": 95
+                      },
+                      "message": "Error: .hud__aside must not flatten hidden descendants into the88px rail\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"\u001b[7mn\u001b[27mon\u001b[7me\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mc\u001b[27mon\u001b[7mtents\u001b[27m\"\u001b[39m\n\n  93 |     for (const row of folded.slice(0, 2)) {\n  94 |       expect(row.hidden).toBe(true);\n> 95 |       expect(row.display, `${row.selector} must not flatten hidden descendants into the88px rail`).toBe('none');\n     |                                                                                                    ^\n  96 |       expect(row.laidOutDescendants).toBe(0);\n  97 |     }\n  98 |     await expect(page.locator('.save-panel')).toBeHidden();\n    at C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\hud-side-rail-collapse-fullhd.spec.ts:95:100"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T00:17:37.355Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\hud-side-rail-collapse-ful-133fb-s-its-public-controls-2029-\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\hud-side-rail-collapse-ful-133fb-s-its-public-controls-2029-\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\hud-side-rail-collapse-ful-133fb-s-its-public-controls-2029-\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\matma\\Documents\\Rozwój gier\\lockstate-staff-chair-v9-integration-20261003\\tests\\browser\\hud-side-rail-collapse-fullhd.spec.ts",
+                    "column": 100,
+                    "line": 95
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "4a3ec88680a896968f02-36d816981dca11da0354",
+          "file": "hud-side-rail-collapse-fullhd.spec.ts",
+          "line": 65,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-04T00:17:28.110Z",
+    "duration": 16006.119999999999,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

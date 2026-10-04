@@ -1,0 +1,9 @@
+{
+  "turns": 1,
+  "beforePixels": [
+    1823,
+    1795
+  ],
+  "roiOracle": "unchanged historical petrol envelope",
+  "nativeCyclesCalibration": false
+}

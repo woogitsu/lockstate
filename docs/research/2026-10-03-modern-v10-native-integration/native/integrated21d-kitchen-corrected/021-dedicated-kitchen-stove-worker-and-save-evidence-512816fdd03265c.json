@@ -1,0 +1,39 @@
+{
+  "quarterTurns": 0,
+  "actualBefore": [
+    "object.fridge@21,8:orientation=0",
+    "object.prep-counter@23,6:orientation=0",
+    "object.stove@21,6:orientation=0"
+  ],
+  "actualAfter": [
+    "object.fridge@21,8:orientation=0",
+    "object.prep-counter@23,6:orientation=0",
+    "object.stove@21,6:orientation=0"
+  ],
+  "beforePixels": [
+    691,
+    112
+  ],
+  "afterPixels": [
+    691,
+    112
+  ],
+  "fridgeBefore": [
+    363,
+    394
+  ],
+  "fridgeAfter": [
+    363,
+    394
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "kitchen-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      }
+    }
+  ]
+}

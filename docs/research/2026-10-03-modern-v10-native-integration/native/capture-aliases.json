@@ -2439,5 +2439,861 @@
     "sourceSha256": "5be6eba7be10ef4f96bac6ef532196796fc3c95f3db9a45e18dfd3048ac1bb81",
     "archivedBytes": 1862153,
     "archivedSha256": "5be6eba7be10ef4f96bac6ef532196796fc3c95f3db9a45e18dfd3048ac1bb81"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\console.txt",
+    "archived": "integrated21d-kitchen-corrected/001-console.txt",
+    "sourceBytes": 15980,
+    "sourceSha256": "de33c9ad218b848097d80f0e02059130d114df857ddece741ba813c3e2c698e1",
+    "archivedBytes": 15980,
+    "archivedSha256": "de33c9ad218b848097d80f0e02059130d114df857ddece741ba813c3e2c698e1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\report.json",
+    "archived": "integrated21d-kitchen-corrected/002-report.json",
+    "sourceBytes": 17815,
+    "sourceSha256": "ce1df63d01509a9edcf62bba134acb8da51ea5aa5059e5d970d9f502852765b0",
+    "archivedBytes": 17815,
+    "archivedSha256": "ce1df63d01509a9edcf62bba134acb8da51ea5aa5059e5d970d9f502852765b0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\.last-run.json",
+    "archived": "integrated21d-kitchen-corrected/003-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "2a0d5b2e5068ec4f1658f940a60922f99db96c593473c55edb53623d7b58ceda",
+    "archivedBytes": 96,
+    "archivedSha256": "2a0d5b2e5068ec4f1658f940a60922f99db96c593473c55edb53623d7b58ceda"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\attachments\\dedicated-kitchen-stove-worker-and-save-evidence-00132ebbf58cf2bb51dcd167d96edfd73346ee66.json",
+    "archived": "integrated21d-kitchen-corrected/004-dedicated-kitchen-stove-worker-and-save-evidence-00132ebbf58cf2b.json",
+    "sourceBytes": 668,
+    "sourceSha256": "cd6dc1cb3996697128ec10bb080665e0ddedbea6e3f5b9aa48244fd4cdecaee8",
+    "archivedBytes": 668,
+    "archivedSha256": "cd6dc1cb3996697128ec10bb080665e0ddedbea6e3f5b9aa48244fd4cdecaee8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\dedicated-kitchen-stove-loaded-fullhd.png",
+    "archived": "integrated21d-kitchen-corrected/005-dedicated-kitchen-stove-loaded-fullhd.png",
+    "sourceBytes": 1524397,
+    "sourceSha256": "f087aadcb01167126941130ddf76a58834b408f6b0d0a9ad71f1819899da779a",
+    "archivedBytes": 1524397,
+    "archivedSha256": "f087aadcb01167126941130ddf76a58834b408f6b0d0a9ad71f1819899da779a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-and-save-evidence.json",
+    "archived": "integrated21d-kitchen-corrected/006-dedicated-kitchen-stove-worker-and-save-evidence.json",
+    "sourceBytes": 668,
+    "sourceSha256": "cd6dc1cb3996697128ec10bb080665e0ddedbea6e3f5b9aa48244fd4cdecaee8",
+    "archivedBytes": 668,
+    "archivedSha256": "cd6dc1cb3996697128ec10bb080665e0ddedbea6e3f5b9aa48244fd4cdecaee8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-completed-fullhd.png",
+    "archived": "integrated21d-kitchen-corrected/007-dedicated-kitchen-stove-worker-completed-fullhd.png",
+    "sourceBytes": 1558441,
+    "sourceSha256": "e6c30cf66cb1b629e3c237c4a03117e4d6dcba3050b403c2b0d66f62a428b6c4",
+    "archivedBytes": 1558441,
+    "archivedSha256": "e6c30cf66cb1b629e3c237c4a03117e4d6dcba3050b403c2b0d66f62a428b6c4"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\error-context.md",
+    "archived": "integrated21d-kitchen-corrected/008-error-context.md",
+    "sourceBytes": 9614,
+    "sourceSha256": "ebd888a63b133fb319a85f2dda143956457ad2821dfbe7ad744566cde0f0cd00",
+    "archivedBytes": 9614,
+    "archivedSha256": "ebd888a63b133fb319a85f2dda143956457ad2821dfbe7ad744566cde0f0cd00"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\failed-kitchen-modern-network.json",
+    "archived": "integrated21d-kitchen-corrected/009-failed-kitchen-modern-network.json",
+    "sourceBytes": 4127,
+    "sourceSha256": "4791d0e150f5bb54a0d447dde163ba3d08fdcfc002027b10f82d4927dd5add2c",
+    "archivedBytes": 4127,
+    "archivedSha256": "4791d0e150f5bb54a0d447dde163ba3d08fdcfc002027b10f82d4927dd5add2c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "integrated21d-kitchen-corrected/010-failed-player-fullhd.png",
+    "sourceBytes": 1615337,
+    "sourceSha256": "2e3af91ddef5462397c4580941005cb62fa6f3b2b0e2c8165b6628c3a3e526ae",
+    "archivedBytes": 1615337,
+    "archivedSha256": "2e3af91ddef5462397c4580941005cb62fa6f3b2b0e2c8165b6628c3a3e526ae"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\failed-player-worker-snapshot.json",
+    "archived": "integrated21d-kitchen-corrected/011-failed-player-worker-snapshot.json",
+    "sourceBytes": 80453,
+    "sourceSha256": "23196c85d2816fd1c307a0ad0b04cfe601685f13c196574b079f13158ad8a4dc",
+    "archivedBytes": 80453,
+    "archivedSha256": "23196c85d2816fd1c307a0ad0b04cfe601685f13c196574b079f13158ad8a4dc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-loaded-physical-fixings-fullhd.png",
+    "archived": "integrated21d-kitchen-corrected/012-kitchen-loaded-physical-fixings-fullhd.png",
+    "sourceBytes": 1488526,
+    "sourceSha256": "45dcc4a36488da178c42c76fbf8dec870a6e13ef2d64fb07a4673dbd36ff040a",
+    "archivedBytes": 1488526,
+    "archivedSha256": "45dcc4a36488da178c42c76fbf8dec870a6e13ef2d64fb07a4673dbd36ff040a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-modern-actual-network-and-htmlimage-evidence.json",
+    "archived": "integrated21d-kitchen-corrected/013-kitchen-modern-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 25324,
+    "sourceSha256": "f8854d4a38f3a9caed512e14bd9fdc86a2e995b05c30f246bf462e8c65a041ca",
+    "archivedBytes": 25324,
+    "archivedSha256": "f8854d4a38f3a9caed512e14bd9fdc86a2e995b05c30f246bf462e8c65a041ca"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-modern-actual200-exposed-frame.png",
+    "archived": "integrated21d-kitchen-corrected/014-kitchen-modern-actual200-exposed-frame.png",
+    "sourceBytes": 28430,
+    "sourceSha256": "2c45a7fe165699ebdf209ba6a092956d9e8097d3095bc5f09dd35b9344749d65",
+    "archivedBytes": 28430,
+    "archivedSha256": "2c45a7fe165699ebdf209ba6a092956d9e8097d3095bc5f09dd35b9344749d65"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-modern-raw-response-provenance.json",
+    "archived": "integrated21d-kitchen-corrected/015-kitchen-modern-raw-response-provenance.json",
+    "sourceBytes": 4127,
+    "sourceSha256": "4791d0e150f5bb54a0d447dde163ba3d08fdcfc002027b10f82d4927dd5add2c",
+    "archivedBytes": 4127,
+    "archivedSha256": "4791d0e150f5bb54a0d447dde163ba3d08fdcfc002027b10f82d4927dd5add2c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-paused-after-load.json",
+    "archived": "integrated21d-kitchen-corrected/016-kitchen-paused-after-load.json",
+    "sourceBytes": 80453,
+    "sourceSha256": "6ace44d224ca7d5bb4c4f5c13cfddf88def5947e6488db46743d106b26bf7456",
+    "archivedBytes": 80453,
+    "archivedSha256": "6ace44d224ca7d5bb4c4f5c13cfddf88def5947e6488db46743d106b26bf7456"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-paused-before-save.json",
+    "archived": "integrated21d-kitchen-corrected/017-kitchen-paused-before-save.json",
+    "sourceBytes": 80453,
+    "sourceSha256": "53af8c3aaba0c9cf2536f5763aae18589c99bb69685b444b8145381b3a765b4f",
+    "archivedBytes": 80453,
+    "archivedSha256": "53af8c3aaba0c9cf2536f5763aae18589c99bb69685b444b8145381b3a765b4f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-stove-canonical-source60-e40-fullhd.png",
+    "archived": "integrated21d-kitchen-corrected/018-kitchen-stove-canonical-source60-e40-fullhd.png",
+    "sourceBytes": 1615337,
+    "sourceSha256": "2e3af91ddef5462397c4580941005cb62fa6f3b2b0e2c8165b6628c3a3e526ae",
+    "archivedBytes": 1615337,
+    "archivedSha256": "2e3af91ddef5462397c4580941005cb62fa6f3b2b0e2c8165b6628c3a3e526ae"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-stove-canonical-whole-state.json",
+    "archived": "integrated21d-kitchen-corrected/019-kitchen-stove-canonical-whole-state.json",
+    "sourceBytes": 80453,
+    "sourceSha256": "bb552ef66eea72a40bf7f9180e7cf5500f6d85883802b1e09d22f5b489f87560",
+    "archivedBytes": 80453,
+    "archivedSha256": "bb552ef66eea72a40bf7f9180e7cf5500f6d85883802b1e09d22f5b489f87560"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "integrated21d-kitchen-corrected/020-worker-and-completed-save-evidence.json",
+    "sourceBytes": 441,
+    "sourceSha256": "a8a02c8c0f846d0b32bacf53c514a126194f656a686b733ea0f3ee96425a9fd5",
+    "archivedBytes": 441,
+    "archivedSha256": "a8a02c8c0f846d0b32bacf53c514a126194f656a686b733ea0f3ee96425a9fd5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\attachments\\dedicated-kitchen-stove-worker-and-save-evidence-512816fdd03265c576b16c1ca74adebd3dd06b43.json",
+    "archived": "integrated21d-kitchen-corrected/021-dedicated-kitchen-stove-worker-and-save-evidence-512816fdd03265c.json",
+    "sourceBytes": 649,
+    "sourceSha256": "3c3253103190d8f56e5da7749b0d1680f451487b4b9ca62671da1868c7596e8c",
+    "archivedBytes": 649,
+    "archivedSha256": "3c3253103190d8f56e5da7749b0d1680f451487b4b9ca62671da1868c7596e8c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-loaded-fullhd.png",
+    "archived": "integrated21d-kitchen-corrected/022-dedicated-kitchen-stove-loaded-fullhd.png",
+    "sourceBytes": 1536141,
+    "sourceSha256": "a46c7f0aa16080f757f784c92156a2529ce56dae204486fbf9b19e51a7d65416",
+    "archivedBytes": 1536141,
+    "archivedSha256": "a46c7f0aa16080f757f784c92156a2529ce56dae204486fbf9b19e51a7d65416"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-and-save-evidence.json",
+    "archived": "integrated21d-kitchen-corrected/023-dedicated-kitchen-stove-worker-and-save-evidence.json",
+    "sourceBytes": 649,
+    "sourceSha256": "3c3253103190d8f56e5da7749b0d1680f451487b4b9ca62671da1868c7596e8c",
+    "archivedBytes": 649,
+    "archivedSha256": "3c3253103190d8f56e5da7749b0d1680f451487b4b9ca62671da1868c7596e8c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-completed-fullhd.png",
+    "archived": "integrated21d-kitchen-corrected/024-dedicated-kitchen-stove-worker-completed-fullhd.png",
+    "sourceBytes": 1570990,
+    "sourceSha256": "3df1c8cf49292680aade3bcb7879ba62454cd0add62d79b1a01f004a10ff3113",
+    "archivedBytes": 1570990,
+    "archivedSha256": "3df1c8cf49292680aade3bcb7879ba62454cd0add62d79b1a01f004a10ff3113"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-loaded-physical-fixings-fullhd.png",
+    "archived": "integrated21d-kitchen-corrected/025-kitchen-loaded-physical-fixings-fullhd.png",
+    "sourceBytes": 1509410,
+    "sourceSha256": "68a3ca15720572077ab33094f208c906558a30e3e409b5c7a49b34f3196c804d",
+    "archivedBytes": 1509410,
+    "archivedSha256": "68a3ca15720572077ab33094f208c906558a30e3e409b5c7a49b34f3196c804d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-modern-actual-network-and-htmlimage-evidence.json",
+    "archived": "integrated21d-kitchen-corrected/026-kitchen-modern-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 27871,
+    "sourceSha256": "a4abdc1acc5ef7f7f0196d43fe1f16812b71a00b27fc21a29a32a3b753b7ef66",
+    "archivedBytes": 27871,
+    "archivedSha256": "a4abdc1acc5ef7f7f0196d43fe1f16812b71a00b27fc21a29a32a3b753b7ef66"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-modern-actual200-exposed-frame.png",
+    "archived": "integrated21d-kitchen-corrected/027-kitchen-modern-actual200-exposed-frame.png",
+    "sourceBytes": 28430,
+    "sourceSha256": "2c45a7fe165699ebdf209ba6a092956d9e8097d3095bc5f09dd35b9344749d65",
+    "archivedBytes": 28430,
+    "archivedSha256": "2c45a7fe165699ebdf209ba6a092956d9e8097d3095bc5f09dd35b9344749d65"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-modern-raw-response-provenance.json",
+    "archived": "integrated21d-kitchen-corrected/028-kitchen-modern-raw-response-provenance.json",
+    "sourceBytes": 6584,
+    "sourceSha256": "13bbd4406cb0d09188b6c17a082d610aecfcad76bcf7f5a366d5fd62dcf377a5",
+    "archivedBytes": 6584,
+    "archivedSha256": "13bbd4406cb0d09188b6c17a082d610aecfcad76bcf7f5a366d5fd62dcf377a5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-paused-after-load.json",
+    "archived": "integrated21d-kitchen-corrected/029-kitchen-paused-after-load.json",
+    "sourceBytes": 80616,
+    "sourceSha256": "319e204571b0e06104fbf08853beb1d31b1b4f145f4cc158c9642534c988d1af",
+    "archivedBytes": 80616,
+    "archivedSha256": "319e204571b0e06104fbf08853beb1d31b1b4f145f4cc158c9642534c988d1af"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-paused-before-save.json",
+    "archived": "integrated21d-kitchen-corrected/030-kitchen-paused-before-save.json",
+    "sourceBytes": 80616,
+    "sourceSha256": "56d02535fa38c3ff692cb3eddd37887ec2cec04afe81cb690b7619402f35e7c1",
+    "archivedBytes": 80616,
+    "archivedSha256": "56d02535fa38c3ff692cb3eddd37887ec2cec04afe81cb690b7619402f35e7c1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-stove-canonical-source60-e40-fullhd.png",
+    "archived": "integrated21d-kitchen-corrected/031-kitchen-stove-canonical-source60-e40-fullhd.png",
+    "sourceBytes": 1558154,
+    "sourceSha256": "20a9f9bbf85d573a1aa83bcea5d60b8b7dc33f1c5a9ad4010b4be41f775ff840",
+    "archivedBytes": 1558154,
+    "archivedSha256": "20a9f9bbf85d573a1aa83bcea5d60b8b7dc33f1c5a9ad4010b4be41f775ff840"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-stove-canonical-whole-state.json",
+    "archived": "integrated21d-kitchen-corrected/032-kitchen-stove-canonical-whole-state.json",
+    "sourceBytes": 80616,
+    "sourceSha256": "ec25f3920adee3abfc87a0747ee9ee44626b7f3559c0e44f1dc853313ce0daa5",
+    "archivedBytes": 80616,
+    "archivedSha256": "ec25f3920adee3abfc87a0747ee9ee44626b7f3559c0e44f1dc853313ce0daa5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "integrated21d-kitchen-corrected/033-worker-and-completed-save-evidence.json",
+    "sourceBytes": 419,
+    "sourceSha256": "25e361ea0352ba78464d2fb0f6958ec1eb7e77cea0acc6b9ece03f204f69cb05",
+    "archivedBytes": 419,
+    "archivedSha256": "25e361ea0352ba78464d2fb0f6958ec1eb7e77cea0acc6b9ece03f204f69cb05"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\console.txt",
+    "archived": "integrated21d-toilet-corrected/001-console.txt",
+    "sourceBytes": 4280,
+    "sourceSha256": "66c44d4c8c5467dbcadbd86d63315aabbee9501e86251cc7e598a53175b8ca60",
+    "archivedBytes": 4280,
+    "archivedSha256": "66c44d4c8c5467dbcadbd86d63315aabbee9501e86251cc7e598a53175b8ca60"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\report.json",
+    "archived": "integrated21d-toilet-corrected/002-report.json",
+    "sourceBytes": 8615,
+    "sourceSha256": "80c4427d9899947196d7031c753c7506bed2ae26e9b5eb4e53c0562f352d717a",
+    "archivedBytes": 8615,
+    "archivedSha256": "80c4427d9899947196d7031c753c7506bed2ae26e9b5eb4e53c0562f352d717a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\.last-run.json",
+    "archived": "integrated21d-toilet-corrected/003-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\attachments\\dedicated-cell-toilet-worker-and-save-evidence-ecae1ebf077d5a48fe655155e2fccdab68a4496f.json",
+    "archived": "integrated21d-toilet-corrected/004-dedicated-cell-toilet-worker-and-save-evidence-ecae1ebf077d5a48f.json",
+    "sourceBytes": 137540,
+    "sourceSha256": "2c75eb5bd27043922f8eb0c69094a2b8de6de6a7b5586908929b05d42e4f1604",
+    "archivedBytes": 137540,
+    "archivedSha256": "2c75eb5bd27043922f8eb0c69094a2b8de6de6a7b5586908929b05d42e4f1604"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "integrated21d-toilet-corrected/005-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 56744,
+    "sourceSha256": "7449b05c6bb527033d063e70f691f39dc168dba23deaa78269aa981c9c1f8e96",
+    "archivedBytes": 56744,
+    "archivedSha256": "7449b05c6bb527033d063e70f691f39dc168dba23deaa78269aa981c9c1f8e96"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "integrated21d-toilet-corrected/006-completed-worker-snapshot.json",
+    "sourceBytes": 78224,
+    "sourceSha256": "262b94181927c1b59dde71b0046a8e765aafed7a37cd4d484ce156f6198e7e68",
+    "archivedBytes": 78224,
+    "archivedSha256": "262b94181927c1b59dde71b0046a8e765aafed7a37cd4d484ce156f6198e7e68"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\dedicated-cell-toilet-loaded-fullhd.png",
+    "archived": "integrated21d-toilet-corrected/007-dedicated-cell-toilet-loaded-fullhd.png",
+    "sourceBytes": 1533682,
+    "sourceSha256": "791c9de68086f680a6510c815fa36e609fcd659855ce602ce70dbd603e9eae05",
+    "archivedBytes": 1533682,
+    "archivedSha256": "791c9de68086f680a6510c815fa36e609fcd659855ce602ce70dbd603e9eae05"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-and-save-evidence.json",
+    "archived": "integrated21d-toilet-corrected/008-dedicated-cell-toilet-worker-and-save-evidence.json",
+    "sourceBytes": 137540,
+    "sourceSha256": "2c75eb5bd27043922f8eb0c69094a2b8de6de6a7b5586908929b05d42e4f1604",
+    "archivedBytes": 137540,
+    "archivedSha256": "2c75eb5bd27043922f8eb0c69094a2b8de6de6a7b5586908929b05d42e4f1604"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-completed-fullhd.png",
+    "archived": "integrated21d-toilet-corrected/009-dedicated-cell-toilet-worker-completed-fullhd.png",
+    "sourceBytes": 1562968,
+    "sourceSha256": "ba5fac18d8afc10d33df2ea758939882227d7aeb9537dab721f7784437b9eedf",
+    "archivedBytes": 1562968,
+    "archivedSha256": "ba5fac18d8afc10d33df2ea758939882227d7aeb9537dab721f7784437b9eedf"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "integrated21d-toilet-corrected/010-loaded-worker-snapshot.json",
+    "sourceBytes": 78224,
+    "sourceSha256": "95f747a2176bec764a1c67d1d6ce8ed6732ce45c7609f1137d80e940407829bc",
+    "archivedBytes": 78224,
+    "archivedSha256": "95f747a2176bec764a1c67d1d6ce8ed6732ce45c7609f1137d80e940407829bc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-actual-network-and-htmlimage-evidence.json",
+    "archived": "integrated21d-toilet-corrected/011-toilet-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 24198,
+    "sourceSha256": "a8edb89c3da7d92c9959962799b145409b77cde2a3e3a7a39dca5bb4e43f4c3a",
+    "archivedBytes": 24198,
+    "archivedSha256": "a8edb89c3da7d92c9959962799b145409b77cde2a3e3a7a39dca5bb4e43f4c3a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-actual200-exposed-frame.png",
+    "archived": "integrated21d-toilet-corrected/012-toilet-actual200-exposed-frame.png",
+    "sourceBytes": 14657,
+    "sourceSha256": "12522e96db7e5cd627928558800c25dda9a33f43643a999213443144a30df312",
+    "archivedBytes": 14657,
+    "archivedSha256": "12522e96db7e5cd627928558800c25dda9a33f43643a999213443144a30df312"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-completed-whole-paused-worker-snapshot.json",
+    "archived": "integrated21d-toilet-corrected/013-toilet-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 78224,
+    "sourceSha256": "51734ac61abd6409d11778b9a544519371e95b4f9a53771fbacddf50c152e005",
+    "archivedBytes": 78224,
+    "archivedSha256": "51734ac61abd6409d11778b9a544519371e95b4f9a53771fbacddf50c152e005"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-detail-pending-native-recipe.json",
+    "archived": "integrated21d-toilet-corrected/014-toilet-detail-pending-native-recipe.json",
+    "sourceBytes": 25926,
+    "sourceSha256": "6f50fd0b67f65b6712914806903277971333f479c10e468b92214133fd8274f5",
+    "archivedBytes": 25926,
+    "archivedSha256": "6f50fd0b67f65b6712914806903277971333f479c10e468b92214133fd8274f5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-detail-whole-paused-worker-snapshot.json",
+    "archived": "integrated21d-toilet-corrected/015-toilet-detail-whole-paused-worker-snapshot.json",
+    "sourceBytes": 78224,
+    "sourceSha256": "497733045623c7ba480b5f3564e9cc240d67e2bbc1b4238271b47f9970af1816",
+    "archivedBytes": 78224,
+    "archivedSha256": "497733045623c7ba480b5f3564e9cc240d67e2bbc1b4238271b47f9970af1816"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-loaded-whole-paused-worker-snapshot.json",
+    "archived": "integrated21d-toilet-corrected/016-toilet-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 78224,
+    "sourceSha256": "7d0dcbc190ac7b66631dce84e5c02a95216eb0e5518e7a6fb01d02bbb7cc0029",
+    "archivedBytes": 78224,
+    "archivedSha256": "7d0dcbc190ac7b66631dce84e5c02a95216eb0e5518e7a6fb01d02bbb7cc0029"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-raw-response-provenance.json",
+    "archived": "integrated21d-toilet-corrected/017-toilet-raw-response-provenance.json",
+    "sourceBytes": 4532,
+    "sourceSha256": "74bd748009fccf134e4282b5f92c2dd97bf49efdafbcce530e027a9f4ac8d334",
+    "archivedBytes": 4532,
+    "archivedSha256": "74bd748009fccf134e4282b5f92c2dd97bf49efdafbcce530e027a9f4ac8d334"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\toilet-transfer-neck-local45-elev40-loaded-fullhd.png",
+    "archived": "integrated21d-toilet-corrected/018-toilet-transfer-neck-local45-elev40-loaded-fullhd.png",
+    "sourceBytes": 1472191,
+    "sourceSha256": "9b60e8ccc13ccef4dd75592b4e94a09159bb0dd89a8283346afcdf0ebce95206",
+    "archivedBytes": 1472191,
+    "archivedSha256": "9b60e8ccc13ccef4dd75592b4e94a09159bb0dd89a8283346afcdf0ebce95206"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-8e224-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "integrated21d-toilet-corrected/019-worker-and-completed-save-evidence.json",
+    "sourceBytes": 951,
+    "sourceSha256": "dc6037122f3f7538eee15dc10dc9d4ea24b7284b22c625ade20acdb0289e04e7",
+    "archivedBytes": 951,
+    "archivedSha256": "dc6037122f3f7538eee15dc10dc9d4ea24b7284b22c625ade20acdb0289e04e7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\attachments\\dedicated-cell-toilet-worker-and-save-evidence-dc8a033e01c3f94ee209f543cd8e1d5209b09360.json",
+    "archived": "integrated21d-toilet-corrected/020-dedicated-cell-toilet-worker-and-save-evidence-dc8a033e01c3f94ee.json",
+    "sourceBytes": 135085,
+    "sourceSha256": "b2c0866fe4450774d6d6e685285548c5e445e3ec4074e3eedc728ead3f2ae10d",
+    "archivedBytes": 135085,
+    "archivedSha256": "b2c0866fe4450774d6d6e685285548c5e445e3ec4074e3eedc728ead3f2ae10d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\capacity-loaded-worker-snapshot.json",
+    "archived": "integrated21d-toilet-corrected/021-capacity-loaded-worker-snapshot.json",
+    "sourceBytes": 56744,
+    "sourceSha256": "8c4aee341d45667e58ae9c0c6a56480f80a2f822c265a5a098c29076c55ab162",
+    "archivedBytes": 56744,
+    "archivedSha256": "8c4aee341d45667e58ae9c0c6a56480f80a2f822c265a5a098c29076c55ab162"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\completed-worker-snapshot.json",
+    "archived": "integrated21d-toilet-corrected/022-completed-worker-snapshot.json",
+    "sourceBytes": 76610,
+    "sourceSha256": "3bafc3633133e62fd89026c21a345e7434dd7eb4b60909b3c2868892028999a5",
+    "archivedBytes": 76610,
+    "archivedSha256": "3bafc3633133e62fd89026c21a345e7434dd7eb4b60909b3c2868892028999a5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\dedicated-cell-toilet-loaded-fullhd.png",
+    "archived": "integrated21d-toilet-corrected/023-dedicated-cell-toilet-loaded-fullhd.png",
+    "sourceBytes": 1448397,
+    "sourceSha256": "a26c994858444cfce2484f55705ba89db34f32d518bbab5e567c251bc3621453",
+    "archivedBytes": 1448397,
+    "archivedSha256": "a26c994858444cfce2484f55705ba89db34f32d518bbab5e567c251bc3621453"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-and-save-evidence.json",
+    "archived": "integrated21d-toilet-corrected/024-dedicated-cell-toilet-worker-and-save-evidence.json",
+    "sourceBytes": 135085,
+    "sourceSha256": "b2c0866fe4450774d6d6e685285548c5e445e3ec4074e3eedc728ead3f2ae10d",
+    "archivedBytes": 135085,
+    "archivedSha256": "b2c0866fe4450774d6d6e685285548c5e445e3ec4074e3eedc728ead3f2ae10d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\dedicated-cell-toilet-worker-completed-fullhd.png",
+    "archived": "integrated21d-toilet-corrected/025-dedicated-cell-toilet-worker-completed-fullhd.png",
+    "sourceBytes": 1476250,
+    "sourceSha256": "d1b1554dc534171065b4742a6e8394891702c02699c52c317c7d45997a4d711c",
+    "archivedBytes": 1476250,
+    "archivedSha256": "d1b1554dc534171065b4742a6e8394891702c02699c52c317c7d45997a4d711c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\loaded-worker-snapshot.json",
+    "archived": "integrated21d-toilet-corrected/026-loaded-worker-snapshot.json",
+    "sourceBytes": 76610,
+    "sourceSha256": "4fa224da51ff05d4cb6b900aae4c308291e4cfc76eae28aada63f8db6091ea97",
+    "archivedBytes": 76610,
+    "archivedSha256": "4fa224da51ff05d4cb6b900aae4c308291e4cfc76eae28aada63f8db6091ea97"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-actual-network-and-htmlimage-evidence.json",
+    "archived": "integrated21d-toilet-corrected/027-toilet-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 23753,
+    "sourceSha256": "f07e5a2afaa49b54b01fce602af0b65ea197d119475ecb62556387ac49d5a662",
+    "archivedBytes": 23753,
+    "archivedSha256": "f07e5a2afaa49b54b01fce602af0b65ea197d119475ecb62556387ac49d5a662"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-actual200-exposed-frame.png",
+    "archived": "integrated21d-toilet-corrected/028-toilet-actual200-exposed-frame.png",
+    "sourceBytes": 14657,
+    "sourceSha256": "12522e96db7e5cd627928558800c25dda9a33f43643a999213443144a30df312",
+    "archivedBytes": 14657,
+    "archivedSha256": "12522e96db7e5cd627928558800c25dda9a33f43643a999213443144a30df312"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-completed-whole-paused-worker-snapshot.json",
+    "archived": "integrated21d-toilet-corrected/029-toilet-completed-whole-paused-worker-snapshot.json",
+    "sourceBytes": 76610,
+    "sourceSha256": "62473858d84dab2d9ffb8ca2944d405d674cf7b882591c92c7084a90f7e697d8",
+    "archivedBytes": 76610,
+    "archivedSha256": "62473858d84dab2d9ffb8ca2944d405d674cf7b882591c92c7084a90f7e697d8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-detail-pending-native-recipe.json",
+    "archived": "integrated21d-toilet-corrected/030-toilet-detail-pending-native-recipe.json",
+    "sourceBytes": 25461,
+    "sourceSha256": "18d4ff20667be7e0cdad3f0596b723d79ab0baea71d939f8224693e8d64cb31d",
+    "archivedBytes": 25461,
+    "archivedSha256": "18d4ff20667be7e0cdad3f0596b723d79ab0baea71d939f8224693e8d64cb31d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-detail-whole-paused-worker-snapshot.json",
+    "archived": "integrated21d-toilet-corrected/031-toilet-detail-whole-paused-worker-snapshot.json",
+    "sourceBytes": 76610,
+    "sourceSha256": "a537171e14045d0cfc715bf86e2d7f3e7cf2e107c5b8f6972802bdde7bb2df8d",
+    "archivedBytes": 76610,
+    "archivedSha256": "a537171e14045d0cfc715bf86e2d7f3e7cf2e107c5b8f6972802bdde7bb2df8d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-loaded-whole-paused-worker-snapshot.json",
+    "archived": "integrated21d-toilet-corrected/032-toilet-loaded-whole-paused-worker-snapshot.json",
+    "sourceBytes": 76610,
+    "sourceSha256": "ecc97c9e6f41303c5a1064155f2adaef85dadda9469f5607839df6812abfffd8",
+    "archivedBytes": 76610,
+    "archivedSha256": "ecc97c9e6f41303c5a1064155f2adaef85dadda9469f5607839df6812abfffd8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-raw-response-provenance.json",
+    "archived": "integrated21d-toilet-corrected/033-toilet-raw-response-provenance.json",
+    "sourceBytes": 4107,
+    "sourceSha256": "64778e938b44a387832280c12a4d536b6101c514cb1f165581a611aa4fcdbcca",
+    "archivedBytes": 4107,
+    "archivedSha256": "64778e938b44a387832280c12a4d536b6101c514cb1f165581a611aa4fcdbcca"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\toilet-transfer-neck-local45-elev40-loaded-fullhd.png",
+    "archived": "integrated21d-toilet-corrected/034-toilet-transfer-neck-local45-elev40-loaded-fullhd.png",
+    "sourceBytes": 1440854,
+    "sourceSha256": "de3dee85d66b739725eacba99842509f4d1049acf162d4344ff750efd026c6db",
+    "archivedBytes": 1440854,
+    "archivedSha256": "de3dee85d66b739725eacba99842509f4d1049acf162d4344ff750efd026c6db"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-c4bee-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "integrated21d-toilet-corrected/035-worker-and-completed-save-evidence.json",
+    "sourceBytes": 978,
+    "sourceSha256": "d1b2dae1fbaea60a5a02863c9cafb46b166d49bb7b0cb5b1a507f780e0e07060",
+    "archivedBytes": 978,
+    "archivedSha256": "d1b2dae1fbaea60a5a02863c9cafb46b166d49bb7b0cb5b1a507f780e0e07060"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-toilet-material-native-20261004\\results\\dedicated-cell-toilet-play-d5a09--capacity-before-Basic-cell\\capacity-completed-worker-snapshot.json",
+    "archived": "integrated21d-toilet-corrected/036-capacity-completed-worker-snapshot.json",
+    "sourceBytes": 56744,
+    "sourceSha256": "9816e8675910f95ebc7ccc162a7541b8685cffdd4f7a25a796387c8c2e608536",
+    "archivedBytes": 56744,
+    "archivedSha256": "9816e8675910f95ebc7ccc162a7541b8685cffdd4f7a25a796387c8c2e608536"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-original-native-20261004\\console.txt",
+    "archived": "integrated21d-manual-fold-cjs-preflight/001-console.txt",
+    "sourceBytes": 7528,
+    "sourceSha256": "38daa2f48f7495a1a3cb7105dc84996571af138034fcea169b342d4a43b481e7",
+    "archivedBytes": 7528,
+    "archivedSha256": "38daa2f48f7495a1a3cb7105dc84996571af138034fcea169b342d4a43b481e7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-original-native-20261004\\measurement.config.ts.txt",
+    "archived": "integrated21d-manual-fold-cjs-preflight/002-measurement.config.ts.txt",
+    "sourceBytes": 325,
+    "sourceSha256": "de45473bf573cace329f15239257f0b5e6f337b04f23c844b5e58ec9e78b368a",
+    "archivedBytes": 325,
+    "archivedSha256": "de45473bf573cace329f15239257f0b5e6f337b04f23c844b5e58ec9e78b368a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\console.txt",
+    "archived": "integrated21d-manual-fold-original/001-console.txt",
+    "sourceBytes": 14704,
+    "sourceSha256": "776c67937fb1ed37e60ea34273a670e075b14ca8269f35a977c45939e3ead818",
+    "archivedBytes": 14704,
+    "archivedSha256": "776c67937fb1ed37e60ea34273a670e075b14ca8269f35a977c45939e3ead818"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\measurement.config.mts.txt",
+    "archived": "integrated21d-manual-fold-original/002-measurement.config.mts.txt",
+    "sourceBytes": 325,
+    "sourceSha256": "de45473bf573cace329f15239257f0b5e6f337b04f23c844b5e58ec9e78b368a",
+    "archivedBytes": 325,
+    "archivedSha256": "de45473bf573cace329f15239257f0b5e6f337b04f23c844b5e58ec9e78b368a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\report.json",
+    "archived": "integrated21d-manual-fold-original/003-report.json",
+    "sourceBytes": 14245,
+    "sourceSha256": "c73f1154b757cb182e3c81dffe88918a34f35343545db1c6a25666e41501a76c",
+    "archivedBytes": 14245,
+    "archivedSha256": "c73f1154b757cb182e3c81dffe88918a34f35343545db1c6a25666e41501a76c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\.last-run.json",
+    "archived": "integrated21d-manual-fold-original/004-.last-run.json",
+    "sourceBytes": 145,
+    "sourceSha256": "e22b312162c57f7b883c08088b784d480388058d00705dc49557a4a991a7c6c8",
+    "archivedBytes": 145,
+    "archivedSha256": "e22b312162c57f7b883c08088b784d480388058d00705dc49557a4a991a7c6c8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\hud-side-rail-collapse-ful-133fb-s-its-public-controls-2029-\\active-build-manually-folded-fullhd.png",
+    "archived": "integrated21d-manual-fold-original/005-active-build-manually-folded-fullhd.png",
+    "sourceBytes": 1443289,
+    "sourceSha256": "2ee9b53e61c4c4e9be5ae20a24870cc04872432801dadf6a0c99ca610340fc3d",
+    "archivedBytes": 1443289,
+    "archivedSha256": "2ee9b53e61c4c4e9be5ae20a24870cc04872432801dadf6a0c99ca610340fc3d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\hud-side-rail-collapse-ful-133fb-s-its-public-controls-2029-\\error-context.md",
+    "archived": "integrated21d-manual-fold-original/006-error-context.md",
+    "sourceBytes": 6320,
+    "sourceSha256": "5176fe8d7244258f62ba5c61dd56d9146fc162e256aca43257045668a4a5e03f",
+    "archivedBytes": 6320,
+    "archivedSha256": "5176fe8d7244258f62ba5c61dd56d9146fc162e256aca43257045668a4a5e03f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\hud-side-rail-collapse-ful-133fb-s-its-public-controls-2029-\\fold-actual-dom-paint.json",
+    "archived": "integrated21d-manual-fold-original/007-fold-actual-dom-paint.json",
+    "sourceBytes": 1390,
+    "sourceSha256": "075b8a545b9d06c67765ceabfc3d81b64df58de9e6dc1e0fd00fbfaf00a8c3ac",
+    "archivedBytes": 1390,
+    "archivedSha256": "075b8a545b9d06c67765ceabfc3d81b64df58de9e6dc1e0fd00fbfaf00a8c3ac"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\hud-side-rail-collapse-ful-133fb-s-its-public-controls-2029-\\fold-before-whole-v10.json",
+    "archived": "integrated21d-manual-fold-original/008-fold-before-whole-v10.json",
+    "sourceBytes": 15668,
+    "sourceSha256": "cc533ff38e71a9fd3e63b28d8a28ba965e6cf151def333aac55070b3d350c29e",
+    "archivedBytes": 15668,
+    "archivedSha256": "cc533ff38e71a9fd3e63b28d8a28ba965e6cf151def333aac55070b3d350c29e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\hud-side-rail-collapse-ful-133fb-s-its-public-controls-2029-\\test-failed-1.png",
+    "archived": "integrated21d-manual-fold-original/009-test-failed-1.png",
+    "sourceBytes": 1443289,
+    "sourceSha256": "2ee9b53e61c4c4e9be5ae20a24870cc04872432801dadf6a0c99ca610340fc3d",
+    "archivedBytes": 1443289,
+    "archivedSha256": "2ee9b53e61c4c4e9be5ae20a24870cc04872432801dadf6a0c99ca610340fc3d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\hud-side-rail-collapse-ful-133fb-s-its-public-controls-2029-\\trace.zip",
+    "archived": "integrated21d-manual-fold-original/010-trace.zip",
+    "sourceBytes": 10941365,
+    "sourceSha256": "c1a35acc1ab838a608adc8abc0d73d3f4dca30fb5b98bb05ec60fa47a2cd78d5",
+    "archivedBytes": 10941365,
+    "archivedSha256": "c1a35acc1ab838a608adc8abc0d73d3f4dca30fb5b98bb05ec60fa47a2cd78d5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\hud-side-rail-collapse-ful-2b554-s-its-public-controls-2029-\\active-build-manually-folded-fullhd.png",
+    "archived": "integrated21d-manual-fold-original/011-active-build-manually-folded-fullhd.png",
+    "sourceBytes": 1881417,
+    "sourceSha256": "6bdda475753e38a175143f39eab3b417fa9a026e6226f151cc3c39cc87d75a91",
+    "archivedBytes": 1881417,
+    "archivedSha256": "6bdda475753e38a175143f39eab3b417fa9a026e6226f151cc3c39cc87d75a91"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\hud-side-rail-collapse-ful-2b554-s-its-public-controls-2029-\\error-context.md",
+    "archived": "integrated21d-manual-fold-original/012-error-context.md",
+    "sourceBytes": 6302,
+    "sourceSha256": "ec8619c5263f6fdcc6318887b897795c4e6aa7204f73481d4b36b56871a746e6",
+    "archivedBytes": 6302,
+    "archivedSha256": "ec8619c5263f6fdcc6318887b897795c4e6aa7204f73481d4b36b56871a746e6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\hud-side-rail-collapse-ful-2b554-s-its-public-controls-2029-\\fold-actual-dom-paint.json",
+    "archived": "integrated21d-manual-fold-original/013-fold-actual-dom-paint.json",
+    "sourceBytes": 1374,
+    "sourceSha256": "54387220691af258d5d1e4135dcec17dee9f4761b5e5601f9932eb4bcccbd68b",
+    "archivedBytes": 1374,
+    "archivedSha256": "54387220691af258d5d1e4135dcec17dee9f4761b5e5601f9932eb4bcccbd68b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\hud-side-rail-collapse-ful-2b554-s-its-public-controls-2029-\\fold-before-whole-v10.json",
+    "archived": "integrated21d-manual-fold-original/014-fold-before-whole-v10.json",
+    "sourceBytes": 15665,
+    "sourceSha256": "3f5a741b8c812df4f4833ea5fa951e540ea08177b1f6177a0ba08243a054bbbd",
+    "archivedBytes": 15665,
+    "archivedSha256": "3f5a741b8c812df4f4833ea5fa951e540ea08177b1f6177a0ba08243a054bbbd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\hud-side-rail-collapse-ful-2b554-s-its-public-controls-2029-\\test-failed-1.png",
+    "archived": "integrated21d-manual-fold-original/015-test-failed-1.png",
+    "sourceBytes": 1881417,
+    "sourceSha256": "6bdda475753e38a175143f39eab3b417fa9a026e6226f151cc3c39cc87d75a91",
+    "archivedBytes": 1881417,
+    "archivedSha256": "6bdda475753e38a175143f39eab3b417fa9a026e6226f151cc3c39cc87d75a91"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-manual-fold-esm-native-20261004\\results\\hud-side-rail-collapse-ful-2b554-s-its-public-controls-2029-\\trace.zip",
+    "archived": "integrated21d-manual-fold-original/016-trace.zip",
+    "sourceBytes": 10438617,
+    "sourceSha256": "c5807784429bd95a148c485ddfa55d73dc987c8d9ee6a7f78814aa8606b317d5",
+    "archivedBytes": 10438617,
+    "archivedSha256": "c5807784429bd95a148c485ddfa55d73dc987c8d9ee6a7f78814aa8606b317d5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\console.txt",
+    "archived": "integrated21d-common/001-console.txt",
+    "sourceBytes": 4388,
+    "sourceSha256": "169308f40efe7e8ed8f75f8216ddbbba02509762cfb68584439093631aef0c2b",
+    "archivedBytes": 4388,
+    "archivedSha256": "169308f40efe7e8ed8f75f8216ddbbba02509762cfb68584439093631aef0c2b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\report.json",
+    "archived": "integrated21d-common/002-report.json",
+    "sourceBytes": 813717,
+    "sourceSha256": "2fa6ae8ed8bd6a8ca551250648b24dbfff1fc8deb7d7b169f35836a9675c1ed8",
+    "archivedBytes": 813717,
+    "archivedSha256": "2fa6ae8ed8bd6a8ca551250648b24dbfff1fc8deb7d7b169f35836a9675c1ed8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\results\\.last-run.json",
+    "archived": "integrated21d-common/003-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\results\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\common-room-actual-completed-fullhd.png",
+    "archived": "integrated21d-common/004-common-room-actual-completed-fullhd.png",
+    "sourceBytes": 1570732,
+    "sourceSha256": "f735d62588d5664252ed3f6da6e3ea882f1105c09f8ff29e3c0b6bdc3d212060",
+    "archivedBytes": 1570732,
+    "archivedSha256": "f735d62588d5664252ed3f6da6e3ea882f1105c09f8ff29e3c0b6bdc3d212060"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\results\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\common-room-actual-loaded-fullhd.png",
+    "archived": "integrated21d-common/005-common-room-actual-loaded-fullhd.png",
+    "sourceBytes": 1537318,
+    "sourceSha256": "f45d8e40a6fd37e39eadf4f7e34fe9c873eafece273fa299563900d7ce185289",
+    "archivedBytes": 1537318,
+    "archivedSha256": "f45d8e40a6fd37e39eadf4f7e34fe9c873eafece273fa299563900d7ce185289"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\results\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\common-room-actual-local60-elev40-fullhd.png",
+    "archived": "integrated21d-common/006-common-room-actual-local60-elev40-fullhd.png",
+    "sourceBytes": 1640251,
+    "sourceSha256": "468585bee6277236a683ea9ac198e6e2fe39b741b745d78b9435b113b1894d9a",
+    "archivedBytes": 1640251,
+    "archivedSha256": "468585bee6277236a683ea9ac198e6e2fe39b741b745d78b9435b113b1894d9a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\results\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\common-room-actual-worker-pixels-and-provenance.json",
+    "archived": "integrated21d-common/007-common-room-actual-worker-pixels-and-provenance.json",
+    "sourceBytes": 303671,
+    "sourceSha256": "2a1d38bb362aa99d0b563f3a42b36f022c40797d7149cbb9c058fb25e3f880f6",
+    "archivedBytes": 303671,
+    "archivedSha256": "2a1d38bb362aa99d0b563f3a42b36f022c40797d7149cbb9c058fb25e3f880f6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\results\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\common-room-bench-actual-network-and-htmlimage-evidence.json",
+    "archived": "integrated21d-common/008-common-room-bench-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 26755,
+    "sourceSha256": "752e399a45e92298ac83f0aa78b82cc3e1c2ba281519e0dbf8858f548120b56e",
+    "archivedBytes": 26755,
+    "archivedSha256": "752e399a45e92298ac83f0aa78b82cc3e1c2ba281519e0dbf8858f548120b56e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\results\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\common-room-bench-actual200-exposed-frame.png",
+    "archived": "integrated21d-common/009-common-room-bench-actual200-exposed-frame.png",
+    "sourceBytes": 16513,
+    "sourceSha256": "a75487c09dc18f99526dc77265c93764fad2927b2a2beb762057ad36f99e1ab0",
+    "archivedBytes": 16513,
+    "archivedSha256": "a75487c09dc18f99526dc77265c93764fad2927b2a2beb762057ad36f99e1ab0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\results\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\common-room-bench-raw-response-provenance.json",
+    "archived": "integrated21d-common/010-common-room-bench-raw-response-provenance.json",
+    "sourceBytes": 5134,
+    "sourceSha256": "709e2eafc21e57fe2d5528b04ce16ecf55d0be7b739d8845cf9b774a9162946b",
+    "archivedBytes": 5134,
+    "archivedSha256": "709e2eafc21e57fe2d5528b04ce16ecf55d0be7b739d8845cf9b774a9162946b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\results\\common-room-upholstered-pl-91ed3--and-whole-paused-Save-Load\\common-room-original-material-before-assert.json",
+    "archived": "integrated21d-common/011-common-room-original-material-before-assert.json",
+    "sourceBytes": 151,
+    "sourceSha256": "6c2d257a32a2e47a67dbbbf8268f54b460fda11142e596301289a3d63e257e4f",
+    "archivedBytes": 151,
+    "archivedSha256": "6c2d257a32a2e47a67dbbbf8268f54b460fda11142e596301289a3d63e257e4f"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\results\\common-room-upholstered-pl-ba98c-fore-Common-Room-upholstery\\actual-capacity-completed-worker.json",
+    "archived": "integrated21d-common/012-actual-capacity-completed-worker.json",
+    "sourceBytes": 44862,
+    "sourceSha256": "b2fb46fbcc7120827005b246569832e2c4ce0ce9b56dacd868b28cd382e757a9",
+    "archivedBytes": 44862,
+    "archivedSha256": "b2fb46fbcc7120827005b246569832e2c4ce0ce9b56dacd868b28cd382e757a9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\results\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\common-room-actual-completed-fullhd.png",
+    "archived": "integrated21d-common/013-common-room-actual-completed-fullhd.png",
+    "sourceBytes": 1564281,
+    "sourceSha256": "8fb162b9d0f1cb4a0756c7222cc6bdc52b2bbc4ed25ec014afbb6d58f08df007",
+    "archivedBytes": 1564281,
+    "archivedSha256": "8fb162b9d0f1cb4a0756c7222cc6bdc52b2bbc4ed25ec014afbb6d58f08df007"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\results\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\common-room-actual-loaded-fullhd.png",
+    "archived": "integrated21d-common/014-common-room-actual-loaded-fullhd.png",
+    "sourceBytes": 1530651,
+    "sourceSha256": "f160b33ba4a9e33e745af923d79bf356b6900ce9331ee5f3eec9c660bc7ea98d",
+    "archivedBytes": 1530651,
+    "archivedSha256": "f160b33ba4a9e33e745af923d79bf356b6900ce9331ee5f3eec9c660bc7ea98d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\results\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\common-room-actual-local60-elev40-fullhd.png",
+    "archived": "integrated21d-common/015-common-room-actual-local60-elev40-fullhd.png",
+    "sourceBytes": 1611983,
+    "sourceSha256": "52b7755b237e4916106c4dc66feb22a8912adf56e025803bdf3181ec5ae77ef6",
+    "archivedBytes": 1611983,
+    "archivedSha256": "52b7755b237e4916106c4dc66feb22a8912adf56e025803bdf3181ec5ae77ef6"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\results\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\common-room-actual-worker-pixels-and-provenance.json",
+    "archived": "integrated21d-common/016-common-room-actual-worker-pixels-and-provenance.json",
+    "sourceBytes": 300535,
+    "sourceSha256": "6dd8d9b605ad249dc99795967aff576b373661f6940085a70381bad4020c65ce",
+    "archivedBytes": 300535,
+    "archivedSha256": "6dd8d9b605ad249dc99795967aff576b373661f6940085a70381bad4020c65ce"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\results\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\common-room-bench-actual-network-and-htmlimage-evidence.json",
+    "archived": "integrated21d-common/017-common-room-bench-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 24108,
+    "sourceSha256": "eb5cf37047f0a43aceddb881842f3758b57d8f139ec81eef53115418c124247d",
+    "archivedBytes": 24108,
+    "archivedSha256": "eb5cf37047f0a43aceddb881842f3758b57d8f139ec81eef53115418c124247d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\results\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\common-room-bench-actual200-exposed-frame.png",
+    "archived": "integrated21d-common/018-common-room-bench-actual200-exposed-frame.png",
+    "sourceBytes": 16513,
+    "sourceSha256": "a75487c09dc18f99526dc77265c93764fad2927b2a2beb762057ad36f99e1ab0",
+    "archivedBytes": 16513,
+    "archivedSha256": "a75487c09dc18f99526dc77265c93764fad2927b2a2beb762057ad36f99e1ab0"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\results\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\common-room-bench-raw-response-provenance.json",
+    "archived": "integrated21d-common/019-common-room-bench-raw-response-provenance.json",
+    "sourceBytes": 2577,
+    "sourceSha256": "c6231846b413806e43ccd4301ee094b7386f2ca5146ee116535f6967d6957e9d",
+    "archivedBytes": 2577,
+    "archivedSha256": "c6231846b413806e43ccd4301ee094b7386f2ca5146ee116535f6967d6957e9d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-common-original-native-20261004\\results\\common-room-upholstered-pl-cf3d1--and-whole-paused-Save-Load\\common-room-original-material-before-assert.json",
+    "archived": "integrated21d-common/020-common-room-original-material-before-assert.json",
+    "sourceBytes": 151,
+    "sourceSha256": "a230eea8d6312ab5ec48b9b9fbf354ab812d6922ce6dee625c91a90eb02d88e2",
+    "archivedBytes": 151,
+    "archivedSha256": "a230eea8d6312ab5ec48b9b9fbf354ab812d6922ce6dee625c91a90eb02d88e2"
   }
 ]

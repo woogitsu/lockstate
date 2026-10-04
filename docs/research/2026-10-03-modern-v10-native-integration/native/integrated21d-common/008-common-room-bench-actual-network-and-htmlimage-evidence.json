@@ -1,0 +1,592 @@
+{
+  "quarterTurns": 0,
+  "sourceSha256": "70be43170198172589904862ed627e0c3360be9da4788fb93098feb7b4ecb4c7",
+  "catalog": {
+    "schemaVersion": 1,
+    "assetId": "furniture.common-room.upholstered-bench",
+    "source": "assets/source/blender/furniture.common-room.upholstered-bench.soft-light.blend",
+    "sourceSha256": "70be43170198172589904862ed627e0c3360be9da4788fb93098feb7b4ecb4c7",
+    "resolutionPx": [
+      256,
+      256
+    ],
+    "nominalPixelsPerTile": 64,
+    "pivotPx": [
+      128,
+      128
+    ],
+    "cameraTargetTiles": [
+      1,
+      0.5,
+      0.52
+    ],
+    "projection": "orthographic",
+    "yawDegrees": [
+      0,
+      30,
+      60,
+      90,
+      120,
+      150,
+      180,
+      210,
+      240,
+      270,
+      300,
+      330
+    ],
+    "elevationDegrees": [
+      20,
+      30,
+      40,
+      50,
+      60,
+      70
+    ],
+    "frames": [
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+00-elev20.a06b69e2a6fa.png",
+        "sha256": "a06b69e2a6fa61fda2f85995da0598d4e64d00a6915d77dd62a71b7c00bbd695"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+00-elev30.95e3e801da13.png",
+        "sha256": "95e3e801da13114130cb5175c59fe5e265ec2eeda390bed9b29b77c48acaf6e6"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+00-elev40.7defe9ab4dc5.png",
+        "sha256": "7defe9ab4dc568c267793d14bf44856dad988c057ff88678b8e4c0d6ee0ef891"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+00-elev50.f12e9412e0c8.png",
+        "sha256": "f12e9412e0c8ea4de1416654b5da2db5dfa841a9e58aa6cc78defaffc404115c"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+00-elev60.91208394c0ca.png",
+        "sha256": "91208394c0ca547c9e5d7496a275bbdd0211df196b51264c33ba06e8ae8a9e55"
+      },
+      {
+        "yawDegrees": 0,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+00-elev70.afcfe29a3bcb.png",
+        "sha256": "afcfe29a3bcbd13d9b6b0f6bff1aff30ba477fcb34e63a079c6eb92b711a696f"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+30-elev20.8f472d61ba94.png",
+        "sha256": "8f472d61ba94bd2fb890af9ea2975d6d44824f0831d8ed548660d71087e2b5b9"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+30-elev30.d034cd9b929e.png",
+        "sha256": "d034cd9b929e1ba6951319db119291473f2a62010802796292d5e389a528fafa"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+30-elev40.95f1fb5090c5.png",
+        "sha256": "95f1fb5090c578aa476697f7892a9f1d52f7032a716958352ba4e2b85878c4f8"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+30-elev50.3f663f282963.png",
+        "sha256": "3f663f2829633547a0f27991cf447d91bd9c55e1713864e0aabb167aaaae4a88"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+30-elev60.1c4a7843dff9.png",
+        "sha256": "1c4a7843dff95eb8494b3f55d6aa875ff441c6ff623467c54c804b72cbd0be66"
+      },
+      {
+        "yawDegrees": 30,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+30-elev70.3f8875289904.png",
+        "sha256": "3f8875289904d622b72777feca8d6144e1aff068caa15586b2ea97c2c65f40e6"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+60-elev20.c355a75d8f85.png",
+        "sha256": "c355a75d8f85fd0d1ca5336570da51d5ba4aaafdd7073b8bd76b4e62ad8dda6a"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+60-elev30.3c32b225d47d.png",
+        "sha256": "3c32b225d47d11aabb872f67ea326f9ee09674f6cda2bbb0441f4d81ac6060a9"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+60-elev40.a75487c09dc1.png",
+        "sha256": "a75487c09dc18f99526dc77265c93764fad2927b2a2beb762057ad36f99e1ab0"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+60-elev50.64d5f77c6b3a.png",
+        "sha256": "64d5f77c6b3a0466a21d78cce62a1dac79063fb9b0ccebf0560c203a483672cc"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+60-elev60.9cbe427f469e.png",
+        "sha256": "9cbe427f469e96c35e251684f3d21bac272d75434b0ae34e0ec47155c159f5ed"
+      },
+      {
+        "yawDegrees": 60,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+60-elev70.01c182197e2d.png",
+        "sha256": "01c182197e2d6a67d4be404111f94f967de525be8df9b38542a2c2cae392e836"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+90-elev20.663d8ab18f10.png",
+        "sha256": "663d8ab18f10a05790d3fa7700e946539bd1d0f01c502454428ad9ca6777c842"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+90-elev30.ff22c84b9eb4.png",
+        "sha256": "ff22c84b9eb414e77b7d7d34be68d52e52dca182e9d6f7a398e55f206911973c"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+90-elev40.4895da37f594.png",
+        "sha256": "4895da37f59457bcf3092a4328a5191f2e1c955d61c8006f2d59988981d472e0"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+90-elev50.b2756e3fcffc.png",
+        "sha256": "b2756e3fcffc525aa586801dd7828544c98a5066db545496d81e1318f21dfce7"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+90-elev60.aaa50a79b62d.png",
+        "sha256": "aaa50a79b62d5ba3dec5f5ef2e589b1a28ed3356349728642d2b6739c48da2b5"
+      },
+      {
+        "yawDegrees": 90,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+90-elev70.9c616e69abbb.png",
+        "sha256": "9c616e69abbb208020fd19afd4511af92995809654f1f67a29c51cf9ea8f78f8"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+120-elev20.93a4dd2c1027.png",
+        "sha256": "93a4dd2c10273bca1b2967d097c1231a2685f9623b87261e671ec87b679ff742"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+120-elev30.7cb7e0952aaf.png",
+        "sha256": "7cb7e0952aafc1c19ea798cd8d25ec3d2aae846ab1ecc3e62f8fb71f24f0a063"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+120-elev40.8cf36366bda7.png",
+        "sha256": "8cf36366bda73e5a504ea1d730ba39aaf0e48f5e916d8a78b49a1857866beab0"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+120-elev50.07569320a3c0.png",
+        "sha256": "07569320a3c0cfe9eeb0b400172910638ecc59769e5e39655f48feb629a485ba"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+120-elev60.3c2b84ba9ebc.png",
+        "sha256": "3c2b84ba9ebcf50903e3f4cb00111896e375cfafe5998ac06fd3703ee8d70042"
+      },
+      {
+        "yawDegrees": 120,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+120-elev70.c8050cf39c9c.png",
+        "sha256": "c8050cf39c9c010780d3ba349c7fbd245309ac827cb5030fa8cef2ddb7339b39"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+150-elev20.3db253e571e3.png",
+        "sha256": "3db253e571e3dc48880eef986c4a6b1265ce6039ff1611136f0e61c8aeaa09ea"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+150-elev30.b57902e892b3.png",
+        "sha256": "b57902e892b3c1a9ce36494a6ca6d9a345a5f536b9065f431d7ba26f217fe44a"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+150-elev40.8853cad67837.png",
+        "sha256": "8853cad678378c1c9c0c21e5db6ed28732c1410c4552adc017220d2df3ce81d4"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+150-elev50.3554c52dfa77.png",
+        "sha256": "3554c52dfa77c84389ef367a4ac0edde3116ac5ec7745aa48ebb275335b66d93"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+150-elev60.ad58809db977.png",
+        "sha256": "ad58809db977101d448ae4706b4e9c985291cd68e27c0204447cda0df4daeb4e"
+      },
+      {
+        "yawDegrees": 150,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+150-elev70.f6e6b0f59cc3.png",
+        "sha256": "f6e6b0f59cc3b8726a7cf0075ba60f73015e42e1bd9a3556b0f0df414088acdb"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+180-elev20.144babd955d0.png",
+        "sha256": "144babd955d09ed008d0ab6087adecdd2ab3b2c9be7991a13d0409e49cc92936"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+180-elev30.0ae15fc49c90.png",
+        "sha256": "0ae15fc49c906caa6ba8869f6040399eb5af9eabe222d34fe36592f47f302c44"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+180-elev40.cf736dd456f0.png",
+        "sha256": "cf736dd456f0cea77125313105e58b7b0417254c044f3ac45cdab1be7c43635d"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+180-elev50.f0c19ecfbd8e.png",
+        "sha256": "f0c19ecfbd8e9e95b7b66e84a4a3b5a6723f4518707483474fc6f39d087464f7"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+180-elev60.87581629de21.png",
+        "sha256": "87581629de213e724e14ed550b60299338a7b355b60314b3fc3f2838b04eede7"
+      },
+      {
+        "yawDegrees": 180,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+180-elev70.0fb4c1f54f15.png",
+        "sha256": "0fb4c1f54f15e52137e8b5e667e4966cc0412cf77247dd3abac899e061ea0ade"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+210-elev20.c54c0bd78fe2.png",
+        "sha256": "c54c0bd78fe2b9d3dfeddd435c480cc65f8f8c33b38c0f9894a0a305de15d279"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+210-elev30.d0ef6f468fab.png",
+        "sha256": "d0ef6f468fab73b7b0a15e3bb8410e26871370c813f85176f0891462551bdc9d"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+210-elev40.cb351a892f23.png",
+        "sha256": "cb351a892f237ec17a1e8baf54e3c3bd69c4c5f717e1c1451594b3366346c10c"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+210-elev50.270bd4c26856.png",
+        "sha256": "270bd4c26856c2f7876a398a8623ac9f0a018e3a92770b4cbd0224a9485e37ff"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+210-elev60.158c3f72d38d.png",
+        "sha256": "158c3f72d38d0bee9ac0079ff6d4cd585a43603e5df6c57278b6e00ecc728c82"
+      },
+      {
+        "yawDegrees": 210,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+210-elev70.c330d247d53d.png",
+        "sha256": "c330d247d53d63a87efe18c6ffa3fd2e035a4ba63ca95971c07a00c7d743eb16"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+240-elev20.6653ddbeb5f3.png",
+        "sha256": "6653ddbeb5f304ffd20bc735a95a0db46cc724812e354e4af7025de65fe7ff6b"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+240-elev30.175a823c6f3a.png",
+        "sha256": "175a823c6f3a07ec9e04fab6bf9cb5d03e5c2114b6c2fc9c23ea3599680188e8"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+240-elev40.a54cf7b6cfba.png",
+        "sha256": "a54cf7b6cfbaef038bdd20d3fa90ec4f260d037959ce340e03d5474a9da207aa"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+240-elev50.f39d5b54ea81.png",
+        "sha256": "f39d5b54ea8159904f5bbf37c24ce9fd2cea30e5ccbf4aa36a2843b2153442f3"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+240-elev60.c8b214f24702.png",
+        "sha256": "c8b214f247026c0a5376b30d016efd5e0d45f22f02626560ee1e83ebfb5ef67a"
+      },
+      {
+        "yawDegrees": 240,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+240-elev70.3faab6a8b50e.png",
+        "sha256": "3faab6a8b50e19028571d5a68fbc7ed2ef3b30420c509d2e631eaaf237b042c9"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+270-elev20.8d17a3c9a590.png",
+        "sha256": "8d17a3c9a590b9e63da6122d513abf162e270063eaaa5b4d12c5c26fabe2c642"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+270-elev30.6ecbbb0035dd.png",
+        "sha256": "6ecbbb0035ddc4cd37901ce4af19d6c86b7339ad7ed3802bc187992c53f92ab1"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+270-elev40.cacbc2bec3f0.png",
+        "sha256": "cacbc2bec3f02b9827a9baec7acdb24c0f6dd6008dcf0424745fb2a0b59f6681"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+270-elev50.91c1fec0b41c.png",
+        "sha256": "91c1fec0b41cd6c7a63be0066dd75a01df21996c0fe82c7b6bbfe35b14b9f063"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+270-elev60.d84823db2e06.png",
+        "sha256": "d84823db2e06ad42530c05f64b01daabb054379903670d57fa159f99350466d6"
+      },
+      {
+        "yawDegrees": 270,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+270-elev70.d0c69e47377f.png",
+        "sha256": "d0c69e47377fe8bd713caa3dfc72f33f495cf9f1c05428b392a17cd250d4d6f4"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+300-elev20.d8516ed09bbd.png",
+        "sha256": "d8516ed09bbd4ddfbc21c97bd5d9e8cb5577f1829dfe2503ed1915d6d4b705b9"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+300-elev30.f01c83913ce3.png",
+        "sha256": "f01c83913ce362dfe561cab27b8ccb68a5d2fb91db891e0178f5734c49d14e17"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+300-elev40.fbf9376425bb.png",
+        "sha256": "fbf9376425bb06eb59655fadc59417e5310b309beb4e875fc78138407f63b779"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+300-elev50.a10b9cb1d661.png",
+        "sha256": "a10b9cb1d661f795a0383ccf138742854981725c69cfca7569bf6f6c218c96bd"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+300-elev60.6d47b3231ac5.png",
+        "sha256": "6d47b3231ac58e9ffe3072526d45a12ebe675605c79735df9f377205436353bc"
+      },
+      {
+        "yawDegrees": 300,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+300-elev70.9acb4c45640d.png",
+        "sha256": "9acb4c45640dfcf3411ece73b1476482b29cad3455f605e43b8c2952f2e2c0ba"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 20,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+330-elev20.0dd7180193b2.png",
+        "sha256": "0dd7180193b22d0f28610b7beb2c16207423ad0acbd3d2830853f51706bc2409"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 30,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+330-elev30.326f004d5a6d.png",
+        "sha256": "326f004d5a6df0db6196e1f167939192a80baf5b3b2ac905f12d9c87ecf690d2"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 40,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+330-elev40.0a64c33ce11e.png",
+        "sha256": "0a64c33ce11e0874bafe2b1e2299e8d39d6ae45c821af3013e4becde0fa9cb7b"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 50,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+330-elev50.617868f72b48.png",
+        "sha256": "617868f72b48f16408d9201c0ff49d0f12630b0c6d558ccdde5627febb269ca9"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 60,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+330-elev60.6cd947ee0e99.png",
+        "sha256": "6cd947ee0e9970166635b67f2edce153bd752557f0392e63464153a97fcfec1f"
+      },
+      {
+        "yawDegrees": 330,
+        "elevationDegrees": 70,
+        "image": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+330-elev70.4ab09054d829.png",
+        "sha256": "4ab09054d8291da2cdf2049d5f56f016160ace45d58d9c9fe99da20287adf8bf"
+      }
+    ]
+  },
+  "network": [
+    {
+      "url": "http://127.0.0.1:5396/assets/worker-CIHTxuxG.js",
+      "decodedPath": "/assets/worker-CIHTxuxG.js",
+      "status": 200,
+      "encodedPlusInUrl": false,
+      "sha256": "ede08a46b8e15e8ff679c88ad1bebbc1fd865a1c279cce5b8e2e98ff17ced201",
+      "bytes": 445113
+    },
+    {
+      "url": "http://127.0.0.1:5396/game-content/oblique-furniture.common-room-bench.v1.json",
+      "decodedPath": "/game-content/oblique-furniture.common-room-bench.v1.json",
+      "status": 200,
+      "encodedPlusInUrl": false,
+      "sha256": "e29e38f34772d91fcf710eb16d6a06bd1f21ae6f532188d967e009c4a011068f",
+      "bytes": 20469
+    },
+    {
+      "url": "http://127.0.0.1:5396/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+300-elev40.fbf9376425bb.png",
+      "decodedPath": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+300-elev40.fbf9376425bb.png",
+      "status": 307,
+      "encodedPlusInUrl": false,
+      "location": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw%2B300-elev40.fbf9376425bb.png"
+    },
+    {
+      "url": "http://127.0.0.1:5396/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw%2B300-elev40.fbf9376425bb.png",
+      "decodedPath": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+300-elev40.fbf9376425bb.png",
+      "status": 200,
+      "encodedPlusInUrl": true,
+      "sha256": "fbf9376425bb06eb59655fadc59417e5310b309beb4e875fc78138407f63b779",
+      "bytes": 16725
+    },
+    {
+      "url": "http://127.0.0.1:5396/assets/worker-CIHTxuxG.js",
+      "decodedPath": "/assets/worker-CIHTxuxG.js",
+      "status": 200,
+      "encodedPlusInUrl": false,
+      "sha256": "ede08a46b8e15e8ff679c88ad1bebbc1fd865a1c279cce5b8e2e98ff17ced201",
+      "bytes": 445113
+    },
+    {
+      "url": "http://127.0.0.1:5396/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+330-elev40.0a64c33ce11e.png",
+      "decodedPath": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+330-elev40.0a64c33ce11e.png",
+      "status": 307,
+      "encodedPlusInUrl": false,
+      "location": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw%2B330-elev40.0a64c33ce11e.png"
+    },
+    {
+      "url": "http://127.0.0.1:5396/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw%2B330-elev40.0a64c33ce11e.png",
+      "decodedPath": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+330-elev40.0a64c33ce11e.png",
+      "status": 200,
+      "encodedPlusInUrl": true,
+      "sha256": "0a64c33ce11e0874bafe2b1e2299e8d39d6ae45c821af3013e4becde0fa9cb7b",
+      "bytes": 18147
+    },
+    {
+      "url": "http://127.0.0.1:5396/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+00-elev40.7defe9ab4dc5.png",
+      "decodedPath": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+00-elev40.7defe9ab4dc5.png",
+      "status": 307,
+      "encodedPlusInUrl": false,
+      "location": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw%2B00-elev40.7defe9ab4dc5.png"
+    },
+    {
+      "url": "http://127.0.0.1:5396/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw%2B00-elev40.7defe9ab4dc5.png",
+      "decodedPath": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+00-elev40.7defe9ab4dc5.png",
+      "status": 200,
+      "encodedPlusInUrl": true,
+      "sha256": "7defe9ab4dc568c267793d14bf44856dad988c057ff88678b8e4c0d6ee0ef891",
+      "bytes": 15634
+    },
+    {
+      "url": "http://127.0.0.1:5396/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+30-elev40.95f1fb5090c5.png",
+      "decodedPath": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+30-elev40.95f1fb5090c5.png",
+      "status": 307,
+      "encodedPlusInUrl": false,
+      "location": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw%2B30-elev40.95f1fb5090c5.png"
+    },
+    {
+      "url": "http://127.0.0.1:5396/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw%2B30-elev40.95f1fb5090c5.png",
+      "decodedPath": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+30-elev40.95f1fb5090c5.png",
+      "status": 200,
+      "encodedPlusInUrl": true,
+      "sha256": "95f1fb5090c578aa476697f7892a9f1d52f7032a716958352ba4e2b85878c4f8",
+      "bytes": 18257
+    },
+    {
+      "url": "http://127.0.0.1:5396/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+60-elev40.a75487c09dc1.png",
+      "decodedPath": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+60-elev40.a75487c09dc1.png",
+      "status": 307,
+      "encodedPlusInUrl": false,
+      "location": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw%2B60-elev40.a75487c09dc1.png"
+    },
+    {
+      "url": "http://127.0.0.1:5396/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw%2B60-elev40.a75487c09dc1.png",
+      "decodedPath": "/assets/environment/oblique/furniture.common-room.upholstered-bench-yaw+60-elev40.a75487c09dc1.png",
+      "status": 200,
+      "encodedPlusInUrl": true,
+      "sha256": "a75487c09dc18f99526dc77265c93764fad2927b2a2beb762057ad36f99e1ab0",
+      "bytes": 16513
+    }
+  ],
+  "exposedFrameBodySha256": "a75487c09dc18f99526dc77265c93764fad2927b2a2beb762057ad36f99e1ab0",
+  "decoded": {
+    "width": 256,
+    "height": 256,
+    "nontransparent": 5781,
+    "decoder": "HTMLImageElement from actual200body Blob"
+  },
+  "syntheticFetchUsed": false,
+  "privateRendererTextureRead": false,
+  "hardwareRoiMeasured": false
+}

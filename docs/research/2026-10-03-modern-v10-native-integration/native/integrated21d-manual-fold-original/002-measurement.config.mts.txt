@@ -1,0 +1,2 @@
+﻿import artifact from 'C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003/tests/browser/playwright.artifact.config';
+export default { ...artifact, testMatch: /hud-side-rail-collapse-fullhd\.spec\.ts$/, use: { ...artifact.use, screenshot: 'only-on-failure', trace: 'retain-on-failure' } };
