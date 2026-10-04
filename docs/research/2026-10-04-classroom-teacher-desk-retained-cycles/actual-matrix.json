@@ -1,45 +1,23 @@
 {
-  "schemaVersion": 1,
-  "assetId": "furniture.classroom.teacher-desk",
-  "source": "assets/source/blender/furniture.classroom.teacher-desk.soft-light.blend",
+  "genuineBlenderVersion": [
+    5,
+    2,
+    1
+  ],
+  "engine": "CYCLES",
+  "device": "CPU",
+  "threads": 1,
+  "samples": 64,
+  "seed": 0,
+  "adaptiveSampling": false,
+  "denoising": false,
+  "denoiser": "OPENIMAGEDENOISE",
+  "denoisingUseGpu": false,
+  "viewTransform": "AgX",
+  "actualExportSeconds": 72.86902309994912,
+  "realRenderCount": 72,
   "sourceSha256": "a879bba0f04a4f8b08a66fb9e607d1d815a7a6c2a8f7cb84c1d20c7c0d26d376",
-  "resolutionPx": [
-    256,
-    256
-  ],
-  "nominalPixelsPerTile": 64,
-  "pivotPx": [
-    128,
-    128
-  ],
-  "cameraTargetTiles": [
-    1.0,
-    0.5,
-    0.6349999904632568
-  ],
-  "projection": "orthographic",
-  "yawDegrees": [
-    0,
-    30,
-    60,
-    90,
-    120,
-    150,
-    180,
-    210,
-    240,
-    270,
-    300,
-    330
-  ],
-  "elevationDegrees": [
-    20,
-    30,
-    40,
-    50,
-    60,
-    70
-  ],
+  "descriptorSha256": "2c24ed7819e3b96d97d34b9c75949df743e375cbc6b871ea285dabb925920c20",
   "frames": [
     {
       "yawDegrees": 0,
@@ -473,5 +451,7 @@
       "image": "/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+330-elev70.4053c844b3fe.png",
       "sha256": "4053c844b3fe08eef10053ae31c6db33eda31d60ba6a296d190c81c77d006ca3"
     }
-  ]
+  ],
+  "groundPlaneAdded": false,
+  "nativeAcceptance": false
 }

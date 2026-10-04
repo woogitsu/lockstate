@@ -56,8 +56,8 @@ it('retains all 94 authored desk parts and six material graphs in the 2x1 teachi
 
 it('loads the dedicated descriptor and decodes 72 complete unclipped canonical PNG poses', () => {
   const catalog = parseObliqueModuleCatalog(json('public/game-content/oblique-furniture-classroom-teacher-desk.v1.json'));
-  expect(catalog.assetId).toBe(provenance.assetId); expect(catalog.source).toBe(provenance.source);
-  expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+  expect(catalog.assetId).toBe(provenance.assetId); expect(catalog.source).toBe('assets/source/blender/furniture.classroom.teacher-desk.soft-light.blend');
+  expect(catalog.sourceSha256).toBe('a879bba0f04a4f8b08a66fb9e607d1d815a7a6c2a8f7cb84c1d20c7c0d26d376');
   expect(catalog.resolutionPx).toEqual([256, 256]); expect(catalog.pivotPx).toEqual([128, 128]);
   expect(catalog.nominalPixelsPerTile).toBe(64); expect(catalog.cameraTargetTiles).toEqual(provenance.cameraTargetTiles);
   expect(catalog.yawDegrees).toEqual(Array.from({ length: 12 }, (_, i) => i * 30));

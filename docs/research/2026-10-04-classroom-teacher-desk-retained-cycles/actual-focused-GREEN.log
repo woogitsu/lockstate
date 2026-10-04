@@ -1,0 +1,58 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-classroom-teacher-desk-cycles-20261004
+
+ ↓ tests/determinism/art-pipeline-determinism.test.ts > Blender-to-atlas pipeline determinism > produces byte-identical artefacts from two independent runs
+ ✓ tests/determinism/art-pipeline-determinism.test.ts > Blender-to-atlas pipeline determinism > pins a concrete Blender version and asserts it in every Blender entry point 8ms
+ ✓ tests/determinism/art-pipeline-determinism.test.ts > Blender-to-atlas pipeline determinism > never builds geometry through an order-unstable primitive operator 8ms
+ ✓ tests/determinism/art-pipeline-determinism.test.ts > Blender-to-atlas pipeline determinism > disables dither and pins every byte-visible image setting 0ms
+ ✓ tests/determinism/art-pipeline-determinism.test.ts > Blender-to-atlas pipeline determinism > writes every generated text file with LF endings on all platforms 7ms
+ ✓ tests/unit/oblique-classroom-chair-art.test.ts > authored classroom chair variant catalog > is reachable through the production module registry 1ms
+ ✓ tests/unit/oblique-classroom-chair-art.test.ts > authored classroom chair variant catalog > preserves the one-square authored source and all 72 supported camera poses 6ms
+ ✓ tests/unit/oblique-module-registry.test.ts > uses fallback when registry fetch fails 2ms
+ ✓ tests/unit/oblique-module-registry.test.ts > rejects duplicate asset ids in the registry contract 2ms
+ ✓ tests/unit/oblique-module-registry.test.ts > applies each concurrent caller fallback when the shared request fails 0ms
+ ✓ tests/unit/oblique-module-registry.test.ts > retries after a shared failure and does not mutate the fallback map 1ms
+ ✓ tests/unit/classroom-teacher-desk-retained-cycles-production.test.ts > retains all133 parts/55 real contacts and permits only the twelve explicitly authored BaseRGBA/Roughness socket repairs 17ms
+ ✓ tests/unit/classroom-teacher-desk-retained-cycles-production.test.ts > preserves old72 and requires genuine saved repaired72 plus four exact independent renders 124ms
+ ✓ tests/unit/classroom-teacher-desk-retained-cycles-production.test.ts > requires real saved contact/authored-shader/light/dispatch/image/consumer/registry/callback REDs and exact restore 19ms
+ ✓ tests/unit/oblique-classroom-chair-context.test.ts > existing chair gets Classroom art only inside an authoritative Classroom rectangle > selects 'furniture.classroom.student-chair' for 'built' chair 4ms
+ ✓ tests/unit/oblique-classroom-chair-context.test.ts > existing chair gets Classroom art only inside an authoritative Classroom rectangle > selects 'furniture.chair.wooden' for 'built' chair 1ms
+ ✓ tests/unit/oblique-classroom-chair-context.test.ts > existing chair gets Classroom art only inside an authoritative Classroom rectangle > selects 'furniture.chair.wooden' for 'built' chair 1ms
+ ✓ tests/unit/oblique-classroom-chair-context.test.ts > existing chair gets Classroom art only inside an authoritative Classroom rectangle > selects 'furniture.chair.wooden' for 'built' chair 0ms
+ ✓ tests/unit/oblique-classroom-chair-context.test.ts > existing chair gets Classroom art only inside an authoritative Classroom rectangle > selects 'furniture.chair.wooden' for 'planned' chair 1ms
+ ✓ tests/unit/oblique-classroom-teacher-desk-modern-consumer.test.ts > selects genuine authored-shader teacher desk in the existing separately paid Classroom q0 free slot 7ms
+ ✓ tests/unit/oblique-classroom-teacher-desk-modern-consumer.test.ts > selects genuine authored-shader teacher desk in the existing separately paid Classroom q1 free slot 2ms
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > selects ALL FOUR literal completed Classroom chairs q0 with their canonical source60/e40 frame 7ms
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > selects ALL FOUR literal completed Classroom chairs q1 with their canonical source60/e40 frame 2ms
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > preserves ordinary chair art for planned Classroom objects 1ms
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > preserves ordinary chair art for building Classroom objects 1ms
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > preserves default/Reception/other-room chairs and the entire Classroom footprint boundary 3ms
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > keeps the existing teacher desk and other furniture unchanged 0ms
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > registers the selected asset once with its real source and complete descriptor 2ms
+ ✓ tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > uses refuse trolley for completed Garbage Room bin orientation 0 4ms
+ ✓ tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > uses refuse trolley for completed Garbage Room bin orientation 1 1ms
+ ✓ tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > uses refuse trolley for completed Garbage Room bin orientation 2 1ms
+ ✓ tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > uses refuse trolley for completed Garbage Room bin orientation 3 0ms
+ ✓ tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > preserves Yard and ordinary bin presentation and excludes unfinished bins 2ms
+ ✓ tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > uses teaching desk only when the entire rotated footprint fits, orientation 0 1ms
+ ✓ tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > uses teaching desk only when the entire rotated footprint fits, orientation 1 1ms
+ ✓ tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > uses teaching desk only when the entire rotated footprint fits, orientation 2 1ms
+ ✓ tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > uses teaching desk only when the entire rotated footprint fits, orientation 3 1ms
+ ✓ tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > preserves generic desks and Classroom chairs, including planned desks 1ms
+ ✓ tests/unit/oblique-garbage-classroom-context.test.ts > authored room furniture in the actual projection > loads both selected assets from the real runtime registry and matching descriptors 3ms
+ ✓ tests/unit/oblique-classroom-student-chair-art.test.ts > retains all25 authored school-chair parts and eight stored graphs in the1x1 writing chair 12ms
+ ✓ tests/unit/oblique-classroom-student-chair-art.test.ts > loads the dedicated descriptor and decodes 72 complete unclipped canonical PNG poses 414ms
+ ✓ tests/unit/oblique-classroom-teacher-desk-art.test.ts > retains all 94 authored desk parts and six material graphs in the 2x1 teaching workstation 9ms
+ ✓ tests/unit/oblique-classroom-teacher-desk-art.test.ts > loads the dedicated descriptor and decodes 72 complete unclipped canonical PNG poses 420ms
+ ✓ tests/foundation/research-index-contract.test.ts > research index contract > finds records and rows to check 11ms
+ ✓ tests/foundation/research-index-contract.test.ts > research index contract > gives every record in docs/research/ exactly one row 7ms
+ ✓ tests/foundation/research-index-contract.test.ts > research index contract > points every row at a file docs/research/ holds 17ms
+ ✓ tests/foundation/research-index-contract.test.ts > research index contract > names every collection of records that lives in a subdirectory 2325ms
+ ✓ tests/foundation/research-index-contract.test.ts > research index contract > keeps every row inside the one table 3ms
+ ✓ tests/integration/native-classroom-desk-preparation.test.ts > buys a separate public orientation0 desk inside literal Classroom q0 and roundtrips whole V8 235ms
+ ✓ tests/integration/native-classroom-desk-preparation.test.ts > buys a separate public orientation0 desk inside literal Classroom q1 and roundtrips whole V8 172ms
+
+ Test Files  12 passed (12)
+      Tests  49 passed | 1 skipped (50)
+   Start at  02:51:19
+   Duration  4.71s (transform 2.99s, setup 0ms, import 6.23s, tests 3.88s, environment 1ms)

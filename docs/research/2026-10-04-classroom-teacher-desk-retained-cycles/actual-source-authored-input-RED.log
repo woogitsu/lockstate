@@ -1,0 +1,22 @@
+00:01.109  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-cycles-20261004\assets\source\blender\furniture.classroom.teacher-desk.soft-light.blend"
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-cycles-20261004\tooling\blender\render-classroom-teacher-desk-cycles.py", line 115, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-cycles-20261004\tooling\blender\render-classroom-teacher-desk-cycles.py", line 75, in main
+    scene,camera = configure()
+                   ~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-cycles-20261004\tooling\blender\render-classroom-teacher-desk-cycles.py", line 37, in configure
+    prepare.verify_scene(scene, scene.camera, EXPECTED)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-cycles-20261004\tooling\blender\prepare-classroom-teacher-desk-cycles.py", line 94, in verify_scene
+    verify_exact_graph_repair(expected['literalStoredGraphs'], audit.materials_record())
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-cycles-20261004\tooling\blender\prepare-classroom-teacher-desk-cycles.py", line 90, in verify_exact_graph_repair
+    raise ValueError('Teacher full shader graph changes exceed exact authored RGBA/roughness repair')
+ValueError: Teacher full shader graph changes exceed exact authored RGBA/roughness repair
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-classroom-teacher-desk-cycles-20261004\tooling\blender\render-classroom-teacher-desk-cycles.py', exiting.
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
