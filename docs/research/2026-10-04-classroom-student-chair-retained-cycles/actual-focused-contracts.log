@@ -1,0 +1,83 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-interior-door-cycles-20261004
+
+ ↓ tests/determinism/art-pipeline-determinism.test.ts > Blender-to-atlas pipeline determinism > produces byte-identical artefacts from two independent runs
+ ✓ tests/determinism/art-pipeline-determinism.test.ts > Blender-to-atlas pipeline determinism > pins a concrete Blender version and asserts it in every Blender entry point 8ms
+ ✓ tests/determinism/art-pipeline-determinism.test.ts > Blender-to-atlas pipeline determinism > never builds geometry through an order-unstable primitive operator 12ms
+ ✓ tests/determinism/art-pipeline-determinism.test.ts > Blender-to-atlas pipeline determinism > disables dither and pins every byte-visible image setting 0ms
+ ✓ tests/determinism/art-pipeline-determinism.test.ts > Blender-to-atlas pipeline determinism > writes every generated text file with LF endings on all platforms 10ms
+ ✓ tests/unit/oblique-classroom-chair-art.test.ts > authored classroom chair variant catalog > is reachable through the production module registry 5ms
+ ✓ tests/unit/oblique-classroom-chair-art.test.ts > authored classroom chair variant catalog > preserves the one-square authored source and all 72 supported camera poses 27ms
+ ✓ tests/unit/classroom-student-chair-retained-cycles-source.test.ts > retains complete Student chair physical source and every authored shader input 5ms
+ ✓ tests/unit/classroom-student-chair-retained-cycles-source.test.ts > uses only this saved source bounded CPU128 profile after genuine noisy64 evidence 3ms
+ ✓ tests/unit/classroom-student-chair-retained-cycles-production.test.ts > preserves all33 raw parts and complete eight authored material graphs including the unused fake-user original 15ms
+ ✓ tests/unit/classroom-student-chair-retained-cycles-production.test.ts > retains every historical72 PNG while actual saved-source72 agrees with two opened samples and four real repeats 142ms
+ ✓ tests/unit/classroom-student-chair-retained-cycles-production.test.ts > requires real saved-source/material/light/dispatch/decoded-PNG/current-consumer/callback RED and exact restore 52ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > medical oblique object mapping > maps object.medical-bed to registered asset 1ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > medical oblique object mapping > maps object.medicine-cabinet to registered asset 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > medical oblique object mapping > maps object.security-console to registered asset 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > medical oblique object mapping > maps object.loading-dock-door to registered asset 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > medical oblique object mapping > maps object.utility-panel to registered asset 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > medical oblique object mapping > maps object.bookshelf to registered asset 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > medical oblique object mapping > maps object.prep-counter to registered asset 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > medical oblique object mapping > maps object.waste-bin to registered asset 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > medical oblique object mapping > maps object.desk to registered asset 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > medical oblique object mapping > maps object.sink to registered asset 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > medical oblique object mapping > resolves mapped catalogs and fails closed for unknown ids 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > fails closed when the mapped asset is absent from the registry 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > registry contains both medical mapped assets 2ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > oblique canonical aliases > resolves wall.interior.module 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > oblique canonical aliases > resolves wall.interior.module 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > oblique canonical aliases > resolves wall.interior.module 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > oblique canonical aliases > resolves wall.interior.module 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > oblique canonical aliases > resolves door.interior 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > oblique canonical aliases > resolves door.interior 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > oblique canonical aliases > resolves door.interior 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > oblique canonical aliases > resolves door.interior 0ms
+ ✓ tests/unit/oblique-object-mapping.test.ts > oblique canonical aliases > fails closed for unknown ids 0ms
+ ✓ tests/unit/oblique-module-registry.test.ts > uses fallback when registry fetch fails 7ms
+ ✓ tests/unit/oblique-module-registry.test.ts > rejects duplicate asset ids in the registry contract 2ms
+ ✓ tests/unit/oblique-module-registry.test.ts > applies each concurrent caller fallback when the shared request fails 1ms
+ ✓ tests/unit/oblique-module-registry.test.ts > retries after a shared failure and does not mutate the fallback map 1ms
+ ✓ tests/unit/room-template-build-plan.test.ts > one deterministic room template build plan > keeps cell-basic wall orders on the exact preview squares 2ms
+ ✓ tests/unit/room-template-build-plan.test.ts > one deterministic room template build plan > keeps cell-large wall orders on the exact preview squares 0ms
+ ✓ tests/unit/room-template-build-plan.test.ts > one deterministic room template build plan > keeps shower-room wall orders on the exact preview squares 0ms
+ ✓ tests/unit/room-template-build-plan.test.ts > one deterministic room template build plan > orders every square wall, one north-facing door and the furniture after the shell 1ms
+ ✓ tests/unit/room-template-build-plan.test.ts > one deterministic room template build plan > keeps mirrored geometry and identity stable for a queued command restored later 0ms
+ ✓ tests/unit/oblique-classroom-chair-context.test.ts > existing chair gets Classroom art only inside an authoritative Classroom rectangle > selects 'furniture.classroom.student-chair' for 'built' chair 4ms
+ ✓ tests/unit/oblique-classroom-chair-context.test.ts > existing chair gets Classroom art only inside an authoritative Classroom rectangle > selects 'furniture.chair.wooden' for 'built' chair 1ms
+ ✓ tests/unit/oblique-classroom-chair-context.test.ts > existing chair gets Classroom art only inside an authoritative Classroom rectangle > selects 'furniture.chair.wooden' for 'built' chair 2ms
+ ✓ tests/unit/oblique-classroom-chair-context.test.ts > existing chair gets Classroom art only inside an authoritative Classroom rectangle > selects 'furniture.chair.wooden' for 'built' chair 2ms
+ ✓ tests/unit/oblique-classroom-chair-context.test.ts > existing chair gets Classroom art only inside an authoritative Classroom rectangle > selects 'furniture.chair.wooden' for 'planned' chair 0ms
+ ✓ tests/unit/oblique-classroom-teacher-desk-modern-consumer.test.ts > selects genuine authored-shader teacher desk in the existing separately paid Classroom q0 free slot 8ms
+ ✓ tests/unit/oblique-classroom-teacher-desk-modern-consumer.test.ts > selects genuine authored-shader teacher desk in the existing separately paid Classroom q1 free slot 2ms
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > selects ALL FOUR literal completed Classroom chairs q0 with their canonical source60/e40 frame 8ms
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > selects ALL FOUR literal completed Classroom chairs q1 with their canonical source60/e40 frame 2ms
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > preserves ordinary chair art for planned Classroom objects 1ms
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > preserves ordinary chair art for building Classroom objects 0ms
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > preserves default/Reception/other-room chairs and the entire Classroom footprint boundary 4ms
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > keeps the existing teacher desk and other furniture unchanged 1ms
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > registers the selected asset once with its real source and complete descriptor 2ms
+ ✓ tests/unit/oblique-world-projection.test.ts > oblique projection of an actual simulation snapshot > opens furnishing-blocking near walls in kitchen-basic 11ms
+ ✓ tests/unit/oblique-world-projection.test.ts > oblique projection of an actual simulation snapshot > opens furnishing-blocking near walls in laundry-basic 1ms
+ ✓ tests/unit/oblique-world-projection.test.ts > oblique projection of an actual simulation snapshot > lowers only the near perimeter wall of a furnished cell as yaw reverses 4ms
+ ✓ tests/unit/oblique-world-projection.test.ts > oblique projection of an actual simulation snapshot > cuts a legacy near wall while keeping the adjacent door at full height 1ms
+ ✓ tests/unit/oblique-world-projection.test.ts > oblique projection of an actual simulation snapshot > reads loaded ground, distinct wall and door edges, a whole bed, and the actor without duplicating a finished wall 1ms
+ ✓ tests/unit/oblique-world-projection.test.ts > oblique projection of an actual simulation snapshot > sorts by view direction when the player turns the camera 1ms
+ ✓ tests/unit/oblique-interior-north-door-pose-completion.test.ts > retained interior door descriptor reaches actual back-facing edge consumers > existing public BasicCell q0 recipe really orders the observed21,11 north door owner 3ms
+ ✓ tests/unit/oblique-interior-north-door-pose-completion.test.ts > retained interior door descriptor reaches actual back-facing edge consumers > north preserves source, complete signed pose grid and all delivered PNG hashes 14ms
+ ✓ tests/unit/oblique-interior-north-door-pose-completion.test.ts > retained interior door descriptor reaches actual back-facing edge consumers > west preserves source, complete signed pose grid and all delivered PNG hashes 14ms
+ ✓ tests/unit/oblique-interior-north-door-pose-completion.test.ts > retained interior door descriptor reaches actual back-facing edge consumers > camera 45 selects authored 45 for BOTH actual north/west doors without altering picking 10ms
+ ✓ tests/unit/oblique-interior-north-door-pose-completion.test.ts > retained interior door descriptor reaches actual back-facing edge consumers > camera 135 selects authored 135 for BOTH actual north/west doors without altering picking 1ms
+ ✓ tests/unit/oblique-interior-north-door-pose-completion.test.ts > retained interior door descriptor reaches actual back-facing edge consumers > camera 225 selects authored -135 for BOTH actual north/west doors without altering picking 1ms
+ ✓ tests/unit/oblique-interior-north-door-pose-completion.test.ts > retained interior door descriptor reaches actual back-facing edge consumers > camera 315 selects authored -45 for BOTH actual north/west doors without altering picking 1ms
+ ✓ tests/unit/square-wall-retained-cycles-production.test.ts > existing full square wall consumers require the approved-material source at both real canonical yaws and whole footprint 77ms
+ ✓ tests/unit/square-wall-retained-cycles-production.test.ts > retains original full source and all historical72 frames while publishing the actual new72 and four exact repeats 120ms
+ ✓ tests/unit/square-wall-retained-cycles-production.test.ts > requires genuine semantic/dispatch/hash-valid-PNG/world consumer negatives and exact restoration 11ms
+ ✓ tests/unit/oblique-classroom-student-chair-art.test.ts > retains all25 authored school-chair parts and eight stored graphs in the1x1 writing chair 18ms
+ ✓ tests/unit/oblique-classroom-student-chair-art.test.ts > loads the dedicated descriptor and decodes 72 complete unclipped canonical PNG poses 682ms
+
+ Test Files  14 passed (14)
+      Tests  74 passed | 1 skipped (75)
+   Start at  03:38:06
+   Duration  1.39s (transform 1.87s, setup 0ms, import 4.43s, tests 1.33s, environment 1ms)

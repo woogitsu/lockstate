@@ -1,0 +1,49 @@
+[
+  {
+    "label": "actual-typecheck-game",
+    "command": [
+      "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "node_modules/typescript/bin/tsc",
+      "-b",
+      "--pretty",
+      "false"
+    ],
+    "exitCode": 0
+  },
+  {
+    "label": "actual-typecheck-tools",
+    "command": [
+      "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "node_modules/typescript/bin/tsc",
+      "-b",
+      "tsconfig.tools.json",
+      "--pretty",
+      "false"
+    ],
+    "exitCode": 0
+  },
+  {
+    "label": "actual-focused-contracts",
+    "command": [
+      "C:\\Users\\matma\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/unit/classroom-student-chair-retained-cycles-source.test.ts",
+      "tests/unit/classroom-student-chair-retained-cycles-production.test.ts",
+      "tests/unit/oblique-classroom-student-chair-context.test.ts",
+      "tests/unit/oblique-classroom-student-chair-art.test.ts",
+      "tests/unit/oblique-classroom-chair-context.test.ts",
+      "tests/unit/oblique-classroom-chair-art.test.ts",
+      "tests/unit/oblique-classroom-teacher-desk-modern-consumer.test.ts",
+      "tests/unit/oblique-interior-north-door-pose-completion.test.ts",
+      "tests/unit/square-wall-retained-cycles-production.test.ts",
+      "tests/unit/oblique-world-projection.test.ts",
+      "tests/unit/oblique-object-mapping.test.ts",
+      "tests/unit/oblique-module-registry.test.ts",
+      "tests/unit/room-template-build-plan.test.ts",
+      "tests/determinism/art-pipeline-determinism.test.ts",
+      "--reporter=verbose"
+    ],
+    "exitCode": 0
+  }
+]

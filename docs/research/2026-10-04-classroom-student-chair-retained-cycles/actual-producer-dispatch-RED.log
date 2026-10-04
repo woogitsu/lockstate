@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-interior-door-cycles-20261004\tooling\blender\render-classroom-student-chair-cycles.py", line 231, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-interior-door-cycles-20261004\tooling\blender\render-classroom-student-chair-cycles.py", line 151, in main
+    scene,camera = configure()
+                   ~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-interior-door-cycles-20261004\tooling\blender\render-classroom-student-chair-cycles.py", line 67, in configure
+    raise ValueError('Classroom student chair Cycles dedicated producer dispatch changed')
+ValueError: Classroom student chair Cycles dedicated producer dispatch changed
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-interior-door-cycles-20261004\tooling\blender\render-classroom-student-chair-cycles.py', exiting.
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
