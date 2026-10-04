@@ -1,0 +1,26 @@
+{
+  "base": "25f8dbc45138b2c14c05ee98dd71789321bc7c25",
+  "catalogSource": "assets/source/blender/furniture.kitchen.prep-counter.soft-light.blend",
+  "catalogSourceSha256": "91a5aa7e9027221e36b115a43f23f342596d927eda4523bc68964d5e0a308d1d",
+  "actual72PNGHashesValid": true,
+  "frames": [
+    {
+      "yawDegrees": 30,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+30-elev40.d5242c727612.png",
+      "sha256": "d5242c727612bd9f13965b92a72ab611700db4b4c9675989fe402db0e79e93d5"
+    },
+    {
+      "yawDegrees": 60,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+60-elev40.cb2f68bf10ba.png",
+      "sha256": "cb2f68bf10ba42b528ed58cd6e3d4562a99f49ec1c20ec67cbe71d325790177f"
+    },
+    {
+      "yawDegrees": 300,
+      "elevationDegrees": 40,
+      "image": "/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev40.9714eeca9737.png",
+      "sha256": "9714eeca9737699fa2b641bab02d5a24251b7d7d7266e861aceb5f1c23e23fb6"
+    }
+  ]
+}

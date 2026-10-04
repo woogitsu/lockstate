@@ -7,6 +7,18 @@ import { decodeWorkerToMainMessage } from '../../src/simulation/protocol/decode'
 import { openCameraControls } from './public-camera-controls';
 import type { OwnedObjectSnapshotData } from './owned-object-worker-evidence';
 const pins = {
+  prep: {
+    assetId: 'furniture.kitchen.prep-counter.variants', descriptorPath: '/game-content/oblique-furniture.kitchen-prep-counter.v1.json',
+    source: 'assets/source/blender/furniture.kitchen.prep-counter.soft-light.blend',
+    sourceSha256: '91a5aa7e9027221e36b115a43f23f342596d927eda4523bc68964d5e0a308d1d',
+    descriptorLfSha256: '432f7e7a55b5255104ca82877d6b61ec837cef60872beb04ac8da6ca64a0b003',
+    exposedFrame: '/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+60-elev40.cb2f68bf10ba.png',
+    exposedSha256: 'cb2f68bf10ba42b528ed58cd6e3d4562a99f49ec1c20ec67cbe71d325790177f',
+    rearFrame: '/assets/environment/oblique/furniture.kitchen.prep-counter.variants-yaw+300-elev40.9714eeca9737.png',
+    rearSha256: '9714eeca9737699fa2b641bab02d5a24251b7d7d7266e861aceb5f1c23e23fb6',
+    target: [1,.5,.8100000619888306], prefix: '/assets/environment/oblique/furniture.kitchen.prep-counter.variants-',
+  },
+
   stove: {
     assetId: 'furniture.kitchen.stove.variants', descriptorPath: '/game-content/oblique-furniture.kitchen-stove.v1.json',
     source: 'assets/source/blender/furniture.kitchen.stove.soft-light.blend',

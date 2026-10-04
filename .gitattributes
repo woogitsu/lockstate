@@ -84,3 +84,6 @@ docs/research/2026-10-04-canteen-modern-native-observers/check-*.cjs.txt -text
 docs/research/2026-10-04-manual-panels-hidden/raw/** -text
 docs/research/2026-10-04-manual-panels-hidden/source-preservation.cjs.txt -text
 docs/research/2026-10-04-template-order-identity-admission/raw/** -text
+
+# Own executed evidence remains byte-identical across Windows checkouts.
+docs/research/2026-10-04-kitchen-prep-modern-material-observer/** -text
