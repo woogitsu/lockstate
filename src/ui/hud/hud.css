@@ -1375,7 +1375,7 @@
    `display: contents` only flattens the host slot for this one ordering; the
    cards keep their own scroll containers and their existing width bounds. */
 @media (min-width: 1920px) and (min-height: 1080px) {
-  .hud__rail:has(.hud-build:not([hidden])) .hud__aside {
+  .hud__rail:has(.hud-build:not([hidden])) .hud__aside:not([hidden]) {
     display: contents;
   }
 

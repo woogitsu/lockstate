@@ -1,0 +1,8 @@
+﻿const fs=require('node:fs'),cp=require('node:child_process'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const path='src/ui/hud/hud.css',before=cp.execFileSync('git',['show','7eb14eecfcf5003dfa349d00ac3d4a06b262c464:'+path]);
+const current=fs.readFileSync(path),text=before.toString('utf8'),normalized=current.toString('utf8').replaceAll('\r\n','\n');
+const oldSelector='.hud__rail:has(.hud-build:not([hidden])) .hud__aside {',newSelector='.hud__rail:has(.hud-build:not([hidden])) .hud__aside:not([hidden]) {';
+assert.equal(normalized,text.replace(oldSelector,newSelector));
+const screenshot='C:/Users/matma/AppData/Local/Temp/lockstate-modern-integrated-21d-fit-public-collapse-native-20261004/camera-a-template-fit.nati-54b54-fit-disclosure-held-release/actual-open-camera-whole-q1-mirrored-preview.png';
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+console.log(JSON.stringify({kind:'source-preservation-and-existing-visual-receipt-not-native-guard',base:'7eb14eecfcf5003dfa349d00ac3d4a06b262c464',oldSelector,newSelector,sourceChangeExactlyOneSuffix:true,otherStylesheetBytesUnchangedAfterNormalization:true,originalGitCssSha256:sha(before),currentCanonicalLfCssSha256:sha(Buffer.from(normalized)),screenshot,actualOriginalScreenshotSha256:sha(fs.readFileSync(screenshot)),nativeExecuted:false,sourceDisconnectionExecuted:false},null,2));
