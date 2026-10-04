@@ -99,6 +99,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 — which is every shape this paragraph and the one above it describe.
 
 | Record | Question it answered | Decision it fed |
+| [2026-10-04 Angled missed primary release](./2026-10-04-oblique-missed-primary-release/README.md) | Can a later camera release purchase an abandoned primary square-wall run? | Issue2030; actual Phaser/main/worker original2RED, no native claim; narrow input recovery and exact restoration pending. |
 | --- | --- | --- |
 | [2026-10-04 Full-template order identity admission](./2026-10-04-template-order-identity-admission/README.md) | Can a rotated mirrored plan begin before all its generated IDs are available? | Issue#2031 actual packed kernel4RED/2legal; full identity guard8GREEN, real producer6RED/2legal and exact-byte restore8GREEN,130 neighboring checks. No UI-native claim. |
 | [2026-10-04 Manual panels hidden](./2026-10-04-manual-panels-hidden/README.md) | Why does public Hide the panels leave Save content painted in the FullHD active Build rail? | Opened genuineUI200 screenshot and exact CSS cascade cause; one-selector fix and real DOM/wholeV10 native regression prepared, execution pending. |
