@@ -7,7 +7,7 @@ import { parseObliqueModuleCatalog } from '../../src/rendering/assets/oblique-mo
 import { obliqueAssetIdForObject } from '../../src/rendering/assets/oblique-object-mapping';
 const root = new URL('../../', import.meta.url);
 const hash = (bytes: Buffer): string => createHash('sha256').update(bytes).digest('hex');
-it('publishes the retained medical bed assembly with outward physical wheels and rails and canonical decoded pose bytes', () => {
+it('preserves the original medical bed assembly with outward wheels and rails and archived canonical decoded pose bytes', () => {
   const provenance = JSON.parse(readFileSync(new URL('assets/source/blender/furniture.medical-bed.angled-detail.provenance.json', root), 'utf8')) as {
     originalSource: string; originalSourceSha256: string; source: string; sourceSha256: string;
     footprintTiles: number[]; cameraTargetTiles: number[]; originalSceneMeshCount: number;
@@ -55,7 +55,7 @@ it('publishes the retained medical bed assembly with outward physical wheels and
   expect(provenance.footprintTiles).toEqual([1,2]);
   expect(defaultObjectRegistry.getById('object.medical-bed')!.footprint).toEqual({width:1,height:2});
   expect(obliqueAssetIdForObject('object.medical-bed')).toBe('furniture.medical-bed.variants');
-  const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL('public/game-content/oblique-furniture.medical-bed.v1.json',root),'utf8')));
+  const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL('assets/source/blender/furniture.medical-bed.workbench-descriptor.v1.json',root),'utf8')));
   expect(catalog.assetId).toBe('furniture.medical-bed.variants');
   expect(catalog.source).toBe(provenance.source);
   expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
