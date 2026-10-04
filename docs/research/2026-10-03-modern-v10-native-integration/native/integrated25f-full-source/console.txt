@@ -1,0 +1,1451 @@
+pnpm : $ vitest run "--maxWorkers=4" "--reporter=default" "--reporter=json" "--outputFile.json=" "C:\\Users\\matma\\App
+Data\\Local\\Temp\\lockstate-modern-combined-25f-full-source-20261004.json"
+At line:3 char:1
++ pnpm --config.verify-deps-before-run=false test --maxWorkers=4 --repo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "-...-20261004.json":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003
+
+stdout | tests/integration/room-template-order-id-admission.test.ts > refuses the complete rotated mirrored template before any mutation when a real unrelated order owns '0-wall-005', load=false
+{"suffix":"0-wall-005","load":false,"tick":0,"orders":1,"balance":24920,"pending":0}
+
+stdout | tests/integration/room-template-order-id-admission.test.ts > refuses the complete rotated mirrored template before any mutation when a real unrelated order owns '0-wall-005', load=true
+{"suffix":"0-wall-005","load":true,"tick":0,"orders":1,"balance":24920,"pending":0}
+
+stdout | tests/integration/room-template-order-id-admission.test.ts > refuses the complete rotated mirrored template before any mutation when a real unrelated order owns '2-object-000', load=false
+{"suffix":"2-object-000","load":false,"tick":0,"orders":1,"balance":24920,"pending":0}
+
+stdout | tests/integration/room-template-order-id-admission.test.ts > refuses the complete rotated mirrored template before any mutation when a real unrelated order owns '2-object-000', load=true
+{"suffix":"2-object-000","load":true,"tick":0,"orders":1,"balance":24920,"pending":0}
+
+ ✓ tests/integration/room-template-order-id-admission.test.ts (8 tests) 293ms
+ ✓ tests/foundation/comment-symbol-existence-contract.test.ts (5 tests) 4094ms
+     ✓ resolves every member path and screaming constant cited in src/ and tests/  1505ms
+     ✓ resolves every member path and screaming constant cited in the docs guides  1384ms
+     ✓ resolves every member path and screaming constant cited in the stylesheets  1203ms
+ ✓ tests/determinism/restore-mid-walk-exactness.test.ts (6 tests) 8080ms
+     ✓ every save across a day of the timetable is a fixed point and continues to the same state  2272ms
+     ✓ a save taken while guards walk to their posts and search the cells  5116ms
+     ✓ 24 prisoners at the tick-3461 block change: a save 1 tick before it serves a different set  402ms
+ ✓ tests/integration/room-template-completed-row-access.test.ts (48 tests) 7963ms
+ ✓ tests/integration/incident-trigger-reachability.test.ts (20 tests) 10514ms
+     ✓ stays clear for twelve in-game days with one guard, and again with none  375ms
+     ✓ stops rioting on every seed tried, at four, eight and sixteen times its bed capacity  3479ms
+     ✓ still riots six times with no guard at all, exactly as often as before  1323ms
+     ✓ riots at sixteen prisoners and once more at seventeen, on every one of those seeds -- since #586 there is no quiet side  2678ms
+     ✓ riots at ninety-six prisoners with a guard for every eight of them, and since #586 the rooms built for that many no longer stop it  1013ms
+ ✓ tests/integration/room-template-completed-furniture-access.test.ts (34 tests) 6264ms
+ ✓ tests/integration/room-template-legacy-occupied-history.test.ts (37 tests) 6002ms
+   ✓ keeps occupied legacy row access and readiness through atomic refusal, then releases and redoes the same saved geometry, mirror=false turn=+0  430ms
+   ✓ keeps occupied legacy row access and readiness through atomic refusal, then releases and redoes the same saved geometry, mirror=false turn=1  343ms
+   ✓ keeps occupied legacy row access and readiness through atomic refusal, then releases and redoes the same saved geometry, mirror=false turn=2  315ms
+   ✓ keeps occupied legacy row access and readiness through atomic refusal, then releases and redoes the same saved geometry, mirror=false turn=3  315ms
+   ✓ keeps occupied legacy row access and readiness through atomic refusal, then releases and redoes the same saved geometry, mirror=true turn=+0  320ms
+   ✓ keeps occupied legacy row access and readiness through atomic refusal, then releases and redoes the same saved geometry, mirror=true turn=1  321ms
+   ✓ keeps occupied legacy row access and readiness through atomic refusal, then releases and redoes the same saved geometry, mirror=true turn=2  310ms
+   ✓ keeps occupied legacy row access and readiness through atomic refusal, then releases and redoes the same saved geometry, mirror=true turn=3  307ms
+ ✓ tests/integration/room-template-legacy-entrance-collision.test.ts (176 tests) 5848ms
+ ✓ tests/integration/room-template-rotated-history.test.ts (179 tests) 18027ms
+   ✓ 'cell-row-four' mirrored=false turn=+0 keeps queued, pending, completed and undone geometry across encoded saves  302ms
+   ✓ 'cell-row-four' mirrored=false turn=1 keeps queued, pending, completed and undone geometry across encoded saves  301ms
+   ✓ 'cell-row-four' mirrored=true turn=1 keeps queued, pending, completed and undone geometry across encoded saves  302ms
+ ✓ tests/unit/staff-chair-material-observer.test.ts (13 tests) 4042ms
+     ✓ rejects every genuine default chair and Staff desk body at the same >40 acceptance floor  569ms
+     ✓ rejects every whole source body including footing in oblique-square-brick-full-wall.v1.json  440ms
+     ✓ rejects every whole source body including footing in oblique-wall-cutaway.v1.json  455ms
+     ✓ rejects every whole source body including footing in oblique-wall-west.v1.json  451ms
+     ✓ rejects every whole source body including footing in oblique-wall-west-cutaway.v1.json  429ms
+     ✓ rejects every whole source body including footing in oblique-cell-door-open.v1.json  426ms
+     ✓ rejects every whole source body including footing in oblique-cell-door-north-cutaway.v1.json  406ms
+     ✓ rejects every whole source body including footing in oblique-cell-door-west-full.v1.json  418ms
+     ✓ rejects every whole source body including footing in oblique-cell-door-west-cutaway.v1.json  410ms
+ ✓ tests/integration/economy-loan-recovery.test.ts (5 tests) 4054ms
+     ✓ funds its own tail out of the standing overdraft and is not locked at all  811ms
+     ✓ takes nothing back from a prison that borrows and never starts earning  749ms
+     ✓ spends the standing shortfall with no press, out of the facility rather than out of a loan  655ms
+     ✓ leaves the facility untouched when the thirteen orders are never placed  1229ms
+     ✓ houses a prisoner on the second day once the loan clears the queue as well as the plank  609ms
+ ✓ tests/integration/room-template-economy-transitions.test.ts (36 tests) 4454ms
+   ✓ charges the worker whole-template quote once per actual completed cell-row-four build after encoded Load  322ms
+ ✓ tests/integration/occupied-template-refusal-undo-selection.test.ts (24 tests) 3693ms
+ ✓ tests/foundation/deploy-secret-gate-contract.test.ts (20 tests) 3317ms
+     ✓ passes a clean bundle that carries a publishable key and an anon JWT  436ms
+     ✓ refuses a bundle containing a secret key  350ms
+     ✓ refuses a bundle containing a service_role JWT  398ms
+     ✓ refuses a bundle containing the literal service_role, whatever spliced it in  337ms
+     ✓ refuses a bundle carrying the value of a non-public deploy credential  341ms
+ ✓ tests/integration/room-template-completed-adjacency.test.ts (49 tests) 3373ms
+stdout | tests/unit/prisoners-actor-tier-scale.test.ts > actor-tier scale: 250 actors > completes 800 ticks without crashing or violating need bounds
+[prisoners actor-tier] actors=250 ticks=800 wallMs=102.7
+
+ ✓ tests/unit/cell-toilet-material-observer.test.ts (14 tests) 3613ms
+     ✓ rejects all72 real whole-body frames in oblique-square-brick-full-wall.v1.json at the same compound100/8 floors  869ms
+     ✓ rejects all72 real whole-body frames in oblique-wall-cutaway.v1.json at the same compound100/8 floors  860ms
+     ✓ rejects all72 real whole-body frames in oblique-reception-employee-desk.v1.json at the same compound100/8 floors  860ms
+     ✓ rejects all72 real whole-body frames in oblique-furniture-office-desk-generic.v1.json at the same compound100/8 floors  313ms
+     ✓ rejects all72 real whole-body frames in oblique-furniture.cell-cot.v1.json at the same compound100/8 floors  311ms
+stdout | tests/unit/prisoners-actor-tier-scale.test.ts > actor-tier scale: 1000 actors > completes 800 ticks without crashing or violating need bounds
+[prisoners actor-tier] actors=1000 ticks=800 wallMs=292.6
+
+ ✓ tests/integration/room-template-occupied-cancel-atomicity.test.ts (27 tests) 3281ms
+ ✓ tests/unit/room-template-session.test.ts (54 tests) 2490ms
+ ✓ tests/foundation/research-index-contract.test.ts (5 tests) 150ms
+stdout | tests/unit/prisoners-actor-tier-scale.test.ts > actor-tier scale: 2500 actors > completes 800 ticks without crashing or violating need bounds
+[prisoners actor-tier] actors=2500 ticks=800 wallMs=713.7
+
+stdout | tests/unit/prisoners-actor-tier-scale.test.ts > actor-tier scale: 5000 actors > completes 800 ticks without crashing or violating need bounds
+[prisoners actor-tier] actors=5000 ticks=800 wallMs=1397.5
+
+ ✓ tests/unit/prisoners-actor-tier-scale.test.ts (4 tests) 2966ms
+     ✓ completes 800 ticks without crashing or violating need bounds  347ms
+     ✓ completes 800 ticks without crashing or violating need bounds  843ms
+     ✓ completes 800 ticks without crashing or violating need bounds  1651ms
+ ✓ tests/unit/public-room-oblique-context-coverage.test.ts (183 tests) 1855ms
+     ✓ furniture.dining.table.wooden retains genuine source bytes and all canonical frame bodies  317ms
+ ✓ tests/integration/room-template-pending-object-removal.test.ts (16 tests) 2892ms
+   ✓ saved assigned template fixture RemoveObject releases its entire gesture while paused, then rebuilds, legacy=false  372ms
+   ✓ saved assigned template fixture RemoveWall releases its entire gesture while paused, then rebuilds, legacy=false  331ms
+   ✓ saved assigned template fixture RemoveObject releases its entire gesture while paused, then rebuilds, legacy=true  312ms
+   ✓ saved assigned template fixture RemoveWall releases its entire gesture while paused, then rebuilds, legacy=true  314ms
+ ✓ tests/unit/room-template-completed-transaction.test.ts (23 tests) 2203ms
+   ✓ undoes and redoes completed cell-row-four with all fixtures and zoning across actual save envelopes  306ms
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=1 mirror=false saved=false pending=false adjacent=false
+{"testCase":{"mirrorX":false,"quarterTurns":1,"saved":false,"pending":false,"adjacent":false},"door":{"x":10,"y":11},"approach":{"x":9,"y":11},"outer":{"x":8,"y":11},"quotedMaximum":240,"accepted":["run-8"],"charged":80,"orders":[{"id":"run-8","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]},{"id":"run-9","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-10","state":"failed","failReason":"unbuildable","materialsAllocated":[]}],"history":["run-8"],"doorSquare":0}
+
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=1 mirror=false saved=true pending=false adjacent=false
+{"testCase":{"mirrorX":false,"quarterTurns":1,"saved":true,"pending":false,"adjacent":false},"door":{"x":10,"y":11},"approach":{"x":9,"y":11},"outer":{"x":8,"y":11},"quotedMaximum":240,"accepted":["run-8"],"charged":80,"orders":[{"id":"run-8","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]},{"id":"run-9","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-10","state":"failed","failReason":"unbuildable","materialsAllocated":[]}],"history":["run-8"],"doorSquare":0}
+
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=3 mirror=false saved=false pending=false adjacent=false
+{"testCase":{"mirrorX":false,"quarterTurns":3,"saved":false,"pending":false,"adjacent":false},"door":{"x":16,"y":12},"approach":{"x":17,"y":12},"outer":{"x":18,"y":12},"quotedMaximum":240,"accepted":["run-18"],"charged":80,"orders":[{"id":"run-16","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-17","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-18","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]}],"history":["run-18"],"doorSquare":0}
+
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=3 mirror=false saved=true pending=false adjacent=false
+{"testCase":{"mirrorX":false,"quarterTurns":3,"saved":true,"pending":false,"adjacent":false},"door":{"x":16,"y":12},"approach":{"x":17,"y":12},"outer":{"x":18,"y":12},"quotedMaximum":240,"accepted":["run-18"],"charged":80,"orders":[{"id":"run-16","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-17","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-18","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]}],"history":["run-18"],"doorSquare":0}
+
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=1 mirror=true saved=false pending=false adjacent=false
+{"testCase":{"mirrorX":true,"quarterTurns":1,"saved":false,"pending":false,"adjacent":false},"door":{"x":10,"y":12},"approach":{"x":9,"y":12},"outer":{"x":8,"y":12},"quotedMaximum":240,"accepted":["run-8"],"charged":80,"orders":[{"id":"run-8","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]},{"id":"run-9","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-10","state":"failed","failReason":"unbuildable","materialsAllocated":[]}],"history":["run-8"],"doorSquare":0}
+
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=1 mirror=true saved=true pending=false adjacent=false
+{"testCase":{"mirrorX":true,"quarterTurns":1,"saved":true,"pending":false,"adjacent":false},"door":{"x":10,"y":12},"approach":{"x":9,"y":12},"outer":{"x":8,"y":12},"quotedMaximum":240,"accepted":["run-8"],"charged":80,"orders":[{"id":"run-8","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]},{"id":"run-9","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-10","state":"failed","failReason":"unbuildable","materialsAllocated":[]}],"history":["run-8"],"doorSquare":0}
+
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=3 mirror=true saved=false pending=false adjacent=false
+{"testCase":{"mirrorX":true,"quarterTurns":3,"saved":false,"pending":false,"adjacent":false},"door":{"x":16,"y":11},"approach":{"x":17,"y":11},"outer":{"x":18,"y":11},"quotedMaximum":240,"accepted":["run-18"],"charged":80,"orders":[{"id":"run-16","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-17","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-18","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]}],"history":["run-18"],"doorSquare":0}
+
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=3 mirror=true saved=true pending=false adjacent=false
+{"testCase":{"mirrorX":true,"quarterTurns":3,"saved":true,"pending":false,"adjacent":false},"door":{"x":16,"y":11},"approach":{"x":17,"y":11},"outer":{"x":18,"y":11},"quotedMaximum":240,"accepted":["run-18"],"charged":80,"orders":[{"id":"run-16","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-17","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-18","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]}],"history":["run-18"],"doorSquare":0}
+
+ ✓ tests/unit/room-template-command-reservation.test.ts (41 tests) 1985ms
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=1 mirror=false saved=false pending=true adjacent=false
+{"testCase":{"mirrorX":false,"quarterTurns":1,"saved":false,"pending":true,"adjacent":false},"door":{"x":10,"y":11},"approach":{"x":9,"y":11},"outer":{"x":8,"y":11},"quotedMaximum":240,"accepted":["run-8"],"charged":80,"orders":[{"id":"run-8","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]},{"id":"run-9","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-10","state":"failed","failReason":"unbuildable","materialsAllocated":[]}],"history":["run-8"],"doorSquare":0}
+
+ ✓ tests/integration/room-template-occupied-undo-atomicity.test.ts (18 tests) 2152ms
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=3 mirror=true saved=true pending=true adjacent=false
+{"testCase":{"mirrorX":true,"quarterTurns":3,"saved":true,"pending":true,"adjacent":false},"door":{"x":16,"y":11},"approach":{"x":17,"y":11},"outer":{"x":18,"y":11},"quotedMaximum":240,"accepted":["run-18"],"charged":80,"orders":[{"id":"run-16","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-17","state":"failed","failReason":"unbuildable","materialsAllocated":[]},{"id":"run-18","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]}],"history":["run-18"],"doorSquare":0}
+
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=3 mirror=false saved=false pending=false adjacent=true
+{"testCase":{"mirrorX":false,"quarterTurns":3,"saved":false,"pending":false,"adjacent":true},"door":{"x":16,"y":12},"approach":{"x":17,"y":12},"outer":{"x":18,"y":12},"quotedMaximum":240,"accepted":["run-17","run-18"],"charged":160,"orders":[{"id":"run-16","state":"failed","failReason":"duplicate-order","materialsAllocated":[]},{"id":"run-17","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]},{"id":"run-18","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]}],"history":["run-17","run-18"],"doorSquare":0}
+
+stdout | tests/integration/room-template-door-square-run.test.ts > square gesture protects the authored door: turn=1 mirror=true saved=true pending=false adjacent=true
+{"testCase":{"mirrorX":true,"quarterTurns":1,"saved":true,"pending":false,"adjacent":true},"door":{"x":10,"y":12},"approach":{"x":9,"y":12},"outer":{"x":8,"y":12},"quotedMaximum":240,"accepted":["run-8","run-9"],"charged":160,"orders":[{"id":"run-8","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]},{"id":"run-9","state":"completed","materialsAllocated":[{"itemId":"item.brick","quantity":2}]},{"id":"run-10","state":"failed","failReason":"duplicate-order","materialsAllocated":[]}],"history":["run-8","run-9"],"doorSquare":0}
+
+ ✓ tests/integration/room-template-occupied-material-cancel.test.ts (11 tests) 1962ms
+   ✓ refuses a delivery affecting occupied and unoccupied gestures collectively, encodedLoad=false  310ms
+   ✓ refuses a delivery affecting occupied and unoccupied gestures collectively, encodedLoad=true  324ms
+ ✓ tests/integration/room-template-door-square-run.test.ts (14 tests) 1952ms
+ ✓ tests/foundation/browser-network-changed-retry-contract.test.ts (7 tests) 42ms
+stdout | tests/unit/hud-projections-scale.test.ts > roster projection at 250 actors > projects one window without materialising the whole population
+[hud roster projection] actors=250 pageLimit=25 rows=25 pageBytes=10867 pageMs=0.56 countsMs=0.26 statusStripMs=1.50
+
+stdout | tests/unit/hud-projections-scale.test.ts > roster projection at 1000 actors > projects one window without materialising the whole population
+[hud roster projection] actors=1000 pageLimit=25 rows=25 pageBytes=10847 pageMs=0.05 countsMs=0.25 statusStripMs=0.51
+
+stdout | tests/unit/hud-projections-scale.test.ts > roster projection at 2500 actors > projects one window without materialising the whole population
+[hud roster projection] actors=2500 pageLimit=25 rows=25 pageBytes=10845 pageMs=0.06 countsMs=0.16 statusStripMs=0.37
+
+ ✓ tests/integration/room-template-blocked-anchor-fallback.test.ts (4 tests) 1863ms
+   ✓ uses existing meal fallback when q1 Canteen anchor is blocked: wall offset0 / V8false  553ms
+   ✓ uses existing meal fallback when q1 Canteen anchor is blocked: wall offset0 / V8true  461ms
+   ✓ uses existing meal fallback when q1 Canteen anchor is blocked: wall offset1 / V8false  419ms
+   ✓ uses existing meal fallback when q1 Canteen anchor is blocked: wall offset1 / V8true  429ms
+stdout | tests/unit/hud-projections-scale.test.ts > roster projection at 5000 actors > projects one window without materialising the whole population
+[hud roster projection] actors=5000 pageLimit=25 rows=25 pageBytes=10845 pageMs=0.07 countsMs=0.22 statusStripMs=0.42
+
+ ✓ tests/integration/contended-shower-fairness.test.ts (4 tests) 1830ms
+     ✓ lets the prisoners scanned last wash, which they never once did while the scan ran in entity-index order  385ms
+     ✓ is the ceiling and not the prison: eight heads and the same bill remove the contention entirely  606ms
+     ✓ produces the identical contended run twice from the same seed, so the reordering added no nondeterminism  563ms
+ ✓ tests/integration/template-storage-anchor-delivery.test.ts (10 tests) 1897ms
+ ✓ tests/unit/hud-projections-scale.test.ts (9 tests) 1830ms
+     ✓ projects one window without materialising the whole population  355ms
+     ✓ walks the whole population in windows, visiting every prisoner exactly once in the roster order  395ms
+     ✓ builds exactly the requested number of rows at the stretch tier  339ms
+stdout | tests/integration/disconnected-first-shower-selection.test.ts > uses a reachable later Shower instead of retrying a disconnected first room: blocked=false V8=false
+{"blocked":false,"load":false,"entityId":0,"showerTicks":1428,"targets":["room.shower-room:21:15"],"hygiene":50600,"metrics":{"unmetDemandCycles":0,"actionsStarted":70,"actionsCompleted":69,"routeFailures":0,"substitutionCycles":1,"contendedSubstitutionCycles":0,"substitutionsCountedSinceTick":0}}
+
+stdout | tests/integration/disconnected-first-shower-selection.test.ts > uses a reachable later Shower instead of retrying a disconnected first room: blocked=true V8=false
+{"blocked":true,"load":false,"entityId":0,"showerTicks":1280,"targets":["room.shower-room:6:15"],"hygiene":50440,"metrics":{"unmetDemandCycles":0,"actionsStarted":123,"actionsCompleted":122,"routeFailures":0,"substitutionCycles":1,"contendedSubstitutionCycles":0,"substitutionsCountedSinceTick":0}}
+
+ ✓ tests/integration/room-template-replacement-order-ownership.test.ts (32 tests) 1645ms
+ ✓ tests/determinism/job-performing-restart-bound.test.ts (7 tests) 1630ms
+     ✓ costs nothing when the save is taken mid-walk, which is the exclusion #1373 removed  1296ms
+stdout | tests/integration/disconnected-first-shower-selection.test.ts > uses a reachable later Shower instead of retrying a disconnected first room: blocked=false V8=true
+{"blocked":false,"load":true,"entityId":0,"showerTicks":1428,"targets":["room.shower-room:21:15"],"hygiene":50600,"metrics":{"unmetDemandCycles":0,"actionsStarted":69,"actionsCompleted":69,"routeFailures":0,"substitutionCycles":0,"contendedSubstitutionCycles":0,"substitutionsCountedSinceTick":7701}}
+
+ ✓ tests/integration/generic-object-template-approach.test.ts (32 tests) 1658ms
+stdout | tests/integration/disconnected-first-shower-selection.test.ts > uses a reachable later Shower instead of retrying a disconnected first room: blocked=true V8=true
+{"blocked":true,"load":true,"entityId":0,"showerTicks":1280,"targets":["room.shower-room:6:15"],"hygiene":50440,"metrics":{"unmetDemandCycles":0,"actionsStarted":122,"actionsCompleted":122,"routeFailures":0,"substitutionCycles":0,"contendedSubstitutionCycles":0,"substitutionsCountedSinceTick":7761}}
+
+ ✓ tests/integration/disconnected-first-shower-selection.test.ts (4 tests) 1623ms
+   ✓ uses a reachable later Shower instead of retrying a disconnected first room: blocked=false V8=false  457ms
+   ✓ uses a reachable later Shower instead of retrying a disconnected first room: blocked=true V8=false  372ms
+   ✓ uses a reachable later Shower instead of retrying a disconnected first room: blocked=false V8=true  396ms
+   ✓ uses a reachable later Shower instead of retrying a disconnected first room: blocked=true V8=true  398ms
+ ✓ tests/integration/pending-template-incoming-object-footprint.test.ts (36 tests) 1578ms
+ ✓ tests/integration/contraband-search-duty.test.ts (12 tests) 1484ms
+     ✓ does not put a tick`s worth of discoveries on the list at once, so nothing needs coalescing (#703 ruling 13)  315ms
+ ✓ tests/foundation/documentation-source-anchor-contract.test.ts (3 tests) 253ms
+ ✓ tests/integration/security-coverage-versus-response.test.ts (7 tests) 1490ms
+     ✓ publishes the same badge, character for character, across every hire count from the requirement to three times it  347ms
+ ✓ tests/foundation/adr-status-reference-contract.test.ts (4 tests) 1388ms
+     ✓ reads enough of the corpus, and enough claims in it, to be non-vacuous  700ms
+     ✓ never states a status an ADR does not hold  657ms
+stdout | tests/integration/later-usable-shower-selection.test.ts > uses a later working Shower instead of dropping the entire action: blocked=false V8=false
+{"blocked":false,"load":false,"entityId":0,"showerTicks":1428,"targets":["room.shower-room:21:15"],"hygiene":50600,"metrics":{"unmetDemandCycles":0,"actionsStarted":70,"actionsCompleted":69,"routeFailures":0,"substitutionCycles":1,"contendedSubstitutionCycles":0,"substitutionsCountedSinceTick":0}}
+
+stdout | tests/integration/later-usable-shower-selection.test.ts > uses a later working Shower instead of dropping the entire action: blocked=true V8=false
+{"blocked":true,"load":false,"entityId":0,"showerTicks":1280,"targets":["room.shower-room:6:15"],"hygiene":50440,"metrics":{"unmetDemandCycles":0,"actionsStarted":123,"actionsCompleted":122,"routeFailures":0,"substitutionCycles":1,"contendedSubstitutionCycles":0,"substitutionsCountedSinceTick":0}}
+
+ ✓ tests/foundation/documentation-claims-contract.test.ts (15 tests) 1405ms
+ ✓ tests/integration/pending-square-wall-incoming-object.test.ts (28 tests) 1393ms
+stdout | tests/integration/later-usable-shower-selection.test.ts > uses a later working Shower instead of dropping the entire action: blocked=false V8=true
+{"blocked":false,"load":true,"entityId":0,"showerTicks":1428,"targets":["room.shower-room:21:15"],"hygiene":50600,"metrics":{"unmetDemandCycles":0,"actionsStarted":69,"actionsCompleted":69,"routeFailures":0,"substitutionCycles":0,"contendedSubstitutionCycles":0,"substitutionsCountedSinceTick":5901}}
+
+stdout | tests/integration/later-usable-shower-selection.test.ts > uses a later working Shower instead of dropping the entire action: blocked=true V8=true
+{"blocked":true,"load":true,"entityId":0,"showerTicks":1280,"targets":["room.shower-room:6:15"],"hygiene":50440,"metrics":{"unmetDemandCycles":0,"actionsStarted":122,"actionsCompleted":122,"routeFailures":0,"substitutionCycles":0,"contendedSubstitutionCycles":0,"substitutionsCountedSinceTick":5901}}
+
+ ✓ tests/integration/later-usable-shower-selection.test.ts (4 tests) 1302ms
+   ✓ uses a later working Shower instead of dropping the entire action: blocked=false V8=false  378ms
+   ✓ uses a later working Shower instead of dropping the entire action: blocked=false V8=true  325ms
+   ✓ uses a later working Shower instead of dropping the entire action: blocked=true V8=true  302ms
+ ✓ tests/foundation/adr-status-queue-anchor-contract.test.ts (16 tests) 1387ms
+     ✓ has not fallen more than the staleness budget behind the history that has landed  639ms
+     ✓ has not fallen more than the staleness budget behind in commits either, which is the unit a release does not track  708ms
+ ✓ tests/unit/cell-cot-material-observer.test.ts (10 tests) 1271ms
+     ✓ rejects all genuine whole-body frames in oblique-square-brick-full-wall.v1.json  331ms
+     ✓ rejects all genuine whole-body frames in oblique-wall-cutaway.v1.json  332ms
+     ✓ rejects all genuine whole-body frames in oblique-reception-employee-desk.v1.json  316ms
+ ✓ tests/integration/needs-state-grant-loop.test.ts (9 tests) 1265ms
+stdout | tests/integration/room-template-cancel-row-refund.test.ts > the paid shell queue row pays its displayed refund for actual whole-plan cancellation, saved=false
+{"state":"materials-pending","rowRefund":1425,"actualRefund":1425,"cancelled":18}
+
+stdout | tests/integration/room-template-cancel-row-refund.test.ts > the paid shell queue row pays its displayed refund for actual whole-plan cancellation, saved=true
+{"state":"materials-pending","rowRefund":1425,"actualRefund":1425,"cancelled":18}
+
+stdout | tests/integration/room-template-cancel-row-refund.test.ts > the saved partial row fixture shows the actual coupled refund when its selected row is in-progress
+{"state":"in-progress","rowRefund":355,"actualRefund":355,"cancelled":66}
+
+ ✓ tests/foundation/anchor-budget-spend-annotation.test.ts (33 tests) 1070ms
+     ✓ is what the CLI actually prints with, so the wiring cannot quietly go back to releases  735ms
+stdout | tests/integration/room-template-manual-door-removal.test.ts > manual completed door removal refuses the occupied whole gesture, mirror=false turn=+0 legacy=false
+{"mirrorX":false,"quarterTurns":0,"legacy":false,"doorState":"completed","ordersCancelled":0,"rooms":[["room.cell:11:11",[0]]],"objects":2}
+
+stdout | tests/integration/room-template-cancel-row-refund.test.ts > the saved partial row fixture shows the actual coupled refund when its selected row is assigned
+{"state":"assigned","rowRefund":355,"actualRefund":355,"cancelled":66}
+
+stdout | tests/integration/room-template-cancel-row-refund.test.ts > ordinary shared wall gestures retain single-order cancellation and its displayed refund
+{"state":"assigned","rowRefund":80,"actualRefund":80,"cancelled":1}
+
+stdout | tests/integration/room-template-manual-door-removal.test.ts > manual completed door removal refuses the occupied whole gesture, mirror=false turn=+0 legacy=true
+{"mirrorX":false,"quarterTurns":0,"legacy":true,"doorState":"completed","ordersCancelled":0,"rooms":[["room.cell:11:11",[0]]],"objects":2}
+
+ ✓ tests/integration/crowding-need-decay.test.ts (6 tests) 1183ms
+stdout | tests/integration/room-template-manual-door-removal.test.ts > manual completed door removal refuses the occupied whole gesture, mirror=false turn=1 legacy=false
+{"mirrorX":false,"quarterTurns":1,"legacy":false,"doorState":"completed","ordersCancelled":0,"rooms":[["room.cell:11:11",[0]]],"objects":2}
+
+stdout | tests/integration/room-template-manual-door-removal.test.ts > manual completed door removal refuses the occupied whole gesture, mirror=false turn=1 legacy=true
+{"mirrorX":false,"quarterTurns":1,"legacy":true,"doorState":"completed","ordersCancelled":0,"rooms":[["room.cell:11:11",[0]]],"objects":2}
+
+stdout | tests/integration/room-template-cancel-row-refund.test.ts > quotes occupied partial-row cancellation with older spare=false legacy=false
+{"spare":false,"rowRefund":0,"actualRefund":0,"refusal":"unzone.room-occupied"}
+
+stdout | tests/integration/room-template-manual-door-removal.test.ts > manual completed door removal refuses the occupied whole gesture, mirror=true turn=+0 legacy=false
+{"mirrorX":true,"quarterTurns":0,"legacy":false,"doorState":"completed","ordersCancelled":0,"rooms":[["room.cell:11:11",[0]]],"objects":2}
+
+stdout | tests/integration/room-template-manual-door-removal.test.ts > manual completed door removal refuses the occupied whole gesture, mirror=true turn=+0 legacy=true
+{"mirrorX":true,"quarterTurns":0,"legacy":true,"doorState":"completed","ordersCancelled":0,"rooms":[["room.cell:11:11",[0]]],"objects":2}
+
+stdout | tests/integration/room-template-manual-door-removal.test.ts > manual completed door removal refuses the occupied whole gesture, mirror=true turn=1 legacy=false
+{"mirrorX":true,"quarterTurns":1,"legacy":false,"doorState":"completed","ordersCancelled":0,"rooms":[["room.cell:11:11",[0]]],"objects":2}
+
+stdout | tests/integration/room-template-manual-door-removal.test.ts > manual completed door removal refuses the occupied whole gesture, mirror=true turn=1 legacy=true
+{"mirrorX":true,"quarterTurns":1,"legacy":true,"doorState":"completed","ordersCancelled":0,"rooms":[["room.cell:11:11",[0]]],"objects":2}
+
+stdout | tests/integration/room-template-cancel-row-refund.test.ts > quotes occupied partial-row cancellation with older spare=false legacy=true
+{"spare":false,"rowRefund":0,"actualRefund":0,"refusal":"unzone.room-occupied"}
+
+stdout | tests/integration/room-template-cancel-row-refund.test.ts > quotes occupied partial-row cancellation with older spare=true legacy=false
+{"spare":true,"rowRefund":315,"actualRefund":315}
+
+stdout | tests/integration/room-template-cancel-row-refund.test.ts > quotes occupied partial-row cancellation with older spare=true legacy=true
+{"spare":true,"rowRefund":315,"actualRefund":315}
+
+ ✓ tests/integration/room-template-cancel-row-refund.test.ts (10 tests) 1132ms
+ ✓ tests/integration/room-template-manual-door-removal.test.ts (17 tests) 1131ms
+ ✓ tests/unit/ui-template-card-paint.test.ts (2 tests) 1098ms
+     ✓ gives only resting unselected catalogue cards the quieter panel paint  1094ms
+ ✓ tests/unit/ui-room-template-dialog-status.test.ts (9 tests) 1067ms
+ ✓ tests/integration/room-template-redo-admission-atomicity.test.ts (12 tests) 1055ms
+ ✓ tests/integration/completed-square-incoming-object-footprint.test.ts (20 tests) 1032ms
+ ✓ tests/unit/prisoners-operations-scenario.test.ts (7 tests) 1010ms
+     ✓ an identical seed and scenario produce an identical fingerprint (needs, stages, positions, phases)  527ms
+ ✓ tests/integration/square-wall-object-footprint.test.ts (26 tests) 985ms
+ ✓ tests/integration/contended-canteen-substitution-cost.test.ts (4 tests) 961ms
+ ✓ tests/integration/template-deferred-history-order.test.ts (13 tests) 983ms
+ ✓ tests/integration/incident-injury-loop.test.ts (5 tests) 967ms
+ ✓ tests/integration/build-order-object-collision-boundary.test.ts (24 tests) 888ms
+stdout | tests/integration/solitary-template-sanction-release.test.ts > releases a valid current home after completed template sanction: saved=false surface='high-risk'
+{"saved":false,"surface":"high-risk","tick":9861,"end":9851,"actualEnd":0,"home":"room.solitary-cell:6:6","metrics":{"relocatedIntoSolitaryCount":0,"releasedFromSolitaryCount":1,"relocationBacklogTicks":0,"releaseBacklogTicks":0}}
+
+stdout | tests/integration/solitary-template-sanction-release.test.ts > releases a valid current home after completed template sanction: saved=false surface='general-population'
+{"saved":false,"surface":"general-population","tick":9861,"end":9851,"actualEnd":0,"home":"room.cell:16:16","metrics":{"relocatedIntoSolitaryCount":1,"releasedFromSolitaryCount":1,"relocationBacklogTicks":0,"releaseBacklogTicks":0}}
+
+stdout | tests/integration/solitary-template-sanction-release.test.ts > releases a valid current home after completed template sanction: saved=false surface='removed-bed'
+{"saved":false,"surface":"removed-bed","tick":9861,"end":9851,"actualEnd":9851,"home":"room.solitary-cell:6:6","metrics":{"relocatedIntoSolitaryCount":0,"releasedFromSolitaryCount":0,"relocationBacklogTicks":0,"releaseBacklogTicks":2}}
+
+stdout | tests/integration/solitary-template-sanction-release.test.ts > releases a valid current home after completed template sanction: saved=true surface='high-risk'
+{"saved":true,"surface":"high-risk","tick":9861,"end":9851,"actualEnd":0,"home":"room.solitary-cell:6:6","metrics":{"relocatedIntoSolitaryCount":0,"releasedFromSolitaryCount":1,"relocationBacklogTicks":0,"releaseBacklogTicks":0}}
+
+stdout | tests/integration/solitary-template-sanction-release.test.ts > releases a valid current home after completed template sanction: saved=true surface='general-population'
+{"saved":true,"surface":"general-population","tick":9861,"end":9851,"actualEnd":0,"home":"room.cell:16:16","metrics":{"relocatedIntoSolitaryCount":0,"releasedFromSolitaryCount":1,"relocationBacklogTicks":0,"releaseBacklogTicks":0}}
+
+stdout | tests/integration/solitary-template-sanction-release.test.ts > releases a valid current home after completed template sanction: saved=true surface='removed-bed'
+{"saved":true,"surface":"removed-bed","tick":9861,"end":9851,"actualEnd":9851,"home":"room.solitary-cell:6:6","metrics":{"relocatedIntoSolitaryCount":0,"releasedFromSolitaryCount":0,"relocationBacklogTicks":0,"releaseBacklogTicks":2}}
+
+ ✓ tests/integration/solitary-template-sanction-release.test.ts (6 tests) 796ms
+ ✓ tests/integration/room-template-rebuilt-render-identity.test.ts (16 tests) 796ms
+ ✓ tests/foundation/documentation-links-contract.test.ts (10 tests) 595ms
+     ✓ resolves every cited path  351ms
+ ✓ tests/unit/ui-simulation-commands.test.ts (22 tests) 762ms
+     ✓ a press at x4 clears a snapshot that took a real 500ms to reach this thread  725ms
+ ✓ tests/integration/staff-coverage-readout.test.ts (11 tests) 746ms
+ ✓ tests/integration/incident-consequence-loop.test.ts (8 tests) 711ms
+ ✓ tests/unit/ui-renderer-selection-control.test.ts (11 tests) 690ms
+ ✓ tests/integration/accepted-command-marker-class.test.ts (60 tests) 669ms
+ ✓ tests/foundation/build-commit-identity-contract.test.ts (4 tests) 699ms
+     ✓ still prefers an ambient sha to `git`, which is why the environment is read at all  587ms
+ ✓ tests/unit/oblique-laundry-linen-rack-art.test.ts (2 tests) 671ms
+   ✓ loads the dedicated descriptor and decodes 72 complete unclipped canonical PNG poses  523ms
+ ✓ tests/integration/incident-response-restore.test.ts (16 tests) 659ms
+     ✓ is deterministic: two sessions restored from one payload agree tick for tick  368ms
+ ✓ tests/foundation/projection-reachability-contract.test.ts (8 tests) 667ms
+     ✓ gives every projection id a reader, or a reason blocking one  653ms
+stdout | tests/integration/search-target-departure.test.ts > standing sweep respects a genuine discharged target: saved=false surface='live-target'
+{"saved":false,"surface":"live-target","tick":2301,"end":11385,"target":0,"sweep":"contraband.sector-sweep.security-sector.prison.3","metrics":{"itemsDiscovered":0,"itemsMissed":0,"searchesCompleted":1,"searchesCancelled":0,"searchesQueued":0}}
+
+stdout | tests/integration/search-target-departure.test.ts > standing sweep respects a genuine discharged target: saved=false surface='departed'
+{"saved":false,"surface":"departed","tick":2321,"end":1809,"target":0,"sweep":"contraband.sector-sweep.security-sector.prison.3","metrics":{"itemsDiscovered":0,"itemsMissed":0,"searchesCompleted":0,"searchesCancelled":1,"searchesQueued":0}}
+
+stdout | tests/integration/search-target-departure.test.ts > standing sweep respects a genuine discharged target: saved=false surface='recycled'
+{"saved":false,"surface":"recycled","tick":2321,"end":1809,"target":0,"sweep":"contraband.sector-sweep.security-sector.prison.3","metrics":{"itemsDiscovered":0,"itemsMissed":0,"searchesCompleted":0,"searchesCancelled":1,"searchesQueued":0}}
+
+ ✓ tests/unit/oblique-staff-room-padded-chair-art.test.ts (2 tests) 628ms
+   ✓ loads the dedicated descriptor and decodes 72 complete unclipped canonical PNG poses  494ms
+ ✓ tests/determinism/contended-scan-order.test.ts (2 tests) 609ms
+     ✓ is stable when the whole population ties on urgency, which is where sort stability would decide it instead  348ms
+stdout | tests/integration/search-target-departure.test.ts > standing sweep respects a genuine discharged target: saved=true surface='live-target'
+{"saved":true,"surface":"live-target","tick":2301,"end":11385,"target":0,"sweep":"contraband.sector-sweep.security-sector.prison.3","metrics":{"itemsDiscovered":0,"itemsMissed":0,"searchesCompleted":1,"searchesCancelled":0,"searchesQueued":0}}
+
+stdout | tests/integration/search-target-departure.test.ts > standing sweep respects a genuine discharged target: saved=true surface='departed'
+{"saved":true,"surface":"departed","tick":2321,"end":1809,"target":0,"sweep":"contraband.sector-sweep.security-sector.prison.3","metrics":{"itemsDiscovered":0,"itemsMissed":0,"searchesCompleted":0,"searchesCancelled":1,"searchesQueued":0}}
+
+stdout | tests/integration/search-target-departure.test.ts > standing sweep respects a genuine discharged target: saved=true surface='recycled'
+{"saved":true,"surface":"recycled","tick":2321,"end":1809,"target":0,"sweep":"contraband.sector-sweep.security-sector.prison.3","metrics":{"itemsDiscovered":0,"itemsMissed":0,"searchesCompleted":0,"searchesCancelled":1,"searchesQueued":0}}
+
+ ✓ tests/integration/search-target-departure.test.ts (14 tests) 654ms
+ ✓ tests/determinism/session-replay.test.ts (7 tests) 643ms
+     ✓ agrees at every intermediate checkpoint, not only at the end  375ms
+ ✓ tests/unit/oblique-pointer-picking-transform.test.ts (144 tests) 547ms
+ ✓ tests/integration/native-small-prison-showcase.test.ts (1 test) 591ms
+   ✓ builds the literal four-cell prison within 25k and retains the whole stopped save  591ms
+ ✓ tests/unit/oblique-wooden-bench-ground-mounts-integrity.test.ts (2 tests) 637ms
+   ✓ selects the complete grounded source and decodes every genuine canonical body, retaining all previous 72 images  496ms
+ ✓ tests/integration/gang-retaliation-from-the-admission-surface.test.ts (3 tests) 623ms
+     ✓ produces retaliations for a same-parity pair, which the parity split could not (#979, ruled 2026-09-19)  428ms
+ ✓ tests/integration/canteen-shape-hunger-comparison.test.ts (4 tests) 553ms
+ ✓ tests/unit/oblique-reception-waiting-armchair-art.test.ts (2 tests) 561ms
+   ✓ loads the dedicated descriptor and decodes 72 complete unclipped canonical PNG poses  428ms
+ ✓ tests/integration/completed-template-door-furniture.test.ts (10 tests) 600ms
+stdout | tests/integration/riot-regime-loop.test.ts > a neglected prison a player can build riots, and the riot reaches its participants > takes sleep, meals and the toilet off the participants for as long as it runs, and gives them back
+DURING {"byAction":{"action.free-association":893},"idleTicks":281,"travellingTicks":28}
+CONTROL {"byAction":{"action.free-association":652,"action.use-toilet":160},"idleTicks":361,"travellingTicks":29}
+AFTER {"byAction":{"action.free-association":49,"action.eat-meal":92,"action.use-toilet":72,"action.sleep":182},"idleTicks":149,"travellingTicks":256}
+
+stdout | tests/integration/riot-regime-loop.test.ts > a neglected prison a player can build riots, and the riot reaches its participants > changes the day the participants spend, measured over a whole day against the guarded control
+CONTROLDAY {"byAction":{"action.free-association":1612,"action.use-toilet":272,"action.eat-meal":184,"action.sleep":1200},"idleTicks":1020,"travellingTicks":512}
+RIOTDAY {"byAction":{"action.free-association":1912,"action.eat-meal":184,"action.use-toilet":72,"action.sleep":1200},"idleTicks":920,"travellingTicks":512}
+
+stdout | tests/integration/riot-regime-loop.test.ts > a neglected prison a player can build riots, and the riot reaches its participants > leaves the prison measurably worse than the same prison that did not riot
+DEF1 0.26117647058823534 0.26117647058823534
+DEF2 0.356078431372549 0.22431372549019607 85 254
+
+stdout | tests/integration/riot-regime-loop.test.ts > a riot survives a save, because nothing about it is stored > restores after the riot onto the ordinary timetable, which is the other half of the same proof
+RESTORED {"byAction":{"action.free-association":49,"action.eat-meal":92,"action.use-toilet":72,"action.sleep":182},"idleTicks":149,"travellingTicks":256}
+
+ ✓ tests/integration/riot-regime-loop.test.ts (7 tests) 557ms
+ ✓ tests/foundation/adr-numbering-contract.test.ts (12 tests) 543ms
+ ✓ tests/integration/economy-payroll-loop.test.ts (10 tests) 556ms
+ ✓ tests/unit/oblique-classroom-teacher-desk-art.test.ts (2 tests) 447ms
+   ✓ loads the dedicated descriptor and decodes 72 complete unclipped canonical PNG poses  435ms
+ ✓ tests/integration/gang-grudge-loop.test.ts (8 tests) 529ms
+stdout | tests/unit/ui-template-history-verdict.test.ts > world: stationary blocked ghost must refresh after actual public Undo removes completed template
+HISTORY_GHOST_STALE {"mode":"world","origin":{"x":11,"y":11},"command":[{"type":"Undo"}],"oldQueries":4,"afterPaintQueries":5,"oldRenderRevision":1,"newRenderRevision":2,"actualVerdict":{"ok":true},"ghostReady":"clear","afterOrders":[{"id":"room-template-000000000000-0-wall-000","state":"cancelled"},{"id":"room-template-000000000000-0-wall-001","state":"cancelled"},{"id":"room-template-000000000000-0-wall-002","state":"cancelled"},{"id":"room-template-000000000000-0-wall-003","state":"cancelled"},{"id":"room-template-000000000000-0-wall-004","state":"cancelled"},{"id":"room-template-000000000000-0-wall-005","state":"cancelled"},{"id":"room-template-000000000000-0-wall-006","state":"cancelled"},{"id":"room-template-000000000000-0-wall-007","state":"cancelled"},{"id":"room-template-000000000000-0-wall-008","state":"cancelled"},{"id":"room-template-000000000000-0-wall-009","state":"cancelled"},{"id":"room-template-000000000000-0-wall-010","state":"cancelled"},{"id":"room-template-000000000000-0-wall-011","state":"cancelled"},{"id":"room-template-000000000000-0-wall-012","state":"cancelled"},{"id":"room-template-000000000000-0-wall-013","state":"cancelled"},{"id":"room-template-000000000000-0-wall-014","state":"cancelled"},{"id":"room-template-000000000000-0-wall-015","state":"cancelled"},{"id":"room-template-000000000000-0-wall-016","state":"cancelled"},{"id":"room-template-000000000000-1-door-000","state":"cancelled"},{"id":"room-template-000000000000-2-object-000","state":"cancelled"},{"id":"room-template-000000000000-2-object-001","state":"cancelled"}],"afterObjects":[],"afterHistory":{"version":1,"pending":[],"undone":[{"templateId":"cell-basic","origin":{"x":11,"y":11},"mirrorX":false,"quarterTurns":1,"sequence":0}]}}
+
+stdout | tests/unit/ui-template-history-verdict.test.ts > oblique: stationary blocked ghost must refresh after actual public Undo removes completed template
+HISTORY_GHOST_STALE {"mode":"oblique","origin":{"x":10,"y":11},"command":[{"type":"Undo"}],"oldQueries":4,"afterPaintQueries":5,"oldRenderRevision":1,"newRenderRevision":2,"actualVerdict":{"ok":true},"ghostReady":"clear","afterOrders":[{"id":"room-template-000000000000-0-wall-000","state":"cancelled"},{"id":"room-template-000000000000-0-wall-001","state":"cancelled"},{"id":"room-template-000000000000-0-wall-002","state":"cancelled"},{"id":"room-template-000000000000-0-wall-003","state":"cancelled"},{"id":"room-template-000000000000-0-wall-004","state":"cancelled"},{"id":"room-template-000000000000-0-wall-005","state":"cancelled"},{"id":"room-template-000000000000-0-wall-006","state":"cancelled"},{"id":"room-template-000000000000-0-wall-007","state":"cancelled"},{"id":"room-template-000000000000-0-wall-008","state":"cancelled"},{"id":"room-template-000000000000-0-wall-009","state":"cancelled"},{"id":"room-template-000000000000-0-wall-010","state":"cancelled"},{"id":"room-template-000000000000-0-wall-011","state":"cancelled"},{"id":"room-template-000000000000-0-wall-012","state":"cancelled"},{"id":"room-template-000000000000-0-wall-013","state":"cancelled"},{"id":"room-template-000000000000-0-wall-014","state":"cancelled"},{"id":"room-template-000000000000-0-wall-015","state":"cancelled"},{"id":"room-template-000000000000-0-wall-016","state":"cancelled"},{"id":"room-template-000000000000-1-door-000","state":"cancelled"},{"id":"room-template-000000000000-2-object-000","state":"cancelled"},{"id":"room-template-000000000000-2-object-001","state":"cancelled"}],"afterObjects":[],"afterHistory":{"version":1,"pending":[],"undone":[{"templateId":"cell-basic","origin":{"x":10,"y":11},"mirrorX":false,"quarterTurns":1,"sequence":0}]}}
+
+stdout | tests/unit/ui-template-history-verdict.test.ts > world: stationary clear ghost must refresh after actual public Redo restores same template reservation
+HISTORY_REDO_STALE {"mode":"world","refresh":false,"origin":{"x":11,"y":11},"oldQueries":8,"newQueries":10,"oldRenderRevision":2,"newRenderRevision":3,"actualVerdict":{"ok":false,"reason":"structure-occupied","tile":{"x":11,"y":11}},"ghostReady":"blocked","commands":[{"type":"Undo"},{"type":"Redo"}]}
+
+stdout | tests/unit/ui-template-history-verdict.test.ts > world: stationary clear ghost public reselection control after actual public Redo restores same template reservation
+HISTORY_REDO_STALE {"mode":"world","refresh":true,"origin":{"x":11,"y":11},"oldQueries":8,"newQueries":13,"oldRenderRevision":2,"newRenderRevision":3,"actualVerdict":{"ok":false,"reason":"structure-occupied","tile":{"x":11,"y":11}},"ghostReady":"blocked","commands":[{"type":"Undo"},{"type":"Redo"}]}
+
+stdout | tests/unit/ui-template-history-verdict.test.ts > oblique: stationary clear ghost must refresh after actual public Redo restores same template reservation
+HISTORY_REDO_STALE {"mode":"oblique","refresh":false,"origin":{"x":10,"y":11},"oldQueries":8,"newQueries":10,"oldRenderRevision":2,"newRenderRevision":3,"actualVerdict":{"ok":false,"reason":"structure-occupied","tile":{"x":10,"y":11}},"ghostReady":"blocked","commands":[{"type":"Undo"},{"type":"Redo"}]}
+
+stdout | tests/unit/ui-template-history-verdict.test.ts > oblique: stationary clear ghost public reselection control after actual public Redo restores same template reservation
+HISTORY_REDO_STALE {"mode":"oblique","refresh":true,"origin":{"x":10,"y":11},"oldQueries":8,"newQueries":13,"oldRenderRevision":2,"newRenderRevision":3,"actualVerdict":{"ok":false,"reason":"structure-occupied","tile":{"x":10,"y":11}},"ghostReady":"blocked","commands":[{"type":"Undo"},{"type":"Redo"}]}
+
+ ✓ tests/unit/ui-template-history-verdict.test.ts (8 tests) 523ms
+ ✓ tests/determinism/protocol-fault-recovery.test.ts (3 tests) 256ms
+ ✓ tests/integration/room-template-later-wall-approach.test.ts (32 tests) 543ms
+ ✓ tests/unit/hud-projections.test.ts (65 tests) 483ms
+ ✓ tests/integration/room-template-entrance-history.test.ts (8 tests) 477ms
+ ✓ tests/integration/conflicting-imported-template-objects.test.ts (7 tests) 463ms
+ ✓ tests/unit/oblique-reception-registration-desk-art.test.ts (2 tests) 444ms
+   ✓ loads the dedicated descriptor and decodes 72 complete unclipped canonical PNG poses  424ms
+ ✓ tests/unit/oblique-classroom-student-chair-art.test.ts (2 tests) 414ms
+   ✓ loads the dedicated descriptor and decodes 72 complete unclipped canonical PNG poses  405ms
+ ✓ tests/integration/contended-canteen-meal-fallback.test.ts (4 tests) 453ms
+stdout | tests/integration/risk-tier-neglect-reachability.test.ts > the risk tiers above Low, in the real kernel (#788) > a neglected, unguarded prison reaches High risk from disciplinary findings alone, with priorIncidents pinned at 0 throughout
+[risk-tier-neglect] incidents opened at ticks [1801,4201,6201,7001,11001,15801,20601,25401,30201,35001,39801,44601] (12 total); first Medium (tier>=2): {"tick":4800,"entityIndex":1,"riskTier":2,"classificationGroupId":"general-population"}; first High (tier>=3): {"tick":48000,"entityIndex":0,"riskTier":3,"classificationGroupId":"high-risk"}; run ended at tick 48000; final per-prisoner assessment: [[0,{"factors":{"sentence":0,"intakeHistory":0,"findings":3,"cleanConduct":0},"score":3,"riskTier":3,"classificationGroupId":"high-risk","disciplinary":{"points":27,"findingCount":9,"lastFindingTick":45210}}],[1,{"factors":{"sentence":0,"intakeHistory":0,"findings":3,"cleanConduct":0},"score":3,"riskTier":3,"classificationGroupId":"high-risk","disciplinary":{"points":36,"findingCount":12,"lastFindingTick":45210}}],[2,{"factors":{"sentence":0,"intakeHistory":0,"findings":3,"cleanConduct":0},"score":3,"riskTier":3,"classificationGroupId":"high-risk","disciplinary":{"points":36,"findingCount":12,"lastFindingTick":45210}}],[3,{"factors":{"sentence":0,"intakeHistory":0,"findings":3,"cleanConduct":0},"score":3,"riskTier":3,"classificationGroupId":"high-risk","disciplinary":{"points":27,"findingCount":9,"lastFindingTick":45210}}],[4,{"factors":{"sentence":0,"intakeHistory":0,"findings":3,"cleanConduct":0},"score":3,"riskTier":3,"classificationGroupId":"high-risk","disciplinary":{"points":27,"findingCount":9,"lastFindingTick":45210}}],[5,{"factors":{"sentence":0,"intakeHistory":0,"findings":3,"cleanConduct":0},"score":3,"riskTier":3,"classificationGroupId":"high-risk","disciplinary":{"points":27,"findingCount":9,"lastFindingTick":45210}}],[6,{"factors":{"sentence":0,"intakeHistory":0,"findings":3,"cleanConduct":0},"score":3,"riskTier":3,"classificationGroupId":"high-risk","disciplinary":{"points":27,"findingCount":9,"lastFindingTick":45210}}],[7,{"factors":{"sentence":0,"intakeHistory":0,"findings":3,"cleanConduct":0},"score":3,"riskTier":3,"classificationGroupId":"high-risk","disciplinary":{"points":27,"findingCount":9,"lastFindingTick":45210}}]]
+
+ ✓ tests/foundation/job-production-contract.test.ts (8 tests) 442ms
+stdout | tests/integration/risk-tier-neglect-reachability.test.ts > the risk tiers above Low, in the real kernel (#788) > a well-run, staffed prison produces no incidents and settles every tier at Minimal, over the same window
+[risk-tier-well-run] run ended at tick 50000; final per-prisoner assessment: [[0,{"factors":{"sentence":0,"intakeHistory":0,"findings":0,"cleanConduct":-2},"score":-2,"riskTier":0,"classificationGroupId":"general-population","disciplinary":{"points":0,"findingCount":0}}],[1,{"factors":{"sentence":0,"intakeHistory":0,"findings":0,"cleanConduct":-2},"score":-2,"riskTier":0,"classificationGroupId":"general-population","disciplinary":{"points":0,"findingCount":0}}],[2,{"factors":{"sentence":0,"intakeHistory":0,"findings":0,"cleanConduct":-2},"score":-2,"riskTier":0,"classificationGroupId":"general-population","disciplinary":{"points":0,"findingCount":0}}],[3,{"factors":{"sentence":0,"intakeHistory":0,"findings":0,"cleanConduct":-2},"score":-2,"riskTier":0,"classificationGroupId":"general-population","disciplinary":{"points":0,"findingCount":0}}],[4,{"factors":{"sentence":0,"intakeHistory":0,"findings":0,"cleanConduct":-2},"score":-2,"riskTier":0,"classificationGroupId":"general-population","disciplinary":{"points":0,"findingCount":0}}],[5,{"factors":{"sentence":0,"intakeHistory":0,"findings":0,"cleanConduct":-2},"score":-2,"riskTier":0,"classificationGroupId":"general-population","disciplinary":{"points":0,"findingCount":0}}],[6,{"factors":{"sentence":0,"intakeHistory":0,"findings":0,"cleanConduct":-2},"score":-2,"riskTier":0,"classificationGroupId":"general-population","disciplinary":{"points":0,"findingCount":0}}],[7,{"factors":{"sentence":0,"intakeHistory":0,"findings":0,"cleanConduct":-2},"score":-2,"riskTier":0,"classificationGroupId":"general-population","disciplinary":{"points":0,"findingCount":0}}]]
+
+ ✓ tests/integration/risk-tier-neglect-reachability.test.ts (2 tests) 436ms
+ ✓ tests/foundation/browser-ci-sharding-contract.test.ts (7 tests) 429ms
+     ✓ actual aggregate shell accepts same-subject success and refuses every missing/failed/cancelled boundary  365ms
+ ✓ tests/unit/oblique-garbage-room-bin-art.test.ts (2 tests) 422ms
+   ✓ loads the dedicated descriptor and decodes 72 complete unclipped canonical PNG poses  414ms
+ ✓ tests/integration/room-gated-needs.test.ts (6 tests) 428ms
+ ✓ tests/integration/native-classroom-desk-preparation.test.ts (2 tests) 443ms
+ ✓ tests/integration/furnished-prison-loop.test.ts (10 tests) 431ms
+ ✓ tests/determinism/loan-ledger-restore-boundary.test.ts (6 tests) 403ms
+ ✓ tests/unit/canteen-dining-table-retained-cycles-production.test.ts (3 tests) 442ms
+ ✓ tests/integration/refused-unzone-template-undo.test.ts (6 tests) 400ms
+ ✓ tests/integration/object-removal-loop.test.ts (22 tests) 427ms
+ ✓ tests/integration/sentence-end-release.test.ts (10 tests) 408ms
+ ✓ tests/foundation/ci-configuration-contract.test.ts (50 tests) 376ms
+ ✓ tests/integration/laundry-linen-rack-public-consumer.test.ts (2 tests) 395ms
+ ✓ tests/foundation/refusal-surface-enumeration-contract.test.ts (10 tests) 393ms
+     ✓ reaches every panel press through the reachability walk, on the walk's own answer  362ms
+ ✓ tests/unit/ui-room-plan-renderer-placement-receipt.test.ts (14 tests) 367ms
+ ✓ tests/integration/native-reception-room-preparation.test.ts (2 tests) 389ms
+ ✓ tests/integration/native-staff-room-padded-chair-preparation.test.ts (2 tests) 377ms
+ ✓ tests/unit/worker-telemetry-ingest.test.ts (91 tests) 461ms
+     ✓ carries no key-shaped literal, checked by the gate this repository already has for it  397ms
+ ✓ tests/determinism/kernel-static-restore-boundary.test.ts (2 tests) 332ms
+     ✓ is called from nowhere in src/, which is the only reason the case above is harmless  329ms
+ ✓ tests/integration/template-delivery-bootstrap.test.ts (2 tests) 351ms
+ ✓ tests/unit/laundry-retained-cycles-production.test.ts (3 tests) 290ms
+ ✓ tests/integration/native-garbage-room-preparation.test.ts (2 tests) 340ms
+ ✓ tests/integration/room-template-adjacent-entrance-atomicity.test.ts (32 tests) 334ms
+ ✓ tests/integration/assault-sanction-loop.test.ts (3 tests) 303ms
+ ✓ tests/unit/oblique-guard-belt-detail-integrity.test.ts (1 test) 290ms
+ ✓ tests/determinism/snapshot-restore-fidelity.test.ts (12 tests) 314ms
+ ✓ tests/unit/construction-doors.test.ts (18 tests) 323ms
+ ✓ tests/integration/gang-membership-at-review.test.ts (3 tests) 306ms
+ ✓ tests/integration/construction-just-in-time-materials.test.ts (18 tests) 320ms
+ ✓ tests/contract/simulation-worker-entry.test.ts (8 tests) 287ms
+ ✓ tests/integration/yard-and-common-room.test.ts (3 tests) 342ms
+ ✓ tests/unit/ui-room-template-world-bridge.test.ts (11 tests) 313ms
+ ✓ tests/integration/economy-state-income-persistence.test.ts (7 tests) 287ms
+ ✓ tests/integration/laundry-work-and-empty-blocks.test.ts (5 tests) 323ms
+ ✓ tests/integration/economy-insolvency-ladder.test.ts (7 tests) 291ms
+ ✓ tests/unit/canteen-bench-retained-cycles-production.test.ts (3 tests) 301ms
+ ✓ tests/integration/economy-way-back-reserve.test.ts (3 tests) 242ms
+ ✓ tests/determinism/navigation-shared-plan-equivalence.test.ts (6 tests) 253ms
+ ✓ tests/integration/session-save-round-trip.test.ts (16 tests) 274ms
+ ✓ tests/unit/staff-chair-retained-cycles-production.test.ts (3 tests) 236ms
+ ✓ tests/unit/modern-retained-material-draft-art.test.ts (3 tests) 240ms
+ ✓ tests/integration/individual-object-rotation-command.test.ts (4 tests) 269ms
+ ✓ tests/integration/security-guard-release.test.ts (21 tests) 263ms
+ ✓ tests/unit/room-template-row.test.ts (2 tests) 223ms
+ ✓ tests/unit/oblique-native-wall-logistics-fixture.test.ts (2 tests) 261ms
+ ✓ tests/unit/oblique-cell-toilet-physical-integrity.test.ts (1 test) 256ms
+ ✓ tests/unit/kitchen-stove-retained-cycles-production.test.ts (3 tests) 215ms
+ ✓ tests/integration/economy-money-conservation.test.ts (26 tests) 254ms
+ ✓ tests/unit/ui-template-held-dialog-transform.test.ts (24 tests) 247ms
+ ✓ tests/integration/furnished-cell-loop.test.ts (11 tests) 226ms
+ ✓ tests/integration/v10-max-native-input.test.ts (1 test) 222ms
+ ✓ tests/foundation/claimable-guard-pool-contract.test.ts (3 tests) 209ms
+ ✓ tests/unit/ui-template-numeric-submit-ownership.test.ts (18 tests) 154ms
+ ✓ tests/foundation/deployment-phase-producer-contract.test.ts (4 tests) 205ms
+ ✓ tests/integration/incident-events-loop.test.ts (3 tests) 207ms
+ ✓ tests/unit/persistence-session-lifecycle.test.ts (8 tests) 201ms
+ ✓ tests/unit/kitchen-prep-counter-retained-cycles-production.test.ts (3 tests) 205ms
+ ✓ tests/integration/session-restore-failure.test.ts (20 tests) 215ms
+ ✓ tests/integration/security-post-unreachable-condition.test.ts (7 tests) 213ms
+ ✓ tests/integration/security-default-sector.test.ts (16 tests) 200ms
+ ✓ tests/foundation/benchmark-scenario-kind-contract.test.ts (10 tests) 180ms
+ ✓ tests/integration/economy-payroll-save.test.ts (8 tests) 201ms
+ ✓ tests/integration/carry-restore-resumes-the-errand.test.ts (6 tests) 199ms
+ ✓ tests/foundation/world-view-state-measurement-contract.test.ts (4 tests) 203ms
+ ✓ tests/foundation/player-string-inventory-contract.test.ts (6 tests) 182ms
+ ✓ tests/unit/modern-square-wall-material-study.test.ts (5 tests) 183ms
+ ✓ tests/integration/coverage-safety-loop.test.ts (2 tests) 195ms
+ ✓ tests/integration/security-post-eligibility.test.ts (11 tests) 209ms
+ ✓ tests/migrations/save-v8-to-v9-construction-history.test.ts (44 tests) 201ms
+ ✓ tests/determinism/rng-stream-isolation.test.ts (10 tests) 185ms
+ ✓ tests/foundation/security-sector-authorship-contract.test.ts (5 tests) 172ms
+ ✓ tests/integration/kitchen-work.test.ts (3 tests) 194ms
+ ✓ tests/foundation/merge-conflict-marker-contract.test.ts (8 tests) 938ms
+     ✓ leaves no tracked file carrying an unresolved conflict hunk  334ms
+     ✓ leaves no tracked file carrying an unpaired marker line  301ms
+ ✓ tests/unit/navigation-local-search-admissibility.test.ts (5 tests) 172ms
+ ✓ tests/integration/room-template-delivery-readiness.test.ts (2 tests) 186ms
+ ✓ tests/unit/simulation-refusals.test.ts (64 tests) 170ms
+ ✓ tests/integration/prisoner-roster-readout.test.ts (7 tests) 186ms
+stdout | tests/unit/worker-status-counts.test.ts > a status-counts publication at 250 actors > costs one bounded projection and clones a payload whose size does not grow with the population
+[status-counts publication] actors=250 rooms=300 staff=40 projectMs=0.236 cloneMs=0.038 payloadJsonBytes=899 maxSendsPerSecond=2.0
+
+stdout | tests/unit/worker-status-counts.test.ts > a status-counts publication at 1000 actors > costs one bounded projection and clones a payload whose size does not grow with the population
+[status-counts publication] actors=1000 rooms=300 staff=40 projectMs=0.395 cloneMs=0.029 payloadJsonBytes=924 maxSendsPerSecond=2.0
+
+stdout | tests/unit/worker-status-counts.test.ts > a status-counts publication at 2500 actors > costs one bounded projection and clones a payload whose size does not grow with the population
+[status-counts publication] actors=2500 rooms=300 staff=40 projectMs=1.192 cloneMs=0.031 payloadJsonBytes=924 maxSendsPerSecond=2.0
+
+stdout | tests/unit/worker-status-counts.test.ts > a status-counts publication at 5000 actors > costs one bounded projection and clones a payload whose size does not grow with the population
+[status-counts publication] actors=5000 rooms=300 staff=40 projectMs=0.629 cloneMs=0.029 payloadJsonBytes=924 maxSendsPerSecond=2.0
+
+ ✓ tests/unit/worker-status-counts.test.ts (31 tests) 164ms
+ ✓ tests/integration/carry-need-threshold.test.ts (7 tests) 181ms
+ ✓ tests/unit/oblique-square-brick-wall-catalog.test.ts (2 tests) 159ms
+ ✓ tests/integration/object-placement-loop.test.ts (14 tests) 187ms
+ ✓ tests/unit/kitchen-fridge-retained-cycles-production.test.ts (3 tests) 125ms
+ ✓ tests/unit/room-template-redo.test.ts (2 tests) 165ms
+ ✓ tests/migrations/save-v7-to-v8-object-ownership.test.ts (25 tests) 152ms
+ ✓ tests/unit/pending-wall-guards-fixture.test.ts (1 test) 162ms
+ ✓ tests/integration/a-second-cell-buys-a-place.test.ts (2 tests) 153ms
+stdout | tests/unit/security-scale.test.ts > security scale: many sectors deployed and patrolled concurrently > deploys and patrols 120 guards across 60 sectors without pathological slowdown
+[security scale] sectors=60 guards=120 wallMs=148.9 patrol={"loopsCompletedOnTime":17248,"loopsCompletedLate":0,"loopsMissed":0}
+
+ ✓ tests/unit/security-scale.test.ts (1 test) 155ms
+ ✓ tests/foundation/message-kind-reachability-contract.test.ts (13 tests) 160ms
+ ✓ tests/integration/dead-room-no-doorway.test.ts (9 tests) 168ms
+ ✓ tests/determinism/projection-request.test.ts (5 tests) 152ms
+stdout | tests/unit/ui-room-template-session-preflight.test.ts > fresh 'new' session admits a new plan after outgoing preflight, armed=false
+{"operation":"new","result":{"ok":true},"oldState":"shutting-down","newState":"paused","beforeOrders":0,"afterOrders":18,"beforeTreasury":{"balanceMinorUnits":25000},"afterTreasury":{"balanceMinorUnits":25000},"actualNewCommandMessages":1,"sameAuthoritativeSnapshot":false}
+
+stdout | tests/unit/ui-room-template-session-preflight.test.ts > fresh 'new' session admits a new plan after outgoing preflight, armed=true
+{"operation":"new","result":{"ok":true},"oldState":"shutting-down","newState":"paused","beforeOrders":0,"afterOrders":18,"beforeTreasury":{"balanceMinorUnits":25000},"afterTreasury":{"balanceMinorUnits":25000},"actualNewCommandMessages":1,"sameAuthoritativeSnapshot":false}
+
+stdout | tests/unit/ui-room-template-session-preflight.test.ts > fresh 'load' session admits a new plan after outgoing preflight, armed=false
+{"operation":"load","result":{"ok":true},"oldState":"shutting-down","newState":"paused","beforeOrders":18,"afterOrders":36,"beforeTreasury":{"balanceMinorUnits":25000},"afterTreasury":{"balanceMinorUnits":25000},"actualNewCommandMessages":1,"sameAuthoritativeSnapshot":false}
+
+stdout | tests/unit/ui-room-template-session-preflight.test.ts > fresh 'load' session admits a new plan after outgoing preflight, armed=true
+{"operation":"load","result":{"ok":true},"oldState":"shutting-down","newState":"paused","beforeOrders":18,"afterOrders":36,"beforeTreasury":{"balanceMinorUnits":25000},"afterTreasury":{"balanceMinorUnits":25000},"actualNewCommandMessages":1,"sameAuthoritativeSnapshot":false}
+
+ ✓ tests/unit/ui-room-template-session-preflight.test.ts (12 tests) 110ms
+ ✓ tests/integration/economy-liquidity-hard-lock.test.ts (6 tests) 152ms
+ ✓ tests/unit/persistence-local-repository.test.ts (58 tests) 139ms
+ ✓ tests/unit/ui-simulation-prisoner-detail.test.ts (15 tests) 149ms
+stdout | tests/unit/persistence-session-controller.test.ts > SessionController: autosave coalescing and non-overlap > #1097: three autosaves after creation leave the pendingSync marker stale while the durable revision moves on
+#1097 repro: durable revision = 4 pendingSync = { dirtySinceRevision: 1, markedAt: 1791074700031 } currentRevision = 4
+
+ ✓ tests/unit/persistence-session-controller.test.ts (34 tests) 144ms
+ ✓ tests/unit/ui-template-numeric-submit-session-controls.test.ts (8 tests) 125ms
+ ✓ tests/integration/economy-occupied-place-exists.test.ts (4 tests) 147ms
+ ✓ tests/integration/sentence-length-variation.test.ts (6 tests) 148ms
+ ✓ tests/contract/runtime-atlas-validation.test.ts (15 tests) 137ms
+ ✓ tests/integration/command-success-notices.test.ts (30 tests) 145ms
+ ✓ tests/unit/construction-geometry.test.ts (35 tests) 130ms
+ ✓ tests/unit/square-wall-retained-cycles-production.test.ts (3 tests) 102ms
+ ✓ tests/unit/common-room-retained-cycles-production.test.ts (3 tests) 135ms
+ ✓ tests/unit/persistence-stale-save-refusal.test.ts (7 tests) 101ms
+ ✓ tests/integration/cell-only-meal-fallback.test.ts (3 tests) 127ms
+ ✓ tests/foundation/pseudo-locale-contract.test.ts (8 tests) 148ms
+ ✓ tests/unit/cell-toilet-retained-cycles-production.test.ts (3 tests) 121ms
+ ✓ tests/integration/completed-edge-structures-arrive-with-their-edge.test.ts (2 tests) 125ms
+ ✓ tests/unit/oblique-canteen-dining-table-detail-integrity.test.ts (1 test) 116ms
+ ✓ tests/migrations/save-v9-to-v10-exact-counter.test.ts (5 tests) 120ms
+ ✓ tests/integration/economy-bed-recycling.test.ts (4 tests) 120ms
+ ✓ tests/integration/construction-placement-order.test.ts (5 tests) 123ms
+stdout | tests/unit/ui-template-camera-preflight-coherence.test.ts > actual 85f CameraA geometry: whole mirrored q1 floor fits outside open controls and retains accepted anchor on pose/release
+ACTUAL_85F_CAMERA_A_FIT {"origin":{"x":15,"y":16},"cells":28,"coveredCenters":0,"pose":{"target":{"x":136.14556609974625,"y":-25.645646767087783},"viewport":{"width":1920,"height":1080},"zoom":0.32628566184476904,"yawRadians":0.6108652381980153,"elevationRadians":1.1344640137963142}}
+
+stdout | tests/unit/ui-template-camera-preflight-coherence.test.ts > actual 85f CameraA geometry: whole mirrored q1 floor fits outside open controls and retains accepted anchor on pose/release
+ACTUAL_85F_CAMERA_A_FIT {"origin":{"x":15,"y":16},"cells":28,"coveredCenters":0,"pose":{"target":{"x":-248.8658590975133,"y":209.43247593532942},"viewport":{"width":1920,"height":1080},"zoom":0.29988909955555615,"yawRadians":0.8726646259971647,"elevationRadians":1.1344640137963142}}
+
+stdout | tests/unit/ui-template-camera-preflight-coherence.test.ts > actual angled pose/normal: pending old preflight, stationary primary release retains displayed footprint/quote
+ACTUAL_TEMPLATE_CAMERA_REVISION {"change":"pose","mirrored":false,"initial":{"x":10,"y":11},"expected":{"x":10,"y":11},"changedOrigin":false,"quote":{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},"squares":28,"commands":[{"type":"PlaceRoomTemplate","templateId":"cell-basic","origin":{"x":10,"y":11},"quarterTurns":1}]}
+
+stdout | tests/unit/ui-template-camera-preflight-coherence.test.ts > actual angled pose/mirrored: pending old preflight, stationary primary release retains displayed footprint/quote
+ACTUAL_TEMPLATE_CAMERA_REVISION {"change":"pose","mirrored":true,"initial":{"x":10,"y":11},"expected":{"x":10,"y":11},"changedOrigin":false,"quote":{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},"squares":28,"commands":[{"type":"PlaceRoomTemplate","templateId":"cell-basic","origin":{"x":10,"y":11},"mirrorX":true,"quarterTurns":1}]}
+
+stdout | tests/unit/ui-template-camera-preflight-coherence.test.ts > actual angled zoom/normal: pending old preflight, stationary primary release retains displayed footprint/quote
+ACTUAL_TEMPLATE_CAMERA_REVISION {"change":"zoom","mirrored":false,"initial":{"x":10,"y":11},"expected":{"x":11,"y":11},"changedOrigin":true,"quote":{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},"squares":28,"commands":[{"type":"PlaceRoomTemplate","templateId":"cell-basic","origin":{"x":11,"y":11},"quarterTurns":1}]}
+
+stdout | tests/unit/ui-template-camera-preflight-coherence.test.ts > actual angled zoom/mirrored: pending old preflight, stationary primary release retains displayed footprint/quote
+ACTUAL_TEMPLATE_CAMERA_REVISION {"change":"zoom","mirrored":true,"initial":{"x":10,"y":11},"expected":{"x":11,"y":11},"changedOrigin":true,"quote":{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},"squares":28,"commands":[{"type":"PlaceRoomTemplate","templateId":"cell-basic","origin":{"x":11,"y":11},"mirrorX":true,"quarterTurns":1}]}
+
+stdout | tests/unit/ui-template-camera-preflight-coherence.test.ts > actual angled resize/normal: pending old preflight, stationary primary release retains displayed footprint/quote
+ACTUAL_TEMPLATE_CAMERA_REVISION {"change":"resize","mirrored":false,"initial":{"x":10,"y":11},"expected":{"x":10,"y":11},"changedOrigin":false,"quote":{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},"squares":28,"commands":[{"type":"PlaceRoomTemplate","templateId":"cell-basic","origin":{"x":10,"y":11},"quarterTurns":1}]}
+
+stdout | tests/unit/ui-template-camera-preflight-coherence.test.ts > actual angled resize/mirrored: pending old preflight, stationary primary release retains displayed footprint/quote
+ACTUAL_TEMPLATE_CAMERA_REVISION {"change":"resize","mirrored":true,"initial":{"x":10,"y":11},"expected":{"x":10,"y":11},"changedOrigin":false,"quote":{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},"squares":28,"commands":[{"type":"PlaceRoomTemplate","templateId":"cell-basic","origin":{"x":10,"y":11},"mirrorX":true,"quarterTurns":1}]}
+
+stdout | tests/unit/ui-template-camera-preflight-coherence.test.ts > actual angled ui-scale/normal: pending old preflight, stationary primary release retains displayed footprint/quote
+ACTUAL_TEMPLATE_CAMERA_REVISION {"change":"ui-scale","mirrored":false,"initial":{"x":10,"y":11},"expected":{"x":10,"y":11},"changedOrigin":false,"quote":{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},"squares":28,"commands":[{"type":"PlaceRoomTemplate","templateId":"cell-basic","origin":{"x":10,"y":11},"quarterTurns":1}]}
+
+stdout | tests/unit/ui-template-camera-preflight-coherence.test.ts > actual angled ui-scale/mirrored: pending old preflight, stationary primary release retains displayed footprint/quote
+ACTUAL_TEMPLATE_CAMERA_REVISION {"change":"ui-scale","mirrored":true,"initial":{"x":10,"y":11},"expected":{"x":10,"y":11},"changedOrigin":false,"quote":{"orderCount":20,"materials":[{"itemId":"item.brick","quantity":35},{"itemId":"item.wood-plank","quantity":2}],"catalogueCostMinorUnits":1530},"squares":28,"commands":[{"type":"PlaceRoomTemplate","templateId":"cell-basic","origin":{"x":10,"y":11},"mirrorX":true,"quarterTurns":1}]}
+
+ ✓ tests/unit/ui-template-camera-preflight-coherence.test.ts (9 tests) 94ms
+stdout | tests/integration/room-selection-query-cost.test.ts > ordinary full Shower rooms need no physical query when no capability seat is free
+{"kind":"ordinary-saturated-rooms","roomCount":2,"seats":4,"previousFreshnessChunkReads":0,"physicalQueries":0,"freshnessChunkReads":0}
+
+ ✓ tests/integration/room-selection-query-cost.test.ts (1 test) 125ms
+ ✓ tests/integration/generic-object-footprint-admission.test.ts (14 tests) 122ms
+ ✓ tests/determinism/save-rng-stream-compatibility.test.ts (7 tests) 123ms
+ ✓ tests/integration/construction-exact-counter-v10.test.ts (6 tests) 118ms
+ ✓ tests/integration/unzoned-target-mid-journey.test.ts (3 tests) 112ms
+ ✓ tests/integration/economy-refund-survives-the-clock.test.ts (14 tests) 113ms
+ ✓ tests/unit/ui-hud-messages.test.ts (13 tests) 111ms
+ ✓ tests/determinism/iteration-order.test.ts (14 tests) 108ms
+ ✓ tests/unit/ui-template-chord-release.test.ts (32 tests) 116ms
+ ✓ tests/unit/economy-state-income.test.ts (44 tests) 106ms
+stdout | tests/unit/oblique-hud-cancel-rearm.test.ts > world/wall: HUD cancel then re-arm before next render frame must not complete the cancelled old left press
+CANCEL_REARM_OLD_RELEASE {"mode":"world","tool":"wall","transitions":[true,false,true],"commands":[],"roomReports":[]}
+
+stdout | tests/unit/oblique-hud-cancel-rearm.test.ts > world/object: HUD cancel then re-arm before next render frame must not complete the cancelled old left press
+CANCEL_REARM_OLD_RELEASE {"mode":"world","tool":"object","transitions":[true,false,true],"commands":[],"roomReports":[]}
+
+stdout | tests/unit/oblique-hud-cancel-rearm.test.ts > world/room: HUD cancel then re-arm before next render frame must not complete the cancelled old left press
+CANCEL_REARM_OLD_RELEASE {"mode":"world","tool":"room","transitions":[true,false,true],"commands":[],"roomReports":[]}
+
+stdout | tests/unit/oblique-hud-cancel-rearm.test.ts > oblique/wall: HUD cancel then re-arm before next render frame must not complete the cancelled old left press
+CANCEL_REARM_OLD_RELEASE {"mode":"oblique","tool":"wall","transitions":[true,false,true],"commands":[],"roomReports":[]}
+
+stdout | tests/unit/oblique-hud-cancel-rearm.test.ts > oblique/object: HUD cancel then re-arm before next render frame must not complete the cancelled old left press
+CANCEL_REARM_OLD_RELEASE {"mode":"oblique","tool":"object","transitions":[true,false,true],"commands":[],"roomReports":[]}
+
+stdout | tests/unit/oblique-hud-cancel-rearm.test.ts > oblique/room: HUD cancel then re-arm before next render frame must not complete the cancelled old left press
+CANCEL_REARM_OLD_RELEASE {"mode":"oblique","tool":"room","transitions":[true,false,true],"commands":[],"roomReports":[]}
+
+stdout | tests/unit/oblique-hud-cancel-rearm.test.ts > world: actual Door catalogue selection withdraws the held old square-wall press
+CATALOGUE_OLD_RELEASE {"mode":"world","commands":[]}
+
+stdout | tests/unit/oblique-hud-cancel-rearm.test.ts > oblique: actual Door catalogue selection withdraws the held old square-wall press
+CATALOGUE_OLD_RELEASE {"mode":"oblique","commands":[]}
+
+ ✓ tests/unit/oblique-hud-cancel-rearm.test.ts (27 tests) 76ms
+stdout | tests/unit/world-build-camera-button-release.test.ts > world/wall/canvas: a middle-button release cannot commit the still-held left construction press
+ACTUAL_CHORD_RELEASE {"mode":"world","tool":"wall","outside":false,"primaryDown":true,"buttons":1,"commands":[],"roomReports":[]}
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > world/wall/outside: a middle-button release cannot commit the still-held left construction press
+ACTUAL_CHORD_RELEASE {"mode":"world","tool":"wall","outside":true,"primaryDown":true,"buttons":1,"commands":[],"roomReports":[]}
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > oblique/wall/canvas: a middle-button release cannot commit the still-held left construction press
+ACTUAL_CHORD_RELEASE {"mode":"oblique","tool":"wall","outside":false,"primaryDown":true,"buttons":1,"commands":[],"roomReports":[]}
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > oblique/wall/outside: a middle-button release cannot commit the still-held left construction press
+ACTUAL_CHORD_RELEASE {"mode":"oblique","tool":"wall","outside":true,"primaryDown":true,"buttons":1,"commands":[],"roomReports":[]}
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > world/object/canvas: a middle-button release cannot commit the still-held left construction press
+ACTUAL_CHORD_RELEASE {"mode":"world","tool":"object","outside":false,"primaryDown":true,"buttons":1,"commands":[],"roomReports":[]}
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > world/object/outside: a middle-button release cannot commit the still-held left construction press
+ACTUAL_CHORD_RELEASE {"mode":"world","tool":"object","outside":true,"primaryDown":true,"buttons":1,"commands":[],"roomReports":[]}
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > oblique/object/canvas: a middle-button release cannot commit the still-held left construction press
+ACTUAL_CHORD_RELEASE {"mode":"oblique","tool":"object","outside":false,"primaryDown":true,"buttons":1,"commands":[],"roomReports":[]}
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > oblique/object/outside: a middle-button release cannot commit the still-held left construction press
+ACTUAL_CHORD_RELEASE {"mode":"oblique","tool":"object","outside":true,"primaryDown":true,"buttons":1,"commands":[],"roomReports":[]}
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > world/room/canvas: a middle-button release cannot commit the still-held left construction press
+ACTUAL_CHORD_RELEASE {"mode":"world","tool":"room","outside":false,"primaryDown":true,"buttons":1,"commands":[],"roomReports":[]}
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > world/room/outside: a middle-button release cannot commit the still-held left construction press
+ACTUAL_CHORD_RELEASE {"mode":"world","tool":"room","outside":true,"primaryDown":true,"buttons":1,"commands":[],"roomReports":[]}
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > oblique/room/canvas: a middle-button release cannot commit the still-held left construction press
+ACTUAL_CHORD_RELEASE {"mode":"oblique","tool":"room","outside":false,"primaryDown":true,"buttons":1,"commands":[],"roomReports":[]}
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > oblique/room/outside: a middle-button release cannot commit the still-held left construction press
+ACTUAL_CHORD_RELEASE {"mode":"oblique","tool":"room","outside":true,"primaryDown":true,"buttons":1,"commands":[],"roomReports":[]}
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > Oblique: after pose/zoom, a missed primary release becomes one hover square rather than an old drag or a later camera-button purchase
+ACTUAL_MISSED_PRIMARY_RELEASE {"held":{"x":9,"y":12,"segments":5,"squareRun":true,"definitionId":"wall-brick"},"recovered":{"x":13,"y":9,"segments":1,"squareRun":true,"definitionId":"wall-brick"},"buttons":0,"commands":[]}
+
+stdout | tests/unit/world-build-camera-button-release.test.ts > Oblique: a lost primary release cannot be purchased by the next genuine right-camera release
+ACTUAL_ABANDONED_CAMERA_RELEASE []
+
+ ✓ tests/unit/world-build-camera-button-release.test.ts (33 tests) 79ms
+ ✓ tests/unit/oblique-wooden-bench-crossrails-integrity.test.ts (2 tests) 104ms
+stdout | tests/integration/room-template-queued-cancellation-save.test.ts > the same genuine queued cancellation must retain its unchanged-state outcome through V9, mirror=false
+ACTUAL_QUEUED_CANCEL {"mirrorX":false,"expectedRevision":"2","restoredRevision":"2","executeAtTick":13,"fundsAtSave":23575,"liveFunds":25000,"loadedFunds":25000,"liveOrder":"cancelled","loadedOrder":"cancelled","livePending":0,"loadedPending":0,"savedCommandCount":1}
+
+stdout | tests/integration/room-template-queued-cancellation-save.test.ts > the same genuine queued cancellation must retain its unchanged-state outcome through V9, mirror=true
+ACTUAL_QUEUED_CANCEL {"mirrorX":true,"expectedRevision":"2","restoredRevision":"2","executeAtTick":13,"fundsAtSave":23575,"liveFunds":25000,"loadedFunds":25000,"liveOrder":"cancelled","loadedOrder":"cancelled","livePending":0,"loadedPending":0,"savedCommandCount":1}
+
+ ✓ tests/integration/room-template-queued-cancellation-save.test.ts (8 tests) 118ms
+ ✓ tests/integration/session-a-second-prison-keeps-the-first.test.ts (9 tests) 99ms
+ ✓ tests/unit/oblique-generic-rack-detail-integrity.test.ts (1 test) 95ms
+ ✓ tests/determinism/clock-transport.test.ts (4 tests) 99ms
+ ✓ tests/foundation/adr-quotation-verbatim-contract.test.ts (18 tests) 95ms
+ ✓ tests/unit/navigation-system.test.ts (7 tests) 99ms
+ ✓ tests/unit/oblique-kitchen-stove-detail-integrity.test.ts (1 test) 96ms
+ ✓ tests/unit/room-template-kitchen.test.ts (2 tests) 106ms
+ ✓ tests/unit/cell-cot-retained-cycles-production.test.ts (3 tests) 96ms
+ ✓ tests/foundation/hud-refresh-cadence-contract.test.ts (5 tests) 100ms
+ ✓ tests/integration/prisoner-walks-the-route.test.ts (2 tests) 75ms
+ ✓ tests/integration/prisoner-admission-loop.test.ts (10 tests) 95ms
+ ✓ tests/unit/oblique-common-room-bench-arm-supports-integrity.test.ts (2 tests) 92ms
+ ✓ tests/unit/oblique-kitchen-fridge-detail-integrity.test.ts (1 test) 93ms
+ ✓ tests/integration/construction-history-restore-validation.test.ts (15 tests) 103ms
+ ✓ tests/unit/oblique-wooden-chair-detail-integrity.test.ts (1 test) 90ms
+ ✓ tests/migrations/save-v5-to-v6.test.ts (8 tests) 61ms
+ ✓ tests/unit/oblique-cell-cot-detail-integrity.test.ts (1 test) 86ms
+ ✓ tests/integration/construction-empty-order-id.test.ts (17 tests) 91ms
+ ✓ tests/unit/oblique-shower-head-detail-integrity.test.ts (1 test) 85ms
+ ✓ tests/integration/a-save-whose-cell-is-over-the-ceiling.test.ts (1 test) 90ms
+ ✓ tests/integration/economy-cancel-into-the-overdraft.test.ts (4 tests) 88ms
+ ✓ tests/unit/oblique-laundry-washing-machine-detail-integrity.test.ts (1 test) 89ms
+ ✓ tests/integration/capacity-counts-on-completion.test.ts (2 tests) 85ms
+ ✓ tests/migrations/save-v5-negative-balance.test.ts (12 tests) 92ms
+ ✓ tests/unit/module-boundary-rules.test.ts (43 tests) 99ms
+ ✓ tests/integration/construction-completion-notice.test.ts (4 tests) 86ms
+ ✓ tests/unit/oblique-library-bookshelf-detail-integrity.test.ts (1 test) 86ms
+ ✓ tests/integration/room-template-rotated-collision-atomicity.test.ts (4 tests) 82ms
+ ✓ tests/migrations/save-v3-to-v4.test.ts (12 tests) 87ms
+ ✓ tests/migrations/save-v4-to-v5.test.ts (9 tests) 82ms
+ ✓ tests/migrations/save-v4-room-bounds.test.ts (9 tests) 84ms
+ ✓ tests/unit/oblique-loading-dock-detail-integrity.test.ts (1 test) 84ms
+ ✓ tests/unit/oblique-office-desk-detail-integrity.test.ts (1 test) 80ms
+ ✓ tests/unit/room-template-late-object-approach.test.ts (9 tests) 83ms
+ ✓ tests/unit/oblique-canteen-dining-table-integrity.test.ts (2 tests) 76ms
+ ✓ tests/unit/services-layer-boundaries.test.ts (14 tests) 76ms
+ ✓ tests/integration/relocation-notice-loop.test.ts (4 tests) 81ms
+ ✓ tests/unit/oblique-utility-panel-angled-integrity.test.ts (1 test) 81ms
+ ✓ tests/determinism/ambient-nondeterminism-contract.test.ts (6 tests) 64ms
+ ✓ tests/integration/economy-cancel-what-comes-back.test.ts (3 tests) 81ms
+ ✓ tests/integration/room-zoning-loop.test.ts (8 tests) 83ms
+ ✓ tests/unit/ui-renderer-template-stationary-hover.test.ts (20 tests) 83ms
+ ✓ tests/unit/oblique-security-console-angled-integrity.test.ts (1 test) 81ms
+ ✓ tests/integration/over-admission-signal.test.ts (4 tests) 74ms
+stdout | tests/unit/ordinary-build-session-ownership.test.ts > world/new/wall: outgoing held gesture cannot report or submit into replacement worker
+ACTUAL_SESSION_OLD_PRIMARY_RELEASE {"mode":"world","operation":"new","tool":"wall","commands":[],"roomReports":[],"beforeOrders":0,"afterOrders":0}
+
+stdout | tests/unit/ordinary-build-session-ownership.test.ts > world/new/object: outgoing held gesture cannot report or submit into replacement worker
+ACTUAL_SESSION_OLD_PRIMARY_RELEASE {"mode":"world","operation":"new","tool":"object","commands":[],"roomReports":[],"beforeOrders":0,"afterOrders":0}
+
+stdout | tests/unit/ordinary-build-session-ownership.test.ts > world/new/room: outgoing held gesture cannot report or submit into replacement worker
+ACTUAL_SESSION_OLD_PRIMARY_RELEASE {"mode":"world","operation":"new","tool":"room","commands":[],"roomReports":[],"beforeOrders":0,"afterOrders":0}
+
+stdout | tests/unit/ordinary-build-session-ownership.test.ts > world/load/wall: outgoing held gesture cannot report or submit into replacement worker
+ACTUAL_SESSION_OLD_PRIMARY_RELEASE {"mode":"world","operation":"load","tool":"wall","commands":[],"roomReports":[],"beforeOrders":0,"afterOrders":0}
+
+stdout | tests/unit/ordinary-build-session-ownership.test.ts > world/load/object: outgoing held gesture cannot report or submit into replacement worker
+ACTUAL_SESSION_OLD_PRIMARY_RELEASE {"mode":"world","operation":"load","tool":"object","commands":[],"roomReports":[],"beforeOrders":0,"afterOrders":0}
+
+stdout | tests/unit/ordinary-build-session-ownership.test.ts > world/load/room: outgoing held gesture cannot report or submit into replacement worker
+ACTUAL_SESSION_OLD_PRIMARY_RELEASE {"mode":"world","operation":"load","tool":"room","commands":[],"roomReports":[],"beforeOrders":0,"afterOrders":0}
+
+stdout | tests/unit/ordinary-build-session-ownership.test.ts > oblique/new/wall: outgoing held gesture cannot report or submit into replacement worker
+ACTUAL_SESSION_OLD_PRIMARY_RELEASE {"mode":"oblique","operation":"new","tool":"wall","commands":[],"roomReports":[],"beforeOrders":0,"afterOrders":0}
+
+ ✓ tests/integration/security-returning-after-restore.test.ts (6 tests) 78ms
+stdout | tests/unit/ordinary-build-session-ownership.test.ts > oblique/new/object: outgoing held gesture cannot report or submit into replacement worker
+ACTUAL_SESSION_OLD_PRIMARY_RELEASE {"mode":"oblique","operation":"new","tool":"object","commands":[],"roomReports":[],"beforeOrders":0,"afterOrders":0}
+
+stdout | tests/unit/ordinary-build-session-ownership.test.ts > oblique/new/room: outgoing held gesture cannot report or submit into replacement worker
+ACTUAL_SESSION_OLD_PRIMARY_RELEASE {"mode":"oblique","operation":"new","tool":"room","commands":[],"roomReports":[],"beforeOrders":0,"afterOrders":0}
+
+stdout | tests/unit/ordinary-build-session-ownership.test.ts > oblique/load/wall: outgoing held gesture cannot report or submit into replacement worker
+ACTUAL_SESSION_OLD_PRIMARY_RELEASE {"mode":"oblique","operation":"load","tool":"wall","commands":[],"roomReports":[],"beforeOrders":0,"afterOrders":0}
+
+stdout | tests/unit/ordinary-build-session-ownership.test.ts > oblique/load/object: outgoing held gesture cannot report or submit into replacement worker
+ACTUAL_SESSION_OLD_PRIMARY_RELEASE {"mode":"oblique","operation":"load","tool":"object","commands":[],"roomReports":[],"beforeOrders":0,"afterOrders":0}
+
+stdout | tests/unit/ordinary-build-session-ownership.test.ts > oblique/load/room: outgoing held gesture cannot report or submit into replacement worker
+ACTUAL_SESSION_OLD_PRIMARY_RELEASE {"mode":"oblique","operation":"load","tool":"room","commands":[],"roomReports":[],"beforeOrders":0,"afterOrders":0}
+
+ ✓ tests/unit/ordinary-build-session-ownership.test.ts (30 tests) 87ms
+ ✓ tests/foundation/typecheck-coverage-contract.test.ts (4 tests) 42ms
+ ✓ tests/unit/construction-crew-capacity.test.ts (8 tests) 74ms
+ ✓ tests/unit/oblique-medical-fixture-integrity.test.ts (2 tests) 68ms
+ ✓ tests/contract/art-pipeline-contract.test.ts (4 tests) 31ms
+ ✓ tests/determinism/render-delta-publication.test.ts (3 tests) 74ms
+ ✓ tests/integration/undo-refuses-a-transaction-the-player-did-not-just-create.test.ts (8 tests) 74ms
+ ✓ tests/integration/wall-built-mid-walk.test.ts (2 tests) 74ms
+ ✓ tests/unit/actor-identity.test.ts (26 tests) 68ms
+ ✓ tests/unit/simulation-message-keys.test.ts (67 tests) 68ms
+ ✓ tests/unit/oblique-wooden-bench-integrity.test.ts (2 tests) 67ms
+ ✓ tests/unit/construction-just-in-time-materials.test.ts (35 tests) 74ms
+ ✓ tests/unit/worker-render-delta.test.ts (11 tests) 68ms
+ ✓ tests/unit/construction-build-queue-projection.test.ts (18 tests) 72ms
+ ✓ tests/unit/rendering-feed.test.ts (55 tests) 70ms
+ ✓ tests/unit/oblique-generic-wooden-rack-integrity.test.ts (2 tests) 61ms
+ ✓ tests/unit/persistence-save-schema.test.ts (32 tests) 65ms
+ ✓ tests/determinism/navigation-cache-agreement.test.ts (7 tests) 66ms
+ ✓ tests/unit/live-renderer-selection.test.ts (5 tests) 56ms
+ ✓ tests/determinism/status-counts-publication.test.ts (3 tests) 63ms
+ ✓ tests/unit/staff-roster-capacity.test.ts (3 tests) 62ms
+ ✓ tests/unit/oblique-shower-head-integrity.test.ts (2 tests) 54ms
+ ✓ tests/integration/construction-newer-action-save.test.ts (4 tests) 71ms
+ ✓ tests/integration/staff-dismissal.test.ts (7 tests) 62ms
+ ✓ tests/foundation/two-authorities-one-prisoner-contract.test.ts (1 test) 49ms
+ ✓ tests/unit/ui-orchestration-boundaries.test.ts (8 tests) 63ms
+ ✓ tests/integration/door-construction-loop.test.ts (4 tests) 63ms
+ ✓ tests/unit/prisoner-release-completeness.test.ts (5 tests) 59ms
+ ✓ tests/integration/unassigned-guard-count-agreement.test.ts (5 tests) 61ms
+ ✓ tests/unit/entity-generation-wrap.test.ts (6 tests) 57ms
+ ✓ tests/contract/worker-projection-channel.test.ts (11 tests) 57ms
+ ✓ tests/migrations/save-v2-to-v3.test.ts (22 tests) 58ms
+ ✓ tests/unit/worker-state-machine.test.ts (29 tests) 56ms
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'behind partially loaded wall, actor P…'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":0,"elevation":45,"behind":true,"wall":false,"actor":true,"sorted":[{"id":1,"kind":"actor","depth":307.2},{"id":"square-wall:5:5","kind":"structure","depth":352}],"actual":{"actor":2,"wall":2.45,"actorMode":"PNG","wallMode":"fallback"},"picked":[{"x":5,"y":4}]}
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'behind partially loaded wall, actor f…'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":0,"elevation":45,"behind":true,"wall":false,"actor":false,"sorted":[{"id":1,"kind":"actor","depth":307.2},{"id":"square-wall:5:5","kind":"structure","depth":352}],"actual":{"actor":2,"wall":2.45,"actorMode":"fallback","wallMode":"fallback"},"picked":[{"x":5,"y":4}]}
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'behind fully loaded wall, actor PNG r…'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":0,"elevation":45,"behind":true,"wall":true,"actor":true,"sorted":[{"id":1,"kind":"actor","depth":307.2},{"id":"square-wall:5:5","kind":"structure","depth":352}],"actual":{"actor":2,"wall":2.45,"actorMode":"PNG","wallMode":"PNG"},"picked":[{"x":5,"y":4}]}
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'behind fully loaded wall, actor fallb…'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":0,"elevation":45,"behind":true,"wall":true,"actor":false,"sorted":[{"id":1,"kind":"actor","depth":307.2},{"id":"square-wall:5:5","kind":"structure","depth":352}],"actual":{"actor":2,"wall":2.45,"actorMode":"fallback","wallMode":"PNG"},"picked":[{"x":5,"y":4}]}
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'in front of partially loaded wall'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":0,"elevation":45,"behind":false,"wall":false,"actor":true,"sorted":[{"id":"square-wall:5:5","kind":"structure","depth":352},{"id":1,"kind":"actor","depth":396.8}],"actual":{"actor":2.45,"wall":2,"actorMode":"PNG","wallMode":"fallback"},"picked":[{"x":5,"y":6}]}
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw0 elevation45 'in front of fully loaded wall'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":0,"elevation":45,"behind":false,"wall":true,"actor":true,"sorted":[{"id":"square-wall:5:5","kind":"structure","depth":352},{"id":1,"kind":"actor","depth":396.8}],"actual":{"actor":2.45,"wall":2,"actorMode":"PNG","wallMode":"PNG"},"picked":[{"x":5,"y":6}]}
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'behind partially loaded wall, actor P…'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":180,"elevation":65,"behind":true,"wall":false,"actor":true,"sorted":[{"id":1,"kind":"actor","depth":-396.79999999999995},{"id":"square-wall:5:5","kind":"structure","depth":-351.99999999999994}],"actual":{"actor":2,"wall":2.45,"actorMode":"PNG","wallMode":"fallback"},"picked":[{"x":5,"y":6}]}
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'behind partially loaded wall, actor f…'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":180,"elevation":65,"behind":true,"wall":false,"actor":false,"sorted":[{"id":1,"kind":"actor","depth":-396.79999999999995},{"id":"square-wall:5:5","kind":"structure","depth":-351.99999999999994}],"actual":{"actor":2,"wall":2.45,"actorMode":"fallback","wallMode":"fallback"},"picked":[{"x":5,"y":6}]}
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'behind fully loaded wall, actor PNG r…'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":180,"elevation":65,"behind":true,"wall":true,"actor":true,"sorted":[{"id":1,"kind":"actor","depth":-396.79999999999995},{"id":"square-wall:5:5","kind":"structure","depth":-351.99999999999994}],"actual":{"actor":2,"wall":2.45,"actorMode":"PNG","wallMode":"PNG"},"picked":[{"x":5,"y":6}]}
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'behind fully loaded wall, actor fallb…'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":180,"elevation":65,"behind":true,"wall":true,"actor":false,"sorted":[{"id":1,"kind":"actor","depth":-396.79999999999995},{"id":"square-wall:5:5","kind":"structure","depth":-351.99999999999994}],"actual":{"actor":2,"wall":2.45,"actorMode":"fallback","wallMode":"PNG"},"picked":[{"x":5,"y":6}]}
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'in front of partially loaded wall'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":180,"elevation":65,"behind":false,"wall":false,"actor":true,"sorted":[{"id":"square-wall:5:5","kind":"structure","depth":-351.99999999999994},{"id":1,"kind":"actor","depth":-307.19999999999993}],"actual":{"actor":2.45,"wall":2,"actorMode":"PNG","wallMode":"fallback"},"picked":[{"x":5,"y":4}]}
+
+stdout | tests/unit/oblique-pending-wall-depth.test.ts > actual scene yaw180 elevation65 'in front of fully loaded wall'
+PENDING_WALL_DISPLAY_DEPTH {"yaw":180,"elevation":65,"behind":false,"wall":true,"actor":true,"sorted":[{"id":"square-wall:5:5","kind":"structure","depth":-351.99999999999994},{"id":1,"kind":"actor","depth":-307.19999999999993}],"actual":{"actor":2.45,"wall":2,"actorMode":"PNG","wallMode":"PNG"},"picked":[{"x":5,"y":4}]}
+
+ ✓ tests/unit/oblique-pending-wall-depth.test.ts (17 tests) 58ms
+ ✓ tests/integration/cell-sharing-allocation-loop.test.ts (2 tests) 71ms
+ ✓ tests/unit/oblique-kitchen-stove-angled-integrity.test.ts (1 test) 49ms
+ ✓ tests/integration/edge-of-owned-land-room.test.ts (4 tests) 57ms
+ ✓ tests/unit/oblique-wooden-chair-integrity.test.ts (2 tests) 57ms
+ ✓ tests/unit/rooms-zoning.test.ts (44 tests) 53ms
+ ✓ tests/integration/session-second-load.test.ts (4 tests) 63ms
+ ✓ tests/unit/ui-hud-tool-arming.test.ts (20 tests) 52ms
+ ✓ tests/foundation/test-suite-carries-no-scratch-probe-contract.test.ts (3 tests) 52ms
+ ✓ tests/unit/construction-edit-history-availability.test.ts (8 tests) 58ms
+ ✓ tests/unit/prisoners-crowding.test.ts (10 tests) 49ms
+ ✓ tests/unit/worker-events.test.ts (2 tests) 55ms
+ ✓ tests/determinism/session-restore-rng-ownership.test.ts (4 tests) 58ms
+ ✓ tests/unit/oblique-kitchen-prep-counter-angled-integrity.test.ts (1 test) 45ms
+ ✓ tests/unit/oblique-office-desk-manifest-integrity.test.ts (2 tests) 45ms
+ ✓ tests/integration/individual-object-preflight-publication.test.ts (1 test) 57ms
+ ✓ tests/integration/construction-same-tick-cancel-still-buys.test.ts (4 tests) 52ms
+ ✓ tests/foundation/rpc-status-vocabulary-contract.test.ts (13 tests) 45ms
+ ✓ tests/unit/oblique-handwash-sink-manifest-integrity.test.ts (3 tests) 50ms
+ ✓ tests/integration/regime-editing-producer.test.ts (6 tests) 43ms
+ ✓ tests/unit/oblique-kitchen-fridge-angled-integrity.test.ts (1 test) 47ms
+ ✓ tests/integration/remove-wall-reachability.test.ts (4 tests) 47ms
+ ✓ tests/unit/room-template-rotation.test.ts (64 tests) 40ms
+ ✓ tests/unit/localization-chunk-delivery.test.ts (11 tests) 45ms
+ ✓ tests/determinism/command-submission-monotonicity.test.ts (4 tests) 47ms
+ ✓ tests/integration/event-band-after-a-cancelled-order.test.ts (3 tests) 40ms
+ ✓ tests/foundation/second-locale-contract.test.ts (18 tests) 41ms
+ ✓ tests/migrations/save-v6-to-v7-in-flight.test.ts (3 tests) 39ms
+ ✓ tests/unit/oblique-medical-bed-detail-integrity.test.ts (1 test) 42ms
+ ✓ tests/foundation/unconsumed-status-count-contract.test.ts (5 tests) 39ms
+ ✓ tests/unit/oblique-laundry-washing-machine-angled-integrity.test.ts (1 test) 42ms
+ ✓ tests/foundation/save-payload-snapshot-bundle-shape-contract.test.ts (5 tests) 39ms
+ ✓ tests/unit/oblique-medicine-cabinet-detail-integrity.test.ts (1 test) 40ms
+ ✓ tests/unit/prisoner-slot-recycling.test.ts (14 tests) 48ms
+ ✓ tests/unit/rooms-reachability.test.ts (9 tests) 43ms
+ ✓ tests/unit/oblique-default-waste-bin-aligned-integrity.test.ts (2 tests) 39ms
+ ✓ tests/integration/session-save-master-seed.test.ts (4 tests) 37ms
+ ✓ tests/integration/session-delete-failure.test.ts (4 tests) 39ms
+ ✓ tests/integration/a-finished-wall-reaches-the-enclosure-note.test.ts (1 test) 39ms
+ ✓ tests/foundation/unconsumed-command-contract.test.ts (6 tests) 47ms
+ ✓ tests/determinism/regime-schedule-ordering.test.ts (5 tests) 43ms
+ ✓ tests/integration/yard-exercise-station-loop.test.ts (1 test) 45ms
+ ✓ tests/unit/ui-simulation-room-needs.test.ts (20 tests) 38ms
+ ✓ tests/unit/hud-roster-tier-order.test.ts (6 tests) 31ms
+ ✓ tests/integration/economy-build-loop.test.ts (5 tests) 35ms
+ ✓ tests/integration/economy-purchase-cancellation.test.ts (6 tests) 41ms
+ ✓ tests/unit/services-challenge-verification.test.ts (55 tests) 33ms
+ ✓ tests/unit/staff-dismissal-completeness.test.ts (3 tests) 32ms
+ ✓ tests/migrations/save-v1-to-v2.test.ts (12 tests) 37ms
+ ✓ tests/integration/own-accommodation-claim-restore.test.ts (1 test) 32ms
+ ✓ tests/contract/runtime-atlas-frame-index.test.ts (7 tests) 31ms
+ ✓ tests/integration/construction-cancel-order-stale-revision.test.ts (4 tests) 27ms
+ ✓ tests/integration/construction-queue-row-pays-what-it-shows.test.ts (5 tests) 32ms
+ ✓ tests/unit/oblique-demand-native-frozen-subject.test.ts (4 tests) 24ms
+ ✓ tests/unit/oblique-interior-north-door-pose-completion.test.ts (7 tests) 35ms
+ ✓ tests/unit/new-session-runtime.test.ts (8 tests) 31ms
+ ✓ tests/unit/prisoners-action-system.test.ts (10 tests) 29ms
+ ✓ tests/unit/build-readout-public-view-consumer.test.ts (4 tests) 32ms
+ ✓ tests/unit/hired-guard-demand-consumer.test.ts (1 test) 26ms
+ ✓ tests/unit/oblique-kitchen-square-fixtures.test.ts (4 tests) 23ms
+ ✓ tests/integration/a-finished-build-reaches-the-drawn-frame.test.ts (1 test) 28ms
+ ✓ tests/integration/staff-hiring-loop.test.ts (5 tests) 28ms
+ ✓ tests/integration/individual-object-preflight.test.ts (5 tests) 36ms
+ ✓ tests/unit/oblique-role-actor-catalog.test.ts (3 tests) 30ms
+ ✓ tests/integration/economy-negative-balance-readers.test.ts (11 tests) 27ms
+ ✓ tests/determinism/art-pipeline-determinism.test.ts (5 tests | 1 skipped) 26ms
+ ✓ tests/contract/worker-snapshot-roundtrip.test.ts (13 tests) 31ms
+ ✓ tests/determinism/command-queue-admission.test.ts (4 tests) 29ms
+ ✓ tests/unit/entity-id-unsigned.test.ts (6 tests) 27ms
+ ✓ tests/integration/session-master-seed-variety.test.ts (2 tests) 30ms
+ ✓ tests/contract/rendered-art-pipeline-contract.test.ts (7 tests) 24ms
+ ✓ tests/unit/prisoners-classification-review.test.ts (26 tests) 27ms
+ ✓ tests/unit/navigation-work-budget-and-cache.test.ts (14 tests) 24ms
+ ✓ tests/unit/individual-object-rotation-ui.test.ts (5 tests) 28ms
+ ✓ tests/integration/economy-sellback-command.test.ts (5 tests) 27ms
+ ✓ tests/unit/ui-design-tokens.test.ts (76 tests) 28ms
+ ✓ tests/unit/navigation-path-request-queue.test.ts (18 tests) 24ms
+ ✓ tests/unit/oblique-canteen-bench-modern-consumer.test.ts (8 tests) 20ms
+ ✓ tests/foundation/content-validation-reachability-contract.test.ts (16 tests) 25ms
+ ✓ tests/unit/prisoners-intake-system.test.ts (21 tests) 26ms
+ ✓ tests/integration/regime-editing.test.ts (5 tests) 25ms
+ ✓ tests/integration/session-first-create-after-a-panel-read.test.ts (2 tests) 25ms
+ ✓ tests/unit/localization-second-locale-delivery.test.ts (6 tests) 28ms
+ ✓ tests/unit/restored-scope.test.ts (14 tests) 28ms
+ ✓ tests/foundation/browser-suite-partition-contract.test.ts (2 tests) 27ms
+ ✓ tests/migrations/save-v1-to-v5-chain.test.ts (9 tests) 22ms
+ ✓ tests/unit/room-template-safe-origin.test.ts (1 test) 24ms
+ ✓ tests/unit/services-localization.test.ts (48 tests) 22ms
+ ✓ tests/determinism/intelligence-id-allocation.test.ts (4 tests) 21ms
+ ✓ tests/unit/navigation-frontier-heap.test.ts (5 tests) 21ms
+ ✓ tests/foundation/comment-stripping-contract.test.ts (23 tests) 26ms
+ ✓ tests/unit/services-telemetry-transport.test.ts (26 tests) 23ms
+ ✓ tests/unit/native-laundry-linen-rack-evidence.test.ts (4 tests) 21ms
+ ✓ tests/unit/incident-response.test.ts (16 tests) 21ms
+ ✓ tests/unit/prisoners-concurrent-room-use.test.ts (14 tests) 21ms
+ ✓ tests/integration/a-sealed-cell-reaches-the-drawn-frame.test.ts (2 tests) 21ms
+ ✓ tests/contract/runtime-atlas-library.test.ts (12 tests) 22ms
+ ✓ tests/unit/rendering-module-boundaries.test.ts (3 tests) 16ms
+ ✓ tests/unit/prisoners-discharge-system.test.ts (8 tests) 21ms
+stdout | tests/unit/incident-scale.test.ts > incident scale: many simultaneous incidents across many sectors > drives 30 simultaneous sector incidents to terminal states with correct, fully-accounted outcomes
+[incident scale] sectors=30 guards=120 wallMs=16.1 summary={"total":30,"resolved":30,"lapsed":0,"stillOpen":0,"totalInjured":0,"totalPropertyDamage":150,"escapes":0} response={"incidentsResolved":30,"incidentsLapsed":0,"respondersDispatched":150,"routeFailures":0}
+
+ ✓ tests/unit/incident-scale.test.ts (1 test) 21ms
+ ✓ tests/unit/prisoners-sanction-system.test.ts (3 tests) 21ms
+ ✓ tests/unit/regime-need-bar.test.ts (10 tests) 20ms
+ ✓ tests/unit/incident-escape-riot.test.ts (15 tests) 19ms
+ ✓ tests/unit/construction-preview-cancel-refund.test.ts (7 tests) 20ms
+ ✓ tests/unit/contraband-intelligence.test.ts (9 tests) 19ms
+ ✓ tests/integration/persistence-local-indexeddb.test.ts (10 tests) 20ms
+ ✓ tests/unit/room-needs-cleared-notice.test.ts (5 tests) 17ms
+ ✓ tests/unit/ui-hud-build-panel.test.ts (69 tests) 18ms
+ ✓ tests/unit/oblique-registry-all-manifests.test.ts (1 test) 16ms
+ ✓ tests/unit/prisoners-excess-relocation.test.ts (4 tests) 17ms
+ ✓ tests/unit/room-template-preview-geometry.test.ts (21 tests) 15ms
+ ✓ tests/unit/run-length-codec-unification.test.ts (17 tests) 17ms
+stderr | tests/unit/simulation-worker-client.test.ts > a worker message the main thread cannot decode > reaches a liste
+ner as a invalid-message fault instead of being swallowed
+Main thread failed to decode worker message: {
+  code: 'invalid-message',
+  message: 'Simulation protocol message rejected: invalid-message',
+  issues: [
+    {
+      code: 'invalid_type',
+      path: '<root>',
+      message: 'Invalid input: expected object, received string'
+    }
+  ]
+}
+
+stderr | tests/unit/simulation-worker-client.test.ts > a worker message the main thread cannot decode > reaches a liste
+ner as a unsupported-protocol-version fault instead of being swallowed
+Main thread failed to decode worker message: {
+  code: 'unsupported-protocol-version',
+  message: 'Simulation protocol message rejected: unsupported-protocol-version',
+  issues: [
+    {
+      code: 'invalid_value',
+      path: 'protocolVersion',
+      message: 'Invalid input: expected 1'
+    },
+    {
+      code: 'invalid_type',
+      path: 'replyTo',
+      message: 'Invalid input: expected string, received undefined'
+    }
+  ]
+}
+
+stderr | tests/unit/simulation-worker-client.test.ts > a worker message the main thread cannot decode > reaches a liste
+ner as a unknown-message-kind fault instead of being swallowed
+Main thread failed to decode worker message: {
+  code: 'unknown-message-kind',
+  message: 'Simulation protocol message rejected: unknown-message-kind',
+  issues: [
+    {
+      code: 'invalid_union',
+      path: 'kind',
+      message: "Invalid discriminator value. Expected 'protocol/handshake-accepted' | 'protocol/pong' | 'simulation/rea
+dy' | 'simulation/clock-state' | 'simulation/command-result' | 'simulation/delta' | 'simulation/status-counts' | 'simul
+ation/projection' | 'simulation/snapshot' | 'simulation/event' | 'simulation/stopped' | 'protocol/error'"
+    }
+  ]
+}
+
+stderr | tests/unit/simulation-worker-client.test.ts > a worker message the main thread cannot decode > reaches a liste
+ner as a invalid-payload fault instead of being swallowed
+Main thread failed to decode worker message: {
+  code: 'invalid-payload',
+  message: 'Simulation protocol message rejected: invalid-payload',
+  issues: [
+    {
+      code: 'invalid_value',
+      path: 'payload.code',
+      message: 'Invalid option: expected one of "invalid-message"|"unsupported-protocol-version"|"unknown-message-kind"
+|"invalid-payload"|"not-initialized"|"already-initialized"|"duplicate-message"|"sequence-gap"|"invalid-state"|"snapshot
+-incompatible"|"shutting-down"|"internal-error"'
+    }
+  ]
+}
+
+stderr | tests/unit/simulation-worker-client.test.ts > a worker message the main thread cannot decode > does not correl
+ate the fault to a request, because it cannot know which one
+Main thread failed to decode worker message: {
+  code: 'invalid-payload',
+  message: 'Simulation protocol message rejected: invalid-payload',
+  issues: [
+    {
+      code: 'too_small',
+      path: 'payload.tick',
+      message: 'Too small: expected number to be >=0'
+    }
+  ]
+}
+
+ ✓ tests/unit/simulation-worker-client.test.ts (7 tests) 17ms
+ ✓ tests/unit/prisoners-sentence.test.ts (7 tests) 16ms
+ ✓ tests/unit/services-telemetry.test.ts (54 tests) 15ms
+ ✓ tests/integration/economy-fresh-unfurnished-prison-definition.test.ts (3 tests) 17ms
+ ✓ tests/unit/ui-simulation-events.test.ts (43 tests) 16ms
+ ✓ tests/integration/escape-outcome-visibility.test.ts (4 tests) 16ms
+ ✓ tests/unit/oblique-world-projection.test.ts (6 tests) 16ms
+stdout | tests/unit/contraband-scale.test.ts > contraband scale: many items across a sector sweep > sweeps 40 cells holding 200 contraband items to a fully-resolved, correct state without pathological slowdown
+[contraband scale] cells=40 items=200 wallMs=11.0 metrics={"itemsDiscovered":200,"itemsMissed":0,"searchesCompleted":1,"searchesCancelled":0,"searchesQueued":0}
+
+ ✓ tests/unit/contraband-scale.test.ts (1 test) 15ms
+ ✓ tests/unit/oblique-control-fixtures-integrity.test.ts (2 tests) 16ms
+ ✓ tests/unit/ui-save-panel-status.test.ts (31 tests) 17ms
+ ✓ tests/unit/oblique-canteen-dining-table-modern-consumer.test.ts (4 tests) 13ms
+ ✓ tests/unit/procurement-pending-deliveries-projection.test.ts (6 tests) 15ms
+ ✓ tests/unit/localization-startup-locale.test.ts (6 tests) 15ms
+ ✓ tests/unit/world-scene-minimap-real-camera.test.ts (24 tests) 14ms
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts (7 tests) 14ms
+ ✓ tests/unit/environment-art.test.ts (45 tests) 20ms
+ ✓ tests/unit/prisoners-free-association.test.ts (8 tests) 13ms
+ ✓ tests/unit/void-colour-agreement.test.ts (3 tests) 12ms
+ ✓ tests/unit/restore-refusal-reasons.test.ts (16 tests) 17ms
+ ✓ tests/unit/appearance-zoning-tint-legibility.test.ts (18 tests) 14ms
+ ✓ tests/unit/staff-dismissal-name-release.test.ts (4 tests) 15ms
+ ✓ tests/unit/oblique-reception-chair-context.test.ts (7 tests) 13ms
+ ✓ tests/unit/camera-pan-ports.test.ts (56 tests) 12ms
+ ✓ tests/unit/oblique-staff-room-desk-art.test.ts (4 tests) 16ms
+ ✓ tests/unit/rooms-at-capacity-readout.test.ts (13 tests) 13ms
+ ✓ tests/unit/oblique-staff-room-padded-chair-context.test.ts (8 tests) 15ms
+ ✓ tests/foundation/navigation-deferred-status-contract.test.ts (9 tests) 17ms
+ ✓ tests/integration/economy-funds-badge-starter-rung.test.ts (1 test) 14ms
+ ✓ tests/unit/oblique-cell-toilet-modern-consumer.test.ts (2 tests) 9ms
+ ✓ tests/unit/oblique-common-room-modern-consumer.test.ts (2 tests) 11ms
+ ✓ tests/contract/simulation-worker-protocol.test.ts (15 tests) 13ms
+ ✓ tests/unit/economy-treasury.test.ts (29 tests) 14ms
+stdout | tests/unit/operations-scale.test.ts > operations scale: many concurrent jobs through the shared substrate > matches, executes and completes 300 concurrent carry jobs with 20 carriers without pathological slowdown
+[operations scale] jobs=300 carriers=20 wallMs=10.1
+
+stdout | tests/unit/operations-scale.test.ts > operations scale: a larger utility network > evaluates a 500-consumer network deterministically and within a bounded number of component scans
+[operations scale] utility nodes=501 wallMs=0.40
+
+ ✓ tests/unit/operations-scale.test.ts (2 tests) 13ms
+ ✓ tests/unit/room-template-oblique-art-coverage.test.ts (20 tests) 12ms
+ ✓ tests/unit/ui-simulation-staff-coverage.test.ts (21 tests) 14ms
+ ✓ tests/unit/contraband-search-system.test.ts (11 tests) 13ms
+ ✓ tests/unit/ui-simulation-alerts.test.ts (49 tests) 14ms
+ ✓ tests/foundation/localization-key-completeness.test.ts (4 tests) 13ms
+ ✓ tests/unit/native-reception-registration-desk-evidence.test.ts (5 tests) 14ms
+ ✓ tests/unit/oblique-reception-registration-desk-context.test.ts (7 tests) 16ms
+ ✓ tests/unit/oblique-demand-texture-lifecycle.test.ts (8 tests) 12ms
+ ✓ tests/unit/navigation-flow-field.test.ts (6 tests) 12ms
+ ✓ tests/foundation/documented-wire-schema-membership-contract.test.ts (4 tests) 12ms
+ ✓ tests/foundation/build-catalogue-price-contract.test.ts (7 tests) 13ms
+ ✓ tests/foundation/cloud-prison-id-domain-contract.test.ts (4 tests) 11ms
+ ✓ tests/unit/room-template-construction-geometry.test.ts (21 tests) 13ms
+ ✓ tests/unit/oblique-cell-toilet-flush-neck-integrity.test.ts (2 tests) 8ms
+ ✓ tests/unit/ui-simulation-intake.test.ts (13 tests) 11ms
+ ✓ tests/unit/oblique-garbage-classroom-context.test.ts (11 tests) 14ms
+ ✓ tests/unit/hud-layout.test.ts (40 tests) 7ms
+ ✓ tests/unit/room-template-complete-catalog.test.ts (41 tests) 10ms
+ ✓ tests/unit/room-template-quote.test.ts (3 tests) 11ms
+ ✓ tests/unit/oblique-demand-script-observer-lifecycle.test.ts (2 tests) 13ms
+ ✓ tests/unit/services-telemetry-crash-reporting.test.ts (15 tests) 12ms
+ ✓ tests/unit/incident-trigger.test.ts (22 tests) 11ms
+ ✓ tests/unit/oblique-projection.test.ts (10 tests) 12ms
+ ✓ tests/unit/security-deployment.test.ts (6 tests) 11ms
+ ✓ tests/unit/persistence-local-slot-metadata.test.ts (30 tests) 11ms
+ ✓ tests/unit/ui-hud-refusal-shortfall.test.ts (5 tests) 11ms
+ ✓ tests/unit/security-patrol.test.ts (4 tests) 13ms
+ ✓ tests/unit/rendering-edge-picking.test.ts (32 tests) 12ms
+ ✓ tests/unit/ui-staff-hire-charge.test.ts (10 tests) 11ms
+ ✓ tests/unit/sparse-world.test.ts (21 tests) 10ms
+ ✓ tests/unit/input-module-boundaries.test.ts (7 tests) 9ms
+ ✓ tests/unit/native-staff-room-padded-chair-evidence.test.ts (2 tests) 11ms
+ ✓ tests/foundation/challenge-rejection-code-reachability-contract.test.ts (6 tests) 10ms
+ ✓ tests/unit/rendering-world-view.test.ts (27 tests) 9ms
+ ✓ tests/unit/minimap-unrounded-reference.test.ts (13 tests) 8ms
+ ✓ tests/unit/prisoners-room-instance-registry.test.ts (51 tests) 10ms
+ ✓ tests/unit/oblique-yard-exercise-art.test.ts (1 test) 8ms
+ ✓ tests/unit/oblique-minimap-projection-reuse.test.ts (5 tests) 11ms
+ ✓ tests/unit/oblique-library-bookshelf-integrity.test.ts (1 test) 11ms
+ ✓ tests/unit/economy-payroll.test.ts (19 tests) 8ms
+ ✓ tests/unit/room-template-object-footprint.test.ts (40 tests) 10ms
+ ✓ tests/unit/oblique-loading-dock-door-integrity.test.ts (1 test) 10ms
+ ✓ tests/unit/oblique-kitchen-prep-counter-modern-consumer.test.ts (2 tests) 9ms
+ ✓ tests/unit/security-snapshot-restore.test.ts (3 tests) 11ms
+ ✓ tests/determinism/kernel-system-order.test.ts (14 tests) 10ms
+ ✓ tests/unit/persistence-cloud-supabase-client.test.ts (26 tests) 9ms
+ ✓ tests/unit/ui-simulation-projections.test.ts (10 tests) 6ms
+ ✓ tests/unit/oblique-wooden-bench-ground-mounts-consumer.test.ts (3 tests) 9ms
+stdout | tests/unit/world-roving-held-arrow.test.ts > World stops a previously held arrow on grouped radio focus, preserves held WASD and accepts a fresh arrow
+WORLD_RADIO_FOCUS {"initial":{"x":0.125,"y":0.083984375,"width":0.75,"height":0.421875},"moving":{"x":0.1484375,"y":0.107421875,"width":0.75,"height":0.421875},"atRadio":{"x":0.171875,"y":0.107421875,"width":0.75,"height":0.421875}}
+
+ ✓ tests/unit/world-roving-held-arrow.test.ts (3 tests) 9ms
+ ✓ tests/unit/prisoners-needs-decay-system.test.ts (3 tests) 11ms
+ ✓ tests/unit/input.test.ts (43 tests) 10ms
+ ✓ tests/foundation/incident-rng-abstinence-contract.test.ts (3 tests) 9ms
+ ✓ tests/unit/persistence-cloud-sync.test.ts (15 tests) 9ms
+ ✓ tests/unit/oblique-cell-cot-art.test.ts (2 tests) 11ms
+ ✓ tests/unit/oblique-cell-cot-modern-consumer.test.ts (2 tests) 9ms
+ ✓ tests/unit/navigation-physical-components.test.ts (4 tests) 8ms
+ ✓ tests/unit/ui-hud-projection.test.ts (66 tests) 9ms
+ ✓ tests/unit/oblique-kitchen-stove-modern-consumer.test.ts (2 tests) 10ms
+ ✓ tests/unit/oblique-common-room-bench-art.test.ts (1 test) 8ms
+ ✓ tests/unit/oblique-cell-toilet-dense.test.ts (2 tests) 8ms
+ ✓ tests/unit/ui-object-preflight-scene.test.ts (2 tests) 9ms
+ ✓ tests/unit/oblique-yard-steel-bench-art.test.ts (1 test) 9ms
+ ✓ tests/unit/rooms-enclosure.test.ts (23 tests) 9ms
+ ✓ tests/unit/navigation-router.test.ts (10 tests) 9ms
+ ✓ tests/unit/oblique-kitchen-fridge-modern-consumer.test.ts (2 tests) 9ms
+ ✓ tests/unit/services-entitlements.test.ts (31 tests) 9ms
+ ✓ tests/determinism/canonical-iteration-contract.test.ts (24 tests) 9ms
+ ✓ tests/integration/save-migration-fault-recovery.test.ts (3 tests) 8ms
+ ✓ tests/foundation/save-schema-enum-union-contract.test.ts (60 tests) 8ms
+ ✓ tests/unit/oblique-classroom-chair-art.test.ts (2 tests) 11ms
+ ✓ tests/unit/oblique-storage-room-rack-art.test.ts (2 tests) 9ms
+ ✓ tests/foundation/documentation-anchor-quotation-contract.test.ts (12 tests) 5ms
+ ✓ tests/unit/security-sector-staffing.test.ts (11 tests) 7ms
+ ✓ tests/unit/prisoners-substitution-cost.test.ts (10 tests) 8ms
+ ✓ tests/unit/oblique-classroom-chair-context.test.ts (5 tests) 8ms
+ ✓ tests/determinism/navigation-search-tie-breaks.test.ts (9 tests) 8ms
+ ✓ tests/unit/prisoners-utility-ai.test.ts (16 tests) 5ms
+ ✓ tests/unit/render-delta-payload.test.ts (19 tests) 6ms
+ ✓ tests/unit/oblique-camera-minimap-preconditions.test.ts (7 tests) 6ms
+ ✓ tests/unit/persistence-save-schema-aliasing.test.ts (8 tests) 7ms
+ ✓ tests/unit/oblique-yard-bench-context.test.ts (5 tests) 8ms
+ ✓ tests/unit/persistence-worker-per-session-host.test.ts (6 tests) 7ms
+ ✓ tests/unit/oblique-yard-steel-waste-bin-art.test.ts (1 test) 8ms
+ ✓ tests/unit/persistence-worker-session-host.test.ts (17 tests) 7ms
+ ✓ tests/unit/oblique-storage-room-rack-context.test.ts (5 tests) 9ms
+ ✓ tests/unit/authored-name-pools.test.ts (46 tests) 7ms
+ ✓ tests/unit/individual-object-rotation-scene.test.ts (2 tests) 6ms
+ ✓ tests/unit/oblique-yard-waste-bin-context.test.ts (5 tests) 8ms
+ ✓ tests/unit/persistence-local-autosave.test.ts (9 tests) 8ms
+ ✓ tests/unit/ui-room-plan-world-camera-projector.test.ts (24 tests) 9ms
+ ✓ tests/unit/xoshiro128starstar.test.ts (7 tests) 7ms
+ ✓ tests/unit/ui-account-session.test.ts (21 tests) 6ms
+ ✓ tests/foundation/times-sign-contract.test.ts (31 tests) 7ms
+ ✓ tests/unit/oblique-common-room-bench-context.test.ts (6 tests) 8ms
+ ✓ tests/foundation/art-catalog-generator-contract.test.ts (7 tests) 5ms
+ ✓ tests/unit/navigation-route-cache.test.ts (4 tests) 7ms
+ ✓ tests/unit/ui-room-template-tool.test.ts (6 tests) 5ms
+ ✓ tests/unit/ui-simulation-prisoner-roster.test.ts (23 tests) 7ms
+ ✓ tests/unit/oblique-utility-manifest-integrity.test.ts (4 tests) 6ms
+ ✓ tests/unit/navigation-region-graph.test.ts (7 tests) 7ms
+ ✓ tests/unit/rooms-bounds-recovery.test.ts (12 tests) 6ms
+ ✓ tests/unit/rendering-room-labels.test.ts (14 tests) 6ms
+ ✓ tests/unit/content-catalogs.test.ts (13 tests) 6ms
+ ✓ tests/unit/objects-room-capacity.test.ts (18 tests) 7ms
+ ✓ tests/unit/prisoners-classification.test.ts (8 tests) 6ms
+ ✓ tests/unit/resize-separator.test.ts (40 tests) 6ms
+ ✓ tests/unit/square-wall-rendering.test.ts (3 tests) 6ms
+ ✓ tests/foundation/trusted-tier-reachability-contract.test.ts (11 tests) 8ms
+ ✓ tests/unit/entity-liveness-codec.test.ts (12 tests) 6ms
+ ✓ tests/foundation/deploy-blocked-announcement-contract.test.ts (5 tests) 6ms
+ ✓ tests/foundation/unreachable-invariant-contract.test.ts (19 tests) 6ms
+ ✓ tests/unit/operations-representative-flows.test.ts (3 tests) 6ms
+ ✓ tests/unit/ui-room-template-miniature.test.ts (23 tests) 6ms
+ ✓ tests/unit/oblique-camera-wheel-axis.test.ts (14 tests) 5ms
+ ✓ tests/unit/security-access-policy.test.ts (7 tests) 5ms
+ ✓ tests/unit/construction-unknown-buildable.test.ts (9 tests) 6ms
+ ✓ tests/unit/ui-async-action-gate.test.ts (27 tests) 6ms
+ ✓ tests/unit/prisoners-regime.test.ts (14 tests) 5ms
+ ✓ tests/unit/ui-room-tool.test.ts (22 tests) 6ms
+ ✓ tests/foundation/rendered-art-catalog-generator-contract.test.ts (7 tests) 5ms
+ ✓ tests/unit/contraband-search-duty.test.ts (21 tests) 6ms
+ ✓ tests/unit/operations-construction-integration.test.ts (9 tests) 6ms
+ ✓ tests/unit/construction.test.ts (6 tests) 6ms
+ ✓ tests/foundation/composition-root-contract.test.ts (27 tests) 6ms
+ ✓ tests/unit/ui-camera-controls-presentation.test.ts (9 tests) 7ms
+ ✓ tests/unit/undo-redo.test.ts (6 tests) 5ms
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts (8 tests | 1 failed) 23ms
+     ✓ runs on a checkout deep enough to answer, and fails rather than skipping when it is not 1ms
+     ✓ reads the depth it needs out of every job that runs it, so deleting the setting fails here 14ms
+     ✓ finds citations to check, so nothing below can pass by reading nothing 0ms
+     ✓ recognises the citation form it was written for, and the shapes it must not read 1ms
+     ✓ resolves every cited commit 1ms
+     × cites only commits this repository publishes, so CI reads the same history a reader can 5ms
+     ✓ keeps the allowlists honest: an entry that starts resolving must be removed 0ms
+     ✓ keeps the allowlists used: an entry nothing cites is dead weight 1ms
+ ✓ tests/foundation/account-metadata-boundaries.test.ts (7 tests) 4ms
+ ✓ tests/unit/topology.test.ts (2 tests) 5ms
+ ✓ tests/unit/room-template-build-plan.test.ts (5 tests) 5ms
+ ✓ tests/unit/incident-lifecycle.test.ts (14 tests) 5ms
+ ✓ tests/unit/security-default-sector.test.ts (13 tests) 5ms
+ ✓ tests/foundation/polish-plural-forms-contract.test.ts (14 tests) 6ms
+ ✓ tests/unit/oblique-cell-cot-consumer.test.ts (3 tests) 5ms
+ ✓ tests/unit/oblique-waste-bin-manifest-integrity.test.ts (1 test) 5ms
+ ✓ tests/unit/contraband-introduction.test.ts (11 tests) 5ms
+ ✓ tests/unit/ui-account-save-list.test.ts (29 tests) 5ms
+ ✓ tests/unit/ui-affordability.test.ts (11 tests) 5ms
+ ✓ tests/unit/rendering-actor-sprites.test.ts (19 tests) 4ms
+ ✓ tests/foundation/repository-contract.test.ts (4 tests) 6ms
+ ✓ tests/foundation/fault-code-reachability-contract.test.ts (9 tests) 5ms
+ ✓ tests/unit/persistence-migration.test.ts (11 tests) 4ms
+ ✓ tests/unit/oblique-prep-counter-manifest-integrity.test.ts (1 test) 5ms
+ ✓ tests/unit/oblique-ground-band-coverage.test.ts (1 test) 6ms
+ ✓ tests/foundation/command-control-reachability-contract.test.ts (9 tests) 5ms
+ ✓ tests/unit/operations-inventory.test.ts (14 tests) 4ms
+ ✓ tests/unit/ui-simulation-build-queue.test.ts (14 tests) 6ms
+ ✓ tests/unit/locale-catalog-audit.test.ts (12 tests) 5ms
+ ✓ tests/unit/ui-navigation-drawer-escape.test.ts (3 tests) 5ms
+ ✓ tests/unit/hud-minimap-publication-identity.test.ts (6 tests) 5ms
+ ✓ tests/unit/protocol-commands-purchase.test.ts (8 tests) 4ms
+ ✓ tests/unit/oblique-module-registry.test.ts (4 tests) 5ms
+ ✓ tests/unit/ui-hud-alert-row-label.test.ts (17 tests) 5ms
+ ✓ tests/unit/operations-carry-executor.test.ts (14 tests) 4ms
+ ✓ tests/unit/rendering-crowd-spread.test.ts (18 tests) 6ms
+ ✓ tests/unit/ui-build-tool.test.ts (16 tests) 4ms
+ ✓ tests/unit/simulation-locomotion.test.ts (14 tests) 5ms
+ ✓ tests/foundation/content-vocabulary-contract.test.ts (16 tests) 4ms
+ ✓ tests/unit/oblique-washing-machine-registry.test.ts (1 test) 5ms
+ ✓ tests/foundation/unconsumed-action-contract.test.ts (6 tests) 5ms
+ ✓ tests/unit/objects-placed-object-registry.test.ts (14 tests) 4ms
+ ✓ tests/unit/construction-exact-counter-protocol.test.ts (20 tests) 5ms
+ ✓ tests/unit/ui-camera-pan-control.test.ts (5 tests) 4ms
+ ✓ tests/unit/prisoners-injury.test.ts (10 tests) 3ms
+ ✓ tests/unit/incident-default-gangs.test.ts (13 tests) 4ms
+ ✓ tests/unit/oblique-camera-gameout.test.ts (7 tests) 4ms
+ ✓ tests/unit/oblique-storage-rack-consumer.test.ts (2 tests) 4ms
+ ✓ tests/unit/persistence-memory-store-serialisation.test.ts (4 tests) 5ms
+ ✓ tests/unit/prisoners-needs.test.ts (21 tests) 4ms
+ ✓ tests/unit/ui-theme.test.ts (15 tests) 5ms
+ ✓ tests/unit/prisoners-regime-registry.test.ts (10 tests) 4ms
+ ✓ tests/unit/security-held-guards-projection.test.ts (10 tests) 4ms
+ ✓ tests/unit/contraband-item.test.ts (11 tests) 4ms
+ ✓ tests/unit/services-telemetry-consent-flow.test.ts (10 tests) 5ms
+ ✓ tests/unit/segment-fill-agreement.test.ts (16 tests) 4ms
+ ✓ tests/unit/ui-object-tool.test.ts (12 tests) 4ms
+ ✓ tests/foundation/workflow-runner-contract.test.ts (1 test) 4ms
+ ✓ tests/unit/persistence-local-policy.test.ts (21 tests) 4ms
+ ✓ tests/unit/object-art-orientation.test.ts (17 tests) 4ms
+ ✓ tests/unit/room-template-placement.test.ts (5 tests) 4ms
+ ✓ tests/unit/ui-room-template-preview-fit.test.ts (7 tests) 4ms
+ ✓ tests/unit/prisoners-action-catalog.test.ts (14 tests) 5ms
+ ✓ tests/unit/rooms-catalog-integration.test.ts (8 tests) 4ms
+ ✓ tests/unit/oblique-bed-manifest-integrity.test.ts (1 test) 4ms
+ ✓ tests/unit/navigation-flat-search-reference.test.ts (2 tests) 4ms
+ ✓ tests/contract/worker-integration.test.ts (1 test) 4ms
+ ✓ tests/foundation/documentation-version-claim-contract.test.ts (5 tests) 4ms
+ ✓ tests/unit/clock-speed-vocabulary.test.ts (5 tests) 4ms
+ ✓ tests/unit/construction-ownership.test.ts (12 tests) 4ms
+ ✓ tests/unit/security-coverage-state.test.ts (8 tests) 4ms
+ ✓ tests/unit/oblique-object-mapping.test.ts (22 tests) 4ms
+ ✓ tests/unit/ui-simulation-pending-deliveries.test.ts (9 tests) 6ms
+ ✓ tests/unit/ui-simulation-held-guards.test.ts (7 tests) 4ms
+ ✓ tests/unit/ui-object-preflight-consumer.test.ts (3 tests) 3ms
+ ✓ tests/unit/ui-build-target-readout.test.ts (11 tests) 4ms
+ ✓ tests/unit/session-component-payload-size.test.ts (3 tests) 5ms
+ ✓ tests/unit/security-sector.test.ts (11 tests) 4ms
+ ✓ tests/unit/ui-hud-pooled-row-binding.test.ts (11 tests) 4ms
+ ✓ tests/unit/economy-insolvency-rung-system.test.ts (11 tests) 4ms
+ ✓ tests/unit/prisoners-disciplinary-record.test.ts (10 tests) 4ms
+ ✓ tests/unit/incident-gangs.test.ts (9 tests) 4ms
+ ✓ tests/unit/simulation-worker-channel.test.ts (9 tests) 4ms
+ ✓ tests/unit/navigation-door-and-context.test.ts (16 tests) 4ms
+ ✓ tests/unit/square-wall-barriers.test.ts (2 tests) 4ms
+ ✓ tests/unit/prisoners-safety-coverage-system.test.ts (16 tests) 4ms
+ ✓ tests/unit/ui-brand-badge.test.ts (7 tests) 3ms
+ ✓ tests/foundation/object-buildable-cost-contract.test.ts (5 tests) 4ms
+ ✓ tests/unit/event-band-dwell.test.ts (19 tests) 4ms
+ ✓ tests/unit/ui-language.test.ts (11 tests) 4ms
+ ✓ tests/unit/production-render-bootstrap.test.ts (5 tests) 4ms
+ ✓ tests/foundation/save-status-kind-styling-contract.test.ts (2 tests) 4ms
+ ✓ tests/unit/kernel.test.ts (8 tests) 4ms
+ ✓ tests/unit/input-cross-tab-settings.test.ts (11 tests) 4ms
+ ✓ tests/unit/security-sector-occupancy.test.ts (6 tests) 4ms
+ ✓ tests/foundation/identity-reading-classification-contract.test.ts (4 tests) 4ms
+ ✓ tests/unit/operations-utility-network.test.ts (12 tests) 4ms
+ ✓ tests/unit/ui-save-panel-delete.test.ts (16 tests) 4ms
+ ✓ tests/unit/render-room-condition-block.test.ts (7 tests) 3ms
+ ✓ tests/unit/incident-flashpoint.test.ts (11 tests) 3ms
+ ✓ tests/unit/room-template-command-protocol.test.ts (2 tests) 3ms
+ ✓ tests/unit/economy-loans.test.ts (14 tests) 3ms
+ ✓ tests/unit/economy-procurement-sellback.test.ts (8 tests) 3ms
+ ✓ tests/foundation/browser-network-changed-signature.test.ts (10 tests) 4ms
+ ✓ tests/unit/ui-object-preflight-session-arm.test.ts (4 tests) 4ms
+ ✓ tests/unit/navigation-no-phaser.test.ts (1 test) 4ms
+ ✓ tests/unit/room-use-eligibility-order.test.ts (5 tests) 3ms
+ ✓ tests/unit/actor-extrapolation.test.ts (6 tests) 3ms
+ ✓ tests/unit/ui-hud-intake-panel.test.ts (11 tests) 3ms
+ ✓ tests/unit/pseudo-locale-residue.test.ts (12 tests) 3ms
+ ✓ tests/unit/services-telemetry-pump.test.ts (8 tests) 3ms
+ ✓ tests/unit/ui-resize-separator-keyboard.test.ts (2 tests) 3ms
+ ✓ tests/unit/ui-hud-shell-state.test.ts (12 tests) 3ms
+ ✓ tests/unit/security-search-guard-pool.test.ts (6 tests) 3ms
+ ✓ tests/unit/incident-sector-risk.test.ts (9 tests) 3ms
+ ✓ tests/unit/ui-focus-handoff.test.ts (13 tests) 3ms
+ ✓ tests/unit/visible-object-pool.test.ts (1 test) 3ms
+ ✓ tests/unit/input-modal-context.test.ts (6 tests) 3ms
+ ✓ tests/unit/ui-camera-pose-control.test.ts (1 test) 3ms
+ ✓ tests/unit/ui-hud-alert-row-press.test.ts (3 tests) 3ms
+ ✓ tests/unit/rendering-room-condition-marks.test.ts (8 tests) 3ms
+ ✓ tests/unit/content-registry.test.ts (6 tests) 3ms
+ ✓ tests/unit/ui-simulation-counts.test.ts (9 tests) 3ms
+ ✓ tests/unit/rendering-tile-metrics.test.ts (7 tests) 3ms
+ ✓ tests/determinism/projection-ordering.test.ts (5 tests) 3ms
+ ✓ tests/unit/entity-snapshot.test.ts (5 tests) 3ms
+ ✓ tests/unit/oblique-actor-projection.test.ts (4 tests) 3ms
+ ✓ tests/unit/ui-hud-funds-threshold-named.test.ts (4 tests) 3ms
+ ✓ tests/unit/ui-hud-dismiss-arming.test.ts (11 tests) 3ms
+ ✓ tests/unit/room-template-extensions.test.ts (5 tests) 3ms
+ ✓ tests/unit/camera-coordinates.test.ts (6 tests) 3ms
+ ✓ tests/unit/room-template-catalog.test.ts (3 tests) 3ms
+ ✓ tests/unit/economy-placement-cost.test.ts (7 tests) 3ms
+ ✓ tests/unit/parcel.test.ts (5 tests) 3ms
+ ✓ tests/unit/entity.test.ts (7 tests) 3ms
+ ✓ tests/foundation/pseudo-locale-sweep-isolation.test.ts (4 tests) 3ms
+ ✓ tests/unit/appearance-zoning-tint.test.ts (5 tests) 3ms
+ ✓ tests/foundation/browser-suite-selection.test.ts (8 tests) 3ms
+ ✓ tests/foundation/cell-instruction-requirement-contract.test.ts (6 tests) 3ms
+ ✓ tests/unit/square-picking.test.ts (4 tests) 3ms
+ ✓ tests/foundation/room-shortfall-parity-contract.test.ts (2 tests) 3ms
+ ✓ tests/unit/world-projection.test.ts (2 tests) 3ms
+ ✓ tests/unit/render-scene-camera-port.test.ts (2 tests) 3ms
+ ✓ tests/foundation/room-routing-contract.test.ts (5 tests) 3ms
+ ✓ tests/unit/number-field-entry.test.ts (9 tests) 3ms
+ ✓ tests/unit/rendering-minimap-projection.test.ts (2 tests) 3ms
+ ✓ tests/unit/ui-hud-overview-panel.test.ts (7 tests) 3ms
+ ✓ tests/unit/room-template-oriented-instantiation.test.ts (3 tests) 3ms
+ ✓ tests/unit/oblique-ground-art.test.ts (2 tests) 3ms
+ ✓ tests/unit/ui-roving-focus.test.ts (10 tests) 2ms
+ ✓ tests/unit/buildability.test.ts (4 tests) 3ms
+ ✓ tests/unit/ui-simulation-incidents.test.ts (2 tests) 3ms
+ ✓ tests/determinism/room-occupant-ordering.test.ts (6 tests) 3ms
+ ✓ tests/unit/ui-simulation-conditions.test.ts (5 tests) 3ms
+ ✓ tests/unit/oblique-geometry.test.ts (4 tests) 3ms
+ ✓ tests/unit/oblique-fit.test.ts (5 tests) 3ms
+ ✓ tests/unit/segment-overflow.test.ts (7 tests) 3ms
+ ✓ tests/unit/ui-build-object-footprint.test.ts (2 tests) 2ms
+ ✓ tests/unit/fixed-step-clock.test.ts (5 tests) 3ms
+ ✓ tests/unit/renderer-view-memory.test.ts (3 tests) 2ms
+ ✓ tests/integration/unhoused-prisoner-actions.test.ts (8 tests) 3ms
+ ✓ tests/foundation/enclosure-remedy-contract.test.ts (3 tests) 2ms
+ ✓ tests/unit/ui-hud-rooms-panel.test.ts (9 tests) 2ms
+ ✓ tests/unit/contraband-rng-isolation.test.ts (3 tests) 3ms
+ ✓ tests/foundation/unconsumed-content-contract.test.ts (6 tests) 6ms
+ ✓ tests/unit/rendering-depth.test.ts (7 tests) 2ms
+ ✓ tests/unit/terrain.test.ts (3 tests) 2ms
+ ✓ tests/unit/hud-rooms-note-containment.test.ts (3 tests) 2ms
+ ✓ tests/foundation/buildable-category-contract.test.ts (5 tests) 2ms
+ ✓ tests/unit/ui-simulation-clock.test.ts (7 tests) 3ms
+ ✓ tests/unit/content-room-catalog-ceilings.test.ts (3 tests) 3ms
+ ✓ tests/unit/ui-hud-transport-intent.test.ts (3 tests) 2ms
+ ✓ tests/unit/camera-home-indicator.test.ts (6 tests) 2ms
+ ✓ tests/unit/operations-snapshot-restore.test.ts (1 test) 2ms
+ ✓ tests/unit/aria-described-by.test.ts (8 tests) 2ms
+ ✓ tests/unit/edge-key-agreement.test.ts (3 tests) 2ms
+ ✓ tests/unit/ui-app-shell-messages.test.ts (3 tests) 2ms
+ ✓ tests/unit/intake-housed-notice.test.ts (3 tests) 2ms
+ ✓ tests/unit/ui-simulation-zoning.test.ts (5 tests) 2ms
+ ✓ tests/determinism/environment-render-determinism.test.ts (3 tests | 1 skipped) 2ms
+ ✓ tests/unit/prisoners-cell-sharing.test.ts (6 tests) 2ms
+ ✓ tests/unit/ui-prisoner-sentence.test.ts (3 tests) 2ms
+ ✓ tests/unit/canonical-json.test.ts (2 tests) 2ms
+ ✓ tests/unit/build-catalogue-thumbnail.test.ts (2 tests) 2ms
+ ✓ tests/unit/ui-room-template-label-position.test.ts (2 tests) 2ms
+ ✓ tests/unit/contraband-search-policy.test.ts (4 tests) 2ms
+ ✓ tests/unit/ui-hud-tab-glyph-silhouettes.test.ts (3 tests) 2ms
+ ✓ tests/unit/ui-object-thumbnail.test.ts (2 tests) 2ms
+ ✓ tests/unit/oblique-kitchen-laundry-aliases.test.ts (3 tests) 2ms
+ ✓ tests/foundation/repository-path-label.test.ts (2 tests) 2ms
+ ✓ tests/unit/oblique-laundry-linen-rack-context.test.ts (1 test) 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/foundation/documentation-commit-citation-contract.test.ts > a commit sha cited in prose names a commit tha
+t exists > cites only commits this repository publishes, so CI reads the same history a reader can
+AssertionError: these cite a commit that exists on this disk and on no ref this repository publishes, so nobody else ca
+n check them and CI cannot either: `fetch-depth: 0` fetches all history for every published branch and tag and nothing 
+more. The usual cause is a sha read out of an agent's own worktree before the coordinator cherry-picked it, which rewri
+tes it -- `git branch -r --contains <sha>` tells you. Cite the commit as published, or record it in UNPUBLISHED_BY_ORIG
+IN with what it is and why the anchor cannot move: expected [ …(5) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/research/2026-10-04-cell-toilet-native-material-observer/HANDOFF.md:3 -> 94e0bae25eddbb7ae9b95b8b8f2074019b5a
+ea0d",
++   "docs/research/2026-10-04-kitchen-prep-counter-retained-cycles/HANDOFF.md:3 -> 8c6c54ef19",
++   "docs/research/2026-10-04-template-order-identity-admission/README.md:17 -> 227b68be2b",
++   "docs/research/2026-10-04-template-order-identity-admission/README.md:17 -> 0c0dd5c894",
++   "docs/research/2026-10-04-template-order-identity-admission/README.md:23 -> 0c0dd5c89470ec08d6dd5675f306abaf41fa0ca
+a",
++ ]
+
+ ❯ tests/foundation/documentation-commit-citation-contract.test.ts:748:7
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 758 passed (759)
+      Tests  1 failed | 8751 passed | 2 skipped (8754)
+   Start at  02:43:43
+   Duration  118.25s (transform 10.13s, setup 0ms, import 154.77s, tests 223.69s, environment 39ms)
+
+JSON report written to C:/Users/matma/AppData/Local/Temp/lockstate-modern-combined-25f-full-source-20261004.json
+[ELIFECYCLE] Test failed. See above for more details.

@@ -1,0 +1,42 @@
+vite v8.2.2 building lockstate_development environment for production...
+transforming...
+✓ 92 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/lockstate_development/.vite/manifest.json    0.15 kB │ gzip:  0.11 kB
+dist/lockstate_development/wrangler.json          1.61 kB │ gzip:  0.80 kB
+dist/lockstate_development/index.js             289.15 kB │ gzip: 76.65 kB
+
+✓ built in 52ms
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 499 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/.assetsignore                      0.02 kB
+dist/client/index.html                         1.71 kB │ gzip:   0.87 kB
+dist/client/assets/worker-BeZzlLvh.js        445.26 kB
+dist/client/assets/index-CzmJNm9t.css         87.54 kB │ gzip:  13.33 kB
+dist/client/assets/pl-catalog-uiQLsxnQ.js     51.30 kB │ gzip:  14.83 kB
+dist/client/assets/catalog-BmAUL2aa.js        86.42 kB │ gzip:  23.73 kB
+dist/client/assets/index-W-aVWoQZ.js       1,944.06 kB │ gzip: 514.89 kB
+
+✓ built in 8.29s
+node : [plugin builtin:vite-reporter] 
+At line:3 char:1
++ node scripts/cloudflare-task.mjs build production *> (Join-Path $env: ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([plugin builtin:vite-reporter] :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeS
+plitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[33m[PLUGIN_TIMINGS] [0mYour build spent 96% of 8.3s inside plugin hooks (8.0s).
+Measured inside the callback, so queue time is excluded and time the callback itself awaited is not:
+  - vite:prepare-out-dir renderStart (83%, 6.9s, 1 call)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+Verified Cloudflare production output: dist\lockstate_development\wrangler.json -> dist\client

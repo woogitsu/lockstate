@@ -1,0 +1,16 @@
+pnpm : $ vitest run "tests/foundation/documentation-commit-citation-contract.test.ts" "--maxWorkers=1"
+At line:5 char:1
++ pnpm --config.verify-deps-before-run=false test tests/foundation/docu ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ($ vitest run "t...--maxWorkers=1":String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-staff-chair-v9-integration-20261003
+
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  02:48:57
+   Duration  13.11s (transform 24ms, setup 0ms, import 12.97s, tests 7ms, environment 0ms)
+

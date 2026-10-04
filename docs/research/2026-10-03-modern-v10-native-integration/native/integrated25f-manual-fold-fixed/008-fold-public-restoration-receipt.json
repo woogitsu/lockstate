@@ -1,0 +1,184 @@
+{
+  "uiScale": 2,
+  "before": [
+    {
+      "selector": ".hud__aside",
+      "hidden": false,
+      "display": "contents",
+      "width": 0,
+      "height": 0,
+      "laidOutDescendants": 23
+    },
+    {
+      "selector": ".hud__side",
+      "hidden": false,
+      "display": "flex",
+      "width": 727,
+      "height": 365.046875,
+      "laidOutDescendants": 119
+    },
+    {
+      "selector": ".save-panel",
+      "hidden": false,
+      "display": "block",
+      "width": 680,
+      "height": 285.953125,
+      "laidOutDescendants": 13
+    },
+    {
+      "selector": ".hud-build",
+      "hidden": false,
+      "display": "flex",
+      "width": 679,
+      "height": 365.046875,
+      "laidOutDescendants": 118
+    }
+  ],
+  "folded": [
+    {
+      "selector": ".hud__aside",
+      "hidden": true,
+      "display": "none",
+      "width": 0,
+      "height": 0,
+      "laidOutDescendants": 0
+    },
+    {
+      "selector": ".hud__side",
+      "hidden": true,
+      "display": "none",
+      "width": 0,
+      "height": 0,
+      "laidOutDescendants": 0
+    },
+    {
+      "selector": ".save-panel",
+      "hidden": false,
+      "display": "block",
+      "width": 0,
+      "height": 0,
+      "laidOutDescendants": 0
+    },
+    {
+      "selector": ".hud-build",
+      "hidden": false,
+      "display": "flex",
+      "width": 0,
+      "height": 0,
+      "laidOutDescendants": 0
+    }
+  ],
+  "restored": [
+    {
+      "selector": ".hud__aside",
+      "hidden": false,
+      "display": "contents",
+      "width": 0,
+      "height": 0,
+      "laidOutDescendants": 23
+    },
+    {
+      "selector": ".hud__side",
+      "hidden": false,
+      "display": "flex",
+      "width": 727,
+      "height": 365.046875,
+      "laidOutDescendants": 119
+    },
+    {
+      "selector": ".save-panel",
+      "hidden": false,
+      "display": "block",
+      "width": 680,
+      "height": 285.953125,
+      "laidOutDescendants": 13
+    },
+    {
+      "selector": ".hud-build",
+      "hidden": false,
+      "display": "flex",
+      "width": 679,
+      "height": 365.046875,
+      "laidOutDescendants": 118
+    }
+  ],
+  "handle": {
+    "width": 88,
+    "height": 88,
+    "reachable": true
+  },
+  "readingsBefore": [
+    {
+      "text": "0Prisoners",
+      "width": 240.234375,
+      "height": 72,
+      "x": 24,
+      "y": 97,
+      "display": "flex"
+    },
+    {
+      "text": "0High Risk",
+      "width": 230.40625,
+      "height": 72,
+      "x": 272.234375,
+      "y": 97,
+      "display": "flex"
+    },
+    {
+      "text": "0Staff",
+      "width": 171.796875,
+      "height": 72,
+      "x": 510.640625,
+      "y": 97,
+      "display": "flex"
+    },
+    {
+      "text": "0CoverageCovered",
+      "width": 350.921875,
+      "height": 72,
+      "x": 690.4375,
+      "y": 97,
+      "display": "flex"
+    },
+    {
+      "text": "0Rooms",
+      "width": 191.453125,
+      "height": 72,
+      "x": 1049.359375,
+      "y": 97,
+      "display": "flex"
+    },
+    {
+      "text": "0IncidentsClear",
+      "width": 321.953125,
+      "height": 72,
+      "x": 24,
+      "y": 177,
+      "display": "flex"
+    },
+    {
+      "text": "0Contraband",
+      "width": 276.015625,
+      "height": 72,
+      "x": 353.953125,
+      "y": 177,
+      "display": "flex"
+    },
+    {
+      "text": "25,000Funds",
+      "width": 202.46875,
+      "height": 72,
+      "x": 637.96875,
+      "y": 177,
+      "display": "flex"
+    },
+    {
+      "text": "0Earned today",
+      "width": 293.203125,
+      "height": 72,
+      "x": 848.4375,
+      "y": 177,
+      "display": "flex"
+    }
+  ]
+}

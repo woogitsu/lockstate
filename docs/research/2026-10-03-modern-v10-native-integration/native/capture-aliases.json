@@ -3295,5 +3295,517 @@
     "sourceSha256": "a230eea8d6312ab5ec48b9b9fbf354ab812d6922ce6dee625c91a90eb02d88e2",
     "archivedBytes": 151,
     "archivedSha256": "a230eea8d6312ab5ec48b9b9fbf354ab812d6922ce6dee625c91a90eb02d88e2"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-manual-fold-native-20261004.txt",
+    "archived": "integrated25f-manual-fold-fixed/console.txt",
+    "sourceBytes": 4032,
+    "sourceSha256": "ae9ee5c2d7280ea77580a86813ff37d916cd21d90f57547cbb3f3f5b472d3e14",
+    "archivedBytes": 2021,
+    "archivedSha256": "08b9b15e49fe8d9639514d6c6c1123f1e6ee504b95db2ef9c54f7b485b83e3e8",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-manual-fold-native-20261004\\report.json",
+    "archived": "integrated25f-manual-fold-fixed/001-report.json",
+    "sourceBytes": 4743,
+    "sourceSha256": "c15582d2cdc5431fadb81877b1a134a8605f3c331ff4de4f7c0967b34dd76e8b",
+    "archivedBytes": 4743,
+    "archivedSha256": "c15582d2cdc5431fadb81877b1a134a8605f3c331ff4de4f7c0967b34dd76e8b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-manual-fold-native-20261004\\results\\.last-run.json",
+    "archived": "integrated25f-manual-fold-fixed/002-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-manual-fold-native-20261004\\results\\hud-side-rail-collapse-ful-133fb-s-its-public-controls-2029-\\active-build-manually-folded-fullhd.png",
+    "archived": "integrated25f-manual-fold-fixed/003-active-build-manually-folded-fullhd.png",
+    "sourceBytes": 1425674,
+    "sourceSha256": "a6f1708a35fd18138b9249ea1e8821b6e902a1ac37892222a4b8471ff0c6eaf5",
+    "archivedBytes": 1425674,
+    "archivedSha256": "a6f1708a35fd18138b9249ea1e8821b6e902a1ac37892222a4b8471ff0c6eaf5"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-manual-fold-native-20261004\\results\\hud-side-rail-collapse-ful-133fb-s-its-public-controls-2029-\\active-build-publicly-restored-fullhd.png",
+    "archived": "integrated25f-manual-fold-fixed/004-active-build-publicly-restored-fullhd.png",
+    "sourceBytes": 984695,
+    "sourceSha256": "601f0e06d98999d6fe99504ace008fefc1ef7680110d19bae863d2b644de89fc",
+    "archivedBytes": 984695,
+    "archivedSha256": "601f0e06d98999d6fe99504ace008fefc1ef7680110d19bae863d2b644de89fc"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-manual-fold-native-20261004\\results\\hud-side-rail-collapse-ful-133fb-s-its-public-controls-2029-\\fold-actual-dom-paint.json",
+    "archived": "integrated25f-manual-fold-fixed/005-fold-actual-dom-paint.json",
+    "sourceBytes": 1381,
+    "sourceSha256": "85083cfad2f334bb50f76070445b6819c71caac457b43d23dbbe1fc414f1a793",
+    "archivedBytes": 1381,
+    "archivedSha256": "85083cfad2f334bb50f76070445b6819c71caac457b43d23dbbe1fc414f1a793"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-manual-fold-native-20261004\\results\\hud-side-rail-collapse-ful-133fb-s-its-public-controls-2029-\\fold-before-whole-v10.json",
+    "archived": "integrated25f-manual-fold-fixed/006-fold-before-whole-v10.json",
+    "sourceBytes": 15669,
+    "sourceSha256": "af85bbe939b984665aeb5276324f34eff9f512602eed6f213bc3a820e4701a51",
+    "archivedBytes": 15669,
+    "archivedSha256": "af85bbe939b984665aeb5276324f34eff9f512602eed6f213bc3a820e4701a51"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-manual-fold-native-20261004\\results\\hud-side-rail-collapse-ful-133fb-s-its-public-controls-2029-\\fold-hidden-whole-v10.json",
+    "archived": "integrated25f-manual-fold-fixed/007-fold-hidden-whole-v10.json",
+    "sourceBytes": 15669,
+    "sourceSha256": "fab2e0c5da73b149d004405b8936bc85505fd89a9ec5117bde7e051df6135730",
+    "archivedBytes": 15669,
+    "archivedSha256": "fab2e0c5da73b149d004405b8936bc85505fd89a9ec5117bde7e051df6135730"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-manual-fold-native-20261004\\results\\hud-side-rail-collapse-ful-133fb-s-its-public-controls-2029-\\fold-public-restoration-receipt.json",
+    "archived": "integrated25f-manual-fold-fixed/008-fold-public-restoration-receipt.json",
+    "sourceBytes": 3529,
+    "sourceSha256": "bf735ca94bc371cfe1b00f46e8e40dabd4d6065ceefc952040b9feb06a09d999",
+    "archivedBytes": 3529,
+    "archivedSha256": "bf735ca94bc371cfe1b00f46e8e40dabd4d6065ceefc952040b9feb06a09d999"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-manual-fold-native-20261004\\results\\hud-side-rail-collapse-ful-133fb-s-its-public-controls-2029-\\fold-restored-whole-v10.json",
+    "archived": "integrated25f-manual-fold-fixed/009-fold-restored-whole-v10.json",
+    "sourceBytes": 15669,
+    "sourceSha256": "358dc275cdc1e452dbdaed928f6c3b8b9c48ff7de5e88409461ee77606594a5b",
+    "archivedBytes": 15669,
+    "archivedSha256": "358dc275cdc1e452dbdaed928f6c3b8b9c48ff7de5e88409461ee77606594a5b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-manual-fold-native-20261004\\results\\hud-side-rail-collapse-ful-2b554-s-its-public-controls-2029-\\active-build-manually-folded-fullhd.png",
+    "archived": "integrated25f-manual-fold-fixed/010-active-build-manually-folded-fullhd.png",
+    "sourceBytes": 1867013,
+    "sourceSha256": "c6a2c347fdbbb57a26570cbff3fc57d6e42998df34e577538d3a4d6c74c8bf4e",
+    "archivedBytes": 1867013,
+    "archivedSha256": "c6a2c347fdbbb57a26570cbff3fc57d6e42998df34e577538d3a4d6c74c8bf4e"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-manual-fold-native-20261004\\results\\hud-side-rail-collapse-ful-2b554-s-its-public-controls-2029-\\active-build-publicly-restored-fullhd.png",
+    "archived": "integrated25f-manual-fold-fixed/011-active-build-publicly-restored-fullhd.png",
+    "sourceBytes": 1668181,
+    "sourceSha256": "d37d4407a5557722b2bf5fd38577cc8b06e8c4244a00cc3c9fb93bbefbd4d6e9",
+    "archivedBytes": 1668181,
+    "archivedSha256": "d37d4407a5557722b2bf5fd38577cc8b06e8c4244a00cc3c9fb93bbefbd4d6e9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-manual-fold-native-20261004\\results\\hud-side-rail-collapse-ful-2b554-s-its-public-controls-2029-\\fold-actual-dom-paint.json",
+    "archived": "integrated25f-manual-fold-fixed/012-fold-actual-dom-paint.json",
+    "sourceBytes": 1365,
+    "sourceSha256": "22086782de0ba72dff6525df7122f60c70c5943e22311051c87da191357f3265",
+    "archivedBytes": 1365,
+    "archivedSha256": "22086782de0ba72dff6525df7122f60c70c5943e22311051c87da191357f3265"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-manual-fold-native-20261004\\results\\hud-side-rail-collapse-ful-2b554-s-its-public-controls-2029-\\fold-before-whole-v10.json",
+    "archived": "integrated25f-manual-fold-fixed/013-fold-before-whole-v10.json",
+    "sourceBytes": 15670,
+    "sourceSha256": "0f01dfb07cd8326ddc392c3d330f04cb61c29e933f5d53eb3704c9767ef2f630",
+    "archivedBytes": 15670,
+    "archivedSha256": "0f01dfb07cd8326ddc392c3d330f04cb61c29e933f5d53eb3704c9767ef2f630"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-manual-fold-native-20261004\\results\\hud-side-rail-collapse-ful-2b554-s-its-public-controls-2029-\\fold-hidden-whole-v10.json",
+    "archived": "integrated25f-manual-fold-fixed/014-fold-hidden-whole-v10.json",
+    "sourceBytes": 15670,
+    "sourceSha256": "c47dac93831c975e1fd160319c06146657b4971a4075c814a292ff8bc0b44369",
+    "archivedBytes": 15670,
+    "archivedSha256": "c47dac93831c975e1fd160319c06146657b4971a4075c814a292ff8bc0b44369"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-manual-fold-native-20261004\\results\\hud-side-rail-collapse-ful-2b554-s-its-public-controls-2029-\\fold-public-restoration-receipt.json",
+    "archived": "integrated25f-manual-fold-fixed/015-fold-public-restoration-receipt.json",
+    "sourceBytes": 3500,
+    "sourceSha256": "0212f7fea8b2d0cf02b294f524af2694c683331b5ab7141bdd79b8b2ad2ca359",
+    "archivedBytes": 3500,
+    "archivedSha256": "0212f7fea8b2d0cf02b294f524af2694c683331b5ab7141bdd79b8b2ad2ca359"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-manual-fold-native-20261004\\results\\hud-side-rail-collapse-ful-2b554-s-its-public-controls-2029-\\fold-restored-whole-v10.json",
+    "archived": "integrated25f-manual-fold-fixed/016-fold-restored-whole-v10.json",
+    "sourceBytes": 15670,
+    "sourceSha256": "df495f427155e2b082924624733a145af5ea68e8277828780d3add1b27f6d5d1",
+    "archivedBytes": 15670,
+    "archivedSha256": "df495f427155e2b082924624733a145af5ea68e8277828780d3add1b27f6d5d1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-original-native-20261004.txt",
+    "archived": "integrated25f-prep-original/console.txt",
+    "sourceBytes": 16052,
+    "sourceSha256": "e5e747725e5cea116c3240d8124e5701c3e831bc2fd6601a846fb5c2f4648e59",
+    "archivedBytes": 8249,
+    "archivedSha256": "8972b4c55da59ee4d92cbd9a8bee1b13a2be3fabcb1811e643832856e43633be",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-original-native-20261004\\report.json",
+    "archived": "integrated25f-prep-original/001-report.json",
+    "sourceBytes": 17358,
+    "sourceSha256": "ffa0b8a7e6ca2604eb7d1a199d8e3b829c0b858a6b54535d7e901ba3fae7b7ce",
+    "archivedBytes": 17358,
+    "archivedSha256": "ffa0b8a7e6ca2604eb7d1a199d8e3b829c0b858a6b54535d7e901ba3fae7b7ce"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-original-native-20261004\\results\\.last-run.json",
+    "archived": "integrated25f-prep-original/002-.last-run.json",
+    "sourceBytes": 96,
+    "sourceSha256": "bf4d9eeeb3ba5299b4efd5bbede30a9cde71b3cd81ac574fafabd41c0facd75d",
+    "archivedBytes": 96,
+    "archivedSha256": "bf4d9eeeb3ba5299b4efd5bbede30a9cde71b3cd81ac574fafabd41c0facd75d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-original-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\attachments\\dedicated-kitchen-prep-counter-worker-and-save-evidence-7da5c435b1dd6ce65650a822585c51d51575b482.json",
+    "archived": "integrated25f-prep-original/003-dedicated-kitchen-prep-counter-worker-and-save-evidence-7da5c435.json",
+    "sourceBytes": 4537,
+    "sourceSha256": "d7a21cd2a9601c8dda0efc5d8efeda27569e29ed3c5584d8416b0ba82ecd7130",
+    "archivedBytes": 4537,
+    "archivedSha256": "d7a21cd2a9601c8dda0efc5d8efeda27569e29ed3c5584d8416b0ba82ecd7130"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-original-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\dedicated-kitchen-prep-counter-loaded-fullhd.png",
+    "archived": "integrated25f-prep-original/004-dedicated-kitchen-prep-counter-loaded-fullhd.png",
+    "sourceBytes": 1540687,
+    "sourceSha256": "d3b54c34abc4f16d5f72193da291100b3b2976f09b1f3970fbe198c7257292c7",
+    "archivedBytes": 1540687,
+    "archivedSha256": "d3b54c34abc4f16d5f72193da291100b3b2976f09b1f3970fbe198c7257292c7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-original-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\dedicated-kitchen-prep-counter-worker-and-save-evidence.json",
+    "archived": "integrated25f-prep-original/005-dedicated-kitchen-prep-counter-worker-and-save-evidence.json",
+    "sourceBytes": 4537,
+    "sourceSha256": "d7a21cd2a9601c8dda0efc5d8efeda27569e29ed3c5584d8416b0ba82ecd7130",
+    "archivedBytes": 4537,
+    "archivedSha256": "d7a21cd2a9601c8dda0efc5d8efeda27569e29ed3c5584d8416b0ba82ecd7130"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-original-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\dedicated-kitchen-prep-counter-worker-completed-fullhd.png",
+    "archived": "integrated25f-prep-original/006-dedicated-kitchen-prep-counter-worker-completed-fullhd.png",
+    "sourceBytes": 1575455,
+    "sourceSha256": "c52dd0b5335cd79621a7654a97e35fb55bec544af7adbda089fabb9e7f305521",
+    "archivedBytes": 1575455,
+    "archivedSha256": "c52dd0b5335cd79621a7654a97e35fb55bec544af7adbda089fabb9e7f305521"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-original-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\error-context.md",
+    "archived": "integrated25f-prep-original/007-error-context.md",
+    "sourceBytes": 8256,
+    "sourceSha256": "a25541768d222e19f4ebb0e302bcf8433e7a16c7e87d9cfd4120692d6b5c369a",
+    "archivedBytes": 8256,
+    "archivedSha256": "a25541768d222e19f4ebb0e302bcf8433e7a16c7e87d9cfd4120692d6b5c369a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-original-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\failed-player-fullhd.png",
+    "archived": "integrated25f-prep-original/008-failed-player-fullhd.png",
+    "sourceBytes": 1540687,
+    "sourceSha256": "d3b54c34abc4f16d5f72193da291100b3b2976f09b1f3970fbe198c7257292c7",
+    "archivedBytes": 1540687,
+    "archivedSha256": "d3b54c34abc4f16d5f72193da291100b3b2976f09b1f3970fbe198c7257292c7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-original-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\failed-player-worker-snapshot.json",
+    "archived": "integrated25f-prep-original/009-failed-player-worker-snapshot.json",
+    "sourceBytes": 80616,
+    "sourceSha256": "464f4fd2c9518afef5ecf38bf6c482bbda063df2e3489acde13cec615bdce238",
+    "archivedBytes": 80616,
+    "archivedSha256": "464f4fd2c9518afef5ecf38bf6c482bbda063df2e3489acde13cec615bdce238"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-prep-original-native-20261004\\results\\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "integrated25f-prep-original/010-worker-and-completed-save-evidence.json",
+    "sourceBytes": 373,
+    "sourceSha256": "9a7831ce7aeec03638a4da399ddbb00d5ab9ddbbee450bad66935fc154e85343",
+    "archivedBytes": 373,
+    "archivedSha256": "9a7831ce7aeec03638a4da399ddbb00d5ab9ddbbee450bad66935fc154e85343"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-full-source-20261004.json",
+    "archived": "integrated25f-full-source/report.json",
+    "sourceBytes": 3395880,
+    "sourceSha256": "e90e8dd35f23980a56bbe29264335809f3c6967f58670a6431052922fd97da2a",
+    "archivedBytes": 3395880,
+    "archivedSha256": "e90e8dd35f23980a56bbe29264335809f3c6967f58670a6431052922fd97da2a"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-full-source-20261004.txt",
+    "archived": "integrated25f-full-source/console.txt",
+    "sourceBytes": 269112,
+    "sourceSha256": "5c6bb107cc370fa1519464997952d8556b0268de8f472a525876cb2f1b3dbcf2",
+    "archivedBytes": 136409,
+    "archivedSha256": "e13802cb67d4282ba7e0ef0a8ff6835473d0ba8463e1fe075a4fcd13ea305031",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-citation-restored-20261004.txt",
+    "archived": "integrated25f-citation-restored/console.txt",
+    "sourceBytes": 1418,
+    "sourceSha256": "69e37629781b7069e03007041fc8fde71eb315744b515f10a451a9ddc7cc54db",
+    "archivedBytes": 709,
+    "archivedSha256": "6d0ed2ade743f589cd1c4030f0dee1e593ea200ccedb64e39ecdf4f7a08c8d22",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-types-20261004.txt",
+    "archived": "integrated25f-types/console.txt",
+    "sourceBytes": 814,
+    "sourceSha256": "a7da884f0a806702f4b7758b03a17f0a2c8144c7330fd50793a7682f54a7a336",
+    "archivedBytes": 406,
+    "archivedSha256": "a91f44645971429c8f392cf98471498ebef3ed9622213c4a8fc095fb2f9cedff",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-assets-20261004.txt",
+    "archived": "integrated25f-assets/console.txt",
+    "sourceBytes": 1258,
+    "sourceSha256": "de1ba87a0fe879ee1cb14a21550b7f9927d51e001f6399d84586e3df6193a96a",
+    "archivedBytes": 629,
+    "archivedSha256": "72600d4ea4d357099347480a67876a4c7dda2c383f03e3c224865ac02b007cc2",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-build-20261004.txt",
+    "archived": "integrated25f-build/console.txt",
+    "sourceBytes": 4384,
+    "sourceSha256": "c58d778ac89063d5e8ee7c0ceab237d42507fbb879ae3e0d54d2823943d3288f",
+    "archivedBytes": 2215,
+    "archivedSha256": "449472f3f48cca0055b76b17205ec77bd500a42e03e44c7d0407a35ef1cc8b95",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004.txt",
+    "archived": "integrated25f-kitchen-corrected/console.txt",
+    "sourceBytes": 4396,
+    "sourceSha256": "8fbfe194a55cab1f314703347dc68de2bbbda26d9d6ae6ebd19917e17b391d5f",
+    "archivedBytes": 2205,
+    "archivedSha256": "186c56e00cad1ac1d42402d906615ca8685baa51f1a5b296a4625b3edef59310",
+    "conversion": "UTF16LE console to UTF8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\report.json",
+    "archived": "integrated25f-kitchen-corrected/001-report.json",
+    "sourceBytes": 8676,
+    "sourceSha256": "ab8b9f8bd9fc985456052f3465fdcad5ae546bbb7bd2ab5a1b4ed7ca83c27f52",
+    "archivedBytes": 8676,
+    "archivedSha256": "ab8b9f8bd9fc985456052f3465fdcad5ae546bbb7bd2ab5a1b4ed7ca83c27f52"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\.last-run.json",
+    "archived": "integrated25f-kitchen-corrected/002-.last-run.json",
+    "sourceBytes": 45,
+    "sourceSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+    "archivedBytes": 45,
+    "archivedSha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\attachments\\dedicated-kitchen-stove-worker-and-save-evidence-a8091ad056f304d68533efeefff768d2d409bd29.json",
+    "archived": "integrated25f-kitchen-corrected/003-dedicated-kitchen-stove-worker-and-save-evidence-a8091ad056f304d.json",
+    "sourceBytes": 674,
+    "sourceSha256": "f411adb2194e3710539e72f0dde086e3ad1419a79fd6e4f1bb3b200cbccbfcb1",
+    "archivedBytes": 674,
+    "archivedSha256": "f411adb2194e3710539e72f0dde086e3ad1419a79fd6e4f1bb3b200cbccbfcb1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\dedicated-kitchen-stove-loaded-fullhd.png",
+    "archived": "integrated25f-kitchen-corrected/004-dedicated-kitchen-stove-loaded-fullhd.png",
+    "sourceBytes": 1534360,
+    "sourceSha256": "c85d875dbe3269dff84f78e34a96781b464e70b9e644acdbbe9a874377164fac",
+    "archivedBytes": 1534360,
+    "archivedSha256": "c85d875dbe3269dff84f78e34a96781b464e70b9e644acdbbe9a874377164fac"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-and-save-evidence.json",
+    "archived": "integrated25f-kitchen-corrected/005-dedicated-kitchen-stove-worker-and-save-evidence.json",
+    "sourceBytes": 674,
+    "sourceSha256": "f411adb2194e3710539e72f0dde086e3ad1419a79fd6e4f1bb3b200cbccbfcb1",
+    "archivedBytes": 674,
+    "archivedSha256": "f411adb2194e3710539e72f0dde086e3ad1419a79fd6e4f1bb3b200cbccbfcb1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-completed-fullhd.png",
+    "archived": "integrated25f-kitchen-corrected/006-dedicated-kitchen-stove-worker-completed-fullhd.png",
+    "sourceBytes": 1568539,
+    "sourceSha256": "ac4722bec0aa7fc6cb446d3c09e3e43db158d8704844f5fbe195141f4bfb9cb7",
+    "archivedBytes": 1568539,
+    "archivedSha256": "ac4722bec0aa7fc6cb446d3c09e3e43db158d8704844f5fbe195141f4bfb9cb7"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-loaded-physical-fixings-fullhd.png",
+    "archived": "integrated25f-kitchen-corrected/007-kitchen-loaded-physical-fixings-fullhd.png",
+    "sourceBytes": 1502148,
+    "sourceSha256": "c065f253480acdc6012057879f859225936f0d76c5e401ed2ba2ad54dce87ef9",
+    "archivedBytes": 1502148,
+    "archivedSha256": "c065f253480acdc6012057879f859225936f0d76c5e401ed2ba2ad54dce87ef9"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-modern-actual-network-and-htmlimage-evidence.json",
+    "archived": "integrated25f-kitchen-corrected/008-kitchen-modern-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 25324,
+    "sourceSha256": "f19868a132b1106df1f71c39310b6106f6f6a09f83c891f00ff28d3823725f8d",
+    "archivedBytes": 25324,
+    "archivedSha256": "f19868a132b1106df1f71c39310b6106f6f6a09f83c891f00ff28d3823725f8d"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-modern-actual200-exposed-frame.png",
+    "archived": "integrated25f-kitchen-corrected/009-kitchen-modern-actual200-exposed-frame.png",
+    "sourceBytes": 28430,
+    "sourceSha256": "2c45a7fe165699ebdf209ba6a092956d9e8097d3095bc5f09dd35b9344749d65",
+    "archivedBytes": 28430,
+    "archivedSha256": "2c45a7fe165699ebdf209ba6a092956d9e8097d3095bc5f09dd35b9344749d65"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-modern-raw-response-provenance.json",
+    "archived": "integrated25f-kitchen-corrected/010-kitchen-modern-raw-response-provenance.json",
+    "sourceBytes": 4127,
+    "sourceSha256": "085b15c28f7fae3cc46d89ebc0017f9697b8dd8e87c4c4dfdf8ff3cfdd477416",
+    "archivedBytes": 4127,
+    "archivedSha256": "085b15c28f7fae3cc46d89ebc0017f9697b8dd8e87c4c4dfdf8ff3cfdd477416"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-paused-after-load.json",
+    "archived": "integrated25f-kitchen-corrected/011-kitchen-paused-after-load.json",
+    "sourceBytes": 80448,
+    "sourceSha256": "552f13ab7c21d95353af4d28cb4d93b8de5010cf45ad0651eae4b9a59d30ea1b",
+    "archivedBytes": 80448,
+    "archivedSha256": "552f13ab7c21d95353af4d28cb4d93b8de5010cf45ad0651eae4b9a59d30ea1b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-paused-before-save.json",
+    "archived": "integrated25f-kitchen-corrected/012-kitchen-paused-before-save.json",
+    "sourceBytes": 80448,
+    "sourceSha256": "0b8ef1ad6d8da7beb01a1ed7d3c3b19c967d6dc8a889d278b5d359e39b2e9766",
+    "archivedBytes": 80448,
+    "archivedSha256": "0b8ef1ad6d8da7beb01a1ed7d3c3b19c967d6dc8a889d278b5d359e39b2e9766"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-stove-canonical-source60-e40-fullhd.png",
+    "archived": "integrated25f-kitchen-corrected/013-kitchen-stove-canonical-source60-e40-fullhd.png",
+    "sourceBytes": 1619683,
+    "sourceSha256": "ca050599ebd3abde1fe3c062f55f5acecd00bbe592614de08a994935b464fe90",
+    "archivedBytes": 1619683,
+    "archivedSha256": "ca050599ebd3abde1fe3c062f55f5acecd00bbe592614de08a994935b464fe90"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\kitchen-stove-canonical-whole-state.json",
+    "archived": "integrated25f-kitchen-corrected/014-kitchen-stove-canonical-whole-state.json",
+    "sourceBytes": 80448,
+    "sourceSha256": "2a81b2993ee6193277faade267cbc8a454b7782cff41baf4d67d275080ca12f8",
+    "archivedBytes": 80448,
+    "archivedSha256": "2a81b2993ee6193277faade267cbc8a454b7782cff41baf4d67d275080ca12f8"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "integrated25f-kitchen-corrected/015-worker-and-completed-save-evidence.json",
+    "sourceBytes": 444,
+    "sourceSha256": "a08b02dfbf921cbf7d2c3a605d98ff3d97622f253e1ecfaca964a5cfb9d7f6e1",
+    "archivedBytes": 444,
+    "archivedSha256": "a08b02dfbf921cbf7d2c3a605d98ff3d97622f253e1ecfaca964a5cfb9d7f6e1"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\attachments\\dedicated-kitchen-stove-worker-and-save-evidence-3d46797ccc3342de9293778be9587148132f3902.json",
+    "archived": "integrated25f-kitchen-corrected/016-dedicated-kitchen-stove-worker-and-save-evidence-3d46797ccc3342d.json",
+    "sourceBytes": 649,
+    "sourceSha256": "ccd1cabce07fa7a3fde82cbcb0e1b679eed65471622fd75e206c7268d5f0386c",
+    "archivedBytes": 649,
+    "archivedSha256": "ccd1cabce07fa7a3fde82cbcb0e1b679eed65471622fd75e206c7268d5f0386c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-loaded-fullhd.png",
+    "archived": "integrated25f-kitchen-corrected/017-dedicated-kitchen-stove-loaded-fullhd.png",
+    "sourceBytes": 1540664,
+    "sourceSha256": "c0571efe5b61a2c6f8bbd3b0fb03b9190f56b31d48d2df337af42751da930f89",
+    "archivedBytes": 1540664,
+    "archivedSha256": "c0571efe5b61a2c6f8bbd3b0fb03b9190f56b31d48d2df337af42751da930f89"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-and-save-evidence.json",
+    "archived": "integrated25f-kitchen-corrected/018-dedicated-kitchen-stove-worker-and-save-evidence.json",
+    "sourceBytes": 649,
+    "sourceSha256": "ccd1cabce07fa7a3fde82cbcb0e1b679eed65471622fd75e206c7268d5f0386c",
+    "archivedBytes": 649,
+    "archivedSha256": "ccd1cabce07fa7a3fde82cbcb0e1b679eed65471622fd75e206c7268d5f0386c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-completed-fullhd.png",
+    "archived": "integrated25f-kitchen-corrected/019-dedicated-kitchen-stove-worker-completed-fullhd.png",
+    "sourceBytes": 1575429,
+    "sourceSha256": "d4b3b0ce61d2889ddb39b02cd407a8d7ef6ab612577e18e08e90bd87b00f9f8b",
+    "archivedBytes": 1575429,
+    "archivedSha256": "d4b3b0ce61d2889ddb39b02cd407a8d7ef6ab612577e18e08e90bd87b00f9f8b"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-loaded-physical-fixings-fullhd.png",
+    "archived": "integrated25f-kitchen-corrected/020-kitchen-loaded-physical-fixings-fullhd.png",
+    "sourceBytes": 1514686,
+    "sourceSha256": "7615234376a8bb9472c9d1c3f671bb60db816739ca356eb3867397291bcd6529",
+    "archivedBytes": 1514686,
+    "archivedSha256": "7615234376a8bb9472c9d1c3f671bb60db816739ca356eb3867397291bcd6529"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-modern-actual-network-and-htmlimage-evidence.json",
+    "archived": "integrated25f-kitchen-corrected/021-kitchen-modern-actual-network-and-htmlimage-evidence.json",
+    "sourceBytes": 27871,
+    "sourceSha256": "e7dbf37e901c6e9f489ea332703f10842ca0364e6f123d60beeac01c6c759875",
+    "archivedBytes": 27871,
+    "archivedSha256": "e7dbf37e901c6e9f489ea332703f10842ca0364e6f123d60beeac01c6c759875"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-modern-actual200-exposed-frame.png",
+    "archived": "integrated25f-kitchen-corrected/022-kitchen-modern-actual200-exposed-frame.png",
+    "sourceBytes": 28430,
+    "sourceSha256": "2c45a7fe165699ebdf209ba6a092956d9e8097d3095bc5f09dd35b9344749d65",
+    "archivedBytes": 28430,
+    "archivedSha256": "2c45a7fe165699ebdf209ba6a092956d9e8097d3095bc5f09dd35b9344749d65"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-modern-raw-response-provenance.json",
+    "archived": "integrated25f-kitchen-corrected/023-kitchen-modern-raw-response-provenance.json",
+    "sourceBytes": 6584,
+    "sourceSha256": "3e598fd0b5eb8343a17371dd65fe32c2b4a5bfda19336e384291edbebb9f2955",
+    "archivedBytes": 6584,
+    "archivedSha256": "3e598fd0b5eb8343a17371dd65fe32c2b4a5bfda19336e384291edbebb9f2955"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-paused-after-load.json",
+    "archived": "integrated25f-kitchen-corrected/024-kitchen-paused-after-load.json",
+    "sourceBytes": 80611,
+    "sourceSha256": "05459c9c0bc45c8a665d9290a16c67a78c43152523c52054523f91d1fbac11bd",
+    "archivedBytes": 80611,
+    "archivedSha256": "05459c9c0bc45c8a665d9290a16c67a78c43152523c52054523f91d1fbac11bd"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-paused-before-save.json",
+    "archived": "integrated25f-kitchen-corrected/025-kitchen-paused-before-save.json",
+    "sourceBytes": 80611,
+    "sourceSha256": "41a04d8651883fa5d17cd88d05c540741698ed608a26a4ef4197142d139e48aa",
+    "archivedBytes": 80611,
+    "archivedSha256": "41a04d8651883fa5d17cd88d05c540741698ed608a26a4ef4197142d139e48aa"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-stove-canonical-source60-e40-fullhd.png",
+    "archived": "integrated25f-kitchen-corrected/026-kitchen-stove-canonical-source60-e40-fullhd.png",
+    "sourceBytes": 1562493,
+    "sourceSha256": "bcb924e54cf0bf1cb52803d6e90491c940d88c8b62fe0200b44919e003468d6c",
+    "archivedBytes": 1562493,
+    "archivedSha256": "bcb924e54cf0bf1cb52803d6e90491c940d88c8b62fe0200b44919e003468d6c"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\kitchen-stove-canonical-whole-state.json",
+    "archived": "integrated25f-kitchen-corrected/027-kitchen-stove-canonical-whole-state.json",
+    "sourceBytes": 80611,
+    "sourceSha256": "f3f64ee7a4cd38c38462bbfaa178daa24b9c12ed5e9e3168ff7daa5cc7aab306",
+    "archivedBytes": 80611,
+    "archivedSha256": "f3f64ee7a4cd38c38462bbfaa178daa24b9c12ed5e9e3168ff7daa5cc7aab306"
+  },
+  {
+    "source": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-combined-25f-kitchen-corrected-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\worker-and-completed-save-evidence.json",
+    "archived": "integrated25f-kitchen-corrected/028-worker-and-completed-save-evidence.json",
+    "sourceBytes": 419,
+    "sourceSha256": "5b7a1bee9f73db2623b5b14621205a97b2a3c69cfc86106de6924623cfbe3a4b",
+    "archivedBytes": 419,
+    "archivedSha256": "5b7a1bee9f73db2623b5b14621205a97b2a3c69cfc86106de6924623cfbe3a4b"
   }
 ]

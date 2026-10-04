@@ -1,0 +1,184 @@
+{
+  "uiScale": 1,
+  "before": [
+    {
+      "selector": ".hud__aside",
+      "hidden": false,
+      "display": "contents",
+      "width": 0,
+      "height": 0,
+      "laidOutDescendants": 23
+    },
+    {
+      "selector": ".hud__side",
+      "hidden": false,
+      "display": "flex",
+      "width": 363,
+      "height": 621,
+      "laidOutDescendants": 119
+    },
+    {
+      "selector": ".save-panel",
+      "hidden": false,
+      "display": "block",
+      "width": 340,
+      "height": 278,
+      "laidOutDescendants": 13
+    },
+    {
+      "selector": ".hud-build",
+      "hidden": false,
+      "display": "flex",
+      "width": 339,
+      "height": 600.5625,
+      "laidOutDescendants": 118
+    }
+  ],
+  "folded": [
+    {
+      "selector": ".hud__aside",
+      "hidden": true,
+      "display": "none",
+      "width": 0,
+      "height": 0,
+      "laidOutDescendants": 0
+    },
+    {
+      "selector": ".hud__side",
+      "hidden": true,
+      "display": "none",
+      "width": 0,
+      "height": 0,
+      "laidOutDescendants": 0
+    },
+    {
+      "selector": ".save-panel",
+      "hidden": false,
+      "display": "block",
+      "width": 0,
+      "height": 0,
+      "laidOutDescendants": 0
+    },
+    {
+      "selector": ".hud-build",
+      "hidden": false,
+      "display": "flex",
+      "width": 0,
+      "height": 0,
+      "laidOutDescendants": 0
+    }
+  ],
+  "restored": [
+    {
+      "selector": ".hud__aside",
+      "hidden": false,
+      "display": "contents",
+      "width": 0,
+      "height": 0,
+      "laidOutDescendants": 23
+    },
+    {
+      "selector": ".hud__side",
+      "hidden": false,
+      "display": "flex",
+      "width": 363,
+      "height": 621,
+      "laidOutDescendants": 119
+    },
+    {
+      "selector": ".save-panel",
+      "hidden": false,
+      "display": "block",
+      "width": 340,
+      "height": 278,
+      "laidOutDescendants": 13
+    },
+    {
+      "selector": ".hud-build",
+      "hidden": false,
+      "display": "flex",
+      "width": 339,
+      "height": 600.5625,
+      "laidOutDescendants": 118
+    }
+  ],
+  "handle": {
+    "width": 44,
+    "height": 44,
+    "reachable": true
+  },
+  "readingsBefore": [
+    {
+      "text": "0Prisoners",
+      "width": 204.203125,
+      "height": 36,
+      "x": 12,
+      "y": 51,
+      "display": "flex"
+    },
+    {
+      "text": "0High Risk",
+      "width": 199.28125,
+      "height": 36,
+      "x": 216.203125,
+      "y": 51,
+      "display": "flex"
+    },
+    {
+      "text": "0Staff",
+      "width": 169.984375,
+      "height": 36,
+      "x": 415.484375,
+      "y": 51,
+      "display": "flex"
+    },
+    {
+      "text": "0CoverageCovered",
+      "width": 259.546875,
+      "height": 36,
+      "x": 585.46875,
+      "y": 51,
+      "display": "flex"
+    },
+    {
+      "text": "0Rooms",
+      "width": 179.8125,
+      "height": 36,
+      "x": 845.015625,
+      "y": 51,
+      "display": "flex"
+    },
+    {
+      "text": "0IncidentsClear",
+      "width": 245.0625,
+      "height": 36,
+      "x": 1024.828125,
+      "y": 51,
+      "display": "flex"
+    },
+    {
+      "text": "0Contraband",
+      "width": 222.09375,
+      "height": 36,
+      "x": 1269.890625,
+      "y": 51,
+      "display": "flex"
+    },
+    {
+      "text": "25,000Funds",
+      "width": 185.3125,
+      "height": 36,
+      "x": 1491.984375,
+      "y": 51,
+      "display": "flex"
+    },
+    {
+      "text": "0Earned today",
+      "width": 230.6875,
+      "height": 36,
+      "x": 1677.296875,
+      "y": 51,
+      "display": "flex"
+    }
+  ]
+}

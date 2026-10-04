@@ -1801,3 +1801,23 @@ failures remain preserved. Root is preparing the next combined game build.
 Three independent lanes now produce the actual Kitchen prep counter and
 Medicine cabinet Blender matrices and correct the reached Kitchen q1 observer.
 The automatic UI200 inspector-fold proposal still awaits the owner's answer.
+
+The next genuine compiled checkpoint is25f8dbc45138b2c14c05ee98dd71789321bc7c25.
+It integrates the actual Kitchen prep counter72 matrix, Canteen table/wooden
+bench and the later source corrections. Both original active-Build manual-fold
+cases now pass atUI100/UI200, with whole pausedV10 state unchanged. Strict
+types/assets/build pass; the complete source run has8751 GREEN and one local
+published-ref citation failure, whose unchanged8-case suite passes after
+fetching the real published refs. No second complete run or release is claimed.
+The actual prep q0 completed/loaded photo is opened and retains all paid owners;
+its old flat-color observer is RED andq1 is skipped. Current three independent
+lanes produce the genuine Classroom teacher desk and Infirmary Medicine cabinet
+Blender sources/matrices and prepare the prep-counter material/wholeV10/HTTP
+observer. Root retains the sole native/build lease and integrates their work.
+
+All three corrected Kitchen stove native routes now pass on that frozen25f
+client, with both completed orientations/wholeV10 Save/Load/original pixel
+floors/actual demanded source HTTP and Blob decode. This checkpoint fixes the
+reached q1 observer without lowering thresholds. Classroom and Medicine source
+matrices are published in their isolated worktrees; their next combined native
+acceptance and exact-head hosted release gates remain to be obtained.

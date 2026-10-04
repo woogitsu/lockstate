@@ -1,0 +1,114 @@
+node : [2m[WebServer] [22m(node:45116) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:7 char:1
++ node node_modules/@playwright/test/cli.js test --config tests/browser ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2m[WebServer]... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing dist\lockstate_development\wrangler.js
+on configuration:[0m
+[2m[WebServer] [22m
+[2m[WebServer] [22m    - No environment found in configuration with name "production".
+[2m[WebServer] [22m      Before using `--env=production` there should be an equivalent environment section in the con
+figuration.
+[2m[WebServer] [22m  
+[2m[WebServer] [22m      Consider adding an environment configuration section to the wrangler.json file:
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m      [env.production]
+[2m[WebServer] [22m      ```
+[2m[WebServer] [22m  
+[2m[WebServer] [22m
+[2m[WebServer] [22m
+
+Running 3 tests using 1 worker
+
+(node:40564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\browser\dedicated-kitchen-prep-counter-player-build.spec.ts:188:1 › player creates storage and delivery capacity before Kitchen (41.6s)
+  x  2 tests\browser\dedicated-kitchen-prep-counter-player-build.spec.ts:251:3 › player builds Kitchen at quarterTurns0 and retains authored prep counter worktop and detail palettes and anchors after Save/Load (37.9s)
+  -  3 tests\browser\dedicated-kitchen-prep-counter-player-build.spec.ts:251:3 › player builds Kitchen at quarterTurns1 and retains authored prep counter worktop and detail palettes and anchors after Save/Load
+
+
+  1) tests\browser\dedicated-kitchen-prep-counter-player-build.spec.ts:251:3 › player builds Kitchen at quarterTurns0 and retains authored prep counter worktop and detail palettes and anchors after Save/Load 
+
+    Error: prep counter wood worktop after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      212 |   }, null, 2));
+      213 |   beforePixels.forEach((count, index) => expect.soft(count, `prep counter ${index === 0 ? "wood worktop" : "physical tray rims"} after construction`)
+    > 214 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 100 : 80 : index === 0 ? 150 : 100));
+          |      ^
+      215 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      216 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      217 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\dedicated-kitchen-prep-counter-player-build.spec.ts:214:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\dedicated-kitchen-prep-counter-player-build.spec.ts:213:16
+
+    Error: prep counter physical tray rims after construction
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m80[39m
+    Received:   [31m0[39m
+
+      212 |   }, null, 2));
+      213 |   beforePixels.forEach((count, index) => expect.soft(count, `prep counter ${index === 0 ? "wood worktop" : "physical tray rims"} after construction`)
+    > 214 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 100 : 80 : index === 0 ? 150 : 100));
+          |      ^
+      215 |   await page.getByRole('button', { name: 'Overview', exact: true }).click();
+      216 |   await page.getByRole('button', { name: 'Save now', exact: true }).click();
+      217 |   await expect(page.locator('.save-panel__status')).toContainText('Saved');
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\dedicated-kitchen-prep-counter-player-build.spec.ts:214:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\dedicated-kitchen-prep-counter-player-build.spec.ts:213:16
+
+    Error: prep counter wood worktop after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m100[39m
+    Received:   [31m0[39m
+
+      227 |   const afterPixels = await prepPalettePixels(page, loaded, quarterTurns);
+      228 |   afterPixels.forEach((count, index) => expect.soft(count, `prep counter ${index === 0 ? "wood worktop" : "physical tray rims"} after Load`)
+    > 229 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 100 : 80 : index === 0 ? 150 : 100));
+          |      ^
+      230 |   expect(afterPixels).toEqual(beforePixels);
+      231 |   const evidencePath = info.outputPath('dedicated-kitchen-prep-counter-worker-and-save-evidence.json');
+      232 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\dedicated-kitchen-prep-counter-player-build.spec.ts:229:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\dedicated-kitchen-prep-counter-player-build.spec.ts:228:15
+
+    Error: prep counter physical tray rims after Load
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m80[39m
+    Received:   [31m0[39m
+
+      227 |   const afterPixels = await prepPalettePixels(page, loaded, quarterTurns);
+      228 |   afterPixels.forEach((count, index) => expect.soft(count, `prep counter ${index === 0 ? "wood worktop" : "physical tray rims"} after Load`)
+    > 229 |     .toBeGreaterThan(quarterTurns === 0 ? index === 0 ? 100 : 80 : index === 0 ? 150 : 100));
+          |      ^
+      230 |   expect(afterPixels).toEqual(beforePixels);
+      231 |   const evidencePath = info.outputPath('dedicated-kitchen-prep-counter-worker-and-save-evidence.json');
+      232 |   await writeFile(evidencePath, JSON.stringify({
+        at forEach (C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\dedicated-kitchen-prep-counter-player-build.spec.ts:229:6)
+        at C:\Users\matma\Documents\Rozwój gier\lockstate-staff-chair-v9-integration-20261003\tests\browser\dedicated-kitchen-prep-counter-player-build.spec.ts:228:15
+
+    attachment #1: dedicated-kitchen-prep-counter-worker-and-save-evidence (application/json) ──────
+    ..\..\..\AppData\Local\Temp\lockstate-modern-combined-25f-prep-original-native-20261004\results\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\attachments\dedicated-kitchen-prep-counter-worker-and-save-evidence-7da5c435b1dd6ce65650a822585c51d51575b482.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\AppData\Local\Temp\lockstate-modern-combined-25f-prep-original-native-20261004\results\dedicated-kitchen-prep-cou-e4a57-and-anchors-after-Save-Load\error-context.md
+
+  1 failed
+    tests\browser\dedicated-kitchen-prep-counter-player-build.spec.ts:251:3 › player builds Kitchen at quarterTurns0 and retains authored prep counter worktop and detail palettes and anchors after Save/Load 
+  1 did not run
+  1 passed (1.4m)

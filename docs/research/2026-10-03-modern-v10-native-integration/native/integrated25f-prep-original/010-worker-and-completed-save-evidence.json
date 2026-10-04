@@ -1,0 +1,22 @@
+{
+  "quarterTurns": 0,
+  "actualBefore": [
+    "object.fridge@21,8:orientation=0",
+    "object.prep-counter@23,6:orientation=0",
+    "object.stove@21,6:orientation=0"
+  ],
+  "beforePixels": [
+    0,
+    0
+  ],
+  "commands": [
+    {
+      "type": "PlaceRoomTemplate",
+      "templateId": "kitchen-basic",
+      "origin": {
+        "x": 20,
+        "y": 5
+      }
+    }
+  ]
+}

@@ -1,0 +1,474 @@
+{
+  "compiledSourceHead": "25f8dbc45138b2c14c05ee98dd71789321bc7c25",
+  "saveSchemaVersion": 10,
+  "sessionSnapshotVersion": 4,
+  "protocolVersion": 1,
+  "buildLog": "integrated25f-build.txt",
+  "files": [
+    {
+      "path": "dist/client/_headers",
+      "bytes": 4616,
+      "sha256": "793df865807929fd3c554d7bfb60b6e1a34313503b259687e14c38d836478b72"
+    },
+    {
+      "path": "dist/client/.assetsignore",
+      "bytes": 24,
+      "sha256": "4f83140d5f4293ab55bd1207327e995c83258f1e7d3145b1b5d7a3d17fdfe0a7"
+    },
+    {
+      "path": "dist/client/assets/actors/actor.cook.base.atlas-manifests.json",
+      "bytes": 11856,
+      "sha256": "087225516448f8ec926fcbec5f8e75b1982735e927b6c9cee37bdc7d4795a75d"
+    },
+    {
+      "path": "dist/client/assets/actors/actor.guard.base.atlas-manifests.json",
+      "bytes": 11860,
+      "sha256": "b709ad356478786135c84324779e0d560381e37bd26173b0ce3c2ff261f4e301"
+    },
+    {
+      "path": "dist/client/assets/actors/actor.medic.base.atlas-manifests.json",
+      "bytes": 11860,
+      "sha256": "c5ad7d9eabf8d95a313b71fecb996d34412b2dd44be6766c125a93d628ec2b90"
+    },
+    {
+      "path": "dist/client/assets/actors/actor.prisoner.base.atlas-manifests.json",
+      "bytes": 11872,
+      "sha256": "e635bccfd2bce013a0803b1d282db110bc0c49708cd387e05eb514441b96e60c"
+    },
+    {
+      "path": "dist/client/assets/actors/actor.staff.base.atlas-manifests.json",
+      "bytes": 11860,
+      "sha256": "6a3b800208657da688437726156164ac379478a9cdbf572e8a4c600f670feb35"
+    },
+    {
+      "path": "dist/client/assets/actors/asset-registry.json",
+      "bytes": 917,
+      "sha256": "03100406b9e37c6bb74bbdac31b6aa7182843ca3b6a4540a2c174d77e02d3791"
+    },
+    {
+      "path": "dist/client/assets/catalog-BmAUL2aa.js",
+      "bytes": 86421,
+      "sha256": "5bf7814b1b3d9594f14de199ee72c834e187ccbd039f34d9dbb318d7f826071a"
+    },
+    {
+      "path": "dist/client/assets/environment/modules/wall.interior.modules.manifest.json",
+      "bytes": 5698,
+      "sha256": "2b08243df70744ff43c47490242908f92bae7060289c85adbe5256b3fd7987ea"
+    },
+    {
+      "path": "dist/client/assets/index-CzmJNm9t.css",
+      "bytes": 87541,
+      "sha256": "04894a1bd1107f9c0ec190c43a6889734ac8791f15a0468d593f28fa0a31c0f7"
+    },
+    {
+      "path": "dist/client/assets/index-W-aVWoQZ.js",
+      "bytes": 1944067,
+      "sha256": "20603a11d6f2252172170fdab3c4dedee450ee4cfc06d3f96b3a19d518effa22"
+    },
+    {
+      "path": "dist/client/assets/pl-catalog-uiQLsxnQ.js",
+      "bytes": 51303,
+      "sha256": "38045b769adc3cb3fa48b007c42ac3be8204307fa6745ec3fe2060daf36b8e33"
+    },
+    {
+      "path": "dist/client/assets/worker-BeZzlLvh.js",
+      "bytes": 445265,
+      "sha256": "6d562f6786c686df0a60138621fd067d55b13f903ed719dbcc361565918ae04d"
+    },
+    {
+      "path": "dist/client/game-content/oblique-actor-cook.v1.json",
+      "bytes": 18398,
+      "sha256": "410bf47e9153908c1be0dbb41f5779a8dd87dd807eb5281ee5271064cf205ec6"
+    },
+    {
+      "path": "dist/client/game-content/oblique-actor-guard.v1.json",
+      "bytes": 18486,
+      "sha256": "0c0ac6924646ba13d64b8fd0e2776d0488efc6003666e01a6f7930a4f451eafe"
+    },
+    {
+      "path": "dist/client/game-content/oblique-actor-medic.v1.json",
+      "bytes": 18472,
+      "sha256": "1f887583f2387ca19aac63fa4c03e8bde57eae04082b05c61c0cc0dbd93f60d9"
+    },
+    {
+      "path": "dist/client/game-content/oblique-actor-prisoner.v1.json",
+      "bytes": 18700,
+      "sha256": "63f40668ba3090d4ba43d0ba4f6f3b8b36f6b53b3cfb12a08fe8282488f8c7be"
+    },
+    {
+      "path": "dist/client/game-content/oblique-actor-staff.v1.json",
+      "bytes": 18472,
+      "sha256": "da6179be3b96743a3ccd947ce0c2541df4476966d8f511f59254aecaf762226d"
+    },
+    {
+      "path": "dist/client/game-content/oblique-canteen-bench.v1.json",
+      "bytes": 20019,
+      "sha256": "88516dc11d0b4757f30c00424004368221a8770ad1b1dffa7c9f5c7f3effefb2"
+    },
+    {
+      "path": "dist/client/game-content/oblique-canteen-dining-table.v1.json",
+      "bytes": 19175,
+      "sha256": "a36df64934d5999aca2a7e8231e2561d790f39169115451c5c8e19aec2d053f2"
+    },
+    {
+      "path": "dist/client/game-content/oblique-cell-bed.v1.json",
+      "bytes": 2760,
+      "sha256": "dc89688158e6049e94f0620882893d3a8fc0a5353c69f23e83077470c26ded6f"
+    },
+    {
+      "path": "dist/client/game-content/oblique-cell-chair.v1.json",
+      "bytes": 19228,
+      "sha256": "77d161b013f23c1b0aaf0ff1aaf8bc6a699ef8da219a02bc61ddd47a2d266104"
+    },
+    {
+      "path": "dist/client/game-content/oblique-cell-door-north-cutaway.v1.json",
+      "bytes": 19386,
+      "sha256": "bc140ae6638bd8b91da502b574abc28453efe47a512d4468f44fe9724809ad66"
+    },
+    {
+      "path": "dist/client/game-content/oblique-cell-door-open.v1.json",
+      "bytes": 18887,
+      "sha256": "ed1d6c6cdf49608d89bb563a22089272d5b566ad9ce64f3ad894d40b5a88d4b5"
+    },
+    {
+      "path": "dist/client/game-content/oblique-cell-door-west-cutaway.v1.json",
+      "bytes": 19319,
+      "sha256": "6839dbd5573f09dbefb993904fe14e3b6d62022739f9dd03239ea6df6c4b34a8"
+    },
+    {
+      "path": "dist/client/game-content/oblique-cell-door-west-full.v1.json",
+      "bytes": 19252,
+      "sha256": "e9e7c35dc229268d5b134369d7afaf49e558cfb64b0f7ffacdc3d6965ac2fbee"
+    },
+    {
+      "path": "dist/client/game-content/oblique-cell-storage-rack.v1.json",
+      "bytes": 19746,
+      "sha256": "2a54ef6a6ad5c8b32aa029ffa1348b6c2432d062a0864d882f8a5b3ca8a7b8ad"
+    },
+    {
+      "path": "dist/client/game-content/oblique-cell-toilet.v1.json",
+      "bytes": 18489,
+      "sha256": "46f07d305ab7a89883bfb48fcfd9c43f1170c686f4730a2231bdb69eea9998e0"
+    },
+    {
+      "path": "dist/client/game-content/oblique-fixture-cell-sink-handwash.v1.json",
+      "bytes": 19497,
+      "sha256": "aeb315acec82b55d4986f791ec12f4f1a9a03afd795c55c26bba93aca892d9e5"
+    },
+    {
+      "path": "dist/client/game-content/oblique-fixture-cell-waste-bin.v1.json",
+      "bytes": 19222,
+      "sha256": "bbd855b6d8647e3fb957e6eb46752d01bd960a84970795be97b740101026616e"
+    },
+    {
+      "path": "dist/client/game-content/oblique-fixture.garbage-room-waste-bin.v1.json",
+      "bytes": 19806,
+      "sha256": "3d0f33f3372f02021c81474877997595065ee9b4430f42e835cd1a33819978d3"
+    },
+    {
+      "path": "dist/client/game-content/oblique-fixture.medicine-cabinet.v1.json",
+      "bytes": 20033,
+      "sha256": "66e4c5fd59f07a8c3edc8adf817cdd4b256885bfcef829a15e5e7f0a32062eeb"
+    },
+    {
+      "path": "dist/client/game-content/oblique-fixture.yard-steel-waste-bin.v1.json",
+      "bytes": 19644,
+      "sha256": "aaece42042fe063bd4554499801d6b0538e0a681abe851773492c79213ea40e5"
+    },
+    {
+      "path": "dist/client/game-content/oblique-floor-canteen.v1.json",
+      "bytes": 18666,
+      "sha256": "ab31b24a695d3f062b1d38b4d32dfe695f00a21fa23c19b2564986897f9896e4"
+    },
+    {
+      "path": "dist/client/game-content/oblique-floor-cell.v1.json",
+      "bytes": 18451,
+      "sha256": "f98971e9d15f48f1e26fb4a178dab6ff65d82e54fa08e37ec044d3449f0a2aee"
+    },
+    {
+      "path": "dist/client/game-content/oblique-floor-corridor.v1.json",
+      "bytes": 18740,
+      "sha256": "e13e8b64935743fa3e8281465356387d6eecc45b0b7a3cf6b3655a0769a11df7"
+    },
+    {
+      "path": "dist/client/game-content/oblique-floor-dirt-grass-edge-east.v1.json",
+      "bytes": 19616,
+      "sha256": "95325006433c9b0be1e6061080df1a164f166c8721901c972101e370e7c668c2"
+    },
+    {
+      "path": "dist/client/game-content/oblique-floor-dirt-grass-edge-north.v1.json",
+      "bytes": 19689,
+      "sha256": "4428322eb468d4f3ef1507d3db004d4f0c02b612cd4893e8e1ffa5c11ec896f6"
+    },
+    {
+      "path": "dist/client/game-content/oblique-floor-dirt-grass-edge-south.v1.json",
+      "bytes": 19689,
+      "sha256": "e9614d4e1a067d0d9f35c162eb5aa47d041034ae39843b4ae8311eed0069e9b5"
+    },
+    {
+      "path": "dist/client/game-content/oblique-floor-dirt-grass-edge-west.v1.json",
+      "bytes": 19616,
+      "sha256": "64e1dd784a68bdccf10b039b6aa93c29a3275b7fc765b48a5f8173e190bd1678"
+    },
+    {
+      "path": "dist/client/game-content/oblique-floor-reception.v1.json",
+      "bytes": 18809,
+      "sha256": "6353a85c7a111d2592c5e2815c57f26861e182be5adeddd1c23e6aee603ea017"
+    },
+    {
+      "path": "dist/client/game-content/oblique-floor-shower.v1.json",
+      "bytes": 18588,
+      "sha256": "04ccece1ca6ee6a5d6947fc3f75de9680650db939282196a9f04cc2e8bf7364f"
+    },
+    {
+      "path": "dist/client/game-content/oblique-floor-terrain-dirt.v1.json",
+      "bytes": 19013,
+      "sha256": "4d3bc8824e085201c3acc5b0c5c87d277ded17466b670ecf761bbf51ef0b2229"
+    },
+    {
+      "path": "dist/client/game-content/oblique-floor-terrain-grass.v1.json",
+      "bytes": 19087,
+      "sha256": "ce56eabc51e72087dbffba68b1c64a950a7fee65659e1124d08e97bef6f333f4"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture-classroom-student-chair.v1.json",
+      "bytes": 20014,
+      "sha256": "0d4d7bf93053166e2e7d47f56ac6aed6fac4ff041badf4c0298f5707e9f6471c"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture-classroom-teacher-desk.v1.json",
+      "bytes": 19954,
+      "sha256": "701d89104a0ed18b5750a1ffabb9dfb7fa389504b0e80495d671a67797ddb4ff"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture-laundry-linen-rack.v1.json",
+      "bytes": 19669,
+      "sha256": "53b3b43b52c56cd984561ec2574f78a0143ee46ed635d483a5de4ae61ffeafd9"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture-office-desk-generic.v1.json",
+      "bytes": 19746,
+      "sha256": "7efe0783dd039dbeb35349a0d5502b69293d06bf6f747bc60e203c12872e7b56"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture-reception-registration-desk.v1.json",
+      "bytes": 20324,
+      "sha256": "2094a5e7e67c51d5a63380dec27395761a7afd1e425f0089a0d2b2d603efaa4b"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture-reception-waiting-armchair.v1.json",
+      "bytes": 20250,
+      "sha256": "95b4e9bcb69dd9e9e8420073b57c943ea77f63117e4ef237101a5db3061d3144"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture-staff-room-padded-chair.v1.json",
+      "bytes": 20039,
+      "sha256": "f27086aa7b5c6141d9ed3f376136e068fb4a60383775689a205ac6b9ce26443e"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture.canteen-dining-table.v1.json",
+      "bytes": 19732,
+      "sha256": "1c163e1a5fb639ea74ee336657ae71a61369296249eed6cedf3da9cb02930aa6"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture.cell-cot.v1.json",
+      "bytes": 19433,
+      "sha256": "a7d9dd1bad339bd228aefa3de378557e58e3513bf1b824bf0afbacef5c94e741"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture.classroom-chair.v1.json",
+      "bytes": 19940,
+      "sha256": "64b6d1b81829d5f9899cb9b3a58097b53d2066360bac2183157e18bd415b57d7"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture.common-room-bench.v1.json",
+      "bytes": 20469,
+      "sha256": "e29e38f34772d91fcf710eb16d6a06bd1f21ae6f532188d967e009c4a011068f"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture.kitchen-fridge.v1.json",
+      "bytes": 20030,
+      "sha256": "637dd6dc2ffd7529a3cc24a777de344119e735b82b0f4c500949e9df64730d3a"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture.kitchen-prep-counter.v1.json",
+      "bytes": 20474,
+      "sha256": "a3ff7e3f0d29e6dadc41cef9197b6f4d626b2399d8afa0418c41d240cebe4512"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture.kitchen-stove.v1.json",
+      "bytes": 19956,
+      "sha256": "c913819464aef1c9f64c203fa7e93245eb66402cfd2e2c9b6fb5d942ca3d670f"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture.library-bookshelf.v1.json",
+      "bytes": 20241,
+      "sha256": "818062bf544f46091a2e4cce1b9b3371d42396db58f4c8612db0e5ea8b0aa9c9"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture.medical-bed.v1.json",
+      "bytes": 19810,
+      "sha256": "d44440bdc0a4c4fcf4105cb1650fd57fa9faf22e316e3b4f6fe931236d1919ab"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture.storage-room-rack.v1.json",
+      "bytes": 20087,
+      "sha256": "137b07da92ff08fe524639f802956a1ff3ef39d054cf2a90c026ec6f795818cc"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture.yard-exercise-station.v1.json",
+      "bytes": 19866,
+      "sha256": "010f127407566ed4d5c1362537baf8e562ac79778983f2931fd9fc7a45eda1d5"
+    },
+    {
+      "path": "dist/client/game-content/oblique-furniture.yard-steel-bench.v1.json",
+      "bytes": 19496,
+      "sha256": "1c8b0fc508170917724257cebe45a40e8b2e59737d6ac2b099040b6dc1e9c7cb"
+    },
+    {
+      "path": "dist/client/game-content/oblique-module-registry.v1.json",
+      "bytes": 14438,
+      "sha256": "e912829ddbc2c626ba4f604098f948e1503d136f13c127dc818e93c6c1602cb3"
+    },
+    {
+      "path": "dist/client/game-content/oblique-modules.v1.json",
+      "bytes": 18852,
+      "sha256": "f3ad5c80a8730daf54dcd7c20a97050c6399320615b6ee07ea6b48b8519270b5"
+    },
+    {
+      "path": "dist/client/game-content/oblique-reception-employee-desk.v1.json",
+      "bytes": 20449,
+      "sha256": "25fd7c1e0928a55cd7b078b8b71a0a6de20ca88f65f34f08773e6600a55cd1f8"
+    },
+    {
+      "path": "dist/client/game-content/oblique-shower-head.v1.json",
+      "bytes": 18993,
+      "sha256": "691d2ec59b728bce493ab7ba130824e6c8d156f3e704d645fcf66b8c91369e1a"
+    },
+    {
+      "path": "dist/client/game-content/oblique-shower-privacy-door-cutaway.v1.json",
+      "bytes": 19683,
+      "sha256": "d568e9f4f0a896850a1b623f85c99fe09bd9ff27bfc4fdd324491d2dc3c2dd89"
+    },
+    {
+      "path": "dist/client/game-content/oblique-shower-privacy-door-full.v1.json",
+      "bytes": 19464,
+      "sha256": "a5c76213ab8dbe69bea0e29978441cdb57a81f995137ad0458ed585519cf7a8f"
+    },
+    {
+      "path": "dist/client/game-content/oblique-square-brick-full-wall.v1.json",
+      "bytes": 19510,
+      "sha256": "818aefbbe6bcde5515e2ae8c0096e1baddb3fe8009fd1fab81895ae07b7e9fe2"
+    },
+    {
+      "path": "dist/client/game-content/oblique-square-brick-low-wall.v1.json",
+      "bytes": 19280,
+      "sha256": "4a2346711dba94db4324b22808f7d76b2f46173f77971946cbbe711e8cc5fc7e"
+    },
+    {
+      "path": "dist/client/game-content/oblique-utility.loading-dock-door.v1.json",
+      "bytes": 20093,
+      "sha256": "c5bc35d786db9d7582e2178bbfdd0f112090397c7b923faad8595b29fd0c5b3a"
+    },
+    {
+      "path": "dist/client/game-content/oblique-utility.security-console.v1.json",
+      "bytes": 20012,
+      "sha256": "44438e3fae547a3714b1ba8fd07888f645d0581ed78baeff6ca6be3d47c7ed26"
+    },
+    {
+      "path": "dist/client/game-content/oblique-utility.utility-panel.v1.json",
+      "bytes": 19804,
+      "sha256": "1fd77c87fefafae9e8610a50ad121aa1e28aa29dff4a68fc440f8feb56cd577f"
+    },
+    {
+      "path": "dist/client/game-content/oblique-utility.washing-machine.v1.json",
+      "bytes": 19959,
+      "sha256": "bbb2155d1e4fcf0be3d909ab6c334f9df970431b965fc7b5af0b922bdc11b036"
+    },
+    {
+      "path": "dist/client/game-content/oblique-wall-corner-north-east-cutaway.v1.json",
+      "bytes": 19880,
+      "sha256": "9a79cc20b206ee87a4b300a39402804c5d7066f4f7c67552d20116021d460cf2"
+    },
+    {
+      "path": "dist/client/game-content/oblique-wall-corner-north-east-full.v1.json",
+      "bytes": 19661,
+      "sha256": "47104abdc14db886bb17ec2b0b07f07076bfe473a325b261f987db00c7986c94"
+    },
+    {
+      "path": "dist/client/game-content/oblique-wall-corner-north-west-cutaway.v1.json",
+      "bytes": 19880,
+      "sha256": "07f4c357f4a92cb476c5e2f61fd7ea1349159d2b7a909681f9806e20672233f6"
+    },
+    {
+      "path": "dist/client/game-content/oblique-wall-corner-north-west-full.v1.json",
+      "bytes": 19661,
+      "sha256": "79d3b6d0c3a3775c58254b45d983fe8f4c32d789c40dda01dba9b3a40ad96c5a"
+    },
+    {
+      "path": "dist/client/game-content/oblique-wall-corner-south-east-cutaway.v1.json",
+      "bytes": 19880,
+      "sha256": "f53317cffe0efae3a7e9b51423faceafcb24af2e5b47fcddca889089475adc0b"
+    },
+    {
+      "path": "dist/client/game-content/oblique-wall-corner-south-east-full.v1.json",
+      "bytes": 19661,
+      "sha256": "92caab5c46d22259d5c0c18c438f1b4d42d7595e7e5e510dbc0129d212e62672"
+    },
+    {
+      "path": "dist/client/game-content/oblique-wall-cutaway.v1.json",
+      "bytes": 19071,
+      "sha256": "e2adcbbc495ed13a95ad9f56de4bd435e29235e466dda14060b4cf16452c56ba"
+    },
+    {
+      "path": "dist/client/game-content/oblique-wall-junction-t-west-cutaway.v1.json",
+      "bytes": 19728,
+      "sha256": "6054885a33464e21533aa5e76d65702d1031e55ec315f7ca2bd45de712d766e2"
+    },
+    {
+      "path": "dist/client/game-content/oblique-wall-junction-t-west-full.v1.json",
+      "bytes": 19509,
+      "sha256": "0b3ab30d7db85639778b729102315830766b3a89734edb89b5829918a97d1ec5"
+    },
+    {
+      "path": "dist/client/game-content/oblique-wall-west-cutaway.v1.json",
+      "bytes": 19436,
+      "sha256": "60bcad0e00b8a5e444843289c70aa963b3919dbad67513265ba4d39fff59d7c4"
+    },
+    {
+      "path": "dist/client/game-content/oblique-wall-west.v1.json",
+      "bytes": 19217,
+      "sha256": "6a8859564271931a26befae7b45e4045a50bbe8009c2e2964e40f6fd0571d85f"
+    },
+    {
+      "path": "dist/client/game-content/rendered-art.v1.json",
+      "bytes": 32777,
+      "sha256": "cbdc16b5dbbf385b38e65319fa0574fce0ed0816d7e091a2df5266312865044c"
+    },
+    {
+      "path": "dist/client/game-content/source-art.v1.json",
+      "bytes": 16361,
+      "sha256": "2364bef661161a5a1086cc5e8357ad012147a892f22512679d699159fea658a8"
+    },
+    {
+      "path": "dist/client/index.html",
+      "bytes": 1718,
+      "sha256": "d50d32eda45319b2a7158d94c56febaf344c7bf1f4d1d8525594ee07855b7c11"
+    },
+    {
+      "path": "dist/lockstate_development/.vite/manifest.json",
+      "bytes": 157,
+      "sha256": "adc6cbede6ffdd0f4ff071c941fea1448fb726fc5b86039b8a41b4b97a5a22a1"
+    },
+    {
+      "path": "dist/lockstate_development/index.js",
+      "bytes": 289152,
+      "sha256": "f914d2f888a234f67be8aec1fd46f35c573f599bcd7e9a9b52b2b9efb69573f6"
+    },
+    {
+      "path": "dist/lockstate_development/wrangler.json",
+      "bytes": 1616,
+      "sha256": "dcb183c06c395b03ff13b7d34753e4410c19ebdea5c1e3b98a4bbea69918bdac"
+    }
+  ]
+}

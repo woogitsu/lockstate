@@ -5,7 +5,53 @@ for [#2025](https://github.com/woogitsu/lockstate/issues/2025). This record chec
 the genuinely built combined product, rather than treating earlier c28 V9
 captures as evidence of V10.
 
-## Frozen subject and unchanged gates
+## Current compiled checkpoint: 2026-10-04
+
+The latest actual production build is `25f8dbc45138b2c14c05ee98dd71789321bc7c25`.
+Its [compiled manifest](./native/integrated25f-compiled-subject.json) pins93
+emitted non-PNG files. It adds the retained-material Kitchen prep counter,
+modern Canteen table/wooden bench and the source fixes for#2027,#2028,#2002,
+#2029,#2030 and#2031 to the earlier21d subject. Later browser-helper changes
+do not silently rebuild this client. The earlier manifests/results below are
+historical evidence on their expressly named builds.
+
+Strict app/tools types, runtime assets and the actual production build exit0.
+The complete source run is8751 GREEN/1 RED/2 inherited skips across759 files
+in118.25s. The sole RED is the published-commit citation check: the local
+main-only fetch refspec had not fetched three genuine published agent refs.
+Fetching those refs, without modifying any source/test/allowlist, returns
+that unchanged suite to8 GREEN. No second complete run is claimed.
+
+The original two genuine active-Build manual-fold DOM failures on21d are
+retained. The same two UI100/UI200 cases now pass on25f in19.1s: hidden
+inspector descendants have no painted rectangles, reopening restores the
+public44/88px controls/hit target, all nine top readings and whole pausedV10
+state, with no extra simulation command. The separate automatic inspector-fold
+policy below still awaits the owner's answer; this is the existing manual
+control's source correction.
+
+The original prep-counter native route reaches actual completion/Save/Load
+and exact paid fixture ownership, but its unchanged flat-color observer
+returns[0,0] atq0 before/after Load. Capacity passes; q0 fails four original
+material-floor assertions, andq1 is serial-skipped. A visible modern model is
+not called a passed material gate. Source-derived observer work continues in
+its independent worktree; no lower floor or substituted source preview is used.
+
+The corrected Kitchen stove family is now3 GREEN in2.2min on this same actual
+25f client. Both q0/q1 retain precise paid fixture owners, whole pausedV10
+Save/Load, all original stove/fridge material floors and actual demanded
+source60/e40 PNG HTTP/Blob evidence. The corrected helper derives its additional
+bounded core response from actual saved-source material rays, retains spatial
+association and the original16px collar, and has genuine omission/exact-restore
+plus864 unrelated-source controls in
+[its own record](../2026-10-04-kitchen-q1-source-material-observer/README.md).
+The original q1 failures on21d remain archived rather than overwritten.
+
+All original runs and the complete source/build receipts are in the
+`integrated25f-*` entries of [the capture index](./native/capture-aliases.json).
+Full exact-head hosted CI, mergeability and serialmain gates remain required.
+
+## First frozen subject and unchanged gates
 
 The actual Cloudflare production build is
 `85f4471ebebc08f50400ee606c613197999be39a`. Its [compiled manifest](./native/compiled-subject.json)
