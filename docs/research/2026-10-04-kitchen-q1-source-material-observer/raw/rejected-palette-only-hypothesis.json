@@ -1,0 +1,62 @@
+{
+  "helper": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-stove-q1-ray-palette-hypothesis-20261004.ts.txt",
+  "helperSha256": "80ce10e2945d3e58318a4d78f43403c7da78ac130201f4fc58ad518a39a038bd",
+  "actual": [
+    {
+      "q": 0,
+      "name": "dedicated-kitchen-stove-worker-completed-fullhd.png",
+      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-completed-fullhd.png",
+      "sha256": "3df1c8cf49292680aade3bcb7879ba62454cd0add62d79b1a01f004a10ff3113",
+      "stove": [
+        734,
+        273
+      ],
+      "fridge": [
+        363,
+        394
+      ]
+    },
+    {
+      "q": 0,
+      "name": "dedicated-kitchen-stove-loaded-fullhd.png",
+      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-f9fcf-eted-owners-after-Save-Load\\dedicated-kitchen-stove-loaded-fullhd.png",
+      "sha256": "a46c7f0aa16080f757f784c92156a2529ce56dae204486fbf9b19e51a7d65416",
+      "stove": [
+        734,
+        273
+      ],
+      "fridge": [
+        363,
+        394
+      ]
+    },
+    {
+      "q": 1,
+      "name": "dedicated-kitchen-stove-worker-completed-fullhd.png",
+      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\dedicated-kitchen-stove-worker-completed-fullhd.png",
+      "sha256": "e6c30cf66cb1b629e3c237c4a03117e4d6dcba3050b403c2b0d66f62a428b6c4",
+      "stove": [
+        68,
+        0
+      ],
+      "fridge": [
+        1055,
+        107
+      ]
+    },
+    {
+      "q": 1,
+      "name": "dedicated-kitchen-stove-loaded-fullhd.png",
+      "path": "C:\\Users\\matma\\AppData\\Local\\Temp\\lockstate-modern-integrated-21d-kitchen-material-native-20261004\\results\\dedicated-kitchen-stove-pl-409b5-eted-owners-after-Save-Load\\dedicated-kitchen-stove-loaded-fullhd.png",
+      "sha256": "f087aadcb01167126941130ddf76a58834b408f6b0d0a9ad71f1819899da779a",
+      "stove": [
+        68,
+        0
+      ],
+      "fridge": [
+        1055,
+        107
+      ]
+    }
+  ]
+}
