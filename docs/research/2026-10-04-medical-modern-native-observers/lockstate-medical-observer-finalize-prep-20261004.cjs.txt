@@ -1,0 +1,6 @@
+﻿const fs=require('node:fs');
+for(const [key,file] of [['medicine','dedicated-medicine-cabinet-player-build.spec.ts'],['medicalBed','dedicated-medical-bed-player-build.spec.ts']]){
+const path='tests/browser/'+file;let s=fs.readFileSync(path,'utf8');const start=s.indexOf('  // Demand the current source60/e40'),end=s.indexOf('  // '+(key==='medicine'?'Native opposite-side observation':'Separate genuine native-camera detail view'),start);let block=s.slice(start,end);s=s.slice(0,start)+s.slice(end);if(key==='medicalBed')block=`  // Restore the original default yaw after the retained six-step hardware photo.\n  for (let step = 0; step < 6; step++) {\n    await page.getByRole('button', { name: 'Rotate camera left', exact: true }).click();\n  }\n`+block;
+const needle=`  await page.screenshot({ path: info.outputPath('dedicated-${key==='medicine'?'medicine-cabinet':'medical-bed'}-hardware-loaded-fullhd.png') });`;
+if(!s.includes(needle))throw Error('Missing hardware photo');s=s.replace(needle,needle+'\n\n'+block);fs.writeFileSync(path,s);
+}

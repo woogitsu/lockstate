@@ -4,6 +4,9 @@ import { openCameraControls } from './public-camera-controls';
 import { writeFile } from 'node:fs/promises';
 import { expect, test as base, type Page } from './network-changed-fixture';
 import { installTee, sentCommands } from './playtest-harness';
+import { observeKitchenModernNetwork, frameKitchenModernSource, readKitchenWholeSnapshot } from './common-room-kitchen-modern-evidence';
+import { assertOwnedObjectOrders } from './owned-object-worker-evidence';
+const networks = new WeakMap<Page, ReturnType<typeof observeKitchenModernNetwork>>();
 
 interface ProbeWindow extends Window {
   askWorker?: (kind: string, payload: unknown) => Promise<unknown>;
@@ -50,11 +53,8 @@ async function installWorkerProbe(page: Page): Promise<void> {
   });
 }
 
-async function recordWorkerSnapshot(page: Page, path: string): Promise<BedSnapshotData> {
-  const reply = await page.evaluate(async () =>
-    (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' }));
-  await writeFile(path, JSON.stringify(reply, null, 2));
-  return (reply as { payload: { snapshot: { data: BedSnapshotData } } }).payload.snapshot.data;
+async function recordWorkerSnapshot(page: Page, path: string) {
+  return readKitchenWholeSnapshot(page, path);
 }
 
 function assertMedicalBedProducer(data: BedSnapshotData, quarterTurns: 0 | 1): void {
@@ -73,6 +73,21 @@ function assertMedicalBedProducer(data: BedSnapshotData, quarterTurns: 0 | 1): v
     location: bed!.anchorTile,
   });
   expect(order!.objectOrientation ?? 0).toBe(quarterTurns);
+}
+
+
+function assertInfirmaryOwners(data: Awaited<ReturnType<typeof readKitchenWholeSnapshot>>, quarterTurns: 0 | 1): void {
+  assertOwnedObjectOrders(data, 'object.medical-bed', 'medical-bed-wooden', [{
+    anchorTile: quarterTurns === 0 ? {x:21,y:6} : {x:23,y:6}, orientation: quarterTurns,
+    sourceOrderId: 'room-template-000000000002-2-object-000',
+  }]);
+  assertOwnedObjectOrders(data, 'object.medicine-cabinet', 'medicine-cabinet-wooden', [{
+    anchorTile: quarterTurns === 0 ? {x:23,y:6} : {x:24,y:8}, orientation: quarterTurns,
+    sourceOrderId: 'room-template-000000000002-2-object-001',
+  }]);
+  for (const id of ['room-template-000000000002-2-object-000', 'room-template-000000000002-2-object-001']) {
+    expect(data.construction!.orders.find(order => order.id === id)!.placementSequence).toBe(2);
+  }
 }
 
 async function fixtureAnchors(page: Page): Promise<string[]> {
@@ -117,6 +132,7 @@ test.describe.configure({ mode: 'serial' });
 
 test.afterEach(async ({ page }, info) => {
   if (info.status === info.expectedStatus) return;
+  await networks.get(page)?.raw(info.outputPath('medical-modern-failed-network.json'));
   const snapshot = await page.evaluate(async () => (window as ProbeWindow).askWorker
     ? (window as ProbeWindow).askWorker!('simulation/request-snapshot', { reason: 'consistency-check' })
     : null);
@@ -177,6 +193,8 @@ test('player creates actual storage and delivery capacity before detailed medica
 for (const quarterTurns of [0, 1] as const) {
 test(`player builds Infirmary at quarterTurns${quarterTurns} and retains the authored medical bed headboard palette and anchors after Save/Load`, async ({ page }, info) => {
   expect(routeStorage, 'this case consumes the first stage actual IndexedDB save').toBeDefined();
+  const network = observeKitchenModernNetwork(page, 'medicalBed');
+  networks.set(page, network);
   await installWorkerProbe(page);
   await installTee(page);
   await page.setViewportSize({ width: 1920, height: 1080 });
@@ -210,6 +228,7 @@ test(`player builds Infirmary at quarterTurns${quarterTurns} and retains the aut
   const completed = await page.screenshot({ path: info.outputPath('dedicated-medical-bed-worker-completed-fullhd.png') });
   const completedData = await recordWorkerSnapshot(page, info.outputPath('dedicated-medical-bed-completed-worker-snapshot.json'));
   assertMedicalBedProducer(completedData, quarterTurns);
+  assertInfirmaryOwners(completedData, quarterTurns);
   const beforePixels = await bedPalettePixels(page, completed, quarterTurns);
   await writeFile(info.outputPath('worker-and-completed-save-evidence.json'), JSON.stringify({
     quarterTurns, actualBefore, beforePixels, commands: (await sentCommands(page)).filter(c => c.type === 'PlaceRoomTemplate'),
@@ -228,6 +247,7 @@ test(`player builds Infirmary at quarterTurns${quarterTurns} and retains the aut
   const loaded = await page.screenshot({ path: info.outputPath('dedicated-medical-bed-loaded-fullhd.png') });
   const loadedData = await recordWorkerSnapshot(page, info.outputPath('dedicated-medical-bed-loaded-worker-snapshot.json'));
   assertMedicalBedProducer(loadedData, quarterTurns);
+  assertInfirmaryOwners(loadedData, quarterTurns);
   expect(loadedData).toEqual(completedData);
   const afterPixels = await bedPalettePixels(page, loaded, quarterTurns);
   afterPixels.forEach((count, index) => expect.soft(count, `medical bed retained headboard ${index + 1} after Load`)
@@ -248,6 +268,21 @@ test(`player builds Infirmary at quarterTurns${quarterTurns} and retains the aut
   }
   await page.mouse.move(1300, 700);
   await page.screenshot({ path: info.outputPath('dedicated-medical-bed-hardware-loaded-fullhd.png') });
+
+  // Restore the original default yaw after the retained six-step hardware photo.
+  for (let step = 0; step < 6; step++) {
+    await page.getByRole('button', { name: 'Rotate camera left', exact: true }).click();
+  }
+  // Demand the current source60/e40 frame through real public camera input only.
+  // This is HTTP/body/HTMLImage Blob evidence, not private bound-texture access.
+  await frameKitchenModernSource(page, quarterTurns);
+  await network.evidence(info, quarterTurns);
+  await page.screenshot({ path: info.outputPath('medical-modern-current-source60-e40-fullhd.png') });
+  const framedData = await readKitchenWholeSnapshot(page, info.outputPath('medical-modern-framed-whole-v10.json'));
+  assertInfirmaryOwners(framedData, quarterTurns);
+  expect(framedData).toEqual(completedData);
+
+
 
 });
 }
