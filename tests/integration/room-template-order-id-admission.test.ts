@@ -72,3 +72,17 @@ it.each([false, true])('keeps genuine independent order and rotated mirrored com
   finish();
   expect(runtime.placedObjects.getSnapshot()).toEqual(owners);
 });
+
+it.each([false, true])('preserves a cancelled independently purchased ID instead of overwriting its retained history, load=%s', load => {
+  let runtime = createNewSimulationRuntime(73);
+  const id = 'room-template-000000000002-0-wall-005';
+  send(runtime, { type: 'PlaceBuildOrder', orderId: id, definitionId: 'wall-brick', x: 2, y: 2, footprint: 'square' });
+  send(runtime, { type: 'CancelBuildOrder', orderId: id, expectedRevision: runtime.construction.revisionOf(id) });
+  expect(runtime.construction.getOrder(id)?.state).toBe('cancelled');
+  if (load) runtime = reload(runtime);
+  const before = gameplay(runtime);
+  expect(() => send(runtime, { type: 'PlaceRoomTemplate', templateId: 'cell-basic', origin: { x: 10, y: 10 },
+    quarterTurns: 3, mirrorX: true })).not.toThrow();
+  expect(gameplay(runtime)).toEqual(before);
+  expect(runtime.refusals.last?.reason).toBe('build.unbuildable');
+});
