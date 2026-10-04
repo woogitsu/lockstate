@@ -1,0 +1,1522 @@
+{
+  "version": [
+    5,
+    2,
+    1
+  ],
+  "sourceMeshes": 76,
+  "target": [
+    0.5,
+    1.0,
+    0.675000011920929
+  ],
+  "bounds": {
+    "angled-medical-bed.adjustment actuator barrel": [
+      [
+        0.4560000002384186,
+        0.4899999797344208,
+        0.07899998873472214
+      ],
+      [
+        0.5440000295639038,
+        0.7900000214576721,
+        0.16700001060962677
+      ]
+    ],
+    "angled-medical-bed.adjustment actuator rod": [
+      [
+        0.48100000619888306,
+        0.7799999713897705,
+        0.10399999469518661
+      ],
+      [
+        0.5189999938011169,
+        0.9800000190734863,
+        0.1420000046491623
+      ]
+    ],
+    "angled-medical-bed.control backing plate": [
+      [
+        0.8209999799728394,
+        1.662000060081482,
+        0.840999960899353
+      ],
+      [
+        0.9390000104904175,
+        1.6699999570846558,
+        0.9789999723434448
+      ]
+    ],
+    "angled-medical-bed.control fastener 0.331 0.763": [
+      [
+        0.824999988079071,
+        1.6554999351501465,
+        0.8470000624656677
+      ],
+      [
+        0.8369999527931213,
+        1.6624999046325684,
+        0.859000027179718
+      ]
+    ],
+    "angled-medical-bed.control fastener 0.331 0.877": [
+      [
+        0.824999988079071,
+        1.6554999351501465,
+        0.9610000252723694
+      ],
+      [
+        0.8369999527931213,
+        1.6624999046325684,
+        0.9729999899864197
+      ]
+    ],
+    "angled-medical-bed.control fastener 0.429 0.763": [
+      [
+        0.9230000376701355,
+        1.6554999351501465,
+        0.8470000624656677
+      ],
+      [
+        0.9350000023841858,
+        1.6624999046325684,
+        0.859000027179718
+      ]
+    ],
+    "angled-medical-bed.control fastener 0.429 0.877": [
+      [
+        0.9230000376701355,
+        1.6554999351501465,
+        0.9610000252723694
+      ],
+      [
+        0.9350000023841858,
+        1.6624999046325684,
+        0.9729999899864197
+      ]
+    ],
+    "angled-medical-bed.control raised button 0.365": [
+      [
+        0.8560000061988831,
+        1.6519999504089355,
+        0.9009999632835388
+      ],
+      [
+        0.8740000128746033,
+        1.6640000343322754,
+        0.918999969959259
+      ]
+    ],
+    "angled-medical-bed.control raised button 0.395": [
+      [
+        0.8859999775886536,
+        1.6519999504089355,
+        0.9009999632835388
+      ],
+      [
+        0.9039999842643738,
+        1.6640000343322754,
+        0.918999969959259
+      ]
+    ],
+    "angled-medical-bed.foot lift cross shaft": [
+      [
+        0.034999996423721313,
+        0.7110000252723694,
+        0.10899997502565384
+      ],
+      [
+        0.9650000333786011,
+        0.7490000128746033,
+        0.1470000445842743
+      ]
+    ],
+    "angled-medical-bed.head lift cross shaft": [
+      [
+        0.034999996423721313,
+        1.250999927520752,
+        0.10899997502565384
+      ],
+      [
+        0.9650000333786011,
+        1.2890000343322754,
+        0.1470000445842743
+      ]
+    ],
+    "angled-medical-bed.left adjustment link -1": [
+      [
+        0.013500013388693333,
+        0.7244060039520264,
+        0.04389980435371399
+      ],
+      [
+        0.03050001710653305,
+        1.2755939960479736,
+        0.3561002016067505
+      ]
+    ],
+    "angled-medical-bed.left adjustment link 1": [
+      [
+        0.013500013388693333,
+        0.7244060039520264,
+        0.04389981925487518
+      ],
+      [
+        0.03050001710653305,
+        1.2755939960479736,
+        0.3561002016067505
+      ]
+    ],
+    "angled-medical-bed.left foot caster brake linkage": [
+      [
+        0.05000000447034836,
+        0.18950003385543823,
+        0.1655000001192093
+      ],
+      [
+        0.07400000840425491,
+        0.25050002336502075,
+        0.2004999965429306
+      ]
+    ],
+    "angled-medical-bed.left foot caster brake tread": [
+      [
+        0.02850000560283661,
+        0.12150003015995026,
+        0.18550001084804535
+      ],
+      [
+        0.09550000727176666,
+        0.2265000194311142,
+        0.21050001680850983
+      ]
+    ],
+    "angled-medical-bed.left foot caster fork cheek -1": [
+      [
+        0.0469999834895134,
+        0.15599998831748962,
+        0.07950000464916229
+      ],
+      [
+        0.07099998742341995,
+        0.17999997735023499,
+        0.2045000046491623
+      ]
+    ],
+    "angled-medical-bed.left foot caster fork cheek 1": [
+      [
+        0.0469999834895134,
+        0.2600000202655792,
+        0.07950000464916229
+      ],
+      [
+        0.07099998742341995,
+        0.2840000092983246,
+        0.2045000046491623
+      ]
+    ],
+    "angled-medical-bed.left foot caster hub cap": [
+      [
+        0.0325000025331974,
+        0.18000003695487976,
+        0.0650000050663948
+      ],
+      [
+        0.0455000065267086,
+        0.2600000202655792,
+        0.14500001072883606
+      ]
+    ],
+    "angled-medical-bed.left foot caster wheel": [
+      [
+        0.04749999940395355,
+        0.11500003188848495,
+        4.770404959941743e-09
+      ],
+      [
+        0.12250001728534698,
+        0.32500001788139343,
+        0.21000000834465027
+      ]
+    ],
+    "angled-medical-bed.left foot rail mount": [
+      [
+        0.017499996349215508,
+        0.3995000123977661,
+        0.33899998664855957
+      ],
+      [
+        0.0664999932050705,
+        0.4804999828338623,
+        0.3930000066757202
+      ]
+    ],
+    "angled-medical-bed.left foot rail pivot": [
+      [
+        0.013499985449016094,
+        0.40700000524520874,
+        0.3240000009536743
+      ],
+      [
+        0.04849999025464058,
+        0.4729999899864197,
+        0.38999998569488525
+      ]
+    ],
+    "angled-medical-bed.left foot rail post": [
+      [
+        0.025999991223216057,
+        0.4259999990463257,
+        0.35500001907348633
+      ],
+      [
+        0.05399999022483826,
+        0.45399999618530273,
+        0.8250000476837158
+      ]
+    ],
+    "angled-medical-bed.left head caster brake linkage": [
+      [
+        0.05000000447034836,
+        1.7494999170303345,
+        0.1655000001192093
+      ],
+      [
+        0.07400000840425491,
+        1.8105000257492065,
+        0.2004999965429306
+      ]
+    ],
+    "angled-medical-bed.left head caster brake tread": [
+      [
+        0.02850000560283661,
+        1.7734999656677246,
+        0.18550001084804535
+      ],
+      [
+        0.09550000727176666,
+        1.878499984741211,
+        0.21050001680850983
+      ]
+    ],
+    "angled-medical-bed.left head caster fork cheek -1": [
+      [
+        0.0469999834895134,
+        1.715999960899353,
+        0.07950000464916229
+      ],
+      [
+        0.07099998742341995,
+        1.7399998903274536,
+        0.2045000046491623
+      ]
+    ],
+    "angled-medical-bed.left head caster fork cheek 1": [
+      [
+        0.0469999834895134,
+        1.8200000524520874,
+        0.07950000464916229
+      ],
+      [
+        0.07099998742341995,
+        1.843999981880188,
+        0.2045000046491623
+      ]
+    ],
+    "angled-medical-bed.left head caster hub cap": [
+      [
+        0.0325000025331974,
+        1.7400000095367432,
+        0.0650000050663948
+      ],
+      [
+        0.0455000065267086,
+        1.8199999332427979,
+        0.14500001072883606
+      ]
+    ],
+    "angled-medical-bed.left head caster wheel": [
+      [
+        0.04749999940395355,
+        1.6749999523162842,
+        4.770404959941743e-09
+      ],
+      [
+        0.12250001728534698,
+        1.8849999904632568,
+        0.21000000834465027
+      ]
+    ],
+    "angled-medical-bed.left head rail mount": [
+      [
+        0.017499996349215508,
+        1.4794999361038208,
+        0.33899998664855957
+      ],
+      [
+        0.0664999932050705,
+        1.5605000257492065,
+        0.3930000066757202
+      ]
+    ],
+    "angled-medical-bed.left head rail pivot": [
+      [
+        0.013499985449016094,
+        1.4869999885559082,
+        0.3240000009536743
+      ],
+      [
+        0.04849999025464058,
+        1.5529999732971191,
+        0.38999998569488525
+      ]
+    ],
+    "angled-medical-bed.left head rail post": [
+      [
+        0.025999991223216057,
+        1.5059999227523804,
+        0.35500001907348633
+      ],
+      [
+        0.05399999022483826,
+        1.534000039100647,
+        0.8250000476837158
+      ]
+    ],
+    "angled-medical-bed.left lower bearing track": [
+      [
+        0.013000015169382095,
+        0.675000011920929,
+        0.042500004172325134
+      ],
+      [
+        0.031000014394521713,
+        1.3250000476837158,
+        0.06750000268220901
+      ]
+    ],
+    "angled-medical-bed.left lower lift pivot": [
+      [
+        0.010999991558492184,
+        0.7020000219345093,
+        0.027000002562999725
+      ],
+      [
+        0.026999996975064278,
+        0.7580000162124634,
+        0.08300000429153442
+      ]
+    ],
+    "angled-medical-bed.left middle lift pivot": [
+      [
+        0.010999991558492184,
+        0.972000002861023,
+        0.1720000058412552
+      ],
+      [
+        0.026999996975064278,
+        1.027999997138977,
+        0.2280000001192093
+      ]
+    ],
+    "angled-medical-bed.left side safety rail": [
+      [
+        0.021999992430210114,
+        0.36500000953674316,
+        0.8269999623298645
+      ],
+      [
+        0.05799999088048935,
+        1.5950000286102295,
+        0.8630000948905945
+      ]
+    ],
+    "angled-medical-bed.left upper bearing track": [
+      [
+        0.013000015169382095,
+        0.675000011920929,
+        0.33250001072883606
+      ],
+      [
+        0.031000014394521713,
+        1.3250000476837158,
+        0.35749998688697815
+      ]
+    ],
+    "angled-medical-bed.left upper lift pivot": [
+      [
+        0.010999991558492184,
+        1.2419999837875366,
+        0.31700000166893005
+      ],
+      [
+        0.026999996975064278,
+        1.2979999780654907,
+        0.37299999594688416
+      ]
+    ],
+    "angled-medical-bed.left washable hand grip": [
+      [
+        0.019999992102384567,
+        0.6399999856948853,
+        0.8245000243186951
+      ],
+      [
+        0.059999991208314896,
+        1.2000000476837158,
+        0.8655000329017639
+      ]
+    ],
+    "angled-medical-bed.right adjustment link -1": [
+      [
+        0.9695000052452087,
+        0.7244060039520264,
+        0.04389980435371399
+      ],
+      [
+        0.9864999651908875,
+        1.2755939960479736,
+        0.3561002016067505
+      ]
+    ],
+    "angled-medical-bed.right adjustment link 1": [
+      [
+        0.9695000052452087,
+        0.7244060039520264,
+        0.04389981925487518
+      ],
+      [
+        0.9864999651908875,
+        1.2755939960479736,
+        0.3561002016067505
+      ]
+    ],
+    "angled-medical-bed.right foot caster brake linkage": [
+      [
+        0.9259999394416809,
+        0.18950003385543823,
+        0.1655000001192093
+      ],
+      [
+        0.949999988079071,
+        0.25050002336502075,
+        0.2004999965429306
+      ]
+    ],
+    "angled-medical-bed.right foot caster brake tread": [
+      [
+        0.9044999480247498,
+        0.12150003015995026,
+        0.18550001084804535
+      ],
+      [
+        0.9714999794960022,
+        0.2265000194311142,
+        0.21050001680850983
+      ]
+    ],
+    "angled-medical-bed.right foot caster fork cheek -1": [
+      [
+        0.9289999604225159,
+        0.15599998831748962,
+        0.07950000464916229
+      ],
+      [
+        0.953000009059906,
+        0.17999997735023499,
+        0.2045000046491623
+      ]
+    ],
+    "angled-medical-bed.right foot caster fork cheek 1": [
+      [
+        0.9289999604225159,
+        0.2600000202655792,
+        0.07950000464916229
+      ],
+      [
+        0.953000009059906,
+        0.2840000092983246,
+        0.2045000046491623
+      ]
+    ],
+    "angled-medical-bed.right foot caster hub cap": [
+      [
+        0.9544999599456787,
+        0.18000003695487976,
+        0.0650000050663948
+      ],
+      [
+        0.9674999713897705,
+        0.2600000202655792,
+        0.14500001072883606
+      ]
+    ],
+    "angled-medical-bed.right foot caster wheel": [
+      [
+        0.8774999380111694,
+        0.11500003188848495,
+        4.770404959941743e-09
+      ],
+      [
+        0.9524999856948853,
+        0.32500001788139343,
+        0.21000000834465027
+      ]
+    ],
+    "angled-medical-bed.right foot rail mount": [
+      [
+        0.9334999918937683,
+        0.3995000123977661,
+        0.33899998664855957
+      ],
+      [
+        0.9825000166893005,
+        0.4804999828338623,
+        0.3930000066757202
+      ]
+    ],
+    "angled-medical-bed.right foot rail pivot": [
+      [
+        0.9514999985694885,
+        0.40700000524520874,
+        0.3240000009536743
+      ],
+      [
+        0.9864999651908875,
+        0.4729999899864197,
+        0.38999998569488525
+      ]
+    ],
+    "angled-medical-bed.right foot rail post": [
+      [
+        0.9460000395774841,
+        0.4259999990463257,
+        0.35500001907348633
+      ],
+      [
+        0.9740000367164612,
+        0.45399999618530273,
+        0.8250000476837158
+      ]
+    ],
+    "angled-medical-bed.right head caster brake linkage": [
+      [
+        0.9259999394416809,
+        1.7494999170303345,
+        0.1655000001192093
+      ],
+      [
+        0.949999988079071,
+        1.8105000257492065,
+        0.2004999965429306
+      ]
+    ],
+    "angled-medical-bed.right head caster brake tread": [
+      [
+        0.9044999480247498,
+        1.7734999656677246,
+        0.18550001084804535
+      ],
+      [
+        0.9714999794960022,
+        1.878499984741211,
+        0.21050001680850983
+      ]
+    ],
+    "angled-medical-bed.right head caster fork cheek -1": [
+      [
+        0.9289999604225159,
+        1.715999960899353,
+        0.07950000464916229
+      ],
+      [
+        0.953000009059906,
+        1.7399998903274536,
+        0.2045000046491623
+      ]
+    ],
+    "angled-medical-bed.right head caster fork cheek 1": [
+      [
+        0.9289999604225159,
+        1.8200000524520874,
+        0.07950000464916229
+      ],
+      [
+        0.953000009059906,
+        1.843999981880188,
+        0.2045000046491623
+      ]
+    ],
+    "angled-medical-bed.right head caster hub cap": [
+      [
+        0.9544999599456787,
+        1.7400000095367432,
+        0.0650000050663948
+      ],
+      [
+        0.9674999713897705,
+        1.8199999332427979,
+        0.14500001072883606
+      ]
+    ],
+    "angled-medical-bed.right head caster wheel": [
+      [
+        0.8774999380111694,
+        1.6749999523162842,
+        4.770404959941743e-09
+      ],
+      [
+        0.9524999856948853,
+        1.8849999904632568,
+        0.21000000834465027
+      ]
+    ],
+    "angled-medical-bed.right head rail mount": [
+      [
+        0.9334999918937683,
+        1.4794999361038208,
+        0.33899998664855957
+      ],
+      [
+        0.9825000166893005,
+        1.5605000257492065,
+        0.3930000066757202
+      ]
+    ],
+    "angled-medical-bed.right head rail pivot": [
+      [
+        0.9514999985694885,
+        1.4869999885559082,
+        0.3240000009536743
+      ],
+      [
+        0.9864999651908875,
+        1.5529999732971191,
+        0.38999998569488525
+      ]
+    ],
+    "angled-medical-bed.right head rail post": [
+      [
+        0.9460000395774841,
+        1.5059999227523804,
+        0.35500001907348633
+      ],
+      [
+        0.9740000367164612,
+        1.534000039100647,
+        0.8250000476837158
+      ]
+    ],
+    "angled-medical-bed.right lower bearing track": [
+      [
+        0.968999981880188,
+        0.675000011920929,
+        0.042500004172325134
+      ],
+      [
+        0.9869999885559082,
+        1.3250000476837158,
+        0.06750000268220901
+      ]
+    ],
+    "angled-medical-bed.right lower lift pivot": [
+      [
+        0.9729999899864197,
+        0.7020000219345093,
+        0.027000002562999725
+      ],
+      [
+        0.9890000224113464,
+        0.7580000162124634,
+        0.08300000429153442
+      ]
+    ],
+    "angled-medical-bed.right middle lift pivot": [
+      [
+        0.9729999899864197,
+        0.972000002861023,
+        0.1720000058412552
+      ],
+      [
+        0.9890000224113464,
+        1.027999997138977,
+        0.2280000001192093
+      ]
+    ],
+    "angled-medical-bed.right side safety rail": [
+      [
+        0.9420000314712524,
+        0.36500000953674316,
+        0.8269999623298645
+      ],
+      [
+        0.9780000448226929,
+        1.5950000286102295,
+        0.8630000948905945
+      ]
+    ],
+    "angled-medical-bed.right upper bearing track": [
+      [
+        0.968999981880188,
+        0.675000011920929,
+        0.33250001072883606
+      ],
+      [
+        0.9869999885559082,
+        1.3250000476837158,
+        0.35749998688697815
+      ]
+    ],
+    "angled-medical-bed.right upper lift pivot": [
+      [
+        0.9729999899864197,
+        1.2419999837875366,
+        0.31700000166893005
+      ],
+      [
+        0.9890000224113464,
+        1.2979999780654907,
+        0.37299999594688416
+      ]
+    ],
+    "angled-medical-bed.right washable hand grip": [
+      [
+        0.940000057220459,
+        0.6399999856948853,
+        0.8245000243186951
+      ],
+      [
+        0.9800000190734863,
+        1.2000000476837158,
+        0.8655000329017639
+      ]
+    ],
+    "bed_base": [
+      [
+        0.03999999165534973,
+        0.0899999737739563,
+        0.17000001668930054
+      ],
+      [
+        0.9600000381469727,
+        1.9100000858306885,
+        0.3700000047683716
+      ]
+    ],
+    "control": [
+      [
+        0.8299999833106995,
+        1.6700000762939453,
+        0.8499999642372131
+      ],
+      [
+        0.9300000071525574,
+        1.7300000190734863,
+        0.9699999690055847
+      ]
+    ],
+    "headboard": [
+      [
+        0.06000000238418579,
+        1.7300000190734863,
+        0.6299999952316284
+      ],
+      [
+        0.9399999976158142,
+        1.8299999237060547,
+        1.350000023841858
+      ]
+    ],
+    "leg": [
+      [
+        0.04999999329447746,
+        0.17000003159046173,
+        0.0
+      ],
+      [
+        0.14999999105930328,
+        0.27000004053115845,
+        0.2800000011920929
+      ]
+    ],
+    "leg.001": [
+      [
+        0.04999999329447746,
+        1.7300000190734863,
+        0.0
+      ],
+      [
+        0.14999999105930328,
+        1.8299999237060547,
+        0.2800000011920929
+      ]
+    ],
+    "leg.002": [
+      [
+        0.8499999642372131,
+        0.17000003159046173,
+        0.0
+      ],
+      [
+        0.949999988079071,
+        0.27000004053115845,
+        0.2800000011920929
+      ]
+    ],
+    "leg.003": [
+      [
+        0.8499999642372131,
+        1.7300000190734863,
+        0.0
+      ],
+      [
+        0.949999988079071,
+        1.8299999237060547,
+        0.2800000011920929
+      ]
+    ],
+    "mattress": [
+      [
+        0.09000000357627869,
+        0.18000000715255737,
+        0.38499999046325684
+      ],
+      [
+        0.9099999666213989,
+        1.8199999332427979,
+        0.6349999904632568
+      ]
+    ],
+    "pillow": [
+      [
+        0.1599999964237213,
+        1.3300000429153442,
+        0.6300000548362732
+      ],
+      [
+        0.8400000333786011,
+        1.6299999952316284,
+        0.7500000596046448
+      ]
+    ],
+    "rail": [
+      [
+        0.09000000357627869,
+        0.14500001072883606,
+        0.6000000834465027
+      ],
+      [
+        0.9099999666213989,
+        0.2150000035762787,
+        1.0200001001358032
+      ]
+    ],
+    "rail.001": [
+      [
+        0.09000000357627869,
+        1.784999966621399,
+        0.6000000834465027
+      ],
+      [
+        0.9099999666213989,
+        1.8549998998641968,
+        1.0200001001358032
+      ]
+    ]
+  },
+  "adjacency": {
+    "angled-medical-bed.adjustment actuator barrel": [
+      "angled-medical-bed.adjustment actuator rod",
+      "angled-medical-bed.foot lift cross shaft"
+    ],
+    "angled-medical-bed.adjustment actuator rod": [
+      "angled-medical-bed.adjustment actuator barrel"
+    ],
+    "angled-medical-bed.control backing plate": [
+      "angled-medical-bed.control fastener 0.331 0.763",
+      "angled-medical-bed.control fastener 0.331 0.877",
+      "angled-medical-bed.control fastener 0.429 0.763",
+      "angled-medical-bed.control fastener 0.429 0.877",
+      "angled-medical-bed.control raised button 0.365",
+      "angled-medical-bed.control raised button 0.395",
+      "control"
+    ],
+    "angled-medical-bed.control fastener 0.331 0.763": [
+      "angled-medical-bed.control backing plate"
+    ],
+    "angled-medical-bed.control fastener 0.331 0.877": [
+      "angled-medical-bed.control backing plate"
+    ],
+    "angled-medical-bed.control fastener 0.429 0.763": [
+      "angled-medical-bed.control backing plate"
+    ],
+    "angled-medical-bed.control fastener 0.429 0.877": [
+      "angled-medical-bed.control backing plate"
+    ],
+    "angled-medical-bed.control raised button 0.365": [
+      "angled-medical-bed.control backing plate"
+    ],
+    "angled-medical-bed.control raised button 0.395": [
+      "angled-medical-bed.control backing plate"
+    ],
+    "angled-medical-bed.foot lift cross shaft": [
+      "angled-medical-bed.adjustment actuator barrel"
+    ],
+    "angled-medical-bed.head lift cross shaft": [],
+    "angled-medical-bed.left adjustment link -1": [
+      "angled-medical-bed.left adjustment link 1",
+      "angled-medical-bed.left lower bearing track",
+      "angled-medical-bed.left lower lift pivot",
+      "angled-medical-bed.left middle lift pivot",
+      "angled-medical-bed.left upper bearing track",
+      "angled-medical-bed.left upper lift pivot"
+    ],
+    "angled-medical-bed.left adjustment link 1": [
+      "angled-medical-bed.left adjustment link -1",
+      "angled-medical-bed.left lower bearing track",
+      "angled-medical-bed.left lower lift pivot",
+      "angled-medical-bed.left middle lift pivot",
+      "angled-medical-bed.left upper bearing track",
+      "angled-medical-bed.left upper lift pivot"
+    ],
+    "angled-medical-bed.left foot caster brake linkage": [
+      "angled-medical-bed.left foot caster brake tread",
+      "angled-medical-bed.left foot caster wheel",
+      "bed_base",
+      "leg"
+    ],
+    "angled-medical-bed.left foot caster brake tread": [
+      "angled-medical-bed.left foot caster brake linkage",
+      "angled-medical-bed.left foot caster fork cheek -1",
+      "angled-medical-bed.left foot caster wheel",
+      "bed_base",
+      "leg"
+    ],
+    "angled-medical-bed.left foot caster fork cheek -1": [
+      "angled-medical-bed.left foot caster brake tread",
+      "angled-medical-bed.left foot caster wheel",
+      "bed_base",
+      "leg"
+    ],
+    "angled-medical-bed.left foot caster fork cheek 1": [
+      "angled-medical-bed.left foot caster wheel",
+      "bed_base",
+      "leg"
+    ],
+    "angled-medical-bed.left foot caster hub cap": [],
+    "angled-medical-bed.left foot caster wheel": [
+      "angled-medical-bed.left foot caster brake linkage",
+      "angled-medical-bed.left foot caster brake tread",
+      "angled-medical-bed.left foot caster fork cheek -1",
+      "angled-medical-bed.left foot caster fork cheek 1",
+      "bed_base",
+      "leg"
+    ],
+    "angled-medical-bed.left foot rail mount": [
+      "angled-medical-bed.left foot rail pivot",
+      "angled-medical-bed.left foot rail post",
+      "bed_base"
+    ],
+    "angled-medical-bed.left foot rail pivot": [
+      "angled-medical-bed.left foot rail mount",
+      "angled-medical-bed.left foot rail post",
+      "bed_base"
+    ],
+    "angled-medical-bed.left foot rail post": [
+      "angled-medical-bed.left foot rail mount",
+      "angled-medical-bed.left foot rail pivot",
+      "bed_base"
+    ],
+    "angled-medical-bed.left head caster brake linkage": [
+      "angled-medical-bed.left head caster brake tread",
+      "angled-medical-bed.left head caster wheel",
+      "bed_base",
+      "leg.001"
+    ],
+    "angled-medical-bed.left head caster brake tread": [
+      "angled-medical-bed.left head caster brake linkage",
+      "angled-medical-bed.left head caster fork cheek 1",
+      "angled-medical-bed.left head caster wheel",
+      "bed_base",
+      "leg.001"
+    ],
+    "angled-medical-bed.left head caster fork cheek -1": [
+      "angled-medical-bed.left head caster wheel",
+      "bed_base",
+      "leg.001"
+    ],
+    "angled-medical-bed.left head caster fork cheek 1": [
+      "angled-medical-bed.left head caster brake tread",
+      "angled-medical-bed.left head caster wheel",
+      "bed_base",
+      "leg.001"
+    ],
+    "angled-medical-bed.left head caster hub cap": [],
+    "angled-medical-bed.left head caster wheel": [
+      "angled-medical-bed.left head caster brake linkage",
+      "angled-medical-bed.left head caster brake tread",
+      "angled-medical-bed.left head caster fork cheek -1",
+      "angled-medical-bed.left head caster fork cheek 1",
+      "bed_base",
+      "leg.001"
+    ],
+    "angled-medical-bed.left head rail mount": [
+      "angled-medical-bed.left head rail pivot",
+      "angled-medical-bed.left head rail post",
+      "bed_base"
+    ],
+    "angled-medical-bed.left head rail pivot": [
+      "angled-medical-bed.left head rail mount",
+      "angled-medical-bed.left head rail post",
+      "bed_base"
+    ],
+    "angled-medical-bed.left head rail post": [
+      "angled-medical-bed.left head rail mount",
+      "angled-medical-bed.left head rail pivot",
+      "bed_base"
+    ],
+    "angled-medical-bed.left lower bearing track": [
+      "angled-medical-bed.left adjustment link -1",
+      "angled-medical-bed.left adjustment link 1",
+      "angled-medical-bed.left lower lift pivot"
+    ],
+    "angled-medical-bed.left lower lift pivot": [
+      "angled-medical-bed.left adjustment link -1",
+      "angled-medical-bed.left adjustment link 1",
+      "angled-medical-bed.left lower bearing track"
+    ],
+    "angled-medical-bed.left middle lift pivot": [
+      "angled-medical-bed.left adjustment link -1",
+      "angled-medical-bed.left adjustment link 1"
+    ],
+    "angled-medical-bed.left side safety rail": [
+      "angled-medical-bed.left washable hand grip"
+    ],
+    "angled-medical-bed.left upper bearing track": [
+      "angled-medical-bed.left adjustment link -1",
+      "angled-medical-bed.left adjustment link 1",
+      "angled-medical-bed.left upper lift pivot"
+    ],
+    "angled-medical-bed.left upper lift pivot": [
+      "angled-medical-bed.left adjustment link -1",
+      "angled-medical-bed.left adjustment link 1",
+      "angled-medical-bed.left upper bearing track"
+    ],
+    "angled-medical-bed.left washable hand grip": [
+      "angled-medical-bed.left side safety rail"
+    ],
+    "angled-medical-bed.right adjustment link -1": [
+      "angled-medical-bed.right adjustment link 1",
+      "angled-medical-bed.right lower bearing track",
+      "angled-medical-bed.right lower lift pivot",
+      "angled-medical-bed.right middle lift pivot",
+      "angled-medical-bed.right upper bearing track",
+      "angled-medical-bed.right upper lift pivot"
+    ],
+    "angled-medical-bed.right adjustment link 1": [
+      "angled-medical-bed.right adjustment link -1",
+      "angled-medical-bed.right lower bearing track",
+      "angled-medical-bed.right lower lift pivot",
+      "angled-medical-bed.right middle lift pivot",
+      "angled-medical-bed.right upper bearing track",
+      "angled-medical-bed.right upper lift pivot"
+    ],
+    "angled-medical-bed.right foot caster brake linkage": [
+      "angled-medical-bed.right foot caster brake tread",
+      "angled-medical-bed.right foot caster wheel",
+      "bed_base",
+      "leg.002"
+    ],
+    "angled-medical-bed.right foot caster brake tread": [
+      "angled-medical-bed.right foot caster brake linkage",
+      "angled-medical-bed.right foot caster fork cheek -1",
+      "angled-medical-bed.right foot caster wheel",
+      "bed_base",
+      "leg.002"
+    ],
+    "angled-medical-bed.right foot caster fork cheek -1": [
+      "angled-medical-bed.right foot caster brake tread",
+      "angled-medical-bed.right foot caster wheel",
+      "bed_base",
+      "leg.002"
+    ],
+    "angled-medical-bed.right foot caster fork cheek 1": [
+      "angled-medical-bed.right foot caster wheel",
+      "bed_base",
+      "leg.002"
+    ],
+    "angled-medical-bed.right foot caster hub cap": [],
+    "angled-medical-bed.right foot caster wheel": [
+      "angled-medical-bed.right foot caster brake linkage",
+      "angled-medical-bed.right foot caster brake tread",
+      "angled-medical-bed.right foot caster fork cheek -1",
+      "angled-medical-bed.right foot caster fork cheek 1",
+      "bed_base",
+      "leg.002"
+    ],
+    "angled-medical-bed.right foot rail mount": [
+      "angled-medical-bed.right foot rail pivot",
+      "angled-medical-bed.right foot rail post",
+      "bed_base"
+    ],
+    "angled-medical-bed.right foot rail pivot": [
+      "angled-medical-bed.right foot rail mount",
+      "angled-medical-bed.right foot rail post",
+      "bed_base"
+    ],
+    "angled-medical-bed.right foot rail post": [
+      "angled-medical-bed.right foot rail mount",
+      "angled-medical-bed.right foot rail pivot",
+      "bed_base"
+    ],
+    "angled-medical-bed.right head caster brake linkage": [
+      "angled-medical-bed.right head caster brake tread",
+      "angled-medical-bed.right head caster wheel",
+      "bed_base",
+      "leg.003"
+    ],
+    "angled-medical-bed.right head caster brake tread": [
+      "angled-medical-bed.right head caster brake linkage",
+      "angled-medical-bed.right head caster fork cheek 1",
+      "angled-medical-bed.right head caster wheel",
+      "bed_base",
+      "leg.003"
+    ],
+    "angled-medical-bed.right head caster fork cheek -1": [
+      "angled-medical-bed.right head caster wheel",
+      "bed_base",
+      "leg.003"
+    ],
+    "angled-medical-bed.right head caster fork cheek 1": [
+      "angled-medical-bed.right head caster brake tread",
+      "angled-medical-bed.right head caster wheel",
+      "bed_base",
+      "leg.003"
+    ],
+    "angled-medical-bed.right head caster hub cap": [],
+    "angled-medical-bed.right head caster wheel": [
+      "angled-medical-bed.right head caster brake linkage",
+      "angled-medical-bed.right head caster brake tread",
+      "angled-medical-bed.right head caster fork cheek -1",
+      "angled-medical-bed.right head caster fork cheek 1",
+      "bed_base",
+      "leg.003"
+    ],
+    "angled-medical-bed.right head rail mount": [
+      "angled-medical-bed.right head rail pivot",
+      "angled-medical-bed.right head rail post",
+      "bed_base"
+    ],
+    "angled-medical-bed.right head rail pivot": [
+      "angled-medical-bed.right head rail mount",
+      "angled-medical-bed.right head rail post",
+      "bed_base"
+    ],
+    "angled-medical-bed.right head rail post": [
+      "angled-medical-bed.right head rail mount",
+      "angled-medical-bed.right head rail pivot",
+      "bed_base"
+    ],
+    "angled-medical-bed.right lower bearing track": [
+      "angled-medical-bed.right adjustment link -1",
+      "angled-medical-bed.right adjustment link 1",
+      "angled-medical-bed.right lower lift pivot"
+    ],
+    "angled-medical-bed.right lower lift pivot": [
+      "angled-medical-bed.right adjustment link -1",
+      "angled-medical-bed.right adjustment link 1",
+      "angled-medical-bed.right lower bearing track"
+    ],
+    "angled-medical-bed.right middle lift pivot": [
+      "angled-medical-bed.right adjustment link -1",
+      "angled-medical-bed.right adjustment link 1"
+    ],
+    "angled-medical-bed.right side safety rail": [
+      "angled-medical-bed.right washable hand grip"
+    ],
+    "angled-medical-bed.right upper bearing track": [
+      "angled-medical-bed.right adjustment link -1",
+      "angled-medical-bed.right adjustment link 1",
+      "angled-medical-bed.right upper lift pivot"
+    ],
+    "angled-medical-bed.right upper lift pivot": [
+      "angled-medical-bed.right adjustment link -1",
+      "angled-medical-bed.right adjustment link 1",
+      "angled-medical-bed.right upper bearing track"
+    ],
+    "angled-medical-bed.right washable hand grip": [
+      "angled-medical-bed.right side safety rail"
+    ],
+    "bed_base": [
+      "angled-medical-bed.left foot caster brake linkage",
+      "angled-medical-bed.left foot caster brake tread",
+      "angled-medical-bed.left foot caster fork cheek -1",
+      "angled-medical-bed.left foot caster fork cheek 1",
+      "angled-medical-bed.left foot caster wheel",
+      "angled-medical-bed.left foot rail mount",
+      "angled-medical-bed.left foot rail pivot",
+      "angled-medical-bed.left foot rail post",
+      "angled-medical-bed.left head caster brake linkage",
+      "angled-medical-bed.left head caster brake tread",
+      "angled-medical-bed.left head caster fork cheek -1",
+      "angled-medical-bed.left head caster fork cheek 1",
+      "angled-medical-bed.left head caster wheel",
+      "angled-medical-bed.left head rail mount",
+      "angled-medical-bed.left head rail pivot",
+      "angled-medical-bed.left head rail post",
+      "angled-medical-bed.right foot caster brake linkage",
+      "angled-medical-bed.right foot caster brake tread",
+      "angled-medical-bed.right foot caster fork cheek -1",
+      "angled-medical-bed.right foot caster fork cheek 1",
+      "angled-medical-bed.right foot caster wheel",
+      "angled-medical-bed.right foot rail mount",
+      "angled-medical-bed.right foot rail pivot",
+      "angled-medical-bed.right foot rail post",
+      "angled-medical-bed.right head caster brake linkage",
+      "angled-medical-bed.right head caster brake tread",
+      "angled-medical-bed.right head caster fork cheek -1",
+      "angled-medical-bed.right head caster fork cheek 1",
+      "angled-medical-bed.right head caster wheel",
+      "angled-medical-bed.right head rail mount",
+      "angled-medical-bed.right head rail pivot",
+      "angled-medical-bed.right head rail post",
+      "leg",
+      "leg.001",
+      "leg.002",
+      "leg.003"
+    ],
+    "control": [
+      "angled-medical-bed.control backing plate",
+      "headboard"
+    ],
+    "headboard": [
+      "control",
+      "mattress",
+      "rail.001"
+    ],
+    "leg": [
+      "angled-medical-bed.left foot caster brake linkage",
+      "angled-medical-bed.left foot caster brake tread",
+      "angled-medical-bed.left foot caster fork cheek -1",
+      "angled-medical-bed.left foot caster fork cheek 1",
+      "angled-medical-bed.left foot caster wheel",
+      "bed_base"
+    ],
+    "leg.001": [
+      "angled-medical-bed.left head caster brake linkage",
+      "angled-medical-bed.left head caster brake tread",
+      "angled-medical-bed.left head caster fork cheek -1",
+      "angled-medical-bed.left head caster fork cheek 1",
+      "angled-medical-bed.left head caster wheel",
+      "bed_base"
+    ],
+    "leg.002": [
+      "angled-medical-bed.right foot caster brake linkage",
+      "angled-medical-bed.right foot caster brake tread",
+      "angled-medical-bed.right foot caster fork cheek -1",
+      "angled-medical-bed.right foot caster fork cheek 1",
+      "angled-medical-bed.right foot caster wheel",
+      "bed_base"
+    ],
+    "leg.003": [
+      "angled-medical-bed.right head caster brake linkage",
+      "angled-medical-bed.right head caster brake tread",
+      "angled-medical-bed.right head caster fork cheek -1",
+      "angled-medical-bed.right head caster fork cheek 1",
+      "angled-medical-bed.right head caster wheel",
+      "bed_base"
+    ],
+    "mattress": [
+      "headboard",
+      "pillow",
+      "rail",
+      "rail.001"
+    ],
+    "pillow": [
+      "mattress"
+    ],
+    "rail": [
+      "mattress"
+    ],
+    "rail.001": [
+      "headboard",
+      "mattress"
+    ]
+  },
+  "components": [
+    [
+      "angled-medical-bed.adjustment actuator barrel",
+      "angled-medical-bed.adjustment actuator rod",
+      "angled-medical-bed.foot lift cross shaft"
+    ],
+    [
+      "angled-medical-bed.control backing plate",
+      "angled-medical-bed.control fastener 0.331 0.763",
+      "angled-medical-bed.control fastener 0.331 0.877",
+      "angled-medical-bed.control fastener 0.429 0.763",
+      "angled-medical-bed.control fastener 0.429 0.877",
+      "angled-medical-bed.control raised button 0.365",
+      "angled-medical-bed.control raised button 0.395",
+      "control",
+      "headboard",
+      "mattress",
+      "pillow",
+      "rail",
+      "rail.001"
+    ],
+    [
+      "angled-medical-bed.head lift cross shaft"
+    ],
+    [
+      "angled-medical-bed.left adjustment link -1",
+      "angled-medical-bed.left adjustment link 1",
+      "angled-medical-bed.left lower bearing track",
+      "angled-medical-bed.left lower lift pivot",
+      "angled-medical-bed.left middle lift pivot",
+      "angled-medical-bed.left upper bearing track",
+      "angled-medical-bed.left upper lift pivot"
+    ],
+    [
+      "angled-medical-bed.left foot caster brake linkage",
+      "angled-medical-bed.left foot caster brake tread",
+      "angled-medical-bed.left foot caster fork cheek -1",
+      "angled-medical-bed.left foot caster fork cheek 1",
+      "angled-medical-bed.left foot caster wheel",
+      "angled-medical-bed.left foot rail mount",
+      "angled-medical-bed.left foot rail pivot",
+      "angled-medical-bed.left foot rail post",
+      "angled-medical-bed.left head caster brake linkage",
+      "angled-medical-bed.left head caster brake tread",
+      "angled-medical-bed.left head caster fork cheek -1",
+      "angled-medical-bed.left head caster fork cheek 1",
+      "angled-medical-bed.left head caster wheel",
+      "angled-medical-bed.left head rail mount",
+      "angled-medical-bed.left head rail pivot",
+      "angled-medical-bed.left head rail post",
+      "angled-medical-bed.right foot caster brake linkage",
+      "angled-medical-bed.right foot caster brake tread",
+      "angled-medical-bed.right foot caster fork cheek -1",
+      "angled-medical-bed.right foot caster fork cheek 1",
+      "angled-medical-bed.right foot caster wheel",
+      "angled-medical-bed.right foot rail mount",
+      "angled-medical-bed.right foot rail pivot",
+      "angled-medical-bed.right foot rail post",
+      "angled-medical-bed.right head caster brake linkage",
+      "angled-medical-bed.right head caster brake tread",
+      "angled-medical-bed.right head caster fork cheek -1",
+      "angled-medical-bed.right head caster fork cheek 1",
+      "angled-medical-bed.right head caster wheel",
+      "angled-medical-bed.right head rail mount",
+      "angled-medical-bed.right head rail pivot",
+      "angled-medical-bed.right head rail post",
+      "bed_base",
+      "leg",
+      "leg.001",
+      "leg.002",
+      "leg.003"
+    ],
+    [
+      "angled-medical-bed.left foot caster hub cap"
+    ],
+    [
+      "angled-medical-bed.left head caster hub cap"
+    ],
+    [
+      "angled-medical-bed.left side safety rail",
+      "angled-medical-bed.left washable hand grip"
+    ],
+    [
+      "angled-medical-bed.right adjustment link -1",
+      "angled-medical-bed.right adjustment link 1",
+      "angled-medical-bed.right lower bearing track",
+      "angled-medical-bed.right lower lift pivot",
+      "angled-medical-bed.right middle lift pivot",
+      "angled-medical-bed.right upper bearing track",
+      "angled-medical-bed.right upper lift pivot"
+    ],
+    [
+      "angled-medical-bed.right foot caster hub cap"
+    ],
+    [
+      "angled-medical-bed.right head caster hub cap"
+    ],
+    [
+      "angled-medical-bed.right side safety rail",
+      "angled-medical-bed.right washable hand grip"
+    ]
+  ],
+  "materials": [
+    {
+      "name": "mattress edge",
+      "diffuse": [
+        0.25,
+        0.41999998688697815,
+        0.47999998927116394,
+        1.0
+      ],
+      "shaderBase": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "authoredRoughness": 0.550000011920929,
+      "roughness": 0.5,
+      "metallic": 0.0
+    },
+    {
+      "name": "medical linen",
+      "diffuse": [
+        0.7799999713897705,
+        0.8199999928474426,
+        0.7799999713897705,
+        1.0
+      ],
+      "shaderBase": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "authoredRoughness": 0.699999988079071,
+      "roughness": 0.5,
+      "metallic": 0.0
+    },
+    {
+      "name": "rail accent",
+      "diffuse": [
+        0.75,
+        0.550000011920929,
+        0.2800000011920929,
+        1.0
+      ],
+      "shaderBase": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "authoredRoughness": 0.4000000059604645,
+      "roughness": 0.5,
+      "metallic": 0.0
+    },
+    {
+      "name": "warm painted steel",
+      "diffuse": [
+        0.41999998688697815,
+        0.47999998927116394,
+        0.5,
+        1.0
+      ],
+      "shaderBase": [
+        0.800000011920929,
+        0.800000011920929,
+        0.800000011920929,
+        1.0
+      ],
+      "authoredRoughness": 0.3199999928474426,
+      "roughness": 0.5,
+      "metallic": 0.0
+    }
+  ]
+}
