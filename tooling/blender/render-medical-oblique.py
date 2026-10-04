@@ -13,7 +13,7 @@ exporter = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(exporter)
 exporter.PREVIEW = exporter.ROOT / 'assets/intermediate/infirmary-fixtures-preview'
 exporter.MODELS = (
-    ('furniture.medical-bed.variants', 'furniture.medical-bed.angled-detail.blend',
+    ('furniture.medical-bed.variants', 'furniture.medical-bed.soft-light.blend',
      'oblique-furniture.medical-bed.v1.json', 1, 2, 1.0, 1.0, .675000011920929),
     ('fixture.medicine-cabinet.variants', 'fixture.medicine-cabinet.soft-light.blend',
      'oblique-fixture.medicine-cabinet.v1.json', 1, 1, 1.0, 1.0, .5899999737739563),
@@ -99,6 +99,13 @@ def configure(model):
     if model[0] == 'fixture.medicine-cabinet.variants':
         dedicated_spec = importlib.util.spec_from_file_location(
             'medicine_cabinet_saved_cycles', HERE / 'render-medicine-cabinet-cycles.py')
+        dedicated = importlib.util.module_from_spec(dedicated_spec)
+        dedicated_spec.loader.exec_module(dedicated)
+        scene, camera = dedicated.configure()
+        return scene, camera, dedicated.TARGET
+    if model[0] == 'furniture.medical-bed.variants':
+        dedicated_spec = importlib.util.spec_from_file_location(
+            'medical_bed_saved_cycles', HERE / 'render-medical-bed-cycles.py')
         dedicated = importlib.util.module_from_spec(dedicated_spec)
         dedicated_spec.loader.exec_module(dedicated)
         scene, camera = dedicated.configure()

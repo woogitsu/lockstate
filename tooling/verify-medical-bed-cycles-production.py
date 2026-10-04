@@ -84,4 +84,47 @@ def main():
     (REPORT / 'actual-production-controls.json').write_text(json.dumps(receipt, indent=2) + '\n', encoding='utf-8', newline='\n')
     print('MEDICAL_BED_ACTUAL_FOUR_NEGATIVES_EXACT_RESTORE_GREEN', len(before), flush=True)
 
-if __name__ == '__main__': main()
+def canonical_entry_controls():
+    # Bounded continuation: invoke the real entries/configure without rerender72.
+    SCRATCH.mkdir(parents=True, exist_ok=True)
+    canonical = ROOT / 'tooling/blender/render-medical-bed-detail-oblique.py'
+    shared = ROOT / 'tooling/blender/render-medical-oblique.py'
+    originals = {p: p.read_bytes() for p in (canonical, shared)}
+    previous = json.loads((REPORT / 'actual-production-controls.json').read_text())
+    protected = set(previous['protectedAfter']) | {p.relative_to(ROOT).as_posix() for p in originals}
+    before = {p: sha((ROOT / p).read_bytes()) for p in sorted(protected)}
+    controls = []
+    canonical_check = SCRATCH / 'actual-canonical-medical-bed-entry.py'
+    canonical_check.write_text("from pathlib import Path\nimport runpy,sys,bpy\nr=Path.cwd()\nsys.argv=['render-medical-bed-detail-oblique.py','--','--verify']\ntry:runpy.run_path(str(r/'tooling/blender/render-medical-bed-detail-oblique.py'),run_name='__main__')\nexcept SystemExit as e:\n if e.code not in (None,0):raise\ns=bpy.context.scene\nassert Path(bpy.data.filepath)==r/'assets/source/blender/furniture.medical-bed.soft-light.blend' and s.render.engine=='CYCLES','Actual canonical Medical bed entry did not select saved Cycles'\nassert s.cycles.samples==128 and s.cycles.use_denoising and sum(o.type=='MESH' for o in s.objects)==89\nprint('ACTUAL_CANONICAL_MEDICAL_BED_SAVED_CYCLES_GREEN',flush=True)\n", encoding='utf-8', newline='\n')
+    shared_check = SCRATCH / 'actual-shared-medical-bed-configure.py'
+    shared_check.write_text("from pathlib import Path\nimport importlib.util,bpy\nr=Path.cwd()\nspec=importlib.util.spec_from_file_location('actual_shared_medical',r/'tooling/blender/render-medical-oblique.py')\nm=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)\nassert m.exporter.MODELS[1][0]=='fixture.medicine-cabinet.variants' and m.exporter.MODELS[1][2:]==('oblique-fixture.medicine-cabinet.v1.json',1,1,1.,1.,.5899999737739563)\nmodel=m.exporter.MODELS[0]\nassert model==('furniture.medical-bed.variants','furniture.medical-bed.soft-light.blend','oblique-furniture.medical-bed.v1.json',1,2,1.,1.,.675000011920929)\nscene,camera,target=m.exporter.configure(model)\nassert Path(bpy.data.filepath)==r/'assets/source/blender/furniture.medical-bed.soft-light.blend'\nassert scene.render.engine=='CYCLES' and scene.cycles.samples==128 and scene.cycles.use_denoising\nassert list(target)==[.5,1,.675000011920929] and camera.data.ortho_scale==4\nfor yaw in m.exporter.YAW:\n for elevation in m.exporter.ELEVATION:m.exporter.point_camera(camera,target,yaw,elevation)\nprint('ACTUAL_SHARED_MEDICAL_BED_SAVED_CYCLES_CAMERA72_GREEN',flush=True)\n", encoding='utf-8', newline='\n')
+    try:
+        dispatch = "if __name__ == '__main__':\n    modern = load_module('medical_bed_retained_cycles_entry', HERE / 'render-medical-bed-cycles.py')\n    modern.main()\n    raise SystemExit(0)\n"
+        text = originals[canonical].decode().replace('\r\n', '\n')
+        if text.count(dispatch) != 1: raise AssertionError('Canonical actual entry dispatch was not uniquely found')
+        try:
+            canonical.write_text(text.replace(dispatch, ''), encoding='utf-8', newline='\n')
+            controls.append(blender('actual-canonical-entry-omission-RED', (), 'Actual canonical Medical bed entry did not select saved Cycles', script=canonical_check))
+        finally: canonical.write_bytes(originals[canonical])
+        controls.append(blender('exact-canonical-entry-restore-GREEN', (), script=canonical_check))
+        callback = "    if model[0] == 'furniture.medical-bed.variants':\n        dedicated_spec = importlib.util.spec_from_file_location(\n            'medical_bed_saved_cycles', HERE / 'render-medical-bed-cycles.py')\n        dedicated = importlib.util.module_from_spec(dedicated_spec)\n        dedicated_spec.loader.exec_module(dedicated)\n        scene, camera = dedicated.configure()\n        return scene, camera, dedicated.TARGET\n"
+        text = originals[shared].decode().replace('\r\n', '\n')
+        if text.count(callback) != 1: raise AssertionError('Shared actual entry callback was not uniquely found')
+        try:
+            shared.write_text(text.replace(callback, ''), encoding='utf-8', newline='\n')
+            controls.append(blender('actual-shared-Infirmary-omission-RED', (), 'Medical bed retained/authored mesh set changed', script=shared_check))
+        finally: shared.write_bytes(originals[shared])
+        controls.append(blender('exact-shared-Infirmary-restore-GREEN', (), script=shared_check))
+        controls.append(blender('actual-canonical-decoded72-GREEN', ('--verify-exports',), script=canonical))
+    finally:
+        for path, body in originals.items(): path.write_bytes(body)
+    after = {p: sha((ROOT / p).read_bytes()) for p in sorted(protected)}
+    if before != after: raise AssertionError('Canonical/shared entry restoration is not byte exact')
+    receipt = {'controls': controls, 'protectedBefore': before, 'protectedAfter': after,
+               'exactRestoredFiles': len(before), 'nativeRun': False, 'realAdditionalRenders': 0}
+    (REPORT / 'actual-canonical-entry-controls.json').write_text(json.dumps(receipt, indent=2) + '\n', encoding='utf-8', newline='\n')
+    print('MEDICAL_BED_CANONICAL_SHARED_ACTUAL_OMISSIONS_EXACT_RESTORE_GREEN', len(before), flush=True)
+
+if __name__ == '__main__':
+    if '--canonical-entry-controls' in sys.argv: canonical_entry_controls()
+    else: main()
