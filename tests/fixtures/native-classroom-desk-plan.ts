@@ -30,6 +30,7 @@ export const CLASSROOM_ART = {
   assetId: 'furniture.classroom.teacher-desk', descriptor: '/game-content/oblique-furniture-classroom-teacher-desk.v1.json',
   source: 'assets/source/blender/furniture.classroom.teacher-desk.soft-light.blend',
   sourceSha256: 'a879bba0f04a4f8b08a66fb9e607d1d815a7a6c2a8f7cb84c1d20c7c0d26d376',
+  descriptorCanonicalLfSha256: '2c24ed7819e3b96d97d34b9c75949df743e375cbc6b871ea285dabb925920c20',
   exposedFrame: '/assets/environment/oblique/furniture.classroom.teacher-desk-yaw+60-elev40.5c8ee6a0fc92.png',
   exposedFrameSha256: '5c8ee6a0fc927377c5e6ea80f92444764d0ba794a25ddd14acafeec79dfa25e7',
   cameraTarget: [1, .5, .6349999904632568], cameraRightClicks: 7,
@@ -40,14 +41,35 @@ export const CLASSROOM_ART = {
 export const CLASSROOM_STUDENT_ART = {
   assetId: 'furniture.classroom.student-chair',
   descriptor: '/game-content/oblique-furniture-classroom-student-chair.v1.json',
-  source: 'assets/source/blender/furniture.classroom.student-chair.blend',
-  sourceSha256: '0c3d7dc54a594659c810f8e1d76bd4980bf1293f7a5b22c367805760de1a9b1b',
+  source: 'assets/source/blender/furniture.classroom.student-chair.soft-light.blend',
+  sourceSha256: 'cda6b031cbc079e66afc511f8fc864b9706c0ed601ef33d759fa2c201a916273',
+  descriptorCanonicalLfSha256: '211100da5c93947b7d61e8d0699af5b27aaa83458b51d026fe667005556009fe',
+  cameraTarget: [.5, .5, .58],
   frames: {
     0: { yawDegrees: 60, elevationDegrees: 40,
-      image: '/assets/environment/oblique/furniture.classroom.student-chair-yaw+60-elev40.eb690a439214.png',
-      sha256: 'eb690a4392146a594fa1b692a2dc0b28b881820e541a7125f7f112c474c50260' },
+      image: '/assets/environment/oblique/furniture.classroom.student-chair-yaw+60-elev40.e9a0e1ccada4.png',
+      sha256: 'e9a0e1ccada432723819f1c447536740b76db33a863914c49c2e6c58377889cd' },
     1: { yawDegrees: 150, elevationDegrees: 40,
-      image: '/assets/environment/oblique/furniture.classroom.student-chair-yaw+150-elev40.1da832419795.png',
-      sha256: '1da832419795e08cf8062eea139ddcc9e34bcbbdcf4e5b76ed74024326420479' },
+      image: '/assets/environment/oblique/furniture.classroom.student-chair-yaw+150-elev40.f80780f42772.png',
+      sha256: 'f80780f42772f4116d204bfbc5c78c0c636a3b5d97910381ec93c4546db95d03' },
+  },
+} as const;
+
+/** Current room-owned Bookshelf follows the same real objectArtYaw as its four
+ * chairs: world60 + orientation1*90 = source150, while the paid desk stays60. */
+export const CLASSROOM_BOOKSHELF_ART = {
+  assetId: 'furniture.library.bookshelf.variants',
+  descriptor: '/game-content/oblique-furniture.library-bookshelf.v1.json',
+  source: 'assets/source/blender/furniture.library.bookshelf.soft-light.blend',
+  sourceSha256: 'aff857256da9b5895e3acd8a5fabe387e19b0f15dc36ab0327aa2e28cba0cf9f',
+  descriptorCanonicalLfSha256: '55d96d94c62d3750503ff2485d9acd2694e8541f6c9c7e860a17b226a48ab0ad',
+  cameraTarget: [1, .5, 1.05],
+  frames: {
+    0: { yawDegrees: 60, elevationDegrees: 40,
+      image: '/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+60-elev40.41cdb91fa0be.png',
+      sha256: '41cdb91fa0be324e732d5767d1a7e295dbc4dbf97ac705b707f6fad22080f29e' },
+    1: { yawDegrees: 150, elevationDegrees: 40,
+      image: '/assets/environment/oblique/furniture.library.bookshelf.variants-yaw+150-elev40.8a4db5122593.png',
+      sha256: '8a4db512259322bb6926b4539a78fab60778e39538191398919d5fe196523ed6' },
   },
 } as const;

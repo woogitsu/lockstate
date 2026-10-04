@@ -5,7 +5,7 @@ import { CLASSROOM_CASES, CLASSROOM_DESK, CLASSROOM_ORIGIN, CLASSROOM_PLAN, clas
 import { createHash } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
 import { observeCotImages } from './cell-cot-evidence';
-import { CLASSROOM_ART, CLASSROOM_STUDENT_ART } from '../fixtures/native-classroom-desk-plan';
+import { CLASSROOM_ART, CLASSROOM_STUDENT_ART, CLASSROOM_BOOKSHELF_ART } from '../fixtures/native-classroom-desk-plan';
 
 /** Literal typed/public UI oracle, read-only worker and real network evidence. */
 
@@ -88,8 +88,10 @@ export async function observeClassroomDeskNetwork(page: Page) {
   page.on('response', response => {
     const path = decodeURIComponent(new URL(response.url()).pathname);
     if (path !== CLASSROOM_ART.descriptor && path !== CLASSROOM_STUDENT_ART.descriptor
+      && path !== CLASSROOM_BOOKSHELF_ART.descriptor
       && !path.startsWith('/assets/environment/oblique/furniture.classroom.teacher-desk-')
       && !path.startsWith('/assets/environment/oblique/furniture.classroom.student-chair-')
+      && !path.startsWith('/assets/environment/oblique/furniture.library.bookshelf.variants-')
       && !/\/assets\/worker-[^/]+\.js$/.test(path)) return;
     const row: typeof rows[number] = { url: response.url(), path, status: response.status() };
     rows.push(row);
@@ -109,15 +111,18 @@ export async function observeClassroomDeskNetwork(page: Page) {
     async raw(path: string) { await Promise.all(pending); await writeFile(path, JSON.stringify(rows, null, 2)); },
     async evidence(info: TestInfo, quarterTurns: 0 | 1) {
       const studentFrame = CLASSROOM_STUDENT_ART.frames[quarterTurns];
+      const bookshelfFrame = CLASSROOM_BOOKSHELF_ART.frames[quarterTurns];
       try {
         await expect.poll(() => bodies.has(CLASSROOM_ART.descriptor) && bodies.has(CLASSROOM_ART.exposedFrame)
-          && bodies.has(CLASSROOM_STUDENT_ART.descriptor) && bodies.has(studentFrame.image),
-          { message: 'actual combined Classroom consumers must deliver both correctly oriented source frames' }).toBe(true);
+          && bodies.has(CLASSROOM_STUDENT_ART.descriptor) && bodies.has(studentFrame.image)
+          && bodies.has(CLASSROOM_BOOKSHELF_ART.descriptor) && bodies.has(bookshelfFrame.image),
+          { message: 'actual combined Classroom consumers must deliver all three correctly oriented source frames' }).toBe(true);
       } finally { await Promise.all(pending); await writeFile(info.outputPath('classroom-desk-actual-network.json'), JSON.stringify(rows, null, 2)); }
       expect(rows.filter(row => row.error !== undefined)).toEqual([]);
       for (const row of rows.filter(row => row.location !== undefined))
         expect(decodeURIComponent(new URL(row.location!, row.url).pathname)).toBe(row.path);
       const body = bodies.get(CLASSROOM_ART.descriptor)!;
+      expect(createHash('sha256').update(body.toString('utf8').replace(/\r\n/g, '\n')).digest('hex')).toBe(CLASSROOM_ART.descriptorCanonicalLfSha256);
       const catalog = JSON.parse(body.toString('utf8')) as NetworkCatalog;
       expect(catalog).toMatchObject({ assetId: CLASSROOM_ART.assetId, source: CLASSROOM_ART.source,
         sourceSha256: CLASSROOM_ART.sourceSha256, resolutionPx: [256, 256], nominalPixelsPerTile: 64,
@@ -134,10 +139,11 @@ export async function observeClassroomDeskNetwork(page: Page) {
       expect(images.errors).toEqual([]);
       expect(images.images.some(image => image.sha256 === CLASSROOM_ART.exposedFrameSha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);
       const studentBody = bodies.get(CLASSROOM_STUDENT_ART.descriptor)!;
+      expect(createHash('sha256').update(studentBody.toString('utf8').replace(/\r\n/g, '\n')).digest('hex')).toBe(CLASSROOM_STUDENT_ART.descriptorCanonicalLfSha256);
       const studentCatalog = JSON.parse(studentBody.toString('utf8')) as NetworkCatalog;
       expect(studentCatalog).toMatchObject({ assetId: CLASSROOM_STUDENT_ART.assetId,
         source: CLASSROOM_STUDENT_ART.source, sourceSha256: CLASSROOM_STUDENT_ART.sourceSha256,
-        resolutionPx: [256, 256], nominalPixelsPerTile: 64, pivotPx: [128, 128], cameraTargetTiles: [.5, .5, .58] });
+        resolutionPx: [256, 256], nominalPixelsPerTile: 64, pivotPx: [128, 128], cameraTargetTiles: CLASSROOM_STUDENT_ART.cameraTarget });
       expect(studentCatalog.frames).toHaveLength(72);
       expect(studentCatalog.frames.filter(frame => frame.yawDegrees === studentFrame.yawDegrees && frame.elevationDegrees === 40)).toEqual([studentFrame]);
       const studentPng = bodies.get(studentFrame.image)!;
@@ -145,14 +151,34 @@ export async function observeClassroomDeskNetwork(page: Page) {
       expect(studentPng.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
       expect([studentPng.readUInt32BE(16), studentPng.readUInt32BE(20)]).toEqual([256, 256]);
       expect(images.images.some(image => image.sha256 === studentFrame.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);
+      const bookshelfBody = bodies.get(CLASSROOM_BOOKSHELF_ART.descriptor)!;
+      expect(createHash('sha256').update(bookshelfBody.toString('utf8').replace(/\r\n/g, '\n')).digest('hex')).toBe(CLASSROOM_BOOKSHELF_ART.descriptorCanonicalLfSha256);
+      const bookshelfCatalog = JSON.parse(bookshelfBody.toString('utf8')) as NetworkCatalog;
+      expect(bookshelfCatalog).toMatchObject({ assetId: CLASSROOM_BOOKSHELF_ART.assetId,
+        source: CLASSROOM_BOOKSHELF_ART.source, sourceSha256: CLASSROOM_BOOKSHELF_ART.sourceSha256,
+        resolutionPx: [256, 256], nominalPixelsPerTile: 64, pivotPx: [128, 128], cameraTargetTiles: CLASSROOM_BOOKSHELF_ART.cameraTarget });
+      expect(bookshelfCatalog.frames).toHaveLength(72);
+      expect(bookshelfCatalog.frames.filter(frame => frame.yawDegrees === bookshelfFrame.yawDegrees && frame.elevationDegrees === 40)).toEqual([bookshelfFrame]);
+      const bookshelfPng = bodies.get(bookshelfFrame.image)!;
+      expect(createHash('sha256').update(bookshelfPng).digest('hex')).toBe(bookshelfFrame.sha256);
+      expect(bookshelfPng.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
+      expect([bookshelfPng.readUInt32BE(16), bookshelfPng.readUInt32BE(20)]).toEqual([256, 256]);
+      expect(images.images.some(image => image.sha256 === bookshelfFrame.sha256 && image.complete && !image.error && image.width === 256 && image.height === 256)).toBe(true);
       expect(rows.some(row => /\/assets\/worker-[^/]+\.js$/.test(row.path) && row.status === 200 && row.sha256 !== undefined)).toBe(true);
       const receipt = { classroomPlanQuarterTurns: quarterTurns, publicIndividualDeskOrientation: 0, catalog, descriptorBodySha256: createHash('sha256').update(body).digest('hex'),
         studentCatalog, studentDescriptorBodySha256: createHash('sha256').update(studentBody).digest('hex'), studentFrame,
+        bookshelfCatalog, bookshelfDescriptorBodySha256: createHash('sha256').update(bookshelfBody).digest('hex'), bookshelfFrame,
+        descriptorCanonicalLfSha256: CLASSROOM_ART.descriptorCanonicalLfSha256,
+        studentDescriptorCanonicalLfSha256: CLASSROOM_STUDENT_ART.descriptorCanonicalLfSha256,
+        bookshelfDescriptorCanonicalLfSha256: CLASSROOM_BOOKSHELF_ART.descriptorCanonicalLfSha256,
+        publicRouteExpectedWorldCameraDegrees: [60, 45], selectedSourceElevationDegrees: 40,
+        roomOwnedObjectOrientation: quarterTurns,
         exposedFrameSha256: CLASSROOM_ART.exposedFrameSha256, network: rows, actualDecodedImages: images.images,
         syntheticFetchUsed: false, rendererTextureReadUsed: false, deskVisualCalibrationComplete: false,
         visualAcceptancePending: true };
       await writeFile(info.outputPath('classroom-desk-actual200-source60-elev40.png'), png);
       await writeFile(info.outputPath('classroom-student-chair-actual200-frame.png'), studentPng);
+      await writeFile(info.outputPath('classroom-bookshelf-actual200-frame.png'), bookshelfPng);
       await writeFile(info.outputPath('classroom-desk-actual-network-and-decoder-receipt.json'), JSON.stringify(receipt, null, 2));
       return receipt;
     },
