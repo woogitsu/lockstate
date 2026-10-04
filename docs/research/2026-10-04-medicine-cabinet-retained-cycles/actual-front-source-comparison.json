@@ -1,0 +1,23 @@
+{
+  "sourceSha256": "1bb3821056d58d39dc51de6788689ad780e3bed59c20a5f3625714f2480e9732",
+  "actualSavedSource": true,
+  "identicalPhysicalAssembly": true,
+  "before": {
+    "stage": "front-connected71-workbench",
+    "yawDegrees": 150,
+    "elevationDegrees": 40,
+    "image": "docs/research/2026-10-04-medicine-cabinet-retained-cycles/front-connected71-workbench-yaw150-elev40.png",
+    "sha256": "9f71c9cb8e12df2ea36711354bb2f1b2502272f5f6e301e735bb9d0678d1cc3d",
+    "renderSeconds": 0.44841799995629117
+  },
+  "after": {
+    "stage": "front-soft-authored-materials",
+    "yawDegrees": 150,
+    "elevationDegrees": 40,
+    "image": "docs/research/2026-10-04-medicine-cabinet-retained-cycles/front-soft-authored-materials-yaw150-elev40.png",
+    "sha256": "d0abcb7568b55cd742c5db4354a59657d11d3293f77d65d3cb6c6c66ff7bc861",
+    "renderSeconds": 2.404897300002631
+  },
+  "actualCurrentFrameSHA": "d0abcb7568b55cd742c5db4354a59657d11d3293f77d65d3cb6c6c66ff7bc861",
+  "nativeAcceptance": false
+}
