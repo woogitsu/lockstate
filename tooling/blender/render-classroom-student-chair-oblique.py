@@ -107,4 +107,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    modern = load('student_chair_current_saved_cycles_dispatch', HERE / 'render-classroom-student-chair-cycles.py')
+    modern.main()

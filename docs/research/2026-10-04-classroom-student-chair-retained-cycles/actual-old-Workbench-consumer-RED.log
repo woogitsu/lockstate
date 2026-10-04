@@ -1,0 +1,63 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-interior-door-cycles-20261004
+
+ × tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > selects ALL FOUR literal completed Classroom chairs q0 with their canonical source60/e40 frame 14ms
+   → expected { yawDegrees: 60, …(3) } to deeply equal { yawDegrees: 60, …(3) }
+ × tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > selects ALL FOUR literal completed Classroom chairs q1 with their canonical source60/e40 frame 3ms
+   → expected { yawDegrees: 60, …(3) } to deeply equal { yawDegrees: 60, …(3) }
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > preserves ordinary chair art for planned Classroom objects 1ms
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > preserves ordinary chair art for building Classroom objects 0ms
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > preserves default/Reception/other-room chairs and the entire Classroom footprint boundary 3ms
+ ✓ tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > keeps the existing teacher desk and other furniture unchanged 0ms
+ × tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > registers the selected asset once with its real source and complete descriptor 3ms
+   → expected 'assets/source/blender/furniture.class…' to be 'assets/source/blender/furniture.class…' // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > selects ALL FOUR literal completed Classroom chairs q0 with their canonical source60/e40 frame
+ FAIL  tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > selects ALL FOUR literal completed Classroom chairs q1 with their canonical source60/e40 frame
+AssertionError: expected { yawDegrees: 60, …(3) } to deeply equal { yawDegrees: 60, …(3) }
+
+- Expected
++ Received
+
+  {
+    "elevationDegrees": 40,
+-   "image": "/assets/environment/oblique/furniture.classroom.student-chair-yaw+60-elev40.e9a0e1ccada4.png",
+-   "sha256": "e9a0e1ccada432723819f1c447536740b76db33a863914c49c2e6c58377889cd",
++   "image": "/assets/environment/oblique/furniture.classroom.student-chair-yaw+60-elev40.eb690a439214.png",
++   "sha256": "eb690a4392146a594fa1b692a2dc0b28b881820e541a7125f7f112c474c50260",
+    "yawDegrees": 60,
+  }
+
+ ❯ tests/unit/oblique-classroom-student-chair-context.test.ts:62:24
+     60|       const selected = selectObliqueModuleFrame(catalog, { yawRadians:…
+     61|         elevationRadians: camera(turns).elevationRadians });
+     62|       expect(selected).toEqual({ yawDegrees: 60, elevationDegrees: 40,
+       |                        ^
+     63|         image: '/assets/environment/oblique/furniture.classroom.studen…
+     64|         sha256: 'e9a0e1ccada432723819f1c447536740b76db33a863914c49c2e6…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/unit/oblique-classroom-student-chair-context.test.ts > Classroom student ObjectChair context in the actual world projection > registers the selected asset once with its real source and complete descriptor
+AssertionError: expected 'assets/source/blender/furniture.class…' to be 'assets/source/blender/furniture.class…' // Object.is equality
+
+Expected: "assets/source/blender/furniture.classroom.student-chair.soft-light.blend"
+Received: "assets/source/blender/furniture.classroom.student-chair.blend"
+
+ ❯ tests/unit/oblique-classroom-student-chair-context.test.ts:115:28
+    113|     const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(…
+    114|     expect(catalog.assetId).toBe(assetId);
+    115|     expect(catalog.source).toBe('assets/source/blender/furniture.class…
+       |                            ^
+    116|     expect(catalog.sourceSha256).toBe('cda6b031cbc079e66afc511f8fc864b…
+    117|     expect(catalog.frames).toHaveLength(72);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 4 passed (7)
+   Start at  03:36:41
+   Duration  716ms (transform 175ms, setup 0ms, import 565ms, tests 26ms, environment 0ms)

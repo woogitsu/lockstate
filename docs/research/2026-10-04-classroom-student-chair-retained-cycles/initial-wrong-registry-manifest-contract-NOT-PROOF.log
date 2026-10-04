@@ -1,0 +1,33 @@
+00:01.234  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-interior-door-cycles-20261004\assets\source\blender\furniture.classroom.student-chair.soft-light.blend"
+blender.exe : Traceback (most recent call last):
+At line:17 char:1
++ & 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe' --bac ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-interior-door-cycles-20261004\tooling\blender\render-classroom-s
+tudent-chair-oblique.py", line 111, in <module>
+    modern.main()
+    ~~~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-interior-door-cycles-20261004\tooling\blender\render-classroom-s
+tudent-chair-cycles.py", line 106, in main
+    exporter.main()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-interior-door-cycles-20261004\tooling\blender\render-kitchen-fix
+tures-oblique.py", line 203, in main
+    scene, camera, target = configure(model)
+                            ~~~~~~~~~^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-interior-door-cycles-20261004\tooling\blender\render-classroom-s
+tudent-chair-cycles.py", line 71, in <lambda>
+    exporter.configure = lambda model: (*configure(),TARGET)
+                                         ~~~~~~~~~^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-interior-door-cycles-20261004\tooling\blender\render-classroom-s
+tudent-chair-cycles.py", line 47, in configure
+    raise ValueError('Classroom student chair Cycles actual registry dispatch missing or changed')
+ValueError: Classroom student chair Cycles actual registry dispatch missing or changed
+
+Error: script failed, file: 'tooling/blender/render-classroom-student-chair-oblique.py', exiting.
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit

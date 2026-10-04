@@ -60,8 +60,11 @@ it('retains all25 authored school-chair parts and eight stored graphs in the1x1 
 
 it('loads the dedicated descriptor and decodes 72 complete unclipped canonical PNG poses', () => {
   const catalog = parseObliqueModuleCatalog(json('public/game-content/oblique-furniture-classroom-student-chair.v1.json'));
-  expect(catalog.assetId).toBe(provenance.assetId); expect(catalog.source).toBe(provenance.source);
-  expect(catalog.sourceSha256).toBe(provenance.sourceSha256);
+  const soft=json('assets/source/blender/furniture.classroom.student-chair.soft-light.provenance.json') as {source:string;sourceSha256:string;physicalAssembly:{rawMeshes:unknown[];completeStoredMaterialGraphs:unknown[]}};
+  expect(catalog.assetId).toBe(provenance.assetId); expect(catalog.source).toBe(soft.source);
+  expect(catalog.sourceSha256).toBe(soft.sourceSha256);
+  expect(soft.physicalAssembly.rawMeshes).toEqual(provenance.allAuthoredRawMeshes);
+  expect(soft.physicalAssembly.completeStoredMaterialGraphs).toEqual(provenance.retainedStoredMaterialGraphs);
   expect(catalog.resolutionPx).toEqual([256, 256]); expect(catalog.pivotPx).toEqual([128, 128]);
   expect(catalog.nominalPixelsPerTile).toBe(64); expect(catalog.cameraTargetTiles).toEqual(provenance.cameraTargetTiles);
   expect(catalog.yawDegrees).toEqual(Array.from({ length: 12 }, (_, i) => i * 30));

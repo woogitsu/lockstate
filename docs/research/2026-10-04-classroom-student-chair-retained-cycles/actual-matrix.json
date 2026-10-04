@@ -1,45 +1,23 @@
 {
-  "schemaVersion": 1,
-  "assetId": "furniture.classroom.student-chair",
-  "source": "assets/source/blender/furniture.classroom.student-chair.soft-light.blend",
+  "genuineBlenderVersion": [
+    5,
+    2,
+    1
+  ],
+  "engine": "CYCLES",
+  "device": "CPU",
+  "threads": 1,
+  "samples": 128,
+  "seed": 0,
+  "adaptiveSampling": false,
+  "denoising": true,
+  "denoiser": "OPENIMAGEDENOISE",
+  "denoisingUseGpu": false,
+  "viewTransform": "AgX",
+  "actualExportSeconds": 159.1607137999963,
+  "realRenderCount": 72,
   "sourceSha256": "cda6b031cbc079e66afc511f8fc864b9706c0ed601ef33d759fa2c201a916273",
-  "resolutionPx": [
-    256,
-    256
-  ],
-  "nominalPixelsPerTile": 64,
-  "pivotPx": [
-    128,
-    128
-  ],
-  "cameraTargetTiles": [
-    0.5,
-    0.5,
-    0.58
-  ],
-  "projection": "orthographic",
-  "yawDegrees": [
-    0,
-    30,
-    60,
-    90,
-    120,
-    150,
-    180,
-    210,
-    240,
-    270,
-    300,
-    330
-  ],
-  "elevationDegrees": [
-    20,
-    30,
-    40,
-    50,
-    60,
-    70
-  ],
+  "descriptorSha256": "211100da5c93947b7d61e8d0699af5b27aaa83458b51d026fe667005556009fe",
   "frames": [
     {
       "yawDegrees": 0,
@@ -473,5 +451,7 @@
       "image": "/assets/environment/oblique/furniture.classroom.student-chair-yaw+330-elev70.15da67f1bb93.png",
       "sha256": "15da67f1bb932670e5dd9d4861f555293b819035fc7893a7cffe3ab79a68f6b8"
     }
-  ]
+  ],
+  "groundPlaneAdded": false,
+  "nativeAcceptance": false
 }

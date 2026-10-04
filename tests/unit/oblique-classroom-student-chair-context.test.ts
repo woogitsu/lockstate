@@ -13,6 +13,7 @@ import { projectObliqueWorldFrame } from '../../src/rendering/camera/oblique-wor
 import { parseObliqueModuleRegistry } from '../../src/rendering/assets/oblique-module-registry';
 import { parseObliqueModuleCatalog, selectObliqueModuleFrame } from '../../src/rendering/assets/oblique-module-catalog';
 
+import { projectedRectPrism } from '../../src/rendering/camera/oblique-geometry';
 const assetId = 'furniture.classroom.student-chair';
 const publicRoot = new URL('../../public/', import.meta.url);
 const classroom: RenderRoom = { instanceId: 'room.classroom:5:5', roomCatalogId: 'room.classroom',
@@ -54,11 +55,13 @@ describe('Classroom student ObjectChair context in the actual world projection',
       const solid = projected.raised.find(item => item.id === structure.id);
       expect(solid?.assetId, 'actual Classroom student chair context selector').toBe(assetId);
       if (solid === undefined) throw new Error('Literal template-purchased Classroom chair absent from projection');
+      if(solid.kind==='actor')throw new Error('Actual paid chair projected as actor');
+      expect(solid.footprint).toEqual(projectedRectPrism(structure.tileX*64,structure.tileY*64,64,64,1,camera(turns)).footprint);
       const selected = selectObliqueModuleFrame(catalog, { yawRadians: solid.assetYawRadians ?? camera(turns).yawRadians,
         elevationRadians: camera(turns).elevationRadians });
       expect(selected).toEqual({ yawDegrees: 60, elevationDegrees: 40,
-        image: '/assets/environment/oblique/furniture.classroom.student-chair-yaw+60-elev40.eb690a439214.png',
-        sha256: 'eb690a4392146a594fa1b692a2dc0b28b881820e541a7125f7f112c474c50260' });
+        image: '/assets/environment/oblique/furniture.classroom.student-chair-yaw+60-elev40.e9a0e1ccada4.png',
+        sha256: 'e9a0e1ccada432723819f1c447536740b76db33a863914c49c2e6c58377889cd' });
       expect(createHash('sha256').update(readFileSync(new URL(selected.image.slice(1), publicRoot))).digest('hex')).toBe(selected.sha256);
     }
     expect(projected.raised.find(item => item.id === classroomOwner('object', 0))?.assetId).toBe('furniture.library.bookshelf.variants');
@@ -109,8 +112,8 @@ describe('Classroom student ObjectChair context in the actual world projection',
     if (entry === undefined) throw new Error('Student chair asset absent from runtime registry');
     const catalog = parseObliqueModuleCatalog(JSON.parse(readFileSync(new URL(entry.manifest.slice(1), publicRoot), 'utf8')));
     expect(catalog.assetId).toBe(assetId);
-    expect(catalog.source).toBe('assets/source/blender/furniture.classroom.student-chair.blend');
-    expect(catalog.sourceSha256).toBe('0c3d7dc54a594659c810f8e1d76bd4980bf1293f7a5b22c367805760de1a9b1b');
+    expect(catalog.source).toBe('assets/source/blender/furniture.classroom.student-chair.soft-light.blend');
+    expect(catalog.sourceSha256).toBe('cda6b031cbc079e66afc511f8fc864b9706c0ed601ef33d759fa2c201a916273');
     expect(catalog.frames).toHaveLength(72);
     expect(registry.entries.filter(entry => entry.assetId === 'furniture.classroom.school-chair')).toEqual([{
       assetId: 'furniture.classroom.school-chair', manifest: '/game-content/oblique-furniture.classroom-chair.v1.json',
