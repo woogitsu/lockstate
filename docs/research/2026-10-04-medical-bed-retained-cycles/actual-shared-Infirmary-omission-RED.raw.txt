@@ -1,0 +1,22 @@
+00:01.469  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-infirmary-medical-bed-cycles-20261004\assets\source\blender\furniture.medical-bed.soft-light.blend"
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
+Traceback (most recent call last):
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-infirmary-medical-bed-cycles-20261004\assets\intermediate\medical-bed-cycles-controls\actual-shared-medical-bed-configure.py", line 9, in <module>
+    scene,camera,target=m.exporter.configure(model)
+                        ~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-infirmary-medical-bed-cycles-20261004\tooling\blender\render-medical-oblique.py", line 99, in configure
+    scene, camera, target = configure_fixture(model, prepare_source)
+                            ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-infirmary-medical-bed-cycles-20261004\tooling\blender\render-kitchen-fixtures-oblique.py", line 151, in configure
+    prepare_source(scene, model)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-infirmary-medical-bed-cycles-20261004\tooling\blender\render-medical-oblique.py", line 60, in prepare_source
+    bed.prepare_source(scene, model)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\matma\Documents\Rozwój gier\lockstate-infirmary-medical-bed-cycles-20261004\tooling\blender\render-medical-bed-detail-oblique.py", line 52, in prepare_source
+    raise ValueError('Medical bed retained/authored mesh set changed')
+ValueError: Medical bed retained/authored mesh set changed
+
+Error: script failed, file: 'C:\Users\matma\Documents\Rozwój gier\lockstate-infirmary-medical-bed-cycles-20261004\assets\intermediate\medical-bed-cycles-controls\actual-shared-medical-bed-configure.py', exiting.

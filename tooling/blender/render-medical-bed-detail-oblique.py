@@ -19,6 +19,13 @@ def load_module(name, path):
     return module
 
 
+# Canonical execution selects the saved Cycles source; imported legacy audit
+# functions remain available to preparation without changing original geometry.
+if __name__ == '__main__':
+    modern = load_module('medical_bed_retained_cycles_entry', HERE / 'render-medical-bed-cycles.py')
+    modern.main()
+    raise SystemExit(0)
+
 exporter = load_module('medical_bed_square_exporter', HERE / 'render-kitchen-fixtures-oblique.py')
 audit = load_module('medical_bed_authored_audit', HERE / 'refine-medical-bed-angled-detail.py')
 ASSET_ID = 'furniture.medical-bed.variants'
