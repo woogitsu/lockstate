@@ -2,7 +2,7 @@
 
 Base `adb8ff9b67231fe2f6b42beac41dd394f7d1bd72`. First source/sample commit `e0bbf11e4d4fc53f0a8752e78733f7aec815e1cc`.
 
-Existing `room.classroom` / `object.desk` ? accepted `furniture.classroom.teacher-desk`, unchanged registry/context. Current descriptor: `public/game-content/oblique-furniture-classroom-teacher-desk.v1.json`.
+Existing `room.classroom` / `object.desk` selects accepted `furniture.classroom.teacher-desk`, unchanged registry/context. Current descriptor: `public/game-content/oblique-furniture-classroom-teacher-desk.v1.json`.
 
 | Pin | SHA256 |
 | --- | --- |
