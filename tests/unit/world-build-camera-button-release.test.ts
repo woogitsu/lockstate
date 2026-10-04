@@ -162,3 +162,37 @@ for (const tool of ['wall', 'object', 'room'] as const) {
     expect(h.actors.submitted()).toHaveLength(0); expect(h.roomReports).toHaveLength(0);
   });
 }
+
+it('Oblique: after pose/zoom, a missed primary release becomes one hover square rather than an old drag or a later camera-button purchase', async () => {
+  const h = await setup('oblique', 'wall');
+  const readout = vi.fn(); h.tools.wall.attachReadout(readout);
+  h.mouse('down', 0, 1, 780); h.mouse('move', 0, 1, 1120);
+  if (!(h.actual instanceof ObliqueWorldScene)) throw Error('Actual Angled scene required');
+  h.actual.setPoseRadians(35 * Math.PI / 180, 65 * Math.PI / 180);
+  h.actual.stepCameraZoom('in', { x: 1120, y: 460 });
+  const held = readout.mock.lastCall?.[0];
+  expect(held?.segments).toBeGreaterThan(1);
+  h.mouse('move', 0, 0, 1140); // actual Pointer.move refreshes buttons; no Pointer.up is delivered
+  const recovered = readout.mock.lastCall?.[0];
+  console.log('ACTUAL_MISSED_PRIMARY_RELEASE', JSON.stringify({ held, recovered, buttons: h.pointer.buttons,
+    commands: h.actors.submitted().map(message => message.payload.command.data) }));
+  expect(recovered?.segments, 'released mouse must show only its current hover square').toBe(1);
+  expect(h.actors.submitted()).toHaveLength(0);
+  const beforeTurn = h.actual.captureCameraView();
+  h.mouse('down', 2, 2, 1140); h.mouse('move', 2, 2, 1180); h.mouse('up', 2, 0, 1180);
+  expect(h.actual.captureCameraView()).not.toEqual(beforeTurn);
+  expect(h.actors.submitted(), 'later camera release must not purchase the abandoned construction run').toHaveLength(0);
+  h.mouse('down', 0, 1, 1180); h.mouse('up', 0, 0, 1180);
+  expect(h.actors.submitted()).toHaveLength(1);
+  expect(h.actors.submitted()[0]?.payload.command.data).toMatchObject({ type: 'PlaceBuildOrder', footprint: 'square',
+    x: readout.mock.calls.at(-2)?.[0]?.x, y: readout.mock.calls.at(-2)?.[0]?.y });
+});
+
+it('Oblique: a lost primary release cannot be purchased by the next genuine right-camera release', async () => {
+  const h = await setup('oblique', 'wall');
+  h.mouse('down', 0, 1, 780); h.mouse('move', 0, 1, 1120);
+  h.mouse('move', 0, 0, 1140);
+  h.mouse('down', 2, 2, 1140); h.mouse('move', 2, 2, 1180); h.mouse('up', 2, 0, 1180);
+  console.log('ACTUAL_ABANDONED_CAMERA_RELEASE', JSON.stringify(h.actors.submitted().map(message => message.payload.command.data)));
+  expect(h.actors.submitted()).toHaveLength(0);
+});

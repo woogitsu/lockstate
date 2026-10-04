@@ -99,6 +99,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 — which is every shape this paragraph and the one above it describe.
 
 | Record | Question it answered | Decision it fed |
+| [2026-10-04 Angled missed primary release](./2026-10-04-oblique-missed-primary-release/README.md) | Can a later camera release purchase an abandoned primary square-wall run? | Issue2030; actual Phaser/main/worker original2RED, no native claim; narrow input recovery and exact restoration pending. |
 | --- | --- | --- |
 | [2026-10-04 Modern Canteen native observers](./2026-10-04-canteen-modern-native-observers/README.md) | Are actual public q0/q1 Canteen owners and loaded table/bench source bodies observed without replacing the old pixel guards? | Exact144 source-body pins and currentV10 observer preparation; native material calibration remains pending. |
 | [2026-10-04 Cell cot native material observer](./2026-10-04-cell-cot-native-material-observer/README.md) | Does the old ochre range recognize the retained soft shader blanket in the actual completed Cell? | Immutable21d capacity GREEN/q0 RED/q1 not run retained; source25/9/6 read-only projection identifies86 authored RGB keys and1033 genuine ROI pixels versus old72, original >700 floor unchanged. Native rerun pending. |
