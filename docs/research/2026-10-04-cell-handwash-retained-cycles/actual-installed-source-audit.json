@@ -1,0 +1,1523 @@
+{
+  "engine": "BLENDER_WORKBENCH",
+  "materials": [
+    {
+      "name": "basin interior shadow",
+      "useNodes": true,
+      "diffuse": [
+        0.23999999463558197,
+        0.4300000071525574,
+        0.4399999976158142,
+        1.0
+      ],
+      "roughness": 0.38999998569488525,
+      "metallic": 0.0,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ]
+    },
+    {
+      "name": "brushed steel fittings",
+      "useNodes": true,
+      "diffuse": [
+        0.4399999976158142,
+        0.5799999833106995,
+        0.6000000238418579,
+        1.0
+      ],
+      "roughness": 0.23999999463558197,
+      "metallic": 0.7200000286102295,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ]
+    },
+    {
+      "name": "clean backsplash",
+      "useNodes": true,
+      "diffuse": [
+        0.5699999928474426,
+        0.6899999976158142,
+        0.6700000166893005,
+        1.0
+      ],
+      "roughness": 0.3400000035762787,
+      "metallic": 0.0,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ]
+    },
+    {
+      "name": "service blue handle",
+      "useNodes": true,
+      "diffuse": [
+        0.10000000149011612,
+        0.3700000047683716,
+        0.44999998807907104,
+        1.0
+      ],
+      "roughness": 0.4000000059604645,
+      "metallic": 0.0,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ]
+    },
+    {
+      "name": "warm white porcelain",
+      "useNodes": true,
+      "diffuse": [
+        0.7200000286102295,
+        0.7799999713897705,
+        0.75,
+        1.0
+      ],
+      "roughness": 0.20999999344348907,
+      "metallic": 0.0,
+      "nodes": [
+        {
+          "name": "Material Output",
+          "type": "ShaderNodeOutputMaterial",
+          "inputs": [
+            {
+              "name": "Displacement",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Thickness",
+              "value": 0.0
+            }
+          ],
+          "properties": {
+            "location": [
+              200.0,
+              100.0
+            ],
+            "location_absolute": [
+              200.0,
+              100.0
+            ],
+            "width": 140.0,
+            "height": 100.0,
+            "name": "Material Output",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeOutputMaterial",
+            "bl_label": "Material Output",
+            "bl_description": "Output surface material information for use in rendering",
+            "bl_icon": "NONE",
+            "bl_width_default": 140.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "is_active_output": true,
+            "target": "ALL"
+          }
+        },
+        {
+          "name": "Principled BSDF",
+          "type": "ShaderNodeBsdfPrincipled",
+          "inputs": [
+            {
+              "name": "Base Color",
+              "value": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+              ]
+            },
+            {
+              "name": "Metallic",
+              "value": 0.0
+            },
+            {
+              "name": "Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Alpha",
+              "value": 1.0
+            },
+            {
+              "name": "Thin Wall",
+              "value": false
+            },
+            {
+              "name": "Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Diffuse Roughness",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Subsurface Radius",
+              "value": [
+                1.0,
+                0.20000000298023224,
+                0.10000000149011612
+              ]
+            },
+            {
+              "name": "Subsurface Scale",
+              "value": 0.004999999888241291
+            },
+            {
+              "name": "Subsurface IOR",
+              "value": 1.399999976158142
+            },
+            {
+              "name": "Subsurface Anisotropy",
+              "value": 0.0
+            },
+            {
+              "name": "Specular IOR Level",
+              "value": 0.5
+            },
+            {
+              "name": "Specular Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Anisotropic",
+              "value": 0.0
+            },
+            {
+              "name": "Anisotropic Rotation",
+              "value": 0.0
+            },
+            {
+              "name": "Tangent",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Transmission Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Coat Roughness",
+              "value": 0.029999999329447746
+            },
+            {
+              "name": "Coat IOR",
+              "value": 1.5
+            },
+            {
+              "name": "Coat Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Coat Normal",
+              "value": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "name": "Sheen Weight",
+              "value": 0.0
+            },
+            {
+              "name": "Sheen Roughness",
+              "value": 0.5
+            },
+            {
+              "name": "Sheen Tint",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Color",
+              "value": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "name": "Emission Strength",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film Thickness",
+              "value": 0.0
+            },
+            {
+              "name": "Thin Film IOR",
+              "value": 1.3300000429153442
+            }
+          ],
+          "properties": {
+            "location": [
+              -200.0,
+              100.0
+            ],
+            "location_absolute": [
+              -200.0,
+              100.0
+            ],
+            "width": 240.0,
+            "height": 100.0,
+            "name": "Principled BSDF",
+            "label": "",
+            "warning_propagation": "ALL",
+            "use_custom_color": false,
+            "color": [
+              0.6079999804496765,
+              0.6079999804496765,
+              0.6079999804496765
+            ],
+            "select": true,
+            "show_options": true,
+            "show_preview": false,
+            "hide": false,
+            "mute": false,
+            "show_texture": false,
+            "bl_idname": "ShaderNodeBsdfPrincipled",
+            "bl_label": "Principled BSDF",
+            "bl_description": "Physically-based, easy-to-use shader for rendering surface materials, based on the OpenPBR model",
+            "bl_icon": "NONE",
+            "bl_width_default": 240.0,
+            "bl_width_min": 100.0,
+            "bl_width_max": 700.0,
+            "bl_height_default": 100.0,
+            "bl_height_min": 30.0,
+            "bl_height_max": 3.4028234663852886e+38,
+            "distribution": "MULTI_GGX",
+            "subsurface_method": "RANDOM_WALK"
+          }
+        }
+      ],
+      "links": [
+        [
+          "Principled BSDF",
+          "BSDF",
+          "Material Output",
+          "Surface"
+        ]
+      ]
+    }
+  ],
+  "meshCount": 17,
+  "target": [
+    0.5,
+    0.5,
+    0.5049999952316284
+  ],
+  "genuineContacts": [
+    {
+      "shoe": "faucet spout",
+      "retainedTarget": "faucet neck",
+      "actualInteriorWitness": [
+        0.5,
+        0.45749998092651367,
+        0.8849999904632568
+      ],
+      "overlappingDepth": 0.04000002145767212
+    },
+    {
+      "shoe": "faucet neck",
+      "retainedTarget": "faucet stem",
+      "actualInteriorWitness": [
+        0.5,
+        0.3125,
+        0.8774999976158142
+      ],
+      "overlappingDepth": 0.02499997615814209
+    },
+    {
+      "shoe": "porcelain pedestal",
+      "retainedTarget": "ceramic washstand",
+      "actualInteriorWitness": [
+        0.5,
+        0.3499999940395355,
+        0.4649999737739563
+      ],
+      "overlappingDepth": 0.04000005125999451
+    },
+    {
+      "shoe": "porcelain pedestal",
+      "retainedTarget": "pedestal foot",
+      "actualInteriorWitness": [
+        0.5,
+        0.3499999940395355,
+        0.07250000536441803
+      ],
+      "overlappingDepth": 0.034999996423721313
+    }
+  ],
+  "failedProbes": [
+    "Cot mounting shoe lacks real triangle-interior contact: faucet stem / rear rim",
+    "Cot mounting shoe lacks real triangle-interior contact: blue handle -0.2 / valve -0.2",
+    "Cot mounting shoe lacks real triangle-interior contact: blue handle 0.2 / valve 0.2"
+  ]
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "a": "faucet stem",
+    "b": "ceramic washstand",
+    "nearestVertexToEvaluatedTriangleUpperBoundTiles": 0.0350000262260437,
+    "nominalPixelsAt64": 2.240001678466797,
+    "from": "faucet stem",
+    "to": "ceramic washstand",
+    "sourceVertex": [
+      0.4650000035762787,
+      0.30000001192092896,
+      0.6499999761581421
+    ],
+    "surfaceWitness": [
+      0.4649999737739563,
+      0.30000001192092896,
+      0.6149999499320984
+    ]
+  },
+  {
+    "a": "faucet stem",
+    "b": "rear rim",
+    "nearestVertexToEvaluatedTriangleUpperBoundTiles": 0.01750001311302185,
+    "nominalPixelsAt64": 1.1200008392333984,
+    "from": "faucet stem",
+    "to": "rear rim",
+    "sourceVertex": [
+      0.5,
+      0.26500001549720764,
+      0.6499999761581421
+    ],
+    "surfaceWitness": [
+      0.4999999701976776,
+      0.2475000023841858,
+      0.6499999761581421
+    ]
+  },
+  {
+    "a": "blue handle -0.2",
+    "b": "valve -0.2",
+    "nearestVertexToEvaluatedTriangleUpperBoundTiles": 0.0,
+    "nominalPixelsAt64": 0.0,
+    "from": "valve -0.2",
+    "to": "blue handle -0.2",
+    "sourceVertex": [
+      0.2549999952316284,
+      0.2800000011920929,
+      0.7400000095367432
+    ],
+    "surfaceWitness": [
+      0.2549999952316284,
+      0.2800000011920929,
+      0.7400000095367432
+    ]
+  },
+  {
+    "a": "blue handle 0.2",
+    "b": "valve 0.2",
+    "nearestVertexToEvaluatedTriangleUpperBoundTiles": 0.0,
+    "nominalPixelsAt64": 0.0,
+    "from": "valve 0.2",
+    "to": "blue handle 0.2",
+    "sourceVertex": [
+      0.6549999713897705,
+      0.2800000011920929,
+      0.7400000095367432
+    ],
+    "surfaceWitness": [
+      0.6549999713897705,
+      0.2800000011920929,
+      0.7400000095367432
+    ]
+  }
+]

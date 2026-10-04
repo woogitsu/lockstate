@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 C:/Users/matma/Documents/Rozwój gier/lockstate-cell-washbasin-cycles-20261004
+
+ ✓ tests/unit/cell-handwash-retained-source.test.ts > retains all17 original parts and five graphs with only ten exact approved Base/Roughness sockets changed 8ms
+ ✓ tests/unit/cell-handwash-retained-source.test.ts > requires actual saved/reopened two-angle comparisons with delivered image bytes 1ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  03:52:14
+   Duration  181ms (transform 18ms, setup 0ms, import 40ms, tests 10ms, environment 0ms)

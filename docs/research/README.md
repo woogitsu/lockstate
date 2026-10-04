@@ -100,6 +100,7 @@ is not there, and when a subdirectory of records is neither rowed nor linked to
 
 | Record | Question it answered | Decision it fed |
 | --- | --- | --- |
+| [Cell handwash retained Cycles](./2026-10-04-cell-handwash-retained-cycles/README.md) | Actual 17-part five-graph sink: same-source shader/light comparison and retained geometry. | 2026-10-04; source preparation; game acceptance pending. |
 | [2026-10-04 Medical modern native observers](./2026-10-04-medical-modern-native-observers/README.md) | Do the paid Infirmary owners and entire paused V10 survive Load while actual current cabinet/bed PNG bodies are consumed? | Exact current144 PNG/source pins and protocol-decoded full worker/owners prepared; unchanged old RGB readers have zero current source matches. Native pending. |
 | [2026-10-04 Library bookshelf: retained soft Cycles](./2026-10-04-library-bookshelf-retained-cycles/README.md) | Are Canteen shaders actually unplumbed, and can the existing63-part bookshelf show its authored oak/books/steel under modern lighting? | Canteen graphs already correct; retained63parts/nine graphs/48BVH contacts, genuine Cycles72/four exact repeats/eight RED-exact restores/current q0-q1 consumer. Native pending. |
 | [Medical bed retained Cycles source](./2026-10-04-medical-bed-retained-cycles/README.md) | Genuine saved89-part source,26 contacts,72 CPU1 poses/four repeats and actual restored producer controls; native pending | 2026-10-04 |

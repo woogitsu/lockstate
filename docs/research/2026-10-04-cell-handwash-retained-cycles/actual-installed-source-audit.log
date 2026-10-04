@@ -1,0 +1,123 @@
+00:01.390  blend            | Read blend: "C:\Users\matma\Documents\Rozwój gier\lockstate-cell-washbasin-cycles-20261004\assets\source\blender\fixture.cell.sink.handwash.blend"
+KITCHEN_BOUNDS fixture.cell.sink.handwash [0.12000000476837158, 0.11000000685453415, 0.0] [0.8799999952316284, 0.8299999833106995, 1.0099999904632568]
+HANDWASH_EVALUATED_BOUNDS [0.12000000476837158, 0.11000000685453415, 0.0] [0.8799999952316284, 0.8299999833106995, 1.0099999904632568]; 17 meshes, four occupied orientations
+{
+  "engine": "BLENDER_WORKBENCH",
+  "materials": [
+    {
+      "name": "basin interior shadow",
+      "useNodes": true,
+      "diffuse": [
+        0.23999999463558197,
+        0.4300000071525574,
+        0.4399999976158142,
+        1.0
+      ],
+      "roughness": 0.38999998569488525,
+      "metallic": 0.0,
+      "nodeCount": 2
+    },
+    {
+      "name": "brushed steel fittings",
+      "useNodes": true,
+      "diffuse": [
+        0.4399999976158142,
+        0.5799999833106995,
+        0.6000000238418579,
+        1.0
+      ],
+      "roughness": 0.23999999463558197,
+      "metallic": 0.7200000286102295,
+      "nodeCount": 2
+    },
+    {
+      "name": "clean backsplash",
+      "useNodes": true,
+      "diffuse": [
+        0.5699999928474426,
+        0.6899999976158142,
+        0.6700000166893005,
+        1.0
+      ],
+      "roughness": 0.3400000035762787,
+      "metallic": 0.0,
+      "nodeCount": 2
+    },
+    {
+      "name": "service blue handle",
+      "useNodes": true,
+      "diffuse": [
+        0.10000000149011612,
+        0.3700000047683716,
+        0.44999998807907104,
+        1.0
+      ],
+      "roughness": 0.4000000059604645,
+      "metallic": 0.0,
+      "nodeCount": 2
+    },
+    {
+      "name": "warm white porcelain",
+      "useNodes": true,
+      "diffuse": [
+        0.7200000286102295,
+        0.7799999713897705,
+        0.75,
+        1.0
+      ],
+      "roughness": 0.20999999344348907,
+      "metallic": 0.0,
+      "nodeCount": 2
+    }
+  ],
+  "contacts": [
+    {
+      "shoe": "faucet spout",
+      "retainedTarget": "faucet neck",
+      "actualInteriorWitness": [
+        0.5,
+        0.45749998092651367,
+        0.8849999904632568
+      ],
+      "overlappingDepth": 0.04000002145767212
+    },
+    {
+      "shoe": "faucet neck",
+      "retainedTarget": "faucet stem",
+      "actualInteriorWitness": [
+        0.5,
+        0.3125,
+        0.8774999976158142
+      ],
+      "overlappingDepth": 0.02499997615814209
+    },
+    {
+      "shoe": "porcelain pedestal",
+      "retainedTarget": "ceramic washstand",
+      "actualInteriorWitness": [
+        0.5,
+        0.3499999940395355,
+        0.4649999737739563
+      ],
+      "overlappingDepth": 0.04000005125999451
+    },
+    {
+      "shoe": "porcelain pedestal",
+      "retainedTarget": "pedestal foot",
+      "actualInteriorWitness": [
+        0.5,
+        0.3499999940395355,
+        0.07250000536441803
+      ],
+      "overlappingDepth": 0.034999996423721313
+    }
+  ],
+  "failedProbes": [
+    "Cot mounting shoe lacks real triangle-interior contact: faucet stem / rear rim",
+    "Cot mounting shoe lacks real triangle-interior contact: blue handle -0.2 / valve -0.2",
+    "Cot mounting shoe lacks real triangle-interior contact: blue handle 0.2 / valve 0.2"
+  ]
+}
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit
