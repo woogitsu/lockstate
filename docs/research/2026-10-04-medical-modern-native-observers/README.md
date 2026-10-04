@@ -27,3 +27,9 @@ App/tools strict TypeScript both exit0; [app raw](./app-types.raw.txt), [tools r
 ## Pending and weakest claim
 
 **No browser, server, build, native execution, producer mutation or native acceptance ran in this agent's worktree.** The prepared HTTP/Blob/camera and full V10 additions are typed but not executed. Existing original palette checks are expected to need a truthful source-material observer after real root photos; that replacement is not implemented here. Root must run the unchanged-budget existing fixtures against its integrated compiled subject, including final Bed producer union, and retain their actual original outcomes. Native budgets may expose additional camera/transport time; no retry or budget adjustment is authorized. Source pixel equality alone does not establish actual runtime binding.
+
+## Terminal bounded preparation gates
+
+Published observer checkpoint `c63c3068110e73f2b96cc6b528a67069f5849ec5`. Actual two current model-consumer groups pass4 tests/2 files in986ms; [raw](./current-consumer-neighbors.raw.txt). They cover q0/q1 unchanged physical footprint, authored identity and descriptor/current frame consumption at source level; they do not execute paid public native construction. Research index/source-anchor/quotation gates pass20 tests/3 files in5.78s with lazy Git fetching disabled; [raw](./docs.raw.txt). No inherited citation/index guard was changed. Strict app/tools compile already exited0. No subsequent browser/build/collection/full suite ran.
+
+The original exact-palette functions are deliberately unchanged and no producer-negative success is claimed for these new unexecuted native guards. Root still needs the original actual medical photographs, then a bounded truthful source-only observer correction if those original floors are RED, followed by actual native acceptance and meaningful actual consumer omission/restoration.
